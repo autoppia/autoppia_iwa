@@ -64,7 +64,6 @@ class EvaluationRequest(BaseModel):
     actions: list[dict[str, Any]] = Field(..., min_items=0, description="List of actions to execute")
     web_agent_id: StrId = Field(..., description="Identifier for the web agent")
     web_project_id: StrId = Field(..., description="Web project ID")
-    relevant_data: dict[str, Any] = Field(default_factory=dict, description="Additional contextual data")
     should_record: bool = Field(default=False, description="Whether to record GIF of execution")
     timeout_seconds: NonNegativeFloat | None = Field(None, description="Optional hard timeout for this evaluation (defaults to service timeout)")
 
@@ -78,7 +77,6 @@ class EvaluationRequest(BaseModel):
                 "actions": [{"type": "ClickAction", "selector": "#login-btn"}],
                 "web_agent_id": "3",
                 "web_project_id": "autoconnect",
-                "relevant_data": {},
                 "should_record": False,
                 "timeout_seconds": 60,
             }
@@ -148,7 +146,6 @@ class EvaluationEndpointService:
             prompt=req.prompt,
             url=str(req.url),
             tests=req.tests,
-            relevant_data=req.relevant_data,
             should_record=req.should_record,
             web_project_id=project.id,
         )

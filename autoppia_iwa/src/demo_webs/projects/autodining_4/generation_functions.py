@@ -38,11 +38,7 @@ from .data import (
     SCROLL_DIRECTIONS,
     SCROLL_SECTIONS_TITLES,
 )
-from .data_utils import fetch_restaurant_data
-
-
-async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
-    return await fetch_restaurant_data(seed_value=seed_value, count=count)
+from .data_utils import _get_data, fetch_restaurant_data
 
 
 MOCK_DATES = generate_mock_dates()

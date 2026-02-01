@@ -1,12 +1,11 @@
 from .data_utils import fetch_books_data
-from .relevant_data import RELEVANT_DATA
 
 
 def login_replace_func(text: str) -> str:
     if not isinstance(text, str):
         return text
 
-    replacements = {"<username>": "user<web_agent_id>", "<password>": RELEVANT_DATA.get("user_for_login", {}).get("password", "password123")}
+    replacements = {"<username>": "user<web_agent_id>", "<password>": "password123"}
 
     for placeholder, value in replacements.items():
         text = text.replace(placeholder, value)

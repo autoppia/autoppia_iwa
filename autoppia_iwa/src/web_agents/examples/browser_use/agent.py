@@ -72,7 +72,7 @@ class BrowserUseWebAgent(BaseAgent):
             initial_actions=[{"go_to_url": {"url": task.url}}],
             use_vision=self._use_vision,
             browser=self._context,
-            task=task.prompt_with_relevant_data,
+            task=task.prompt,
             llm=llm,
         )
 

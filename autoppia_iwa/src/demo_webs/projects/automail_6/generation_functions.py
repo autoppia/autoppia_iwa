@@ -22,7 +22,7 @@ from .data import (
     FIELD_OPERATORS_VIEW_EMAIL_MAP,
     get_all_email_words,
 )
-from .data_utils import fetch_emails_data
+from .data_utils import _get_data, fetch_emails_data
 
 TEMPLATES = [
     {
@@ -56,10 +56,6 @@ TEMPLATES = [
         "body": "Hello <name>,\n\nThis is a quick reminder about the pending items we discussed. Please let me know if there's anything you need from my side.\n\nThanks,\nMe",
     },
 ]
-
-
-async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
-    return await fetch_emails_data(seed_value=seed_value, count=count)
 
 
 async def _ensure_email_dataset(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:

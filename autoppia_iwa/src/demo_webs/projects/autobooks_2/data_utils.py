@@ -38,3 +38,8 @@ async def fetch_books_data(seed_value: int | None = None, count: int = 100) -> l
         field_mapping = {"director": "author", "duration": "page_count", "img": "img_file"}
         return _transform_all(items, field_mapping)
     return []
+
+
+async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    """Main data loader function for autobooks_2."""
+    return await fetch_books_data(seed_value=seed_value, count=count)

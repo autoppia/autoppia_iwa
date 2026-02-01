@@ -38,3 +38,8 @@ async def fetch_emails_data(seed_value: int | None = None, count: int = 100) -> 
         return []
     modified_emails = transform_emails_list(items)
     return _transform_all(modified_emails, field_mapping)
+
+
+async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    """Main data loader function for automail_6."""
+    return await fetch_emails_data(seed_value=seed_value, count=count)

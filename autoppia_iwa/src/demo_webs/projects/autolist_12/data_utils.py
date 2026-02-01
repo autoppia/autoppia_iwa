@@ -19,3 +19,8 @@ async def fetch_tasks_data(seed_value: int | None = None, count: int = 200) -> l
         method="distribute",
     )
     return items if items else []
+
+
+async def _get_data(seed_value: int | None = None, count: int = 200) -> list[dict]:
+    """Main data loader function for autolist_12."""
+    return await fetch_tasks_data(seed_value=seed_value, count=count)

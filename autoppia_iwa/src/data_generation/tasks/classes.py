@@ -37,7 +37,6 @@ class Task(BaseModel):
     prompt: str = Field(..., description="Natural language description of the task objectives and requirements")
     specifications: BrowserSpecification = Field(default_factory=BrowserSpecification, description="Browser configuration and requirements for task execution")
     tests: list[TestUnion] = Field(default_factory=list, description="Collection of validation tests that verify the task")
-    relevant_data: dict[str, Any] = Field(default_factory=dict, description="Additional contextual data required for task execution")
     use_case: Any = Field(default=None, description="UseCase instance associated with this task")
     should_record: bool = False
     _original_prompt: str = PrivateAttr()
@@ -48,12 +47,6 @@ class Task(BaseModel):
         original_prompt = data.get("original_prompt", data.get("prompt", ""))
         super().__init__(**data)
         object.__setattr__(self, "_original_prompt", original_prompt)
-
-    @property
-    def prompt_with_relevant_data(self) -> str:
-        if self.relevant_data:
-            return f"{self.prompt}\n Relevant data you may need: {self.relevant_data}"
-        return self.prompt
 
     @property
     def original_prompt(self) -> str:
@@ -147,21 +140,6 @@ class Task(BaseModel):
         import copy
 
         task_copy = copy.deepcopy(self)
-
-        # Update relevant_data in the copy
-        for key, value in task_copy.relevant_data.items():
-            if isinstance(value, str):
-                task_copy.relevant_data[key] = value.replace("<web_agent_id>", web_agent_id)
-            elif isinstance(value, dict):
-                # Si el valor es un diccionario, procesamos sus elementos
-                for sub_key, sub_value in value.items():
-                    if isinstance(sub_value, str):
-                        value[sub_key] = sub_value.replace("<web_agent_id>", web_agent_id)
-            elif isinstance(value, list):
-                # Si el valor es una lista, procesamos sus elementos
-                for i, item in enumerate(value):
-                    if isinstance(item, str):
-                        value[i] = item.replace("<web_agent_id>", web_agent_id)
 
         # Update prompt in the copy
         if isinstance(task_copy.prompt, str):

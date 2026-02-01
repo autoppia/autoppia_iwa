@@ -92,7 +92,6 @@ class MultiStepTaskGenerator:
                 task_obj = self._assemble_composite_task(
                     composite_prompt=composite_prompt,
                     url=chosen_url,
-                    relevant_data=self.web_project.relevant_data,
                 )
                 final_composited_tasks.append(task_obj)
             except Exception as e:
@@ -176,7 +175,6 @@ class MultiStepTaskGenerator:
         self,
         composite_prompt: str,
         url: str,
-        relevant_data: dict[str, Any],
     ) -> Task:
         """
         Builds a new Task object that merges multiple sub-tasks into one multi-step prompt.
@@ -186,6 +184,5 @@ class MultiStepTaskGenerator:
             url=url,
             prompt=composite_prompt,
             specifications=BrowserSpecification(),
-            relevant_data=relevant_data,
             use_case=None,  # Typically no single use_case for a composite
         )

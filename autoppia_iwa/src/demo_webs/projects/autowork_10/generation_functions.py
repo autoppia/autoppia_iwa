@@ -31,11 +31,7 @@ from .data import (
     FIELD_OPERATORS_USER_BOOK_CONSULTANT_MAP,
     POPULAR_SKILLS,
 )
-from .data_utils import fetch_experts_data
-
-
-async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
-    return await fetch_experts_data(seed_value=seed_value, count=count)
+from .data_utils import _get_data, fetch_experts_data
 
 
 async def _ensure_expert_dataset(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:

@@ -42,3 +42,20 @@ def extract_drive_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]
         if isinstance(value, list):
             return value
     return None
+
+
+async def _get_data(
+    entity_type: str,
+    method: str | None = None,
+    filter_key: str | None = None,
+    seed_value: int | None = None,
+    count: int = 100,
+) -> list[dict]:
+    """Main data loader function for autodrive_13."""
+    return await fetch_drive_data(
+        entity_type=entity_type,
+        method=method,
+        filter_key=filter_key,
+        seed_value=seed_value,
+        count=count,
+    )

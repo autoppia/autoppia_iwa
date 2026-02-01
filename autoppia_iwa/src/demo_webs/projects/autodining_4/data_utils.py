@@ -56,3 +56,8 @@ async def fetch_restaurant_data(seed_value: int | None = None, count: int = 100)
     except Exception as exc:  # pragma: no cover - best effort
         logger.error(f"Failed to fetch restaurant data from API: {exc}")
     return []
+
+
+async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    """Main data loader function for autodining_4."""
+    return await fetch_restaurant_data(seed_value=seed_value, count=count)

@@ -178,7 +178,6 @@ class WebProject(BaseModel):
     urls: list[str] = []
     events: list[type] = Field(default_factory=list, description="Structured events information")
     use_cases: list[UseCase] | None = Field(default=None, description="Optional list of canonical use cases for this project")
-    relevant_data: dict[str, Any] = Field(default_factory=dict, description="Structured additional information about the web project")
 
 
 class BackendEvent(BaseModel):

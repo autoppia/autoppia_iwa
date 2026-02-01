@@ -27,3 +27,20 @@ async def fetch_autodelivery_data(
         filter_key=filter_key if filter_key else None,
     )
     return items or []
+
+
+async def _get_data(
+    entity_type: str,
+    method: str | None = None,
+    filter_key: str | None = None,
+    seed_value: int | None = None,
+    count: int = 100,
+) -> list[dict]:
+    """Main data loader function for autodelivery_7."""
+    return await fetch_autodelivery_data(
+        entity_type=entity_type,
+        method=method,
+        filter_key=filter_key,
+        seed_value=seed_value,
+        count=count,
+    )

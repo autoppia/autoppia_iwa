@@ -24,11 +24,7 @@ from .data import (
     FIELD_OPERATORS_SUBMIT_REVIEW_MAP,
     FIELD_OPERATORS_VIEW_HOTEL_MAP,
 )
-from .data_utils import fetch_hotels_data
-
-
-async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
-    return await fetch_hotels_data(seed_value=seed_value, count=count)
+from .data_utils import _get_data, fetch_hotels_data
 
 
 async def _ensure_hotel_dataset(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:

@@ -19,23 +19,7 @@ from .data import (
     FIELD_OPERATORS_MAP_SELECT_DATE,
     FIELD_OPERATORS_MAP_SELECT_TIME,
 )
-from .data_utils import extract_drive_dataset, fetch_drive_data
-
-
-async def _get_data(
-    entity_type: str,
-    method: str | None = None,
-    filter_key: str | None = None,
-    seed_value: int | None = None,
-    count: int = 100,
-) -> list[dict]:
-    return await fetch_drive_data(
-        entity_type=entity_type,
-        method=method,
-        filter_key=filter_key,
-        seed_value=seed_value,
-        count=count,
-    )
+from .data_utils import _get_data, extract_drive_dataset, fetch_drive_data
 
 
 async def _ensure_drive_dataset(

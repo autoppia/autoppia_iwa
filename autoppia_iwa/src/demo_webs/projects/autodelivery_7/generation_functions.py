@@ -20,23 +20,7 @@ from .data import (
     FIELD_OPERATORS_SEARCH_RESTAURANT_MAP,
     FIELD_OPERATORS_VIEW_RESTAURANT_MAP,
 )
-from .data_utils import fetch_autodelivery_data
-
-
-async def _get_data(
-    entity_type: str,
-    method: str | None = None,
-    filter_key: str | None = None,
-    seed_value: int | None = None,
-    count: int = 100,
-) -> list[dict]:
-    return await fetch_autodelivery_data(
-        entity_type=entity_type,
-        method=method,
-        filter_key=filter_key,
-        seed_value=seed_value,
-        count=count,
-    )
+from .data_utils import _get_data, fetch_autodelivery_data
 
 
 def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]] | None:

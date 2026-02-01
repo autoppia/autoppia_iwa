@@ -170,7 +170,6 @@ class SimpleTaskGenerator:
                     url=task_url,
                     prompt=replaced_prompt,
                     use_case=use_case,
-                    relevant_data=self.web_project.relevant_data,
                 ))
             except Exception as ex:
                 logger.error(f"Could not assemble Task for prompt '{prompt_text}': {ex!s}")
@@ -344,7 +343,7 @@ class SimpleTaskGenerator:
         return "[]"
 
     @staticmethod
-    def _assemble_task(web_project_id: str, url: str, prompt: str, use_case: UseCase, relevant_data: dict[str, Any]) -> Task:
+    def _assemble_task(web_project_id: str, url: str, prompt: str, use_case: UseCase) -> Task:
         """
         Assembles a final Task object from the prompt string and loaded page info.
         """
@@ -353,6 +352,5 @@ class SimpleTaskGenerator:
             prompt=prompt,
             url=url,
             specifications=BrowserSpecification(),
-            relevant_data=relevant_data,
             use_case=use_case,
         )

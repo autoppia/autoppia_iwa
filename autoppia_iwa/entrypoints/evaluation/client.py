@@ -136,7 +136,6 @@ class EvaluationClient:
                 "actions": [action.model_dump() for action in actions],
                 "web_agent_id": web_agent_id,
                 "web_project_id": task.web_project_id,
-                "relevant_data": task.relevant_data,
                 "should_record": should_record,
             }
 

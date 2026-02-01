@@ -22,3 +22,8 @@ async def fetch_hotels_data(seed_value: int | None = None, count: int = 100) -> 
     if not items:
         return []
     return get_modify_data(items)
+
+
+async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    """Main data loader function for autolodge_8."""
+    return await fetch_hotels_data(seed_value=seed_value, count=count)

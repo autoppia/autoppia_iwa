@@ -27,11 +27,7 @@ from .data import (
     REMINDER_MINUTES,
     VISIBILITY_OPTIONS,
 )
-from .data_utils import fetch_events_data
-
-
-async def _get_data(seed_value: int | None = None, count: int = 200) -> list[dict]:
-    return await fetch_events_data(seed_value=seed_value, count=count)
+from .data_utils import _get_data, fetch_events_data
 
 
 async def _ensure_event_dataset(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:

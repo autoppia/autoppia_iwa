@@ -19,3 +19,8 @@ async def fetch_products_data(seed_value: int | None = None, count: int = 100) -
         limit=count,
     )
     return items or []
+
+
+async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    """Main data loader function for autozone_3."""
+    return await fetch_products_data(seed_value=seed_value, count=count)

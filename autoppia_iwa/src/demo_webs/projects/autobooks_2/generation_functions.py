@@ -6,11 +6,7 @@ from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
-from .data_utils import fetch_books_data
-
-
-async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
-    return await fetch_books_data(seed_value=seed_value, count=count)
+from .data_utils import _get_data, fetch_books_data
 
 
 def generate_registration_constraints():

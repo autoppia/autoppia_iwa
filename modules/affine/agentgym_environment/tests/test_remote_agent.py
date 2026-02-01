@@ -59,7 +59,6 @@ async def test_remote_agent_returns_task_solution():
         url="http://localhost:8001/",
         web_project_id="autobooks",
         specifications=BrowserSpecification(),
-        relevant_data={"user_for_login": {"username": "user<web_agent_id>", "password": "PASSWORD"}},
         tests=[],
     )
 

@@ -42,7 +42,6 @@ Validates a task solution and returns success status.
   "actions": [{"type": "ClickAction", "selector": "#login-btn"}],
   "web_agent_id": "agent-1",
   "web_project_id": "autoconnect",
-  "relevant_data": {},
   "should_record": false,
   "timeout_seconds": 60
 }

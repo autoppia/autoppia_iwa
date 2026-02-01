@@ -52,3 +52,8 @@ async def fetch_movies_data(seed_value: int | None = None, count: int = 100) -> 
         mapped_items = transform_all(items, field_mapping)
         return mapped_items
     return []
+
+
+async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    """Main data loader function for autocinema_1."""
+    return await fetch_movies_data(seed_value=seed_value, count=count)

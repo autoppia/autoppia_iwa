@@ -24,14 +24,7 @@ from .data import (
     FIELD_OPERATORS_VIEW_JOB_MAP,
     FIELD_OPERATORS_VIEW_USER_PROFILE_MAP,
 )
-from .data_utils import fetch_connect_data
-
-
-async def _get_data(entity_type: str | None = None, method: str | None = None, seed_value: int | None = None, count: int = 50) -> list[dict]:
-    if not entity_type:
-        # When called without an entity_type (e.g., preload), return empty to avoid errors.
-        return []
-    return await fetch_connect_data(entity_type=entity_type, method=method, seed_value=seed_value, count=count)
+from .data_utils import _get_data, fetch_connect_data
 
 
 def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]] | None:

@@ -22,7 +22,7 @@ from .data import (
     FIELD_OPERATORS_MAP_MATTER,
     FIELD_OPERATORS_MAP_NEW_LOG,
 )
-from .data_utils import fetch_crm_data
+from .data_utils import _get_data, fetch_crm_data
 
 
 def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]] | None:
@@ -35,16 +35,6 @@ def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, An
         if isinstance(value, list):
             return value
     return None
-
-
-async def _get_data(
-    entity_type: str,
-    method: str | None = None,
-    filter_key: str | None = None,
-    seed_value: int | None = None,
-    count: int = 50,
-) -> list[dict]:
-    return await fetch_crm_data(entity_type, method=method, filter_key=filter_key, seed_value=seed_value, count=count)
 
 
 async def _ensure_crm_dataset(
