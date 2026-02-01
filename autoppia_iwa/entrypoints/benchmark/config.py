@@ -37,21 +37,12 @@ class BenchmarkConfig:
     # Persistence
     save_results_json: bool = True
 
-    # Dynamic features: array of v1, v2, v3 (or combinations)
-    # v1 = assign seed, v2 = assign v2-seed, v3 = assign seed structure
+ 
     dynamic: bool = False
-    # Dynamic HTML
-    dynamic_phase_config: DynamicPhaseConfig | None = None
 
     # Paths
     base_dir: Path = field(default_factory=lambda: PROJECT_BASE_DIR.parent)
-    benchmark_dir: Path = field(init=False)
-    cache_dir: Path = field(init=False)
-    data_dir: Path = field(init=False)
-    tasks_cache_dir: Path = field(init=False)
     output_dir: Path = field(init=False)
-    per_project_results: Path = field(init=False)
-    logs_dir: Path = field(init=False)
     benchmark_log_file: Path = field(init=False)
     recordings_dir: Path = field(init=False)
 
@@ -66,27 +57,17 @@ class BenchmarkConfig:
         if not self.agents:
             logger.warning("No agents configured - benchmark will not run")
 
-        # Use data/outputs/ directory for all generated artifacts
-        outputs_dir = self.base_dir / "data" / "outputs"
-        self.benchmark_dir = outputs_dir / "benchmark"
-        self.cache_dir = self.benchmark_dir / "cache"
-
-        self.tasks_cache_dir = self.cache_dir / "tasks"
-
-        self.output_dir = self.benchmark_dir / "results"
-        self.per_project_results = self.benchmark_dir / "per_project"
-        self.logs_dir = self.benchmark_dir / "logs"
-        self.benchmark_log_file = self.logs_dir / "benchmark.log"
-        self.recordings_dir = self.benchmark_dir / "recordings"
+        # Use data/outputs/benchmark/ directory for all generated artifacts
+        benchmark_dir = self.base_dir / "data" / "outputs" / "benchmark"
+        
+        self.output_dir = benchmark_dir / "results"
+        self.benchmark_log_file = benchmark_dir / "logs" / "benchmark.log"
+        self.recordings_dir = benchmark_dir / "recordings"
 
         # Create directories with proper error handling
         for d in (
-            self.benchmark_dir,
-            self.cache_dir,
-            self.tasks_cache_dir,
             self.output_dir,
-            self.per_project_results,
-            self.logs_dir,
+            self.benchmark_log_file.parent,  # Create logs directory
             self.recordings_dir,
         ):
             try:

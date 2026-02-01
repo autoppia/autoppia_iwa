@@ -2,6 +2,7 @@ import asyncio
 import base64
 import json
 import time
+import traceback
 from collections import defaultdict
 from pathlib import Path
 
@@ -11,7 +12,6 @@ from autoppia_iwa.config.config import VALIDATOR_ID
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
 from autoppia_iwa.entrypoints.benchmark.utils.logging import setup_logging
 from autoppia_iwa.entrypoints.benchmark.utils.metrics import TimingMetrics
-from autoppia_iwa.entrypoints.benchmark.utils.results import save_results_to_json
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
@@ -36,9 +36,6 @@ class Benchmark:
         self.config = config
         self._agent_call_semaphore = asyncio.Semaphore(config.max_parallel_agent_calls)
         self._timing_metrics = TimingMetrics()
-
-        # Per-agent global rollup across all projects and runs.
-        self._global_agent_rollup: dict[str, dict[str, float | int]] = defaultdict(lambda: {"success": 0, "total": 0, "time_sum": 0.0, "time_cnt": 0})
 
         # Validate configuration before starting
         self._validate_config()
@@ -139,40 +136,7 @@ class Benchmark:
                     except Exception as e:
                         logger.warning(f"Error closing backend for {project.name}: {e}")
 
-    async def _evaluate_solutions_for_task(
-        self,
-        project: WebProject,
-        task: Task,
-        solutions: list[TaskSolution | None],
-        run_index: int,
-    ):
-        """
-        Evaluate all agent solutions produced for a single Task.
-        Stores GIF recordings if evaluation returns them and recording is enabled.
-        """
-        # Filter out None solutions defensively
-        valid_solutions = [s for s in solutions if s is not None]
-        if not valid_solutions:
-            logger.warning(f"No valid solutions to evaluate for task {task.id} (run {run_index})")
-            return []
 
-        evaluator = ConcurrentEvaluator(
-            project,
-            EvaluatorConfig(
-                enable_grouping_tasks=False,
-                chunk_size=20,
-                should_record_gif=self.config.record_gif,
-                dynamic_phase_config=self.config.dynamic_phase_config,
-            ),
-        )
-        results = await evaluator.evaluate_task_solutions(task, valid_solutions)
-
-        if self.config.record_gif:
-            for res in results:
-                if getattr(res, "gif_recording", None):
-                    agent_name = next((a.name for a in self.config.agents if a.id == res.web_agent_id), "unknown")
-                    self._persist_gif_recording(res.gif_recording, agent_name, task.id, run_index, self.config.recordings_dir)
-        return results
 
     async def _evaluate_solutions_for_task_with_visualization(
         self,
@@ -207,6 +171,39 @@ class Benchmark:
             # Fallback to regular evaluation without visualization
             return await self._evaluate_solutions_for_task(project, task, solutions, run_index)
 
+    async def _evaluate_solutions_for_task(
+        self,
+        project: WebProject,
+        task: Task,
+        solutions: list[TaskSolution | None],
+        run_index: int,
+    ):
+        """
+        Evaluate all agent solutions produced for a single Task.
+        Stores GIF recordings if evaluation returns them and recording is enabled.
+        """
+        # Filter out None solutions defensively
+        valid_solutions = [s for s in solutions if s is not None]
+        if not valid_solutions:
+            logger.warning(f"No valid solutions to evaluate for task {task.id} (run {run_index})")
+            return []
+
+        evaluator = ConcurrentEvaluator(
+            project,
+            EvaluatorConfig(
+                enable_grouping_tasks=False,
+                chunk_size=20,
+                should_record_gif=self.config.record_gif,
+            ),
+        )
+        results = await evaluator.evaluate_task_solutions(task, valid_solutions)
+
+        if self.config.record_gif:
+            for res in results:
+                if getattr(res, "gif_recording", None):
+                    agent_name = next((a.name for a in self.config.agents if a.id == res.web_agent_id), "unknown")
+                    self._persist_gif_recording(res.gif_recording, agent_name, task.id, run_index, self.config.recordings_dir)
+        return results
     # ---------------------------------------------------------------------
     # Per-project execution
     # ---------------------------------------------------------------------
@@ -283,10 +280,28 @@ class Benchmark:
     # Global rollups and persistence
     # ---------------------------------------------------------------------
 
+    def _save_consolidated_results(self) -> None:
+        """
+        Save all project results to a single consolidated JSON file.
+        """
+        from datetime import datetime
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = self.config.output_dir / f"benchmark_results_{timestamp}.json"
+        
+        consolidated_data = {
+            "timestamp": datetime.now().isoformat(),
+            "total_execution_time": self._timing_metrics.get_total_time(),
+            "projects": self.per_project_results,
+        }
+        
+        filename.write_text(json.dumps(consolidated_data, indent=2))
+        logger.info(f"Consolidated results saved to {filename}")
+
     def _accumulate_global_agent_rollup(self, project: WebProject, project_run_results: list[dict]) -> None:
         """
-        Update global per-agent rollups and persist a per-project JSON
-        containing use-case breakdowns and overall stats.
+        Accumulate per-agent statistics for a project.
+        Results are stored in self.per_project_results and saved at the end.
 
         `project_run_results` is a list (one per run) of dicts keyed by agent_id:
             {
@@ -334,21 +349,6 @@ class Benchmark:
                     per_agent_usecase_actions[a_name][use_case].append(res.get("actions", []))
                     per_agent_usecase_task_ids[a_name][use_case].append(task_id)
                     per_agent_usecase_gifs[a_name][use_case].append(res.get("base64_gif", None))
-
-        # Update the global rollup state and log summaries
-        for agent in self.config.agents:
-            a_name = agent.name
-            scores = per_agent_scores_flat[a_name]
-            times = per_agent_times_flat[a_name]
-
-            success_count = sum(1 for s in scores if s == 1.0)
-            total_count = len(scores)
-
-            rollup = self._global_agent_rollup[a_name]
-            rollup["success"] += success_count
-            rollup["total"] += total_count
-            rollup["time_sum"] += sum(times)
-            rollup["time_cnt"] += len(times)
 
         # Build per-project JSON payload
         json_root: dict = {"agents": {}}
@@ -417,14 +417,8 @@ class Benchmark:
 
             logger.info(f"{a_name:<20} | {rate_all * 100:6.2f}% ({succ_all}/{tot_all}) | avg {avg_all_time:.2f}s")
 
-        # Persist per-project stats
-        json_root["agents"] = {project.name: project_block}
+        # Store per-project stats (will be saved in a single file at the end)
         self.per_project_results[project.name] = response_project_block
-        self.config.per_project_results.mkdir(parents=True, exist_ok=True)
-        stub = project.name.lower().replace(" ", "_")
-        out_path = self.config.per_project_results / f"{stub}_stats.json"
-        out_path.write_text(json.dumps(json_root, indent=2))
-        logger.info(f"Stats written to {out_path}")
 
     # ---------------------------------------------------------------------
     # Public API
@@ -455,7 +449,6 @@ class Benchmark:
                                 project_run_results.append(run_result)
                             else:
                                 logger.warning(f"Run {run_index} for project {project.name} returned no results")
-                                import traceback
 
                                 traceback.print_exc()
                         except Exception as e:
@@ -463,16 +456,9 @@ class Benchmark:
                             continue
 
                     if project_run_results:
-                        # Update global stats and persist artifacts for the last run of this project
+                        # Accumulate stats for this project
                         self._accumulate_global_agent_rollup(project, project_run_results)
                         successful_projects += 1
-
-                        last_run_result = project_run_results[-1]
-                        if self.config.save_results_json:
-                            try:
-                                save_results_to_json(last_run_result, self.config.agents, self._timing_metrics, str(self.config.output_dir))
-                            except Exception as e:
-                                logger.error(f"Failed to save results JSON for project {project.name}: {e}")
                     else:
                         logger.warning(f"No successful runs for project {project.name}")
 
@@ -486,13 +472,14 @@ class Benchmark:
         finally:
             self._timing_metrics.end()
 
+        # Save consolidated results to a single file
+        if self.config.save_results_json and self.per_project_results:
+            try:
+                self._save_consolidated_results()
+            except Exception as e:
+                logger.error(f"Failed to save consolidated results: {e}")
+
         logger.success(f"Benchmark finished ✔ - {successful_projects}/{total_projects} projects completed successfully")
 
         return self.per_project_results
 
-    # Optional convenience alias if you prefer a more explicit public name
-    async def execute(self) -> None:
-        """
-        Alias to `run()` for a more explicit call site name.
-        """
-        await self.run()
