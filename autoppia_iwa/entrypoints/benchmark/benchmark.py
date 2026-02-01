@@ -3,6 +3,7 @@ import base64
 import json
 import time
 from collections import defaultdict
+from datetime import datetime
 from pathlib import Path
 
 from loguru import logger
@@ -71,7 +72,7 @@ class Benchmark:
     # Artifact helpers
     # ---------------------------------------------------------------------
     @staticmethod
-    def _persist_gif_recording(b64_gif: str, agent_name: str, task_id: str, run_index: int, recordings_dir) -> None:
+    def _persist_gif_refixcording(b64_gif: str, agent_name: str, task_id: str, run_index: int, recordings_dir) -> None:
         """
         Decode a base64-encoded GIF and store it under benchmark-output/recordings/<agent>/<task>_run_<n>.gif.
         """
@@ -79,7 +80,6 @@ class Benchmark:
         agent_dir.mkdir(exist_ok=True)
         (agent_dir / f"{task_id}_run_{run_index}.gif").write_bytes(base64.b64decode(b64_gif))
         logger.info(f"GIF saved: {agent_name} -> {task_id} (run {run_index})")
-        return base64.b64decode(b64_gif)
 
     # ---------------------------------------------------------------------
     # Core per-task/per-agent execution
@@ -134,8 +134,6 @@ class Benchmark:
                         await backend.close()
                     except Exception as e:
                         logger.warning(f"Error closing backend for {project.name}: {e}")
-
-
 
     async def _evaluate_solutions_for_task_with_visualization(
         self,
@@ -230,7 +228,7 @@ class Benchmark:
     async def _execute_single_project_run(self, project: WebProject, run_index: int) -> dict[str, dict]:
         """
         Execute a single benchmark run for a given project:
-          - Generate or load cached Tasks for the project.
+          - Generate Tasks for the project.
           - Solve each Task with all configured Agents.
           - Evaluate all produced solutions.
           - Return a per-agent result mapping for this run.
@@ -283,8 +281,6 @@ class Benchmark:
         """
         Save all project results to a single consolidated JSON file.
         """
-        from datetime import datetime
-        
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = self.config.output_dir / f"benchmark_results_{timestamp}.json"
         
@@ -355,24 +351,12 @@ class Benchmark:
         for agent in self.config.agents:
             a_name = agent.name
 
-            # Per-use-case block
-            uc_block: dict[str, dict] = {}
             all_scores: list[float] = []
             all_times: list[float] = []
             new_uc_block: dict[str, dict] = {}
 
             for uc, scores in per_agent_usecase_scores[a_name].items():
                 times = per_agent_usecase_times[a_name][uc]
-                succ = sum(1 for s in scores if s == 1.0)
-                tot = len(scores)
-                avg_t = (sum(times) / len(times)) if times else 0.0
-
-                uc_block[uc] = {
-                    "success_count": succ,
-                    "total": tot,
-                    "success_rate": round((succ / tot), 3) if tot else 0.0,
-                    "avg_solution_time": round(avg_t, 3),
-                }
 
                 new_uc_block[uc] = {}
                 for task_id, prompt, action, t, score, gif in zip(
