@@ -22,7 +22,7 @@ from .data import (
     FIELD_OPERATORS_VIEW_EMAIL_MAP,
     get_all_email_words,
 )
-from .data_utils import _get_data, fetch_emails_data
+from .data_utils import get_data, fetch_emails_data
 
 TEMPLATES = [
     {
@@ -62,8 +62,8 @@ async def _ensure_email_dataset(task_url: str | None = None, dataset: list[dict[
     """Ensure email dataset is available."""
     if dataset is not None:
         return dataset
-    v2_seed = get_seed_from_url(task_url)
-    return await _get_data(seed_value=v2_seed)
+    seed = get_seed_from_url(task_url)
+    return await get_data(seed_value=seed)
 
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:

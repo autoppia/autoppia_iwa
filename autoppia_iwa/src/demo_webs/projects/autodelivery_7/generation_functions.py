@@ -20,7 +20,7 @@ from .data import (
     FIELD_OPERATORS_SEARCH_RESTAURANT_MAP,
     FIELD_OPERATORS_VIEW_RESTAURANT_MAP,
 )
-from .data_utils import _get_data, fetch_autodelivery_data
+from .data_utils import get_data, fetch_autodelivery_data
 
 
 def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]] | None:
@@ -43,8 +43,8 @@ async def _ensure_restaurant_dataset(
     existing = _extract_entity_dataset(dataset, "restaurants")
     if existing is not None:
         return existing
-    v2_seed = get_seed_from_url(task_url)
-    return await _get_data(entity_type="restaurants", method="distribute", filter_key="cuisine", seed_value=v2_seed)
+    seed = get_seed_from_url(task_url)
+    return await get_data(entity_type="restaurants", method="distribute", filter_key="cuisine", seed_value=seed)
 
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:

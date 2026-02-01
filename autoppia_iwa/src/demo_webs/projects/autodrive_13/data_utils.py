@@ -44,7 +44,7 @@ def extract_drive_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]
     return None
 
 
-async def _get_data(
+async def get_data(
     entity_type: str,
     method: str | None = None,
     filter_key: str | None = None,

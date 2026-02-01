@@ -6,8 +6,8 @@ These are **integration tests** that verify the complete system works end-to-end
 
 ### **test_all_projects.py**
 Verifies all 13 web projects have the optimized seed system:
-- Checks each project uses `resolve_v2_seed_from_url()`
-- Verifies no deprecated functions (`extract_v2_seed_from_url`)
+- Checks each project uses `resolve_seed_from_url()`
+- Verifies no deprecated functions (`extract_seed_from_url`)
 - Counts functions with `dataset` parameter
 - Generates `projects_status.json` report
 

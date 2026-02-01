@@ -54,6 +54,6 @@ async def fetch_movies_data(seed_value: int | None = None, count: int = 100) -> 
     return []
 
 
-async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+async def get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
     """Main data loader function for autocinema_1."""
     return await fetch_movies_data(seed_value=seed_value, count=count)

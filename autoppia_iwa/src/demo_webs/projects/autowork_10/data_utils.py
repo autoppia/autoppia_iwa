@@ -24,6 +24,6 @@ async def fetch_experts_data(seed_value: int | None = None, count: int = 100) ->
     return expert_data_modified(items)
 
 
-async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+async def get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
     """Main data loader function for autowork_10."""
     return await fetch_experts_data(seed_value=seed_value, count=count)

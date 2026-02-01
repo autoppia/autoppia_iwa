@@ -6,7 +6,7 @@ from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
-from .data_utils import _get_data, fetch_movies_data
+from .data_utils import get_data, fetch_movies_data
 
 
 def generate_registration_constraints(dataset: list[dict]):

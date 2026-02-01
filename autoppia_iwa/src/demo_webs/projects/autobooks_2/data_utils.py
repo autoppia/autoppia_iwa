@@ -40,6 +40,6 @@ async def fetch_books_data(seed_value: int | None = None, count: int = 100) -> l
     return []
 
 
-async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+async def get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
     """Main data loader function for autobooks_2."""
     return await fetch_books_data(seed_value=seed_value, count=count)

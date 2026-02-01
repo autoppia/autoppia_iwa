@@ -50,12 +50,12 @@ async def _get_appointments_data(task_url: str | None = None, dataset: list[dict
     existing = extract_health_dataset(dataset, "appointments")
     if existing is not None:
         return transform_appointments_to_modified(existing)
-    v2_seed = get_seed_from_url(task_url)
+    seed = get_seed_from_url(task_url)
     appointments = await fetch_health_data(
         entity_type="appointments",
         method="distribute",
         filter_key="specialty",
-        seed_value=v2_seed,
+        seed_value=seed,
         count=100,
     )
     return transform_appointments_to_modified(appointments) if appointments else []
@@ -66,10 +66,10 @@ async def _get_doctors_data(task_url: str | None = None, dataset: list[dict[str,
     existing = extract_health_dataset(dataset, "doctors")
     if existing is not None:
         return transform_doctors_to_modified(existing)
-    v2_seed = get_seed_from_url(task_url)
+    seed = get_seed_from_url(task_url)
     doctors = await fetch_health_data(
         entity_type="doctors",
-        seed_value=v2_seed,
+        seed_value=seed,
         count=100,
     )
     return transform_doctors_to_modified(doctors) if doctors else []
@@ -80,12 +80,12 @@ async def _get_prescriptions_data(task_url: str | None = None, dataset: list[dic
     existing = extract_health_dataset(dataset, "prescriptions")
     if existing is not None:
         return transform_prescriptions_to_modified(existing)
-    v2_seed = get_seed_from_url(task_url)
+    seed = get_seed_from_url(task_url)
     prescriptions = await fetch_health_data(
         entity_type="prescriptions",
         method="distribute",
         filter_key="category",
-        seed_value=v2_seed,
+        seed_value=seed,
         count=100,
     )
     return transform_prescriptions_to_modified(prescriptions) if prescriptions else []
@@ -96,10 +96,10 @@ async def _get_medical_records_data(task_url: str | None = None, dataset: list[d
     existing = extract_health_dataset(dataset, "medical-records")
     if existing is not None:
         return transform_medical_records_to_modified(existing)
-    v2_seed = get_seed_from_url(task_url)
+    seed = get_seed_from_url(task_url)
     medical_records = await fetch_health_data(
         entity_type="medical-records",
-        seed_value=v2_seed,
+        seed_value=seed,
         count=100,
     )
     return transform_medical_records_to_modified(medical_records) if medical_records else []

@@ -20,15 +20,15 @@ from .data import (
     TEAM_MEMBERS_OPTIONS,
     TEAMS,
 )
-from .data_utils import _get_data, fetch_tasks_data
+from .data_utils import get_data, fetch_tasks_data
 
 
 async def _ensure_task_dataset(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     """Ensure we have autolist tasks dataset available."""
     if dataset is not None:
         return dataset
-    v2_seed = get_seed_from_url(task_url)
-    return await _get_data(seed_value=v2_seed)
+    seed = get_seed_from_url(task_url)
+    return await get_data(seed_value=seed)
 
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, source_key: str, dataset: list[dict[str, Any]]) -> Any:

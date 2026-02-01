@@ -72,7 +72,7 @@ class SimpleTaskGenerator:
                 logger.warning(f"No matching use cases found for: {use_cases}. Available: {[uc.name for uc in self.web_project.use_cases]}")
                 return all_tasks
             _log_task_generation(f"Using {len(web_use_cases)} specified use cases: {[uc.name for uc in web_use_cases]}")
-            else:
+        else:
             # Use all available use cases
             web_use_cases = self.web_project.use_cases
 
@@ -150,13 +150,13 @@ class SimpleTaskGenerator:
         for prompt_text in prompt_list:
             try:
                 # Build replace kwargs once (used by both sync and async)
-                    replace_kwargs: dict[str, Any] = {}
+                replace_kwargs: dict[str, Any] = {}
                 if use_case.replace_func:
                     sig = inspect.signature(use_case.replace_func)
-                        if "seed_value" in sig.parameters:
-                            replace_kwargs["seed_value"] = seed_value_for_replace
-                        if "dataset" in sig.parameters:
-                            replace_kwargs["dataset"] = dataset
+                    if "seed_value" in sig.parameters:
+                        replace_kwargs["seed_value"] = seed_value_for_replace
+                    if "dataset" in sig.parameters:
+                        replace_kwargs["dataset"] = dataset
                 
                 # Apply replacements (async or sync)
                 if hasattr(use_case, "apply_replacements_async"):
@@ -186,18 +186,18 @@ class SimpleTaskGenerator:
         if cache_key in self._dataset_cache:
             return self._dataset_cache[cache_key]
 
-        # Try to load _get_data from project's generation_functions module
-        project_module = f"autoppia_iwa.src.demo_webs.projects.{self.web_project.id}_1.generation_functions"
+        # Try to load get_data from project's data_utils module
+        project_module = f"autoppia_iwa.src.demo_webs.projects.{self.web_project.id}_1.data_utils"
         
         try:
             import importlib
             import inspect
             
-            gen_module = importlib.import_module(project_module)
-        loader = getattr(gen_module, "_get_data", None)
+            data_module = importlib.import_module(project_module)
+            loader = getattr(data_module, "get_data", None)
             
-        if loader is None:
-            return None
+            if loader is None:
+                return None
 
             # Call loader
             dataset_result = loader(seed_value=seed)

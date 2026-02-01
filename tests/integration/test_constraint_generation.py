@@ -26,14 +26,14 @@ async def test_autocinema_constraints():
 
     print(f"\n📍 Test URL: {test_url}")
 
-    # 1. Resolver v2_seed
-    print("\n1️⃣ Resolviendo v2_seed desde endpoint...")
-    v2_seed = get_seed_from_url(test_url)
-    print(f"   ✅ seed=86 → v2_seed={v2_seed}")
+    # 1. Resolver seed
+    print("\n1️⃣ Resolviendo seed desde endpoint...")
+    seed = get_seed_from_url(test_url)
+    print(f"   ✅ seed=86 → seed={seed}")
 
     # 2. Cargar dataset
-    print("\n2️⃣ Cargando dataset con v2_seed...")
-    dataset = await _get_data(seed_value=v2_seed)
+    print("\n2️⃣ Cargando dataset con seed...")
+    dataset = await _get_data(seed_value=seed)
     print(f"   ✅ Dataset cargado: {len(dataset)} películas")
     if dataset:
         print(f"   📄 Muestra película 1: {dataset[0]['name']}")
@@ -84,14 +84,14 @@ async def test_autobooks_constraints():
 
     print(f"\n📍 Test URL: {test_url}")
 
-    # 1. Resolver v2_seed
-    print("\n1️⃣ Resolviendo v2_seed desde endpoint...")
-    v2_seed = get_seed_from_url(test_url)
-    print(f"   ✅ seed=123 → v2_seed={v2_seed}")
+    # 1. Resolver seed
+    print("\n1️⃣ Resolviendo seed desde endpoint...")
+    seed = get_seed_from_url(test_url)
+    print(f"   ✅ seed=123 → seed={seed}")
 
     # 2. Cargar dataset
-    print("\n2️⃣ Cargando dataset con v2_seed...")
-    dataset = await _get_data(seed_value=v2_seed)
+    print("\n2️⃣ Cargando dataset con seed...")
+    dataset = await _get_data(seed_value=seed)
     print(f"   ✅ Dataset cargado: {len(dataset)} libros")
     if dataset:
         print(f"   📄 Muestra libro 1: {dataset[0]['name']}")
@@ -126,11 +126,11 @@ async def test_constraints_validity():
 
     for seed in test_seeds:
         test_url = f"http://localhost:8001/?seed={seed}"
-        v2_seed = get_seed_from_url(test_url)
-        dataset = await _get_data(seed_value=v2_seed)
+        seed = get_seed_from_url(test_url)
+        dataset = await _get_data(seed_value=seed)
         constraints = await generate_film_constraints(test_url, dataset)
 
-        print(f"\n  seed={seed} → v2_seed={v2_seed}")
+        print(f"\n  seed={seed} → seed={seed}")
         print(f"    Dataset: {len(dataset)} películas")
         print(f"    Constraints: {len(constraints) if constraints else 0}")
 

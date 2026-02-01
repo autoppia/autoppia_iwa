@@ -22,7 +22,7 @@ from .data import (
     FIELD_OPERATORS_MAP_MATTER,
     FIELD_OPERATORS_MAP_NEW_LOG,
 )
-from .data_utils import _get_data, fetch_crm_data
+from .data_utils import get_data, fetch_crm_data
 
 
 def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]] | None:
@@ -49,8 +49,8 @@ async def _ensure_crm_dataset(
     existing = _extract_entity_dataset(dataset, entity_type)
     if existing is not None:
         return existing
-    v2_seed = get_seed_from_url(task_url)
-    return await _get_data(entity_type=entity_type, method=method, filter_key=filter_key, seed_value=v2_seed)
+    seed = get_seed_from_url(task_url)
+    return await get_data(entity_type=entity_type, method=method, filter_key=filter_key, seed_value=seed)
 
 
 def _to_float_safe(value: Any) -> float | None:

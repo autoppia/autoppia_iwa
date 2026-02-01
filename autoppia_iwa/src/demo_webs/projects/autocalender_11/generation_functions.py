@@ -27,15 +27,15 @@ from .data import (
     REMINDER_MINUTES,
     VISIBILITY_OPTIONS,
 )
-from .data_utils import _get_data, fetch_events_data
+from .data_utils import get_data, fetch_events_data
 
 
 async def _ensure_event_dataset(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     """Ensure event dataset is available for constraint generation."""
     if dataset is not None:
         return dataset
-    v2_seed = get_seed_from_url(task_url)
-    return await _get_data(seed_value=v2_seed)
+    seed = get_seed_from_url(task_url)
+    return await get_data(seed_value=seed)
 
 
 def _generate_constraint_value(

@@ -177,7 +177,7 @@ class WebVerificationPipeline:
         for task in tasks:
             # Extract seed value from task URL
             seed_value = self._extract_seed_from_url(task.url)
-            # v2_seed_value = self._extract_v2_seed_from_url(task.url)
+            # seed_value = self._extract_seed_from_url(task.url)
 
             # Get constraints
             constraints = task.use_case.constraints if task.use_case and task.use_case.constraints else None
@@ -192,7 +192,7 @@ class WebVerificationPipeline:
                 "constraints": serialized_constraints,
                 "constraints_str": constraints_str,
                 "seed": seed_value,
-                # "v2_seed": v2_seed_value,
+                # "seed": seed_value,
             }
             use_case_results["tasks"].append(task_info)
 
@@ -767,7 +767,7 @@ class WebVerificationPipeline:
             pass
         return None
 
-    def _extract_v2_seed_from_url(self, url: str) -> int | None:
+    def _extract_seed_from_url(self, url: str) -> int | None:
         """Extract v2-seed parameter from URL query string"""
         try:
             parsed = urlparse(url)
@@ -779,14 +779,14 @@ class WebVerificationPipeline:
             pass
         return None
 
-    def _print_task_details_for_review(self, task: Task, seed: int | None, constraints_str: str, v2_seed: int | None | None = None):
+    def _print_task_details_for_review(self, task: Task, seed: int | None, constraints_str: str, seed: int | None | None = None):
         """
         Print task details (prompt, constraints, seed) before GPT review
 
         Args:
             task: The task to print
             seed: Base seed value from URL
-            v2_seed: V2 seed value from URL
+            seed: V2 seed value from URL
             constraints_str: String representation of constraints
         """
         print("\n" + "=" * 80)
@@ -799,8 +799,8 @@ class WebVerificationPipeline:
         seed_info = []
         if seed is not None:
             seed_info.append(f"seed={seed}")
-        if v2_seed is not None:
-            seed_info.append(f"v2-seed={v2_seed}")
+        if seed is not None:
+            seed_info.append(f"v2-seed={seed}")
         if seed_info:
             print(f"Seed Values: {', '.join(seed_info)}")
         else:

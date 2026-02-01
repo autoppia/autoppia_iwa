@@ -47,7 +47,7 @@ async def test_all_projects_have_optimization():
             source = inspect.getsource(gen_module)
 
             has_resolve = "get_seed_from_url" in source
-            has_old_extract = "extract_v2_seed_from_url" in source and "from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url" in source
+            has_old_extract = "extract_seed_from_url" in source and "from autoppia_iwa.src.demo_webs.projects.data_provider import extract_seed_from_url" in source
 
             # Verificar funciones con dataset parameter
             dataset_functions = []
@@ -58,7 +58,7 @@ async def test_all_projects_have_optimization():
                         dataset_functions.append(name)
 
             print(f"   ✅ Usa get_seed_from_url: {has_resolve}")
-            print(f"   {'❌' if has_old_extract else '✅'} Usa extract_v2_seed_from_url (obsoleto): {has_old_extract}")
+            print(f"   {'❌' if has_old_extract else '✅'} Usa extract_seed_from_url (obsoleto): {has_old_extract}")
             print(f"   ✅ Funciones con dataset param: {len(dataset_functions)}")
             for func_name in dataset_functions[:3]:  # Mostrar primeras 3
                 print(f"      • {func_name}")
@@ -102,7 +102,7 @@ async def test_all_projects_have_optimization():
                 if not r.get("has_resolve"):
                     print("     - Falta get_seed_from_url")
                 if r.get("has_old_extract"):
-                    print("     - Usa extract_v2_seed_from_url obsoleto")
+                    print("     - Usa extract_seed_from_url obsoleto")
                 if r.get("dataset_functions", 0) == 0:
                     print("     - Ninguna función acepta dataset parameter")
 

@@ -27,7 +27,7 @@ async def fetch_connect_data(
     return items or []
 
 
-async def _get_data(entity_type: str | None = None, method: str | None = None, seed_value: int | None = None, count: int = 50) -> list[dict]:
+async def get_data(entity_type: str | None = None, method: str | None = None, seed_value: int | None = None, count: int = 50) -> list[dict]:
     """Main data loader function for autoconnect_9."""
     if not entity_type:
         # When called without an entity_type (e.g., preload), return empty to avoid errors.

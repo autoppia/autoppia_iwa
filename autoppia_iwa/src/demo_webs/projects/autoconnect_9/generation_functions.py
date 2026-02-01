@@ -24,7 +24,7 @@ from .data import (
     FIELD_OPERATORS_VIEW_JOB_MAP,
     FIELD_OPERATORS_VIEW_USER_PROFILE_MAP,
 )
-from .data_utils import _get_data, fetch_connect_data
+from .data_utils import get_data, fetch_connect_data
 
 
 def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]] | None:
@@ -50,8 +50,8 @@ async def _ensure_entity_dataset(
     existing = _extract_entity_dataset(dataset, entity_type)
     if existing:
         return existing
-    v2_seed = get_seed_from_url(task_url)
-    return await _get_data(entity_type, method=method, seed_value=v2_seed)
+    seed = get_seed_from_url(task_url)
+    return await get_data(entity_type, method=method, seed_value=seed)
 
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:

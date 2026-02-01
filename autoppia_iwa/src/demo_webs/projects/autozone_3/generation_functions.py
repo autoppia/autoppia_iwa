@@ -10,15 +10,15 @@ from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict, parse_price
 from .data import FIELD_OPERATORS_MAP_PRODUCTS
-from .data_utils import _get_data, fetch_products_data
+from .data_utils import get_data, fetch_products_data
 
 
 async def _ensure_products_dataset(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     """Ensure product dataset is available."""
     if dataset is not None:
         return dataset
-    v2_seed = get_seed_from_url(task_url)
-    return await _get_data(seed_value=v2_seed)
+    seed = get_seed_from_url(task_url)
+    return await get_data(seed_value=seed)
 
 
 def generate_constraint_value(field: str, operator: ComparisonOperator, product_data_source: dict[str, Any], all_products_data: list[dict[str, Any]] | None = None) -> Any:

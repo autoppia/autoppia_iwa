@@ -425,7 +425,7 @@ def extract_seed_from_url(url: str) -> int | None:
     return None
 
 
-def extract_v2_seed_from_url(url: str) -> int | None:
+def extract_seed_from_url(url: str) -> int | None:
     """Extract v2-seed parameter from URL query string."""
     from urllib.parse import parse_qs, urlparse
 

@@ -19,7 +19,7 @@ from .data import (
     FIELD_OPERATORS_MAP_SELECT_DATE,
     FIELD_OPERATORS_MAP_SELECT_TIME,
 )
-from .data_utils import _get_data, extract_drive_dataset, fetch_drive_data
+from .data_utils import get_data, extract_drive_dataset, fetch_drive_data
 
 
 async def _ensure_drive_dataset(
@@ -34,8 +34,8 @@ async def _ensure_drive_dataset(
     existing = extract_drive_dataset(dataset, entity_type)
     if existing is not None:
         return existing
-    v2_seed = get_seed_from_url(task_url)
-    return await _get_data(entity_type=entity_type, method=method, filter_key=filter_key, seed_value=v2_seed)
+    seed = get_seed_from_url(task_url)
+    return await get_data(entity_type=entity_type, method=method, filter_key=filter_key, seed_value=seed)
 
 
 def _generate_constraint_value(

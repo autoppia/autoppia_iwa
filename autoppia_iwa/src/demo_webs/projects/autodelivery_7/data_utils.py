@@ -29,7 +29,7 @@ async def fetch_autodelivery_data(
     return items or []
 
 
-async def _get_data(
+async def get_data(
     entity_type: str,
     method: str | None = None,
     filter_key: str | None = None,

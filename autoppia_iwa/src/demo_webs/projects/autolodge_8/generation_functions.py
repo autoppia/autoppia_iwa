@@ -24,15 +24,15 @@ from .data import (
     FIELD_OPERATORS_SUBMIT_REVIEW_MAP,
     FIELD_OPERATORS_VIEW_HOTEL_MAP,
 )
-from .data_utils import _get_data, fetch_hotels_data
+from .data_utils import get_data, fetch_hotels_data
 
 
 async def _ensure_hotel_dataset(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     """Ensure hotel dataset is available, potentially using a pre-loaded list."""
     if dataset is not None:
         return dataset
-    v2_seed = get_seed_from_url(task_url)
-    return await _get_data(seed_value=v2_seed)
+    seed = get_seed_from_url(task_url)
+    return await get_data(seed_value=seed)
 
 
 def _generate_constraint_value(
