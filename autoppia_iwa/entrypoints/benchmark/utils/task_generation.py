@@ -7,41 +7,24 @@ from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeli
 from autoppia_iwa.src.demo_webs.classes import WebProject
 
 
-async def generate_tasks_for_web_project(
+async def generate_tasks_for_project(
     project: WebProject,
     prompts_per_use_case: int = 1,
     use_cases: list[str] | None = None,
     dynamic: bool = False,
 ) -> list[Task]:
-    """Generate tasks for the given demo project."""
-    config = TaskGenerationConfig(
-        prompts_per_use_case=prompts_per_use_case,
-        use_cases=use_cases,
-        dynamic=dynamic,
-    )
-
-    print(f"Generating tasks for {project.name}...")
-    pipeline = TaskGenerationPipeline(web_project=project, config=config)
-    tasks = await pipeline.generate()
-
-    return tasks
-
-
-async def generate_tasks_for_project(
-    project: WebProject,
-    prompts_per_use_case: int,
-    use_cases: list[str] | None = None,
-    dynamic: bool = False,
-):
     """Generate tasks for the given project."""
     try:
         logger.info(f"[tasks] Generating tasks for '{project.name}'...")
-        tasks = await generate_tasks_for_web_project(
-            project,
+        
+        config = TaskGenerationConfig(
             prompts_per_use_case=prompts_per_use_case,
             use_cases=use_cases,
             dynamic=dynamic,
         )
+        
+        pipeline = TaskGenerationPipeline(web_project=project, config=config)
+        tasks = await pipeline.generate()
 
         if tasks:
             logger.info(f"[tasks] Generated {len(tasks)} tasks for '{project.name}'")
