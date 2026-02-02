@@ -38,8 +38,7 @@ from .data import (
     SCROLL_DIRECTIONS,
     SCROLL_SECTIONS_TITLES,
 )
-from .data_utils import get_data, fetch_restaurant_data
-
+from .data_utils import get_data
 
 MOCK_DATES = generate_mock_dates()
 MOCK_DATE_STRINGS = generate_mock_date_strings(MOCK_DATES)

@@ -879,5 +879,3 @@ class IdleAction(BaseAction):
     @log_action("IdleAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
         pass
-
-

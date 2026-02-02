@@ -201,6 +201,7 @@ class Benchmark:
                     agent_name = next((a.name for a in self.config.agents if a.id == res.web_agent_id), "unknown")
                     self._persist_gif_recording(res.gif_recording, agent_name, task.id, run_index, self.config.recordings_dir)
         return results
+
     # ---------------------------------------------------------------------
     # Per-project execution
     # ---------------------------------------------------------------------
@@ -283,13 +284,13 @@ class Benchmark:
         """
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = self.config.output_dir / f"benchmark_results_{timestamp}.json"
-        
+
         consolidated_data = {
             "timestamp": datetime.now().isoformat(),
             "total_execution_time": self._timing_metrics.get_total_time(),
             "projects": self.per_project_results,
         }
-        
+
         filename.write_text(json.dumps(consolidated_data, indent=2))
         logger.info(f"Consolidated results saved to {filename}")
 
@@ -459,4 +460,3 @@ class Benchmark:
         logger.success(f"Benchmark finished ✔ - {successful_projects}/{total_projects} projects completed successfully")
 
         return self.per_project_results
-

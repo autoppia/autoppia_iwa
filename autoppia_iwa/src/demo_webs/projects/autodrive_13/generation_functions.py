@@ -5,8 +5,6 @@ from typing import Any
 
 from dateutil import parser
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
-
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
 from .data import (
@@ -19,7 +17,6 @@ from .data import (
     FIELD_OPERATORS_MAP_SELECT_DATE,
     FIELD_OPERATORS_MAP_SELECT_TIME,
 )
-from .data_utils import get_data, extract_drive_dataset, fetch_drive_data
 
 
 async def _ensure_drive_dataset(

@@ -6,7 +6,7 @@ from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
-from .data_utils import get_data, fetch_books_data
+from .data_utils import get_data
 
 
 def generate_registration_constraints():
@@ -59,7 +59,7 @@ async def generate_book_constraints(task_url: str | None = None, dataset: dict[s
     books = dataset.get("books", []) if dataset else []
     if not books:
         return None
-    
+
     constraints_str = build_constraints_info(books)
 
     # Convertir el string a la estructura de datos
@@ -95,7 +95,7 @@ async def generate_search_book_constraints(task_url: str | None = None, dataset:
     books = dataset.get("books", []) if dataset else []
     if not books:
         return None
-    
+
     books_names = [book["name"] for book in books]
     operators = ["equals", "not_equals"]
     constraints_str = f"query {choice(operators)} {choice(books_names)}"
@@ -190,7 +190,7 @@ async def generate_book_filter_constraints(task_url: str | None = None, dataset:
     books = dataset.get("books", []) if dataset else []
     if not books:
         return []
-    
+
     existing_years = list(set(book["year"] for book in books))
     existing_genres = list(set(genre for book in books for genre in book["genres"]))
 
@@ -436,7 +436,7 @@ async def generate_add_comment_constraints(task_url: str | None = None, dataset:
     books_data = dataset.get("books", []) if dataset else []
     if not books_data:
         return []
-    
+
     books = [book["name"] for book in books_data]
 
     # Palabras y frases para generar comentarios

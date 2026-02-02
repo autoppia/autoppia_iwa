@@ -2,8 +2,6 @@ import random
 from random import choice, randint, sample
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
-
 from ..criterion_helper import ComparisonOperator
 from ..operators import EQUALS, NOT_EQUALS
 from ..shared_utils import create_constraint_dict
@@ -22,7 +20,6 @@ from .data import (
     FIELD_OPERATORS_VIEW_EMAIL_MAP,
     get_all_email_words,
 )
-from .data_utils import get_data, fetch_emails_data
 
 TEMPLATES = [
     {

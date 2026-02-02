@@ -4,8 +4,6 @@ from datetime import date, datetime, time, timedelta
 from random import choice
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
-
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
 from .data import (
@@ -36,8 +34,6 @@ from .data import (
     MODIFIED_REASON_FOR_VISIT,
 )
 from .data_utils import (
-    extract_health_dataset,
-    fetch_health_data,
     transform_appointments_to_modified,
     transform_doctors_to_modified,
     transform_medical_records_to_modified,
@@ -49,28 +45,28 @@ async def _get_appointments_data(task_url: str | None = None, dataset: dict[str,
     """Extract appointments data from the pre-loaded dataset."""
     if dataset and "appointments" in dataset:
         return transform_appointments_to_modified(dataset["appointments"])
-    return [] if appointments else []
+    return []
 
 
 async def _get_doctors_data(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict]:
     """Extract doctors data from the pre-loaded dataset."""
     if dataset and "doctors" in dataset:
         return transform_doctors_to_modified(dataset["doctors"])
-    return [] if doctors else []
+    return []
 
 
 async def _get_prescriptions_data(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict]:
     """Extract prescriptions data from the pre-loaded dataset."""
     if dataset and "prescriptions" in dataset:
         return transform_prescriptions_to_modified(dataset["prescriptions"])
-    return [] if prescriptions else []
+    return []
 
 
 async def _get_medical_records_data(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict]:
     """Extract medical records data from the pre-loaded dataset."""
     if dataset and "medical-records" in dataset:
         return transform_medical_records_to_modified(dataset["medical-records"])
-    return [] if medical_records else []
+    return []
 
 
 def _generate_constraint_value(

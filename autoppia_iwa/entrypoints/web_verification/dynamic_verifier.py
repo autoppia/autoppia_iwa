@@ -146,7 +146,9 @@ class DynamicVerifier:
             summary = f"Dynamic verification: {passed_count}/{total_count} seeds passed evaluation. Solution works correctly with {passed_count} different seed values."
             # Warning: If solution works for all seeds, the use case might not be truly dynamic
             if passed_count == total_count and total_count >= 3:
-                summary += f"\n⚠️  WARNING: This use case may not be truly dynamic. The same solution works for all {total_count} seeds, suggesting the dynamic system might not be affecting this use case."
+                summary += (
+                    f"\n⚠️  WARNING: This use case may not be truly dynamic. The same solution works for all {total_count} seeds, suggesting the dynamic system might not be affecting this use case."
+                )
         else:
             passed_count = sum(1 for r in results.values() if r.get("success", False) and r.get("llm_review", {}).get("valid", True))
             total_count = len(results)
@@ -543,7 +545,7 @@ class DynamicVerifier:
 
             # Serialize constraints
             serialized_constraints = self._serialize_constraints(constraints) if constraints else None
-            
+
             # Serialize actions for analysis
             serialized_actions = self._serialize_actions(updated_actions) if updated_actions else []
 
@@ -605,14 +607,14 @@ class DynamicVerifier:
             serialized.append(serialized_constraint)
 
         return serialized
-    
+
     def _serialize_actions(self, actions: list[BaseAction]) -> list[dict[str, Any]]:
         """
         Serialize actions list to JSON-compatible format
-        
+
         Args:
             actions: List of BaseAction objects
-            
+
         Returns:
             List of serialized action dictionaries
         """
@@ -620,51 +622,49 @@ class DynamicVerifier:
         for action in actions:
             try:
                 # Get action dict using model_dump if available, otherwise __dict__
-                if hasattr(action, 'model_dump'):
+                if hasattr(action, "model_dump"):
                     action_dict = action.model_dump()
-                elif hasattr(action, 'dict'):
+                elif hasattr(action, "dict"):
                     action_dict = action.dict()
                 else:
                     action_dict = action.__dict__.copy()
-                
+
                 # Clean up the dict to remove None values and make it more readable
                 cleaned_dict = {}
                 for key, value in action_dict.items():
-                    if value is not None and key not in ['_sa_instance_state']:
+                    if value is not None and key not in ["_sa_instance_state"]:
                         # Special handling for selector
-                        if key == 'selector' and isinstance(value, dict):
+                        if key == "selector" and isinstance(value, dict):
                             # Include only relevant fields from selector
-                            cleaned_dict['selector'] = {
-                                'type': value.get('type'),
-                                'value': value.get('value'),
+                            cleaned_dict["selector"] = {
+                                "type": value.get("type"),
+                                "value": value.get("value"),
                             }
                         else:
                             cleaned_dict[key] = value
-                
+
                 serialized.append(cleaned_dict)
             except Exception as e:
                 logger.warning(f"Error serializing action {action}: {e}")
                 # Fallback: just include type
-                serialized.append({
-                    "type": str(type(action).__name__),
-                    "error": f"Could not serialize: {e}"
-                })
-        
+                serialized.append({"type": str(type(action).__name__), "error": f"Could not serialize: {e}"})
+
         return serialized
+
     async def verify_dataset_diversity_with_seeds(
         self,
         seed_values: list[int],
     ) -> dict[str, Any]:
         """
         V2 Verification: Verify that datasets are different with different seeds.
-        
+
         Makes 3 HTTP requests (via _load_dataset) with different seeds and verifies
         that the returned datasets are actually different, ensuring the dynamic
         data generation is working correctly.
-        
+
         Args:
             seed_values: List of seed values to test (should be 3)
-            
+
         Returns:
             Dictionary with verification results:
             {
@@ -677,15 +677,15 @@ class DynamicVerifier:
             }
         """
         logger.info(f"V2 Verification: Testing dataset diversity for {self.web_project.name} with seeds: {seed_values}")
-        
+
         datasets = {}
         datasets_info = {}
-        
+
         # Load dataset for each seed
         for seed in seed_values:
             try:
                 dataset = await self.task_generator._load_dataset(seed)
-                
+
                 if dataset is None:
                     datasets_info[seed] = {
                         "success": False,
@@ -695,15 +695,15 @@ class DynamicVerifier:
                         "total_items": 0,
                     }
                     continue
-                
+
                 # Calculate hash of dataset for comparison
                 dataset_str = json.dumps(dataset, sort_keys=True)
                 dataset_hash = hashlib.md5(dataset_str.encode()).hexdigest()
-                
+
                 # Count entities and items
                 entity_count = len(dataset)
                 total_items = sum(len(v) for v in dataset.values() if isinstance(v, list))
-                
+
                 datasets[seed] = dataset
                 datasets_info[seed] = {
                     "success": True,
@@ -712,9 +712,9 @@ class DynamicVerifier:
                     "total_items": total_items,
                     "entities": list(dataset.keys()),
                 }
-                
+
                 logger.info(f"  Seed {seed}: loaded {total_items} items across {entity_count} entities (hash: {dataset_hash[:8]}...)")
-                
+
             except Exception as e:
                 logger.error(f"Error loading dataset for seed {seed}: {e}")
                 datasets_info[seed] = {
@@ -724,46 +724,50 @@ class DynamicVerifier:
                     "entity_count": 0,
                     "total_items": 0,
                 }
-        
+
         # Compare datasets pairwise
         comparison_results = []
         all_different = True
-        
+
         seed_list = sorted(datasets.keys())
         for i in range(len(seed_list)):
             for j in range(i + 1, len(seed_list)):
                 seed1, seed2 = seed_list[i], seed_list[j]
                 hash1 = datasets_info[seed1].get("hash")
                 hash2 = datasets_info[seed2].get("hash")
-                
+
                 if hash1 is None or hash2 is None:
-                    comparison_results.append({
-                        "seed1": seed1,
-                        "seed2": seed2,
-                        "different": None,
-                        "reason": "One or both datasets failed to load",
-                    })
+                    comparison_results.append(
+                        {
+                            "seed1": seed1,
+                            "seed2": seed2,
+                            "different": None,
+                            "reason": "One or both datasets failed to load",
+                        }
+                    )
                     all_different = False
                     continue
-                
+
                 are_different = hash1 != hash2
-                
+
                 # Check if entities differ
                 entities1 = set(datasets_info[seed1].get("entities", []))
                 entities2 = set(datasets_info[seed2].get("entities", []))
                 entities_differ = entities1 != entities2
-                
-                comparison_results.append({
-                    "seed1": seed1,
-                    "seed2": seed2,
-                    "different": are_different,
-                    "hash1": hash1[:8],
-                    "hash2": hash2[:8],
-                    "entities_differ": entities_differ,
-                    "entities1": list(entities1),
-                    "entities2": list(entities2),
-                })
-                
+
+                comparison_results.append(
+                    {
+                        "seed1": seed1,
+                        "seed2": seed2,
+                        "different": are_different,
+                        "hash1": hash1[:8],
+                        "hash2": hash2[:8],
+                        "entities_differ": entities_differ,
+                        "entities1": list(entities1),
+                        "entities2": list(entities2),
+                    }
+                )
+
                 if not are_different:
                     all_different = False
                     logger.warning(f"  ⚠️  Datasets for seeds {seed1} and {seed2} are IDENTICAL (hash: {hash1[:8]})")
@@ -772,20 +776,20 @@ class DynamicVerifier:
                         logger.info(f"  ✓ Datasets for seeds {seed1} and {seed2} are different (different entities)")
                     else:
                         logger.info(f"  ✓ Datasets for seeds {seed1} and {seed2} are different (same entities, different data)")
-        
+
         # Generate summary
         passed = all_different and len(datasets) == len(seed_values)
-        
+
         if not datasets:
-            summary = f"V2 Verification: FAILED - No datasets could be loaded for any seed"
+            summary = "V2 Verification: FAILED - No datasets could be loaded for any seed"
         elif passed:
             summary = f"V2 Verification: PASSED - All {len(seed_values)} datasets are different. Dynamic data generation is working correctly."
         else:
             if not all_different:
-                summary = f"V2 Verification: FAILED - Some datasets are identical. The dynamic system may not be affecting data generation for this project."
+                summary = "V2 Verification: FAILED - Some datasets are identical. The dynamic system may not be affecting data generation for this project."
             else:
                 summary = f"V2 Verification: FAILED - Only {len(datasets)}/{len(seed_values)} datasets loaded successfully."
-        
+
         return {
             "seeds_tested": seed_values,
             "all_different": all_different,

@@ -3,7 +3,6 @@ from collections.abc import Callable
 from datetime import date, datetime, time, timedelta
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_dict, parse_datetime
 
 from ..criterion_helper import ComparisonOperator
@@ -27,7 +26,6 @@ from .data import (
     REMINDER_MINUTES,
     VISIBILITY_OPTIONS,
 )
-from .data_utils import get_data, fetch_events_data
 
 
 async def _ensure_event_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:

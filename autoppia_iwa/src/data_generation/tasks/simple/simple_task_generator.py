@@ -4,7 +4,6 @@ import inspect
 import json
 import random
 import re
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
@@ -12,7 +11,7 @@ from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 from dependency_injector.wiring import Provide
 from loguru import logger
 
-from autoppia_iwa.src.data_generation.tasks.classes import BrowserSpecification, Task
+from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
 from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 from autoppia_iwa.src.di_container import DIContainer
@@ -56,7 +55,7 @@ class SimpleTaskGenerator:
     async def generate(self, prompts_per_use_case: int = 1, use_cases: list[str] | None = None, dynamic: bool = True) -> list[Task]:
         """
         Generate tasks for use cases in the web project.
-        
+
         Args:
             prompts_per_use_case: Number of prompts per use case
             use_cases: Optional list of specific use case names to generate. If None, generates for all use cases.
@@ -66,7 +65,7 @@ class SimpleTaskGenerator:
 
         # Get use cases to process (default: all use cases)
         web_use_cases = self.web_project.use_cases
-        
+
         # Filter to specific use cases if requested
         if use_cases:
             web_use_cases = [uc for uc in self.web_project.use_cases if uc.name in use_cases]
@@ -74,7 +73,6 @@ class SimpleTaskGenerator:
                 logger.warning(f"No matching use cases found for: {use_cases}. Available: {[uc.name for uc in self.web_project.use_cases]}")
                 return all_tasks
             _log_task_generation(f"Using {len(web_use_cases)} specified use cases: {[uc.name for uc in web_use_cases]}")
-
 
         for use_case in web_use_cases:
             _log_task_generation(f"Generating tasks for use case: {use_case.name}", context="USE_CASE")
@@ -98,7 +96,7 @@ class SimpleTaskGenerator:
     async def generate_tasks_for_use_case(self, use_case: UseCase, number_of_prompts: int = 1, dynamic: bool = True) -> list[Task]:
         """
         Generate tasks for a specific use case by calling the LLM with relevant context.
-        
+
         Each prompt is generated independently with its own seed and constraints,
         ensuring variety when multiple prompts are requested.
 
@@ -108,20 +106,20 @@ class SimpleTaskGenerator:
             dynamic: If True, tasks will include random seeds for dynamic content
         """
         tasks: list[Task] = []
-        
+
         # Generate each prompt independently
         for _ in range(number_of_prompts):
             # Build task URL with unique seed for each prompt
             task_url = self._build_task_url_with_seed(dynamic=dynamic)
             seed = get_seed_from_url(task_url) if dynamic else 1
-            
+
             # Load dataset for this specific seed
             dataset: dict[str, list[dict]] = {}
-            
+
             # Generate constraints specific to this seed's dataset
             if hasattr(use_case, "generate_constraints_async"):
                 dataset = await self._load_dataset(seed) or {}
-                
+
                 try:
                     constraints_info = await use_case.generate_constraints_async(dataset=dataset)
                 except Exception as e:
@@ -133,7 +131,7 @@ class SimpleTaskGenerator:
             # Build the LLM prompt (always generate 1 prompt per call)
             if not use_case.additional_prompt_info:
                 use_case.additional_prompt_info = f"GENERATE PROMPT LIKE: {use_case.get_example_prompts_str()}"
-            
+
             llm_prompt = GLOBAL_TASK_GENERATION_PROMPT.format(
                 use_case_name=use_case.name,
                 use_case_description=use_case.description,
@@ -143,7 +141,7 @@ class SimpleTaskGenerator:
 
             # Call the LLM and get a single prompt
             prompt_list = await self._call_llm_with_retry(llm_prompt)
-            
+
             # Process the generated prompt(s) - usually just 1
             for prompt_text in prompt_list:
                 try:
@@ -155,20 +153,22 @@ class SimpleTaskGenerator:
                             replace_kwargs["seed_value"] = seed
                         if "dataset" in sig.parameters:
                             replace_kwargs["dataset"] = dataset
-                    
+
                     # Apply replacements (async or sync)
                     if hasattr(use_case, "apply_replacements_async"):
                         replaced_prompt = await use_case.apply_replacements_async(prompt_text, **replace_kwargs)
                     else:
                         replaced_prompt = use_case.apply_replacements(prompt_text, **replace_kwargs)
-                    
+
                     # Create and append task
-                    tasks.append(Task(
-                        web_project_id=self.web_project.id,
-                        url=task_url,
-                        prompt=replaced_prompt,
-                        use_case=use_case,
-                    ))
+                    tasks.append(
+                        Task(
+                            web_project_id=self.web_project.id,
+                            url=task_url,
+                            prompt=replaced_prompt,
+                            use_case=use_case,
+                        )
+                    )
                 except Exception as ex:
                     logger.error(f"Could not assemble Task for prompt '{prompt_text}': {ex!s}")
 
@@ -178,7 +178,7 @@ class SimpleTaskGenerator:
     async def _load_dataset(self, seed: int) -> dict[str, list[dict]] | None:
         """
         Load complete dataset for the current project with given seed.
-        
+
         Each project has its own `get_all_data` function in its `data_utils.py` module
         that returns a dictionary with all relevant entities for that project. This pattern
         allows each project to auto-manage its data loading and maintain separation of concerns.
@@ -187,33 +187,29 @@ class SimpleTaskGenerator:
             # Find project directory using glob
             projects_base = Path(__file__).resolve().parents[3] / "src" / "demo_webs" / "projects"
             matching_dirs = list(projects_base.glob(f"{self.web_project.id}_*"))
-            
+
             if not matching_dirs:
                 logger.debug(f"No project directory found for {self.web_project.id}")
                 return None
-            
+
             project_dir = matching_dirs[0].name
-            
+
             # Import and call get_all_data
             module = importlib.import_module(f"autoppia_iwa.src.demo_webs.projects.{project_dir}.data_utils")
             get_all_data = getattr(module, "get_all_data", None)
-            
+
             if not get_all_data:
                 return None
-            
+
             result = get_all_data(seed_value=seed)
             dataset = await result if inspect.isawaitable(result) else result
-            
+
             if dataset:
                 total_items = sum(len(v) for v in dataset.values() if isinstance(v, list))
-                _log_task_generation(
-                    f"Loaded dataset for {self.web_project.id} with seed={seed} "
-                    f"({total_items} items across {len(dataset)} entities)", 
-                    context="OPTIMIZATION"
-                )
-            
+                _log_task_generation(f"Loaded dataset for {self.web_project.id} with seed={seed} ({total_items} items across {len(dataset)} entities)", context="OPTIMIZATION")
+
             return dataset
-            
+
         except Exception as e:
             logger.debug(f"Could not load dataset for {self.web_project.id}: {e}")
             return None
@@ -231,7 +227,6 @@ class SimpleTaskGenerator:
         query_params["seed"] = [str(random.randint(1, 999))]
         new_query = urlencode(query_params, doseq=True)
         return urlunparse(parsed._replace(query=new_query))
-
 
     async def _call_llm_with_retry(self, llm_prompt: str) -> list[str]:
         """

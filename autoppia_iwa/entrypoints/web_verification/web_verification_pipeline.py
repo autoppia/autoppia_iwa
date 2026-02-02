@@ -205,7 +205,7 @@ class WebVerificationPipeline:
                 review_result = await self.llm_reviewer.review_task_and_constraints(task)
                 review_result["task_id"] = task.id
                 use_case_results["llm_reviews"].append(review_result)
-                
+
                 # Show detailed feedback when review is invalid
                 if not review_result.get("valid", False):
                     print("\n" + "=" * 80)
@@ -214,7 +214,7 @@ class WebVerificationPipeline:
                     print(f"Task ID: {task.id}")
                     print(f"Score: {review_result.get('score', 0.0):.2f}")
                     if review_result.get("issues"):
-                        print(f"\nIssues found:")
+                        print("\nIssues found:")
                         for issue in review_result.get("issues", []):
                             print(f"  - {issue}")
                     if review_result.get("reasoning"):
@@ -232,35 +232,35 @@ class WebVerificationPipeline:
             print("Verifying that datasets are different with different seeds...")
             print("Note: This ensures dynamic data generation is working correctly")
             print("-" * 80)
-            
+
             logger.info(f"Step 2 (V2): Dataset Diversity Verification for {use_case.name}")
             v2_result = await self.dynamic_verifier.verify_dataset_diversity_with_seeds(
                 seed_values=self.config.seed_values,
             )
-            
+
             use_case_results["dataset_diversity_verification"] = v2_result
-            
+
             # Print V2 results
             print(f"\nV2 Verification Result: {'✓ PASSED' if v2_result.get('passed', False) else '✗ FAILED'}")
             print(f"Seeds tested: {v2_result.get('seeds_tested', [])}")
             print(f"Datasets loaded: {v2_result.get('loaded_count', 0)}/{v2_result.get('expected_count', 0)}")
             print(f"All different: {'✓ YES' if v2_result.get('all_different', False) else '✗ NO'}")
-            
+
             # Print comparison details
-            comparison_results = v2_result.get('comparison_results', [])
+            comparison_results = v2_result.get("comparison_results", [])
             if comparison_results:
                 print("\nPairwise comparisons:")
                 for comparison in comparison_results:
-                    seed1 = comparison.get('seed1')
-                    seed2 = comparison.get('seed2')
-                    different = comparison.get('different')
+                    seed1 = comparison.get("seed1")
+                    seed2 = comparison.get("seed2")
+                    different = comparison.get("different")
                     if different is None:
                         print(f"  Seed {seed1} vs {seed2}: ⚠️  {comparison.get('reason', 'Unknown')}")
                     elif different:
                         print(f"  Seed {seed1} vs {seed2}: ✓ Different (hash1={comparison.get('hash1')}, hash2={comparison.get('hash2')})")
                     else:
                         print(f"  Seed {seed1} vs {seed2}: ✗ IDENTICAL (hash={comparison.get('hash1')})")
-            
+
             # Print summary
             print(f"\n{v2_result.get('summary', 'No summary available')}")
             print("=" * 80 + "\n")
@@ -336,7 +336,7 @@ class WebVerificationPipeline:
 
                         # Print doability results
                         if doability_result.get("matched", False):
-                            match_type = doability_result.get("match_type", "unknown")
+                            doability_result.get("match_type", "unknown")
                             reason = doability_result.get("reason", "")
                             actions = doability_result.get("actions", [])
                             api_task_id = doability_result.get("api_task_id", "N/A")
@@ -441,19 +441,19 @@ class WebVerificationPipeline:
                             print("=" * 80)
                             print(dynamic_result.get("summary", "No summary available"))
                             print(f"Passed: {dynamic_result.get('passed_count', 0)}/{dynamic_result.get('total_count', 0)}")
-                            
+
                             # Show warning if solution works for all seeds (suggests non-dynamic use case)
                             if dynamic_result.get("needs_review", False):
                                 print("\n" + "=" * 80)
                                 print("⚠️  REVIEW RECOMMENDED")
                                 print("=" * 80)
                                 print(f"Use Case: {use_case.name}")
-                                print(f"⚠️  This use case may not be truly dynamic.")
+                                print("⚠️  This use case may not be truly dynamic.")
                                 print(f"   The same solution works for all {dynamic_result.get('total_count', 0)} seeds tested.")
-                                print(f"   If the web is dynamic, different seeds should produce different DOM structures,")
-                                print(f"   making it unlikely that the same solution works across all seeds.")
+                                print("   If the web is dynamic, different seeds should produce different DOM structures,")
+                                print("   making it unlikely that the same solution works across all seeds.")
                                 print("=" * 80 + "\n")
-                            
+
                             print("=" * 80 + "\n")
                         else:
                             logger.warning("No reference task available for dynamic verification")
@@ -883,7 +883,7 @@ class WebVerificationPipeline:
             # Step 1: Task Generation and LLM Review
             tasks = use_case_data.get("tasks", [])
             summary_lines.append(f"  Step 1 (Task Generation): {len(tasks)} tasks generated")
-            
+
             # LLM reviews
             reviews = use_case_data.get("llm_reviews", [])
             if reviews:
@@ -906,13 +906,13 @@ class WebVerificationPipeline:
                     all_different = dataset_diversity.get("all_different", False)
                     loaded_count = dataset_diversity.get("loaded_count", 0)
                     expected_count = dataset_diversity.get("expected_count", 0)
-                    
+
                     if passed and all_different:
                         summary_lines.append(f"  Step 2 (V2 Dataset): ✓ Passed - All datasets different ({loaded_count}/{expected_count} seeds)")
                     elif not passed and loaded_count < expected_count:
                         summary_lines.append(f"  Step 2 (V2 Dataset): ✗ Failed - Only {loaded_count}/{expected_count} datasets loaded")
                     elif not all_different:
-                        summary_lines.append(f"  Step 2 (V2 Dataset): ✗ Failed - Some datasets are identical")
+                        summary_lines.append("  Step 2 (V2 Dataset): ✗ Failed - Some datasets are identical")
                     else:
                         summary_lines.append(f"  Step 2 (V2 Dataset): ⚠️  {dataset_diversity.get('summary', 'Unknown status')}")
             else:
@@ -963,7 +963,7 @@ class WebVerificationPipeline:
                         passed_count = dynamic_verification.get("passed_count", 0)
                         total_count = dynamic_verification.get("total_count", 0)
                         seeds_tested = dynamic_verification.get("seeds_tested", [])
-                        
+
                         # Try to get results_by_seed first, fallback to results
                         results_by_seed = dynamic_verification.get("results_by_seed", {})
                         if not results_by_seed:
@@ -972,7 +972,7 @@ class WebVerificationPipeline:
                             results_by_seed = {}
                             for seed_key, seed_result in original_results.items():
                                 results_by_seed[str(seed_key)] = seed_result
-                        
+
                         # Build detailed seed results
                         seed_details = []
                         for seed in seeds_tested:
@@ -985,13 +985,13 @@ class WebVerificationPipeline:
                                 score = seed_result.get("score", 0.0)
                             status = "✓" if score == 1.0 else "✗"
                             seed_details.append(f"{seed}: {status}")
-                        
+
                         if seed_details:
                             seeds_str = ", ".join(seed_details)
                             status_icon = "✓ Passed" if all_passed else "✗ Failed"
                             summary_lines.append(f"  Step 4 (Dynamic): {status_icon} ({passed_count}/{total_count} seeds passed)")
                             summary_lines.append(f"    Solution tested with seeds: {seeds_str}")
-                            
+
                             # Add warning if solution works for all seeds (suggests non-dynamic use case)
                             if dynamic_verification.get("needs_review", False):
                                 summary_lines.append(f"    ⚠️  REVIEW RECOMMENDED: Use case may not be truly dynamic (same solution works for all {total_count} seeds)")
@@ -1024,17 +1024,17 @@ class WebVerificationPipeline:
         summary_lines.append(f"\n{'=' * 60}")
         summary_lines.append("📊 FINAL CONCLUSION")
         summary_lines.append(f"{'=' * 60}")
-        
+
         # Categorize use cases
         categories = self._categorize_use_cases()
-        
+
         # Task Generation Quality
         summary_lines.append("\n✅ Task Generation Quality:")
         if categories["generation_ok"]:
             summary_lines.append(f"  ✓ Good generation ({len(categories['generation_ok'])}): {', '.join(categories['generation_ok'])}")
         if categories["generation_failed"]:
             summary_lines.append(f"  ✗ Failed generation ({len(categories['generation_failed'])}): {', '.join(categories['generation_failed'])}")
-        
+
         # Dataset Diversity (V2)
         summary_lines.append("\n📊 Dataset Diversity (V2):")
         if categories["dataset_diverse"]:
@@ -1043,14 +1043,14 @@ class WebVerificationPipeline:
             summary_lines.append(f"  ✗ Datasets NOT diverse - same data with different seeds ({len(categories['dataset_not_diverse'])}): {', '.join(categories['dataset_not_diverse'])}")
         if categories["dataset_untested"]:
             summary_lines.append(f"  ⏭️  Dataset diversity not tested ({len(categories['dataset_untested'])}): {', '.join(categories['dataset_untested'])}")
-        
+
         # Solution Availability (IWAP)
         summary_lines.append("\n🔍 Solution Availability (IWAP):")
         if categories["has_solution"]:
             summary_lines.append(f"  ✓ Has solutions ({len(categories['has_solution'])}): {', '.join(categories['has_solution'])}")
         if categories["no_solution"]:
             summary_lines.append(f"  ✗ No solutions found ({len(categories['no_solution'])}): {', '.join(categories['no_solution'])}")
-        
+
         # Dynamic System Effectiveness
         summary_lines.append("\n🔄 Dynamic System Effectiveness:")
         if categories["truly_dynamic"]:
@@ -1061,7 +1061,7 @@ class WebVerificationPipeline:
             summary_lines.append(f"  ⚠️  Partially dynamic - solution works for some seeds ({len(categories['dynamic_partial'])}): {', '.join(categories['dynamic_partial'])}")
         if categories["dynamic_untested"]:
             summary_lines.append(f"  ⏭️  Dynamic not tested ({len(categories['dynamic_untested'])}): {', '.join(categories['dynamic_untested'])}")
-        
+
         # Overall Status
         summary_lines.append("\n📈 Overall Status:")
         total_use_cases = len(self.results["use_cases"])
@@ -1071,14 +1071,14 @@ class WebVerificationPipeline:
         summary_lines.append(f"  - Has solutions: {len(categories['has_solution'])}/{total_use_cases}")
         summary_lines.append(f"  - Truly dynamic (V3): {len(categories['truly_dynamic'])}/{total_use_cases}")
         summary_lines.append(f"  - Needs review (not dynamic): {len(categories['not_dynamic'])}/{total_use_cases}")
-        
+
         summary_lines.append(f"\n{'=' * 60}\n")
         return "\n".join(summary_lines)
-    
+
     def _categorize_use_cases(self) -> dict[str, list[str]]:
         """
         Categorize use cases based on their verification results.
-        
+
         Returns:
             Dictionary with categorized use case names
         """
@@ -1095,7 +1095,7 @@ class WebVerificationPipeline:
             "dynamic_partial": [],
             "dynamic_untested": [],
         }
-        
+
         for use_case_name, use_case_data in self.results["use_cases"].items():
             # Task Generation Quality
             llm_reviews = use_case_data.get("llm_reviews", [])
@@ -1112,23 +1112,23 @@ class WebVerificationPipeline:
                     categories["generation_ok"].append(use_case_name)
                 else:
                     categories["generation_failed"].append(use_case_name)
-            
+
             # Dataset Diversity (V2)
             dataset_diversity = use_case_data.get("dataset_diversity_verification", {})
             if dataset_diversity and not dataset_diversity.get("skipped", False):
                 passed = dataset_diversity.get("passed", False)
                 all_different = dataset_diversity.get("all_different", False)
-                
+
                 if passed and all_different:
                     categories["dataset_diverse"].append(use_case_name)
                 else:
                     categories["dataset_not_diverse"].append(use_case_name)
             else:
                 categories["dataset_untested"].append(use_case_name)
-            
+
             # Solution Availability (IWAP)
             iwap_status = use_case_data.get("iwap_status", {})
-            if iwap_status.get("matched", False) or iwap_status.get("executed", False) and iwap_status.get("matched") is not False:
+            if iwap_status.get("matched", False) or (iwap_status.get("executed", False) and iwap_status.get("matched") is not False):
                 # Check if it actually found a solution (not just executed)
                 if iwap_status.get("matched", False):
                     categories["has_solution"].append(use_case_name)
@@ -1136,14 +1136,14 @@ class WebVerificationPipeline:
                     categories["no_solution"].append(use_case_name)
             else:
                 categories["no_solution"].append(use_case_name)
-            
+
             # Dynamic System Effectiveness
             dynamic_verification = use_case_data.get("dynamic_verification", {})
             if dynamic_verification and not dynamic_verification.get("skipped", False):
                 passed_count = dynamic_verification.get("passed_count", 0)
                 total_count = dynamic_verification.get("total_count", 0)
                 needs_review = dynamic_verification.get("needs_review", False)
-                
+
                 if needs_review and passed_count == total_count and total_count >= 3:
                     # Same solution works for all seeds - not truly dynamic
                     categories["not_dynamic"].append(use_case_name)
@@ -1159,5 +1159,5 @@ class WebVerificationPipeline:
             else:
                 # Dynamic verification was skipped
                 categories["dynamic_untested"].append(use_case_name)
-        
+
         return categories

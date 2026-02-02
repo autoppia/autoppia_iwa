@@ -5,7 +5,6 @@ from typing import Any
 from loguru import logger
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
 from ..operators import EQUALS, GREATER_EQUAL, LESS_EQUAL
 from ..shared_utils import create_constraint_dict, parse_datetime
@@ -24,7 +23,6 @@ from .data import (
     FIELD_OPERATORS_SUBMIT_REVIEW_MAP,
     FIELD_OPERATORS_VIEW_HOTEL_MAP,
 )
-from .data_utils import get_data, fetch_hotels_data
 
 
 async def _ensure_hotel_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:

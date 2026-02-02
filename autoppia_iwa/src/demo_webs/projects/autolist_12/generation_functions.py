@@ -4,7 +4,6 @@ from datetime import date, datetime, timedelta
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_dict
 
 from .data import (
@@ -20,7 +19,6 @@ from .data import (
     TEAM_MEMBERS_OPTIONS,
     TEAMS,
 )
-from .data_utils import get_data, fetch_tasks_data
 
 
 async def _ensure_task_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:

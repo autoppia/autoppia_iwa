@@ -54,7 +54,7 @@ class BenchmarkConfig:
 
         # Use benchmark-output/ directory for all generated artifacts
         benchmark_dir = self.base_dir / "benchmark-output"
-        
+
         self.output_dir = benchmark_dir / "results"
         self.benchmark_log_file = benchmark_dir / "logs" / "benchmark.log"
         self.recordings_dir = benchmark_dir / "recordings"

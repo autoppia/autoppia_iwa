@@ -1,7 +1,5 @@
 from ..operators import CONTAINS, EQUALS, GREATER_EQUAL, GREATER_THAN, IN_LIST, LESS_EQUAL, LESS_THAN, NOT_CONTAINS, NOT_EQUALS, NOT_IN_LIST
 
-
-
 POPULAR_SKILLS = [
     "JavaScript",
     "TypeScript",

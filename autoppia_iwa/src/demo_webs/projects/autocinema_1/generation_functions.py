@@ -2,11 +2,8 @@ import random
 from random import choice, sample
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
-
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
-from .data_utils import get_data, fetch_movies_data
 
 
 def generate_registration_constraints(dataset: list[dict]):
@@ -65,7 +62,7 @@ async def generate_search_film_constraints(dataset: dict[str, list[dict]]):
     films = dataset.get("films", [])
     if not films:
         return None
-    
+
     movie_names = [movie["name"] for movie in films]
     operators = ["equals", "not_equals"]
     constraints_str = f"query {choice(operators)} {choice(movie_names)}"
@@ -87,7 +84,7 @@ async def generate_film_constraints(dataset: dict[str, list[dict]]):
     films = dataset.get("films", [])
     if not films:
         return None
-    
+
     constraints_str = build_constraints_info(films)
 
     # Convertir el string a la estructura de datos
@@ -191,7 +188,7 @@ async def generate_film_filter_constraints(dataset: dict[str, list[dict]]):
     films = dataset.get("films", [])
     if not films:
         return []
-    
+
     existing_years = list(set(movie["year"] for movie in films))
     existing_genres = list(set(genre for movie in films for genre in movie["genres"]))
 
@@ -440,7 +437,7 @@ async def generate_add_comment_constraints(dataset: dict[str, list[dict]]):
     films = dataset.get("films", [])
     if not films:
         return []
-    
+
     movies = [movie["name"] for movie in films]
 
     # Palabras y frases para generar comentarios
@@ -527,7 +524,7 @@ async def generate_edit_film_constraints(dataset: dict[str, list[dict]]):
     films = dataset.get("films", [])
     if not films:
         return []
-    
+
     movies = films
 
     # Campos editables (sin name porque ya tenemos la película)

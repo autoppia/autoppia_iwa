@@ -149,7 +149,6 @@ class Task(BaseModel):
 
 
 class TaskGenerationConfig(BaseModel):
-
     # Task quantity controls
     prompts_per_use_case: int | None = 1  # Number of task variations to generate per use case (<=0/None => auto)
     final_task_limit: int = 50  # Total maximum tasks to return from the pipeline

@@ -65,11 +65,7 @@ class TaskGenerationPipeline:
 
         try:
             # Generate tasks
-            tasks = await self.task_generator.generate(
-                prompts_per_use_case=self.task_config.prompts_per_use_case,
-                use_cases=self.task_config.use_cases,
-                dynamic=self.task_config.dynamic
-            )
+            tasks = await self.task_generator.generate(prompts_per_use_case=self.task_config.prompts_per_use_case, use_cases=self.task_config.use_cases, dynamic=self.task_config.dynamic)
 
             _log_task_generation(f"Generated {len(tasks)} tasks")
 

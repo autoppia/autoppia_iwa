@@ -16,13 +16,13 @@ async def generate_tasks_for_project(
     """Generate tasks for the given project."""
     try:
         logger.info(f"[tasks] Generating tasks for '{project.name}'...")
-        
+
         config = TaskGenerationConfig(
             prompts_per_use_case=prompts_per_use_case,
             use_cases=use_cases,
             dynamic=dynamic,
         )
-        
+
         pipeline = TaskGenerationPipeline(web_project=project, config=config)
         tasks = await pipeline.generate()
 

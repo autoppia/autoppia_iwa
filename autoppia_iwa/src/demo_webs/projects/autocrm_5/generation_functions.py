@@ -5,7 +5,6 @@ from datetime import date, datetime, timedelta
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
 from ..shared_utils import create_constraint_dict
 from .data import (
@@ -22,7 +21,6 @@ from .data import (
     FIELD_OPERATORS_MAP_MATTER,
     FIELD_OPERATORS_MAP_NEW_LOG,
 )
-from .data_utils import get_data, fetch_crm_data
 
 
 def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]] | None:

@@ -412,20 +412,6 @@ def make_gif_from_screenshots(all_base64_strings, duration_ms=500, loop_count=0)
 
 
 def extract_seed_from_url(url: str) -> int | None:
-    from urllib.parse import parse_qs, urlparse
-
-    try:
-        parsed = urlparse(url)
-        query = parse_qs(parsed.query)
-        if query.get("seed"):
-            value = int(str(query["seed"][0]).strip())
-            return value
-    except Exception:
-        return None
-    return None
-
-
-def extract_seed_from_url(url: str) -> int | None:
     """Extract v2-seed parameter from URL query string."""
     from urllib.parse import parse_qs, urlparse
 
