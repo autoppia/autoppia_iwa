@@ -274,21 +274,20 @@ class SimpleTaskGenerator:
         allows each project to auto-manage its data loading and maintain separation of concerns.
         """
         try:
-            # Find project directory using glob
-            projects_base = Path(__file__).resolve().parents[3] / "src" / "demo_webs" / "projects"
-            matching_dirs = list(projects_base.glob(f"{self.web_project.id}_*"))
+            # Use the same method as _get_project_module_name to find the project directory
+            # This ensures consistency and handles the path correctly
+            project_dir = self._get_project_module_name()
 
-            if not matching_dirs:
+            if not project_dir:
                 logger.debug(f"No project directory found for {self.web_project.id}")
                 return None
-
-            project_dir = matching_dirs[0].name
 
             # Import and call get_all_data
             module = importlib.import_module(f"autoppia_iwa.src.demo_webs.projects.{project_dir}.data_utils")
             get_all_data = getattr(module, "get_all_data", None)
 
             if not get_all_data:
+                logger.debug(f"No get_all_data function found in {project_dir}/data_utils.py")
                 return None
 
             result = get_all_data(seed_value=seed)
