@@ -654,13 +654,12 @@ async def generate_review_submitted_constraints(task_url: str | None = None, dat
 
 
 async def generate_delivery_priority_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    constraint_list = []
-    constraints = generate_add_to_cart_constraints(task_url, dataset)
+    constraints = []
+    constraints = await generate_add_to_cart_constraints(task_url, dataset)
     field = "priority"
-    priority_value = ["normal", "priority"]
+    priority_value = random.choice(["normal", "priority"])
     operator = ComparisonOperator(random.choice(["equals", "not_equals"]))
     constraint = create_constraint_dict(field, operator, priority_value)
-    all_constraints = constraints + constraint
-    constraint_list.append(all_constraints)
+    constraints.append(constraint)
 
-    return constraint_list
+    return constraints
