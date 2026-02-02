@@ -13,7 +13,7 @@ from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
 from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.cua import FixedAutobooksAgent
 
 # from autoppia_iwa.src.execution.dynamic import DynamicPhaseConfig
 
@@ -56,29 +56,16 @@ SOTA_AGENTS = [
     # CLAUDE_CUA_AGENT,
 ]
 
-# Active agents to run. Configure your local simple_api agent here.
+# Active agents to run.
+# For this smoke-style test, we use a fixed agent that always returns
+# the same hard-coded trajectory designed for a single Autobooks task.
 AGENTS = [
-    ApifiedWebAgent(id="1", name="AutoppiaAgent1", host="127.0.0.1", port=7000, timeout=120),
-    # ApifiedWebAgent(id="2", name="AutoppiaAgent2", host="127.0.0.1", port=7000, timeout=120),
-    # ApifiedWebAgent(id="2", name="BrowserUse-OpenAI", host="127.0.0.1", port=5000, timeout=120),
+    FixedAutobooksAgent(id="1", name="FixedAutobooksAgent"),
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
-    # "autocinema",
-    # "autobooks",
-    # "autozone",
-    # "autodining",
-    # "autocrm",
-    "automail",
-    # "autodelivery",
-    # "autolodge",
-    # "autoconnect",
-    # "autowork",
-    # "autocalendar",
-    # "autolist",
-    # "autodrive",
-    # add more project ids here
+    "autobooks",
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 USE_CASES = [
@@ -119,19 +106,27 @@ USE_CASES = [
     # "RESERVE_RIDE"
 ]
 
+# =====================================================
+# CONFIGURACIÓN: Elige el modo de evaluación aquí
+# =====================================================
+
+# OPCIÓN 1: Modo CONCURRENT (tradicional)
+# El agente genera TODAS las acciones de una vez y se evalúan
 CFG = BenchmarkConfig(
     projects=PROJECTS,
     agents=AGENTS,
+    # Evaluator mode
+    evaluator_mode="concurrent",  # ← Agente genera lista completa de acciones
     # Tasks
     prompts_per_use_case=1,
     # use_cases=None means all use-cases
     use_cases=USE_CASES,
     # Execution
-    runs=1,  # how many runs do you want?
+    runs=1,  # single run is enough for this fixed agent
     max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
     record_gif=False,  # if your evaluator returns GIFs
-    # Dynamic mode: flag to enable or disable dynamic mode that assigns initial seed to the task URL.
-    dynamic=True,
+    # Dynamic mode: disabled for this simple fixed-task test to avoid seed constraints.
+    dynamic=False,
     # TODO REVISAR PORQUE SOLO DEBEIRA HABER UNO
     # dynamic_phase_config=DynamicPhaseConfig(
     #     enable_d1_structure=True,
@@ -141,6 +136,34 @@ CFG = BenchmarkConfig(
     # Persistence
     save_results_json=True,
 )
+
+# OPCIÓN 2: Modo STATEFUL (iterativo)
+# El agente decide paso a paso viendo el estado del browser
+# Similar a como funciona la subnet con miners remotos
+# Para usar este modo, descomenta las líneas siguientes y comenta CFG anterior:
+
+# CFG = BenchmarkConfig(
+#     projects=PROJECTS,
+#     agents=AGENTS,
+#     # Evaluator mode
+#     evaluator_mode="stateful",  # ← Modo iterativo: agente decide paso a paso
+#     max_steps_per_task=50,  # ← Límite de pasos por tarea
+#     # Tasks
+#     use_cached_tasks=True,
+#     prompts_per_use_case=1,
+#     num_use_cases=0,
+#     use_cases=USE_CASES,
+#     # Execution
+#     runs=1,
+#     max_parallel_agent_calls=1,
+#     use_cached_solutions=False,  # ⚠️ No compatible con modo stateful
+#     record_gif=True,  # Recomendado para ver la navegación adaptativa
+#     # Dynamic mode
+#     dynamic=False,
+#     # Persistence
+#     save_results_json=True,
+#     plot_results=False,
+# )
 
 
 def main():
@@ -159,7 +182,13 @@ def main():
             logger.error("No agents configured in AGENTS.")
             return
 
-        logger.info(f"Configuration: {len(CFG.projects)} projects, {len(CFG.agents)} agents, {CFG.runs} runs")
+        logger.info(
+            f"Configuration: {len(CFG.projects)} projects, {len(CFG.agents)} agents, "
+            f"{CFG.runs} runs, evaluator_mode={CFG.evaluator_mode}"
+        )
+        
+        if CFG.evaluator_mode == "stateful":
+            logger.info(f"Stateful mode enabled: max {CFG.max_steps_per_task} steps per task")
 
         # Create and run benchmark
         benchmark = Benchmark(CFG)

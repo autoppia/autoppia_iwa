@@ -24,8 +24,10 @@ except ImportError:
         pass
 
 
-# Load environment variables from .env
-load_dotenv()
+# Load environment variables from the autoppia_iwa project .env, not the caller CWD.
+# This ensures DEMO_WEB_SERVICE_PORT and related settings come from this repo.
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+load_dotenv(_PROJECT_ROOT / ".env", override=True)
 
 # ============================
 # LLM CONFIGURATION

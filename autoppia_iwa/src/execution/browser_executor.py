@@ -1,3 +1,4 @@
+import asyncio
 import base64
 from datetime import datetime
 
@@ -64,13 +65,18 @@ class PlaywrightBrowserExecutor:
                 html = await self.page.content()
                 snapshot_after = {"html": html, "screenshot": "", "url": self.page.url, "error": ""}
 
-            # Fetch backend events (for demo webs) if available
+            # Fetch backend events (for demo webs) if available, with a short retry
+            # loop to allow the backend service to flush events.
             backend_events = []
-            try:
-                if self.backend_demo_webs_service and not is_web_real:
-                    backend_events = await self.backend_demo_webs_service.get_backend_events(web_agent_id)
-            except Exception:
-                backend_events = []
+            if self.backend_demo_webs_service and not is_web_real:
+                for _ in range(3):
+                    try:
+                        backend_events = await self.backend_demo_webs_service.get_backend_events(web_agent_id)
+                    except Exception:
+                        backend_events = []
+                    if backend_events:
+                        break
+                    await asyncio.sleep(0.2)
 
             # Create a detailed browser snapshot
             browser_snapshot = BrowserSnapshot(
@@ -112,13 +118,17 @@ class PlaywrightBrowserExecutor:
                     url = ""
                 snapshot_error = {"html": html, "screenshot": "", "url": url, "error": str(e)}
 
-            # Fetch backend events (best-effort) on error as well
+            # Fetch backend events (best-effort) on error as well, with retries.
             backend_events = []
-            try:
-                if self.backend_demo_webs_service and not is_web_real:
-                    backend_events = await self.backend_demo_webs_service.get_backend_events(web_agent_id)
-            except Exception:
-                backend_events = []
+            if self.backend_demo_webs_service and not is_web_real:
+                for _ in range(3):
+                    try:
+                        backend_events = await self.backend_demo_webs_service.get_backend_events(web_agent_id)
+                    except Exception:
+                        backend_events = []
+                    if backend_events:
+                        break
+                    await asyncio.sleep(0.2)
 
             # Create error snapshot
             browser_snapshot = BrowserSnapshot(

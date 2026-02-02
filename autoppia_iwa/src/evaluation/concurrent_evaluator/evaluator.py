@@ -1,6 +1,7 @@
 # concurrent_evaluator.py
 import asyncio
 import contextlib
+import os
 import time
 from collections import defaultdict
 
@@ -12,7 +13,7 @@ from autoppia_iwa.src.data_generation.tasks.classes import BrowserSpecification,
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStats, EvaluatorConfig
-from autoppia_iwa.src.evaluation.evaluator.utils import (
+from autoppia_iwa.src.evaluation.shared.utils import (
     display_single_evaluation_summary,
     extract_seed_from_url,
     generate_feedback,
@@ -518,6 +519,27 @@ class ConcurrentEvaluator(IEvaluator):
                 )
                 context.set_default_timeout(self.config.browser_timeout)
                 page = await context.new_page()
+
+                # Optional network debugging for log-event and webs_server traffic
+                debug_network = os.getenv("IWA_DEBUG_NETWORK", "").lower() in ("1", "true", "yes")
+                network_log: dict[str, list[str]] = {"requests": [], "responses": []}
+
+                if debug_network:
+
+                    def _on_request(req):
+                        url = req.url
+                        if "log-event" in url or ":8090" in url:
+                            entry = f"{req.method} {url}"
+                            network_log["requests"].append(entry)
+
+                    def _on_response(res):
+                        url = res.url
+                        if "log-event" in url or ":8090" in url:
+                            entry = f"{res.status} {url}"
+                            network_log["responses"].append(entry)
+
+                    page.on("request", _on_request)
+                    page.on("response", _on_response)
 
                 dynamic_config = self.config.dynamic_phase_config
                 dynamic_enabled = dynamic_config.any_enabled() if dynamic_config else False
