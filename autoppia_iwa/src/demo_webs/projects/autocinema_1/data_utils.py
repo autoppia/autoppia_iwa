@@ -66,12 +66,12 @@ async def fetch_movies_data(seed_value: int | None = None, count: int = 100) -> 
     return []
 
 
-async def get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+async def get_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
     """Main data loader function for autocinema_1."""
     return await fetch_movies_data(seed_value=seed_value, count=count)
 
 
-async def get_all_data(seed_value: int | None = None, count: int = 100) -> dict[str, list[dict]]:
+async def get_all_data(seed_value: int | None = None, count: int = 50) -> dict[str, list[dict]]:
     """Load complete dataset for this project."""
     films = await get_data(seed_value=seed_value, count=count)
     return {"films": films}

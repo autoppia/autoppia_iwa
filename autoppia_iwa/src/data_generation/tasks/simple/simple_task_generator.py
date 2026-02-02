@@ -5,6 +5,7 @@ import inspect
 import json
 import random
 import re
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
@@ -14,7 +15,7 @@ from loguru import logger
 
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url, resolve_v2_seed_from_url
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.interfaces import ILLM
 
@@ -22,6 +23,12 @@ from .prompts import GLOBAL_TASK_GENERATION_PROMPT, PROMPT_REGENERATION_PROMPT
 
 TASK_GENERATION_LEVEL_NAME = "TASK_GENERATION"
 TASK_GENERATION_LEVEL_NO = 23
+
+
+@dataclass(slots=True)
+class ConstraintContext:
+    url: str
+    v2_seed: int
 
 
 def _ensure_task_generation_level() -> None:
@@ -52,6 +59,8 @@ class SimpleTaskGenerator:
     ):
         self.web_project = web_project
         self.llm_service = llm_service
+        self._seed_cache: dict[str, int] = {}
+        self._dataset_cache: dict[tuple, Any] = {}
 
     async def generate(self, prompts_per_use_case: int = 1, use_cases: list[str] | None = None, dynamic: bool = True) -> list[Task]:
         """
@@ -122,7 +131,7 @@ class SimpleTaskGenerator:
                 dataset = await self._load_dataset(seed) or {}
 
                 try:
-                    constraints_info = await use_case.generate_constraints_async(dataset=dataset)
+                    constraints_info = await use_case.generate_constraints_async(task_url=task_url, dataset=dataset)
                 except Exception as e:
                     logger.error(f"Constraint generation failed for '{use_case.name}': {e}")
                     continue  # Skip this iteration
@@ -143,35 +152,43 @@ class SimpleTaskGenerator:
             # Call the LLM and get a single prompt
             prompt_list = await self._call_llm_with_retry(llm_prompt)
 
-            # Process the generated prompt(s) - usually just 1
-            for prompt_text in prompt_list:
-                try:
-                    # Build replace kwargs with this seed's data
-                    replace_kwargs: dict[str, Any] = {}
-                    if use_case.replace_func:
-                        sig = inspect.signature(use_case.replace_func)
-                        if "seed_value" in sig.parameters:
-                            replace_kwargs["seed_value"] = seed
-                        if "dataset" in sig.parameters:
-                            replace_kwargs["dataset"] = dataset
+            # Process only the first prompt from the LLM response for this iteration
+            # This ensures we generate exactly number_of_prompts tasks total
+            if not prompt_list:
+                logger.warning(f"No prompts returned from LLM for use case '{use_case.name}'")
+                continue
 
-                    # Apply replacements (async or sync)
-                    if hasattr(use_case, "apply_replacements_async"):
-                        replaced_prompt = await use_case.apply_replacements_async(prompt_text, **replace_kwargs)
-                    else:
-                        replaced_prompt = use_case.apply_replacements(prompt_text, **replace_kwargs)
+            # Take only the first prompt for this iteration
+            prompt_text = prompt_list[0]
 
-                    # Create and append task
-                    tasks.append(
-                        Task(
-                            web_project_id=self.web_project.id,
-                            url=task_url,
-                            prompt=replaced_prompt,
-                            use_case=use_case,
-                        )
+            try:
+                # Build replace kwargs with this seed's data
+                replace_kwargs: dict[str, Any] = {}
+                if use_case.replace_func:
+                    sig = inspect.signature(use_case.replace_func)
+                    if "seed_value" in sig.parameters:
+                        replace_kwargs["seed_value"] = seed
+                    if "dataset" in sig.parameters:
+                        replace_kwargs["dataset"] = dataset
+
+                # Apply replacements (async or sync)
+                if hasattr(use_case, "apply_replacements_async"):
+                    replaced_prompt = await use_case.apply_replacements_async(prompt_text, **replace_kwargs)
+                else:
+                    replaced_prompt = use_case.apply_replacements(prompt_text, **replace_kwargs)
+
+                # Create and append task - ensure constraints are preserved by using the use_case object
+                # which has constraints set by generate_constraints_async
+                tasks.append(
+                    Task(
+                        web_project_id=self.web_project.id,
+                        url=task_url,
+                        prompt=replaced_prompt,
+                        use_case=use_case,
                     )
-                except Exception as ex:
-                    logger.error(f"Could not assemble Task for prompt '{prompt_text}': {ex!s}")
+                )
+            except Exception as ex:
+                logger.error(f"Could not assemble Task for prompt '{prompt_text}': {ex!s}")
 
         random.shuffle(tasks)
         return tasks

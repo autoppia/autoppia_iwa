@@ -21,12 +21,12 @@ async def fetch_tasks_data(seed_value: int | None = None, count: int = 50) -> li
     return items if items else []
 
 
-async def get_data(seed_value: int | None = None, count: int = 200) -> list[dict]:
+async def get_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
     """Main data loader function for autolist_12."""
     return await fetch_tasks_data(seed_value=seed_value, count=count)
 
 
-async def get_all_data(seed_value: int | None = None, count: int = 200) -> dict[str, list[dict]]:
+async def get_all_data(seed_value: int | None = None, count: int = 50) -> dict[str, list[dict]]:
     """Load complete dataset for this project."""
     tasks = await get_data(seed_value=seed_value, count=count)
     return {"tasks": tasks}

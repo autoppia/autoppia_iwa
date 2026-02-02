@@ -32,7 +32,16 @@ from .data import (
 
 
 async def _ensure_expert_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    """Extract experts data from the pre-loaded dataset."""
+    """Extract experts data from the pre-loaded dataset, or fetch from server if not available."""
+    from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+
+    from .data_utils import get_all_data
+
+    # Fetch data if dataset is not provided or is empty
+    if dataset is None or dataset == {}:
+        seed = get_seed_from_url(task_url) if task_url else None
+        dataset = await get_all_data(seed_value=seed)
+
     if dataset and "experts" in dataset:
         return dataset["experts"]
     return []

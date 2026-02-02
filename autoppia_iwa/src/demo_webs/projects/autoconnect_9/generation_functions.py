@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from random import choice
 from typing import Any
 
+from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
 from .data import (
@@ -22,6 +24,7 @@ from .data import (
     FIELD_OPERATORS_VIEW_JOB_MAP,
     FIELD_OPERATORS_VIEW_USER_PROFILE_MAP,
 )
+from .data_utils import get_all_data
 
 
 def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]] | None:
@@ -43,7 +46,12 @@ async def _ensure_entity_dataset(
     entity_type: str,
     method: str | None = None,
 ) -> list[dict[str, Any]]:
-    """Extract entity data from the pre-loaded dataset."""
+    """Extract entity data from the pre-loaded dataset, or fetch from server if not available."""
+    # Fetch data if dataset is not provided or is empty
+    if dataset is None or dataset == {}:
+        seed = get_seed_from_url(task_url) if task_url else None
+        dataset = await get_all_data(seed_value=seed)
+
     if dataset and entity_type in dataset:
         return dataset[entity_type]
     return []

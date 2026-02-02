@@ -40,12 +40,12 @@ async def fetch_books_data(seed_value: int | None = None, count: int = 50) -> li
     return []
 
 
-async def get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+async def get_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
     """Main data loader function for autobooks_2."""
     return await fetch_books_data(seed_value=seed_value, count=count)
 
 
-async def get_all_data(seed_value: int | None = None, count: int = 100) -> dict[str, list[dict]]:
+async def get_all_data(seed_value: int | None = None, count: int = 50) -> dict[str, list[dict]]:
     """Load complete dataset for this project."""
     books = await get_data(seed_value=seed_value, count=count)
     return {"books": books}

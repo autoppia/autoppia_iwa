@@ -107,7 +107,7 @@ async def get_data(
     method: str | None = None,
     filter_key: str | None = None,
     seed_value: int | None = None,
-    count: int = 100,
+    count: int = 50,
 ) -> list[dict]:
     """Main data loader function for autohealth_14."""
     return await fetch_health_data(
@@ -119,7 +119,7 @@ async def get_data(
     )
 
 
-async def get_all_data(seed_value: int | None = None, count: int = 100) -> dict[str, list[dict]]:
+async def get_all_data(seed_value: int | None = None, count: int = 50) -> dict[str, list[dict]]:
     """Load complete dataset for this project."""
     return {
         "appointments": await get_data(entity_type="appointments", method="select", seed_value=seed_value, count=count),

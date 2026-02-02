@@ -4,6 +4,8 @@ from datetime import date, datetime, time, timedelta
 from random import choice
 from typing import Any
 
+from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
 from .data import (
@@ -34,6 +36,7 @@ from .data import (
     MODIFIED_REASON_FOR_VISIT,
 )
 from .data_utils import (
+    get_all_data,
     transform_appointments_to_modified,
     transform_doctors_to_modified,
     transform_medical_records_to_modified,
@@ -42,28 +45,48 @@ from .data_utils import (
 
 
 async def _get_appointments_data(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict]:
-    """Extract appointments data from the pre-loaded dataset."""
+    """Extract appointments data from the pre-loaded dataset, or fetch from server if not available."""
+    # Fetch data if dataset is not provided or is empty
+    if dataset is None or dataset == {}:
+        seed = get_seed_from_url(task_url) if task_url else None
+        dataset = await get_all_data(seed_value=seed)
+
     if dataset and "appointments" in dataset:
         return transform_appointments_to_modified(dataset["appointments"])
     return []
 
 
 async def _get_doctors_data(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict]:
-    """Extract doctors data from the pre-loaded dataset."""
+    """Extract doctors data from the pre-loaded dataset, or fetch from server if not available."""
+    # Fetch data if dataset is not provided or is empty
+    if dataset is None or dataset == {}:
+        seed = get_seed_from_url(task_url) if task_url else None
+        dataset = await get_all_data(seed_value=seed)
+
     if dataset and "doctors" in dataset:
         return transform_doctors_to_modified(dataset["doctors"])
     return []
 
 
 async def _get_prescriptions_data(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict]:
-    """Extract prescriptions data from the pre-loaded dataset."""
+    """Extract prescriptions data from the pre-loaded dataset, or fetch from server if not available."""
+    # Fetch data if dataset is not provided or is empty
+    if dataset is None or dataset == {}:
+        seed = get_seed_from_url(task_url) if task_url else None
+        dataset = await get_all_data(seed_value=seed)
+
     if dataset and "prescriptions" in dataset:
         return transform_prescriptions_to_modified(dataset["prescriptions"])
     return []
 
 
 async def _get_medical_records_data(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict]:
-    """Extract medical records data from the pre-loaded dataset."""
+    """Extract medical records data from the pre-loaded dataset, or fetch from server if not available."""
+    # Fetch data if dataset is not provided or is empty
+    if dataset is None or dataset == {}:
+        seed = get_seed_from_url(task_url) if task_url else None
+        dataset = await get_all_data(seed_value=seed)
+
     if dataset and "medical-records" in dataset:
         return transform_medical_records_to_modified(dataset["medical-records"])
     return []

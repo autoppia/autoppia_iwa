@@ -2,8 +2,11 @@ import random
 from random import choice, sample
 from typing import Any
 
+from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
+from .data_utils import get_all_data
 
 
 def generate_registration_constraints(dataset: list[dict]):
@@ -44,11 +47,12 @@ def generate_logout_constraints(dataset: list[dict]):
     return parse_constraints_str(constraints_str)
 
 
-async def generate_search_film_constraints(dataset: dict[str, list[dict]]):
+async def generate_search_film_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
     """
     Generates constraints for search film use case.
 
     Args:
+        task_url: Optional task URL to extract seed from
         dataset: Dataset dictionary with films
 
     Returns:
@@ -56,7 +60,12 @@ async def generate_search_film_constraints(dataset: dict[str, list[dict]]):
     """
     from .utils import parse_constraints_str
 
-    films = dataset.get("films", [])
+    # Fetch data if dataset is not provided or is empty
+    if dataset is None or dataset == {}:
+        seed = get_seed_from_url(task_url) if task_url else None
+        dataset = await get_all_data(seed_value=seed)
+
+    films = dataset.get("films", []) if dataset else []
     if not films:
         return None
 
@@ -66,11 +75,12 @@ async def generate_search_film_constraints(dataset: dict[str, list[dict]]):
     return parse_constraints_str(constraints_str)
 
 
-async def generate_film_constraints(dataset: dict[str, list[dict]]):
+async def generate_film_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
     """
     Generates constraints for film-related use cases.
 
     Args:
+        task_url: Optional task URL to extract seed from
         dataset: Dataset dictionary with films
 
     Returns:
@@ -78,7 +88,12 @@ async def generate_film_constraints(dataset: dict[str, list[dict]]):
     """
     from .utils import build_constraints_info, parse_constraints_str
 
-    films = dataset.get("films", [])
+    # Fetch data if dataset is not provided or is empty
+    if dataset is None or dataset == {}:
+        seed = get_seed_from_url(task_url) if task_url else None
+        dataset = await get_all_data(seed_value=seed)
+
+    films = dataset.get("films", []) if dataset else []
     if not films:
         return None
 
@@ -169,12 +184,13 @@ def generate_contact_constraints() -> list:
     return constraints_list
 
 
-async def generate_film_filter_constraints(dataset: dict[str, list[dict]]):
+async def generate_film_filter_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
     """
     Genera una combinación de constraints para filtrado de películas
     usando los años y géneros reales de las películas.
 
     Args:
+        task_url: Optional task URL to extract seed from
         dataset: Dataset dictionary with films
 
     Returns:
@@ -182,7 +198,12 @@ async def generate_film_filter_constraints(dataset: dict[str, list[dict]]):
     """
     from random import choice
 
-    films = dataset.get("films", [])
+    # Fetch data if dataset is not provided or is empty
+    if dataset is None or dataset == {}:
+        seed = get_seed_from_url(task_url) if task_url else None
+        dataset = await get_all_data(seed_value=seed)
+
+    films = dataset.get("films", []) if dataset else []
     if not films:
         return []
 
@@ -483,11 +504,12 @@ def generate_constraint_from_solution(movie: dict, field: str, operator: Compari
     return None
 
 
-async def generate_add_comment_constraints(dataset: dict[str, list[dict]]):
+async def generate_add_comment_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
     """
     Genera combinaciones de constraints para añadir comentarios.
 
     Args:
+        task_url: Optional task URL to extract seed from
         dataset: Dataset dictionary with films
 
     Returns:
@@ -495,7 +517,12 @@ async def generate_add_comment_constraints(dataset: dict[str, list[dict]]):
     """
     from random import choice
 
-    films = dataset.get("films", [])
+    # Fetch data if dataset is not provided or is empty
+    if dataset is None or dataset == {}:
+        seed = get_seed_from_url(task_url) if task_url else None
+        dataset = await get_all_data(seed_value=seed)
+
+    films = dataset.get("films", []) if dataset else []
     if not films:
         return []
 
@@ -570,11 +597,12 @@ async def generate_add_comment_constraints(dataset: dict[str, list[dict]]):
     return constraints
 
 
-async def generate_edit_film_constraints(dataset: dict[str, list[dict]]):
+async def generate_edit_film_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
     """
     Generates constraints for editing film-related use cases.
 
     Args:
+        task_url: Optional task URL to extract seed from
         dataset: Dataset dictionary with films
 
     Returns:
@@ -582,7 +610,12 @@ async def generate_edit_film_constraints(dataset: dict[str, list[dict]]):
     """
     from random import choice, randint, uniform
 
-    films = dataset.get("films", [])
+    # Fetch data if dataset is not provided or is empty
+    if dataset is None or dataset == {}:
+        seed = get_seed_from_url(task_url) if task_url else None
+        dataset = await get_all_data(seed_value=seed)
+
+    films = dataset.get("films", []) if dataset else []
     if not films:
         return []
 

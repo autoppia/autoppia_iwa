@@ -5,13 +5,21 @@ from typing import Any
 
 from loguru import logger
 
+from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict, parse_price
 from .data import FIELD_OPERATORS_MAP_PRODUCTS
+from .data_utils import get_all_data
 
 
 async def _ensure_products_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    """Extract products data from the pre-loaded dataset."""
+    """Extract products data from the pre-loaded dataset, or fetch from server if not available."""
+    # Fetch data if dataset is not provided or is empty
+    if dataset is None or dataset == {}:
+        seed = get_seed_from_url(task_url) if task_url else None
+        dataset = await get_all_data(seed_value=seed)
+
     if dataset and "products" in dataset:
         return dataset["products"]
     return []

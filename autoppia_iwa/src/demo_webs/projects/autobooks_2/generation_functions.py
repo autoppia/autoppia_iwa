@@ -6,7 +6,7 @@ from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
-from .data_utils import get_data
+from .data_utils import get_all_data
 
 
 def generate_registration_constraints():
@@ -55,6 +55,11 @@ async def generate_book_constraints(task_url: str | None = None, dataset: dict[s
     """
     from .utils import build_constraints_info, parse_constraints_str
 
+    # Fetch data if dataset is not provided or is empty
+    if dataset is None or dataset == {}:
+        seed = get_seed_from_url(task_url) if task_url else None
+        dataset = await get_all_data(seed_value=seed)
+
     # Extract books from dataset
     books = dataset.get("books", []) if dataset else []
     if not books:
@@ -86,10 +91,15 @@ def generate_delete_book_constraints():
 
 async def generate_search_book_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
     """
-    Generates constraints specifically for film-related use cases.
+    Generates constraints specifically for book-related use cases.
     Returns the constraints as structured data.
     """
     from .utils import parse_constraints_str
+
+    # Fetch data if dataset is not provided or is empty
+    if dataset is None or dataset == {}:
+        seed = get_seed_from_url(task_url) if task_url else None
+        dataset = await get_all_data(seed_value=seed)
 
     # Extract books from dataset
     books = dataset.get("books", []) if dataset else []
@@ -183,9 +193,14 @@ def generate_contact_constraints() -> list:
 
 async def generate_book_filter_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
     """
-    Genera una combinación de constraints para filtrado de películas
-    usando los años y géneros reales de las películas.
+    Genera una combinación de constraints para filtrado de libros
+    usando los años y géneros reales de los libros.
     """
+    # Fetch data if dataset is not provided or is empty
+    if dataset is None or dataset == {}:
+        seed = get_seed_from_url(task_url) if task_url else None
+        dataset = await get_all_data(seed_value=seed)
+
     # Extract books from dataset
     books = dataset.get("books", []) if dataset else []
     if not books:
@@ -431,6 +446,10 @@ async def generate_add_comment_constraints(task_url: str | None = None, dataset:
     """
     Genera combinaciones de constraints para añadir comentarios.
     """
+    # Fetch data if dataset is not provided or is empty
+    if dataset is None or dataset == {}:
+        seed = get_seed_from_url(task_url) if task_url else None
+        dataset = await get_all_data(seed_value=seed)
 
     # Extract books from dataset
     books_data = dataset.get("books", []) if dataset else []
@@ -550,10 +569,11 @@ async def generate_edit_book_constraints(task_url: str | None = None, dataset: d
         "sage",
     ]
 
-    if dataset is None:
-        seed = get_seed_from_url(task_url)
-        dataset = await get_data(seed_value=seed)
-    all_genres = list(set(genre for book in dataset for genre in book["genres"]))
+    # Fetch data if dataset is not provided or is empty
+    if dataset is None or dataset == {}:
+        seed = get_seed_from_url(task_url) if task_url else None
+        dataset = await get_all_data(seed_value=seed)
+    all_genres = list(set(genre for book in dataset.get("books", []) for genre in book["genres"]))
 
     # Generar constraints
     constraints = []
@@ -643,10 +663,11 @@ async def generate_add_book_constraints(task_url: str | None = None, dataset: di
         "sage",
     ]
 
-    if dataset is None:
-        seed = get_seed_from_url(task_url)
-        dataset = await get_data(seed_value=seed)
-    all_genres = list(set(genre for book in dataset for genre in book["genres"]))
+    # Fetch data if dataset is not provided or is empty
+    if dataset is None or dataset == {}:
+        seed = get_seed_from_url(task_url) if task_url else None
+        dataset = await get_all_data(seed_value=seed)
+    all_genres = list(set(genre for book in dataset.get("books", []) for genre in book["genres"]))
 
     # Generar constraints
     constraints = []
@@ -743,10 +764,11 @@ async def generate_edit_profile_constraints(task_url: str | None = None, dataset
         "Literary critic specializing in contemporary novels and poetry.",
         "Story lover and aspiring writer.",
     ]
-    if dataset is None:
-        seed = get_seed_from_url(task_url)
-        dataset = await get_data(seed_value=seed)
-    all_genres = list(set(genre for book in dataset for genre in book["genres"]))
+    # Fetch data if dataset is not provided or is empty
+    if dataset is None or dataset == {}:
+        seed = get_seed_from_url(task_url) if task_url else None
+        dataset = await get_all_data(seed_value=seed)
+    all_genres = list(set(genre for book in dataset.get("books", []) for genre in book["genres"]))
 
     # Generar constraints
     constraints = []

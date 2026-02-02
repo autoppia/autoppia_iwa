@@ -41,6 +41,69 @@ def get_seed_from_url(task_url: str | None) -> int:
         return 1
 
 
+# ─────────────────────────── Seed Resolution ───────────────────────────
+async def resolve_v2_seed_from_url(task_url: str | None, webs_server_url: str = "http://localhost:8090") -> int:
+    """
+    Call /seeds/resolve endpoint to get v2 seed from base seed in URL.
+
+    This is the proper way to derive seeds - it calls the centralized
+    webs_server endpoint instead of duplicating the formula.
+
+    Args:
+        task_url: URL with ?seed=X parameter
+        webs_server_url: Base URL of webs_server (default: http://localhost:8090)
+
+    Returns:
+        Derived v2 seed (1-300), defaults to 1 if any error occurs
+    """
+    if not task_url:
+        return 1
+
+    try:
+        # Extract base seed from URL
+        parsed = urlparse(task_url)
+        query = parse_qs(parsed.query)
+
+        if not query.get("seed"):
+            return 1
+
+        base_seed = int(str(query["seed"][0]).strip())
+
+        # Call /seeds/resolve endpoint
+        resolve_url = urljoin(webs_server_url, "/seeds/resolve")
+
+        if aiohttp is None:
+            logger.error("aiohttp is not installed, cannot resolve seeds from endpoint")
+            return 1
+
+        async with (
+            aiohttp.ClientSession() as session,
+            session.get(
+                resolve_url,
+                params={
+                    "seed": str(base_seed),
+                    "v1_enabled": "false",
+                    "v2_enabled": "true",
+                    "v3_enabled": "false",
+                },
+                timeout=aiohttp.ClientTimeout(total=5),
+            ) as resp,
+        ):
+            resp.raise_for_status()
+            data = await resp.json()
+            v2_seed = data.get("v2")
+
+            if v2_seed is not None and isinstance(v2_seed, int):
+                return v2_seed
+
+            logger.warning(f"Invalid v2 seed from endpoint: {v2_seed}")
+            return 1
+
+    except Exception as e:
+        logger.warning(f"Failed to resolve v2 seed from URL {task_url}: {e}")
+        return 1
+
+
 # ─────────────────────────── Async-compatible API ───────────────────────────
 _ASYNC_SESSION: "aiohttp.ClientSession | None" = None  # type: ignore
 _ASYNC_CACHE: dict[tuple, list[dict]] = {}

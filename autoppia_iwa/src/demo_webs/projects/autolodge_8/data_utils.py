@@ -24,12 +24,12 @@ async def fetch_hotels_data(seed_value: int | None = None, count: int = 50) -> l
     return get_modify_data(items)
 
 
-async def get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+async def get_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
     """Main data loader function for autolodge_8."""
     return await fetch_hotels_data(seed_value=seed_value, count=count)
 
 
-async def get_all_data(seed_value: int | None = None, count: int = 100) -> dict[str, list[dict]]:
+async def get_all_data(seed_value: int | None = None, count: int = 50) -> dict[str, list[dict]]:
     """Load complete dataset for this project."""
     hotels = await get_data(seed_value=seed_value, count=count)
     return {"hotels": hotels}

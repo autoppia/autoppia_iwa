@@ -247,7 +247,7 @@ async def _generate_value_for_field(field_name: str) -> Any:
 
 # --- Constraint Generators ---
 async def generate_view_restaurant_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if dataset is None:
+    if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url)
         dataset = await get_data(seed_value=seed)
     return generate_restaurant_constraints(
@@ -259,7 +259,7 @@ async def generate_view_restaurant_constraints(task_url: str | None = None, data
 
 
 async def generate_view_full_menu_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if dataset is None:
+    if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url)
         dataset = await get_data(seed_value=seed)
     return generate_restaurant_constraints(
@@ -271,7 +271,7 @@ async def generate_view_full_menu_constraints(task_url: str | None = None, datas
 
 
 async def generate_collapse_menu_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if dataset is None:
+    if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url)
         dataset = await get_data(seed_value=seed)
     return generate_restaurant_constraints(
@@ -309,7 +309,7 @@ async def generate_constraints_for_single_field(field: str, allowed_operators: d
 
 
 async def generate_book_restaurant_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if dataset is None:
+    if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url)
         dataset = await get_data(seed_value=seed)
     restaurant_constraints = generate_restaurant_constraints(
@@ -330,7 +330,7 @@ async def generate_book_restaurant_constraints(task_url: str | None = None, data
 
 
 async def generate_country_selected_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if dataset is None:
+    if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url)
         dataset = await get_data(seed_value=seed)
     restaurant_constraints = generate_restaurant_constraints(
@@ -353,7 +353,7 @@ async def generate_country_selected_constraints(task_url: str | None = None, dat
 
 
 async def generate_occasion_selected_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if dataset is None:
+    if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url)
         dataset = await get_data(seed_value=seed)
     restaurant_constraints = generate_restaurant_constraints(
@@ -375,7 +375,7 @@ async def generate_occasion_selected_constraints(task_url: str | None = None, da
 
 
 async def generate_reservation_complete_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if dataset is None:
+    if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url)
         dataset = await get_data(seed_value=seed)
     restaurant_constraints = generate_restaurant_constraints(
@@ -495,7 +495,7 @@ async def _generate_constraints_for_fields(
     dataset: list[dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     """Generate constraints for fields. If dataset is None, it will be fetched when needed."""
-    if dataset is None:
+    if dataset is None or dataset == {}:
         dataset = []
     if required_fields is None:
         required_fields = []
@@ -569,7 +569,7 @@ def generate_restaurant_constraints(
     -------
     list[dict] con claves: ``field``, ``operator``, ``value``.
     """
-    if not dataset:
+    if not dataset or dataset == {}:
         raise ValueError("dataset cannot be empty")
     if not fields:
         raise ValueError("fields cannot be empty")

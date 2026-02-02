@@ -5,6 +5,8 @@ from typing import Any
 
 from dateutil import parser
 
+from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
 from .data import (
@@ -17,6 +19,7 @@ from .data import (
     FIELD_OPERATORS_MAP_SELECT_DATE,
     FIELD_OPERATORS_MAP_SELECT_TIME,
 )
+from .data_utils import get_all_data
 
 
 async def _ensure_drive_dataset(
@@ -27,7 +30,12 @@ async def _ensure_drive_dataset(
     method: str | None = None,
     filter_key: str | None = None,
 ) -> list[dict[str, Any]]:
-    """Extract entity data from the pre-loaded dataset."""
+    """Extract entity data from the pre-loaded dataset, or fetch from server if not available."""
+    # Fetch data if dataset is not provided or is empty
+    if dataset is None or dataset == {}:
+        seed = get_seed_from_url(task_url) if task_url else None
+        dataset = await get_all_data(seed_value=seed)
+
     if dataset and entity_type in dataset:
         return dataset[entity_type]
     return []

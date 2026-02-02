@@ -40,12 +40,12 @@ async def fetch_emails_data(seed_value: int | None = None, count: int = 50) -> l
     return _transform_all(modified_emails, field_mapping)
 
 
-async def get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+async def get_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
     """Main data loader function for automail_6."""
     return await fetch_emails_data(seed_value=seed_value, count=count)
 
 
-async def get_all_data(seed_value: int | None = None, count: int = 100) -> dict[str, list[dict]]:
+async def get_all_data(seed_value: int | None = None, count: int = 50) -> dict[str, list[dict]]:
     """Load complete dataset for this project."""
     emails = await get_data(seed_value=seed_value, count=count)
     return {"emails": emails}
