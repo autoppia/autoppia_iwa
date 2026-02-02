@@ -17,7 +17,7 @@ def _transform_all(records: list[dict], mapping: dict) -> list[dict]:
     return [_apply_mapping(record, mapping) for record in records]
 
 
-async def fetch_events_data(seed_value: int | None = None, count: int = 200) -> list[dict]:
+async def fetch_events_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
     """Fetch and normalize events data for autocalendar."""
     from .main import FRONTEND_PORT_INDEX, autocalendar_project
 

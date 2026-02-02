@@ -19,6 +19,18 @@ def apply_mapping(record: dict, mapping: dict) -> dict:
             value = ", ".join(value)
 
         new_record[new_key] = value
+
+    # Process director field:
+    # - If single director: keep as string (use operators: equals, not_equals, contains, not_contains)
+    # - If multiple directors (comma-separated): convert to list (use operators: contains, not_contains, in_list, not_in_list)
+    if "director" in new_record and isinstance(new_record["director"], str):
+        director_value = new_record["director"].strip()
+        if "," in director_value:
+            # Multiple directors: convert to list
+            directors_list = [d.strip() for d in director_value.split(",") if d.strip()]
+            new_record["director"] = directors_list
+        # If single director, keep as string (no change needed)
+
     return new_record
 
 

@@ -1,6 +1,7 @@
 import asyncio
 import importlib
 import inspect
+import contextlib
 import json
 import random
 import re
@@ -17,7 +18,7 @@ from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.interfaces import ILLM
 
-from .prompts import GLOBAL_TASK_GENERATION_PROMPT
+from .prompts import GLOBAL_TASK_GENERATION_PROMPT, PROMPT_REGENERATION_PROMPT
 
 TASK_GENERATION_LEVEL_NAME = "TASK_GENERATION"
 TASK_GENERATION_LEVEL_NO = 23
@@ -175,6 +176,213 @@ class SimpleTaskGenerator:
         random.shuffle(tasks)
         return tasks
 
+    async def regenerate_prompt_for_task(
+        self,
+        task: Task,
+        llm_review_feedback: dict[str, Any],
+        base_url: str | None = None,
+    ) -> Task | None:
+        """
+        Regenerate only the prompt for a task, keeping the same constraints.
+        Uses LLM review feedback to improve the prompt generation.
+
+        Args:
+            task: The task with failed prompt (constraints will be preserved)
+            llm_review_feedback: Dictionary with 'issues' and 'reasoning' from LLM review
+            base_url: Optional override for the base frontend URL
+
+        Returns:
+            New Task object with regenerated prompt, or None if regeneration fails
+        """
+        use_case = task.use_case
+        if not use_case:
+            logger.error("Cannot regenerate prompt: task has no use case")
+            return None
+
+        # Get constraints from the existing task (preserve them)
+        constraints = use_case.constraints if use_case else None
+        if not constraints:
+            logger.warning("Cannot regenerate prompt: task has no constraints")
+            return None
+
+        # Convert constraints to string format
+        constraints_str = use_case.constraints_to_str() if hasattr(use_case, "constraints_to_str") else str(constraints)
+
+        # IMPORTANT: Preserve the original task's URL (with its seed) to keep the same seed
+        # Always use the original task's URL - this preserves the seed parameter
+        original_url = task.url
+
+        # Resolve v2_seed from original URL to preserve it for replacements
+        original_v2_seed = None
+        if original_url:
+            original_v2_seed = await self._resolve_seed(original_url)
+
+        # Use the original task's URL directly - this preserves the seed parameter
+        task_url = original_url
+
+        # Prepare feedback strings
+        issues = llm_review_feedback.get("issues", [])
+        reasoning = llm_review_feedback.get("reasoning", "No specific reasoning provided")
+
+        issues_feedback = "\n".join(f"- {issue}" for issue in issues) if issues else "No specific issues listed"
+
+        # Build the regeneration prompt with feedback
+        if not use_case.additional_prompt_info:
+            use_case.additional_prompt_info = f"GENERATE PROMPT LIKE: {use_case.get_example_prompts_str()}"
+
+        llm_prompt = PROMPT_REGENERATION_PROMPT.format(
+            use_case_name=use_case.name,
+            use_case_description=use_case.description,
+            previous_prompt=task.prompt,
+            issues_feedback=issues_feedback,
+            reasoning_feedback=reasoning,
+            constraints_info=constraints_str,
+            additional_prompt_info=use_case.additional_prompt_info,
+        )
+
+        # Call LLM to regenerate prompt
+        prompt_list = await self._call_llm_with_retry(llm_prompt, additional_system_prompt=None)
+
+        if not prompt_list or len(prompt_list) == 0:
+            logger.error("Failed to regenerate prompt: LLM returned empty response")
+            return None
+
+        # Get the first (and should be only) regenerated prompt
+        new_prompt_text = prompt_list[0]
+
+        # Apply replacements if needed
+        import inspect
+
+        # Use the original v2_seed to preserve it
+        seed_value_for_replace = original_v2_seed if original_v2_seed is not None else await self._resolve_seed(task_url)
+        dataset = None
+
+        # Try to get dataset if needed for replacements (using the same v2_seed)
+        if hasattr(use_case, "generate_constraints_async"):
+            with contextlib.suppress(Exception):
+                dataset = await self._preload_dataset_for_use_case(use_case, seed_value_for_replace)
+
+        try:
+            # Apply replacements to the new prompt
+            if hasattr(use_case, "apply_replacements_async"):
+                replace_kwargs: dict[str, Any] = {}
+                replace_func = use_case.replace_func
+                if replace_func:
+                    sig = inspect.signature(replace_func)
+                    if "seed_value" in sig.parameters:
+                        replace_kwargs["seed_value"] = seed_value_for_replace
+                    if "dataset" in sig.parameters:
+                        replace_kwargs["dataset"] = dataset
+                replaced_prompt = await use_case.apply_replacements_async(new_prompt_text, **replace_kwargs)
+            else:
+                replace_kwargs = {}
+                replace_func = use_case.replace_func
+                if replace_func:
+                    sig = inspect.signature(replace_func)
+                    if "seed_value" in sig.parameters:
+                        replace_kwargs["seed_value"] = seed_value_for_replace
+                    if "dataset" in sig.parameters:
+                        replace_kwargs["dataset"] = dataset
+                replaced_prompt = use_case.apply_replacements(new_prompt_text, **replace_kwargs)
+
+            # Create new task with regenerated prompt but same constraints and same URL (with same seed)
+            # Create a copy of use_case to preserve constraints
+            import copy
+
+            use_case_copy = copy.deepcopy(use_case)
+            use_case_copy.constraints = constraints  # Ensure constraints are preserved
+
+            # Use the original task's URL (task_url = original_url) to preserve the seed
+            # This ensures the regenerated task has the exact same seed as the original failed task
+            task_data = {
+                "web_project_id": self.web_project.id,
+                "url": task_url,  # This is the original task's URL, preserving the seed
+                "prompt": replaced_prompt,
+                "use_case": use_case_copy,
+                "relevant_data": self.web_project.relevant_data,
+            }
+
+            new_task = Task(**task_data)
+            logger.info(f"Regenerated prompt for task. Old prompt: {task.prompt[:100]}... New prompt: {replaced_prompt[:100]}...")
+            return new_task
+
+        except Exception as ex:
+            logger.error(f"Could not create Task with regenerated prompt '{new_prompt_text}': {ex!s}")
+            return None
+
+    async def _preload_dataset_for_use_case(self, use_case: UseCase, v2_seed: int) -> Any:
+        """
+        Load complete dataset for the current project with given seed.
+
+        Each project has its own `get_all_data` function in its `data_utils.py` module
+        that returns a dictionary with all relevant entities for that project. This pattern
+        allows each project to auto-manage its data loading and maintain separation of concerns.
+        Attempt to pre-load the dataset for a given use case if its generator supports it and the loader signature is compatible.
+
+        Returns None if dataset cannot be loaded (server unavailable, etc.) - this is OK,
+        constraints can still be generated using GPT without the dataset.
+        """
+        generator = use_case.constraints_generator
+        if not generator:
+            return None
+
+        import inspect
+
+        sig = inspect.signature(generator)
+        if "dataset" not in sig.parameters:
+            return None
+
+        module_name = getattr(generator, "__module__", None)
+        if not module_name:
+            return None
+
+        try:
+            return await self._load_dataset_for_module(module_name, v2_seed)
+        except Exception as e:
+            # Don't propagate errors - dataset is optional
+            logger.debug(f"Could not preload dataset for use case '{use_case.name}': {e}. Will generate constraints without dataset.")
+            return None
+
+    async def _load_dataset_for_module(self, module_name: str, v2_seed: int) -> Any:
+        """
+        Load and cache dataset results for a generation_functions module keyed by module + seed.
+        """
+        cache_key = (module_name, v2_seed)
+        if cache_key in self._dataset_cache:
+            return self._dataset_cache[cache_key]
+
+        import importlib
+        import inspect
+
+        try:
+            gen_module = importlib.import_module(module_name)
+        except Exception as exc:  # pragma: no cover - best effort
+            _log_task_generation(f"Dataset preload skipped (import failed): {exc}", context="OPTIMIZATION")
+            return None
+
+        loader = getattr(gen_module, "_get_data", None)
+        if loader is None:
+            return None
+
+        loader_sig = inspect.signature(loader)
+        required_params = [
+            param for param in loader_sig.parameters.values() if param.default is inspect._empty and param.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)
+        ]
+        if required_params:
+            _log_task_generation(f"Dataset preload skipped due to required params: {[p.name for p in required_params]}", context="OPTIMIZATION")
+            return None
+
+        try:
+            dataset_result = loader(seed_value=v2_seed)
+            dataset = await dataset_result if inspect.isawaitable(dataset_result) else dataset_result
+            if dataset:
+                _log_task_generation(f"Pre-loaded dataset with v2_seed={v2_seed} ({len(dataset)} items)", context="OPTIMIZATION")
+                self._dataset_cache[cache_key] = dataset
+            return dataset
+        except Exception as exc:  # pragma: no cover - best effort
+            _log_task_generation(f"Could not pre-load dataset: {exc}", context="WARNING")
+            return None
+
     async def _load_dataset(self, seed: int) -> dict[str, list[dict]] | None:
         """
         Load complete dataset for the current project with given seed.
@@ -213,6 +421,126 @@ class SimpleTaskGenerator:
         except Exception as e:
             logger.debug(f"Could not load dataset for {self.web_project.id}: {e}")
             return None
+
+    def _get_project_module_name(self) -> str | None:
+        """Auto-detect project module name from filesystem.
+
+        Finds the directory in src/demo_webs/projects/ that starts with project.id.
+        Example: "autocinema" → finds "autocinema_1"
+        """
+        from pathlib import Path
+
+        project_id = self.web_project.id
+        projects_dir = Path(__file__).resolve().parents[3] / "demo_webs" / "projects"
+
+        try:
+            # Find directories starting with project_id
+            matches = [d.name for d in projects_dir.iterdir() if d.is_dir() and d.name.startswith(f"{project_id}_")]
+            if matches:
+                return matches[0]
+
+            # Fallback: try exact match
+            exact_match = projects_dir / project_id
+            if exact_match.is_dir():
+                return project_id
+
+        except Exception:
+            pass
+
+        return None
+
+    def _get_base_url(self) -> str:
+        return self.web_project.urls[0] if self.web_project.urls else self.web_project.frontend_url
+
+    def _build_constraint_url(self, base_url: str, dynamic: bool | None) -> str:
+        if not dynamic:
+            return base_url
+
+        parsed = urlparse(base_url)
+        query_params = parse_qs(parsed.query)
+        if "seed" in query_params:
+            return base_url
+
+        seed_value = random.randint(1, 999)
+        query_params["seed"] = [str(seed_value)]
+        new_query = urlencode(query_params, doseq=True)
+        return urlunparse(parsed._replace(query=new_query))
+
+    async def _build_constraint_context(self, base_url: str, dynamic: bool | None) -> ConstraintContext:
+        constraint_url = self._build_constraint_url(base_url, dynamic)
+        v2_seed = await self._resolve_seed(constraint_url)
+        return ConstraintContext(url=constraint_url, v2_seed=v2_seed)
+
+    async def _resolve_seed(self, url: str) -> int:
+        if url in self._seed_cache:
+            return self._seed_cache[url]
+        v2_seed = await resolve_v2_seed_from_url(url)
+        self._seed_cache[url] = v2_seed
+        return v2_seed
+
+    @staticmethod
+    def _dataset_length(dataset: Any) -> int | None:
+        if dataset is None:
+            return None
+        try:
+            return len(dataset)
+        except TypeError:
+            return None
+
+    async def _update_use_cases_prompt_info(self, base_url: str) -> None:
+        module_name = self._get_project_module_name()
+        if not module_name:
+            return
+
+        module_path = f"autoppia_iwa.src.demo_webs.projects.{module_name}.use_cases"
+
+        try:
+            import importlib
+
+            use_cases_module = importlib.import_module(module_path)
+        except ImportError:
+            return
+
+        if not hasattr(use_cases_module, "update_use_cases_prompt_info"):
+            return
+
+        try:
+            base_seed = await self._resolve_seed(base_url)
+            gen_module_path = f"autoppia_iwa.src.demo_webs.projects.{module_name}.generation_functions"
+            dataset = await self._load_dataset_for_module(gen_module_path, base_seed)
+            dataset_count = self._dataset_length(dataset)
+
+            await use_cases_module.update_use_cases_prompt_info(seed_value=base_seed, dataset=dataset, count=dataset_count)
+            logger.debug(f"Updated use cases prompt info for {self.web_project.id} with API data")
+        except Exception as exc:
+            logger.debug(f"Could not update use cases prompt info for {self.web_project.id}: {exc}")
+
+    async def _call_llm_with_retry(self, llm_prompt: str, additional_system_prompt: str | None = None) -> list[str]:
+        """
+        Calls the LLM with the given prompt, parsing the response as a list of strings with retry.
+        Returns a list of prompt strings.
+        """
+        base_system_prompt = "You are a helpful assistant that generates user tasks as a list of strings."
+        system_prompt = f"{base_system_prompt} {additional_system_prompt}" if additional_system_prompt else base_system_prompt
+
+        messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": llm_prompt}]
+
+        for attempt in range(self.max_retries):
+            try:
+                resp_text = await self.llm_service.async_predict(messages=messages, json_format=True)
+                parsed_data = self._parse_llm_response(resp_text)
+                if parsed_data:
+                    return parsed_data
+                logger.warning(f"Attempt {attempt + 1}: Could not parse LLM response, retrying...")
+                if attempt < self.max_retries - 1:
+                    await asyncio.sleep(self.retry_delay * (attempt + 1))
+            except Exception as e:
+                logger.error(f"Error on LLM call attempt {attempt + 1}: {e!s}")
+                if attempt < self.max_retries - 1:
+                    await asyncio.sleep(self.retry_delay * (attempt + 1))
+
+        logger.error(f"All {self.max_retries} attempts to parse LLM response have failed.")
+        return []
 
     def _build_task_url_with_seed(self, dynamic: bool = True) -> str:
         """Build the task URL with random seed if dynamic generation is enabled."""

@@ -5,7 +5,7 @@ Shared dataset helpers for autolist_12.
 from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
 
 
-async def fetch_tasks_data(seed_value: int | None = None, count: int = 200) -> list[dict]:
+async def fetch_tasks_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
     """Fetch and return the tasks dataset for autolist."""
     from .main import FRONTEND_PORT_INDEX, autolist_project
 

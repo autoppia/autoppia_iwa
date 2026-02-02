@@ -1,6 +1,7 @@
 from typing import Any
 
 from ..criterion_helper import ComparisonOperator
+from ..operators import CONTAINS, EQUALS, IN_LIST, NOT_CONTAINS, NOT_EQUALS, NOT_IN_LIST
 from ..shared_utils import constraints_exist_in_db, item_matches_all_constraints
 
 
@@ -74,7 +75,20 @@ def build_constraints_info(data: list[dict], max_attempts: int = 10) -> str | No
     for field in selected_fields:
         # Obtener operadores válidos para este campo
         valid_operators = FIELD_OPERATORS_MAP_FILM[field]
+
+        # Special handling for director: select operators based on data type
+        if field == "director":
+            # Check if director is a list (multiple directors) or string (single director)
+            if isinstance(solution_movie.get(field), list):
+                # Multiple directors: use list operators
+                valid_operators = [op for op in valid_operators if op in [IN_LIST, NOT_IN_LIST]]
+            else:
+                # Single director: use string operators
+                valid_operators = [op for op in valid_operators if op in [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]]
+
         # Elegir un operador aleatorio
+        if not valid_operators:
+            continue  # Skip if no valid operators
         operator = random.choice(valid_operators)
 
         # Generar un constraint basado en el campo, operador y la película solución

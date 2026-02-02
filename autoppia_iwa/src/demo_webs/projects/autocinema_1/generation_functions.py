@@ -11,7 +11,6 @@ def generate_registration_constraints(dataset: list[dict]):
     Generates constraints specifically for film-related use cases.
     Returns the constraints as structured data.
     """
-    # No usa dataset - constraints estáticos
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
@@ -25,7 +24,6 @@ def generate_login_constraints(dataset: list[dict]):
     Generates constraints specifically for film-related use cases.
     Returns the constraints as structured data.
     """
-    # No usa dataset - constraints estáticos
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
@@ -39,11 +37,10 @@ def generate_logout_constraints(dataset: list[dict]):
     Generates constraints specifically for film-related use cases.
     Returns the constraints as structured data.
     """
-    # No usa dataset - constraints estáticos
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "username equals <web_agent_id>"
+    constraints_str = "username equals <web_agent_id> AND password equals password123"
     return parse_constraints_str(constraints_str)
 
 
@@ -232,7 +229,7 @@ def generate_constraint_from_solution(movie: dict, field: str, operator: Compari
     """
     constraint = {"field": field, "operator": operator}
 
-    if field == "name" or field == "director":
+    if field == "name":
         if operator == ComparisonOperator.EQUALS:
             constraint["value"] = movie[field]
         elif operator == ComparisonOperator.NOT_EQUALS:
@@ -257,6 +254,70 @@ def generate_constraint_from_solution(movie: dict, field: str, operator: Compari
                 if test_str.lower() not in movie[field].lower():
                     constraint["value"] = test_str
                     break
+
+    elif field == "director":
+        director_value = movie[field]
+        is_list = isinstance(director_value, list)
+
+        if is_list:
+            # Director is a list (multiple directors) - use list operators
+            if operator == ComparisonOperator.IN_LIST:
+                # Use one or more directors from the list
+                if director_value:
+                    num_directors = min(len(director_value), random.randint(1, 2))
+                    constraint["value"] = random.sample(director_value, num_directors)
+                else:
+                    return None
+            elif operator == ComparisonOperator.NOT_IN_LIST:
+                # Find directors not in the list
+                all_directors = set()
+                for m in movies_data:
+                    dir_val = m.get(field)
+                    if isinstance(dir_val, list):
+                        all_directors.update(dir_val)
+                    elif dir_val:
+                        all_directors.add(dir_val)
+                available = list(all_directors - set(director_value))
+                if available:
+                    num_directors = min(len(available), random.randint(1, 3))
+                    constraint["value"] = random.sample(available, num_directors)
+                else:
+                    constraint["value"] = ["Unknown Director"]
+        else:
+            # Director is a string (single director) - use string operators
+            if operator == ComparisonOperator.EQUALS:
+                constraint["value"] = director_value
+            elif operator == ComparisonOperator.NOT_EQUALS:
+                # Buscar un valor diferente de otra película
+                other_values = []
+                for m in movies_data:
+                    dir_val = m.get(field)
+                    # Handle both string and list cases
+                    if isinstance(dir_val, list):
+                        # For list, take first director or all if single
+                        if dir_val:
+                            other_values.append(dir_val[0] if len(dir_val) == 1 else str(dir_val))
+                    elif dir_val and dir_val != director_value:
+                        other_values.append(dir_val)
+                if other_values:
+                    constraint["value"] = random.choice(other_values)
+                else:
+                    constraint["value"] = "Other Director"
+            elif operator == ComparisonOperator.CONTAINS:
+                if len(director_value) > 3:
+                    start = random.randint(0, len(director_value) - 3)
+                    length = random.randint(2, min(5, len(director_value) - start))
+                    constraint["value"] = director_value[start : start + length]
+                else:
+                    constraint["value"] = director_value
+            elif operator == ComparisonOperator.NOT_CONTAINS:
+                # Esto es más complejo - encontrar una subcadena que no esté en el campo de la película
+                alphabet = "abcdefghijklmnopqrstuvwxyz"
+                while True:
+                    test_str = "".join(random.choice(alphabet) for _ in range(3))
+                    if test_str.lower() not in director_value.lower():
+                        constraint["value"] = test_str
+                        break
 
     elif field == "year" or field == "duration":
         value = movie[field]
@@ -629,7 +690,6 @@ def generate_add_film_constraints(dataset: list[dict]):
     Generates constraints specifically for editing film-related use cases.
     Returns the constraints as structured data.
     """
-    # No usa dataset - genera constraints aleatorios
     from random import choice, randint, uniform
 
     # Campos editables
@@ -730,7 +790,6 @@ def generate_edit_profile_constraints(dataset: list[dict]):
     Generates constraints specifically for editing user profiles.
     Returns the constraints as structured data.
     """
-    # No usa dataset - genera constraints aleatorios
     from random import choice
 
     # Editable profile fields (username and email are excluded as mentioned in requirements)
@@ -781,6 +840,10 @@ def generate_edit_profile_constraints(dataset: list[dict]):
 
     # Generar constraints
     constraints = []
+
+    # Always add username and password constraints explicitly
+    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<web_agent_id>"})
+    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "password123"})
 
     # Select random fields to edit
     selected_fields = sample(editable_fields, k=choice([1, 2, 3]))

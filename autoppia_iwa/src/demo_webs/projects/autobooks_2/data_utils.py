@@ -20,7 +20,7 @@ def _transform_all(records: list[dict], mapping: dict) -> list[dict]:
     return [_apply_mapping(record, mapping) for record in records]
 
 
-async def fetch_books_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+async def fetch_books_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
     """Fetch and normalize books data from the backend API."""
     from .main import FRONTEND_PORT_INDEX, books_project
 

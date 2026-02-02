@@ -110,7 +110,7 @@ class FilmEvent(Event, BaseEventValidator):
 
     movie_id: int
     movie_name: str
-    movie_director: str | None = None
+    movie_director: str | list[str] | None = None  # Can be string (single) or list (multiple directors)
     movie_year: int | None = None
     movie_genres: list[str] = Field(default_factory=list)
     movie_rating: float | None = None
