@@ -233,7 +233,6 @@ class DynamicVerifier:
                 "constraints": serialized_constraints,
                 "constraints_str": constraints_str,
                 "seed": seed_value,
-                "v2_seed": v2_seed_value,
                 "has_constraints": bool(constraints),
                 "llm_review": llm_review_result,
             }
@@ -687,7 +686,7 @@ class DynamicVerifier:
             try:
                 dataset = await self.task_generator._load_dataset(seed)
 
-                if dataset is None:
+                if dataset is None or dataset == {}:
                     datasets_info[seed] = {
                         "success": False,
                         "error": "Dataset returned None",

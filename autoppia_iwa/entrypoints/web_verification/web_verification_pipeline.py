@@ -217,21 +217,7 @@ class WebVerificationPipeline:
         sys.stdout.flush()
         print()
 
-        # Step 1: LLM review with retry logic
-        # Track tasks and their review results
-        task_review_map = {}  # task_index -> (task, review_result, retry_count)
-        max_retries = 3
-
-        # Initialize task review map with initial tasks
-        for task_index, task in enumerate(tasks):
-            task_review_map[task_index] = {
-                "task": task,
-                "review_result": None,
-                "retry_count": 0,
-                "finalized": False,  # True when task passes review or max retries reached
-            }
-
-        # Start review phase
+        # Step 1: LLM review (no retry logic)
         print("\n" + "=" * 80)
         print("🤖 STEP 1: LLM REVIEW")
         print("=" * 80)
@@ -239,261 +225,107 @@ class WebVerificationPipeline:
         print(f"Reviewing {len(tasks)} task(s)...")
         print("=" * 80 + "\n")
 
-        # Review and retry loop
-        while True:
-            # Check if all tasks are finalized
-            all_finalized = all(info["finalized"] for info in task_review_map.values())
-            if all_finalized:
-                # Print summary of review results
+        # Review each task once
+        task_review_map = {}
+        for task_index, task in enumerate(tasks):
+            task_num = task_index + 1
+
+            # Extract seed value from task URL
+            seed_value = self._extract_seed_from_url(task.url)
+
+            # Get constraints
+            constraints = task.use_case.constraints if task.use_case and task.use_case.constraints else None
+            constraints_str = task.use_case.constraints_to_str() if task.use_case else ""
+
+            # Review task with LLM
+            if self.llm_reviewer:
+                print("=" * 80)
+                print(f"📋 Reviewing Task {task_num}/{len(tasks)}")
+                print("=" * 80)
+                print(f"Giving task {task_num} to LLM for review...")
+                print()
+
+                logger.debug(f"Reviewing task {task.id} with LLM: checking if prompt matches constraints")
+                review_result = await self.llm_reviewer.review_task_and_constraints(task)
+                review_result["task_id"] = task.id
+                review_result["retry_count"] = 0
+
+                # Print task details and review result immediately after review
                 import sys
 
                 sys.stdout.flush()
+
+                print("-" * 80)
+                print("📝 TASK DETAILS:")
+                print("-" * 80)
+                print(f"Task ID: {task.id}")
+                print(f"Use Case: {use_case.name}")
+                print(f"Seed: {seed_value if seed_value else 'N/A'}")
+                print(f"Constraints: {len(constraints) if constraints else 0} constraint(s)")
+                if constraints_str:
+                    print("\nConstraints Details:")
+                    for line in constraints_str.split("\n"):
+                        if line.strip():
+                            print(f"  {line}")
+                print("\nPrompt:")
+                print(f"  {task.prompt}")
+                print("-" * 80)
+                print("🤖 LLM REVIEW RESULT:")
+                print("-" * 80)
+                print(f"Valid: {'✅ YES' if review_result.get('valid', False) else '❌ NO'}")
+                if review_result.get("issues"):
+                    print("\nIssues found:")
+                    for issue in review_result.get("issues", []):
+                        print(f"  - {issue}")
+                if review_result.get("reasoning"):
+                    print("\nReasoning:")
+                    print(f"  {review_result.get('reasoning')}")
                 print("=" * 80)
-                print("📊 REVIEW SUMMARY")
-                print("=" * 80)
-                passed_count = sum(1 for info in task_review_map.values() if info.get("review_result", {}).get("valid", False))
-                total_count = len(task_review_map)
-                print(f"Tasks Passed: {passed_count}/{total_count}")
-                for task_idx, task_info in sorted(task_review_map.items()):
-                    task_num = task_idx + 1
-                    review_result = task_info.get("review_result", {})
-                    is_valid = review_result.get("valid", False)
-                    retry_count = review_result.get("retry_count", 0)
-                    status = "✅ PASSED" if is_valid else "❌ FAILED"
-                    retry_info = f" (after {retry_count} retry/ies)" if retry_count > 0 and is_valid else ""
-                    print(f"  Task {task_num}: {status}{retry_info}")
-                print("=" * 80 + "\n")
                 sys.stdout.flush()
-                break
+                print()
 
-            # Process each task that is not yet finalized
-            for task_index, task_info in task_review_map.items():
-                if task_info["finalized"]:
-                    continue
-
-                task = task_info["task"]
-                retry_count = task_info["retry_count"]
-                task_num = task_index + 1
-
-                # Extract seed value from task URL
-                seed_value = self._extract_seed_from_url(task.url)
-
-                # Get constraints
-                constraints = task.use_case.constraints if task.use_case and task.use_case.constraints else None
-                constraints_str = task.use_case.constraints_to_str() if task.use_case else ""
-
-                # Review task with LLM
-                if self.llm_reviewer:
-                    if retry_count == 0:
-                        # First review attempt
-                        print("=" * 80)
-                        print(f"📋 Reviewing Task {task_num}/{len(tasks)}")
-                        print("=" * 80)
-                        print(f"Giving task {task_num} to LLM for review...")
-                        print()
-                    else:
-                        # Retry after regeneration
-                        print("=" * 80)
-                        print(f"🔄 RETRY {retry_count}/{max_retries}: Reviewing Task {task_num}/{len(tasks)}")
-                        print("=" * 80)
-                        print(f"Giving regenerated task {task_num} to LLM for review...")
-                        print()
-
-                    logger.debug(f"Reviewing task {task.id} with LLM (attempt {retry_count + 1}): checking if prompt matches constraints")
-                    review_result = await self.llm_reviewer.review_task_and_constraints(task)
-                    review_result["task_id"] = task.id
-                    review_result["retry_count"] = retry_count
-
-                    task_info["review_result"] = review_result
-
-                    # Print task details and review result immediately after review
-                    import sys
-
-                    sys.stdout.flush()  # Ensure previous prints are flushed
-
-                    print("-" * 80)
-                    print("📝 TASK DETAILS:")
-                    print("-" * 80)
-                    print(f"Task ID: {task.id}")
-                    print(f"Use Case: {use_case.name}")
-                    print(f"Seed: {seed_value if seed_value else 'N/A'}")
-                    print(f"Constraints: {len(constraints) if constraints else 0} constraint(s)")
-                    if constraints_str:
-                        print("\nConstraints Details:")
-                        for line in constraints_str.split("\n"):
-                            if line.strip():
-                                print(f"  {line}")
-                    print("\nPrompt:")
-                    print(f"  {task.prompt}")
-                    print("-" * 80)
-                    print("🤖 LLM REVIEW RESULT:")
-                    print("-" * 80)
-                    print(f"Valid: {'✅ YES' if review_result.get('valid', False) else '❌ NO'}")
-                    if review_result.get("issues"):
-                        print("\nIssues found:")
-                        for issue in review_result.get("issues", []):
-                            print(f"  - {issue}")
-                    if review_result.get("reasoning"):
-                        print("\nReasoning:")
-                        print(f"  {review_result.get('reasoning')}")
-                    print("=" * 80)
-                    sys.stdout.flush()  # Flush before checking result
-                    print()
-
-                    # Check if review passed
-                    if review_result.get("valid", False):
-                        # Task passed review - finalize it
-                        task_info["finalized"] = True
-                        print(f"✅ Task {task_num} passed LLM review!\n")
-                        sys.stdout.flush()
-                        logger.debug(f"Task {task.id} passed LLM review on attempt {retry_count + 1}")
-                    else:
-                        # Task failed review
-                        import sys
-
-                        print(f"❌ Task {task_num} failed LLM review (Attempt {retry_count + 1}/{max_retries + 1})\n")
-                        sys.stdout.flush()
-                        logger.debug(f"Task {task.id} failed LLM review on attempt {retry_count + 1}")
-
-                        # Check if we should retry
-                        if retry_count < max_retries:
-                            print("=" * 80)
-                            print(f"🔄 Regenerating prompt for Task {task_num} (Retry {retry_count + 1}/{max_retries})")
-                            print("=" * 80)
-                            print("Note: Keeping same constraints, only regenerating prompt with feedback from previous review")
-                            print()
-                            print("📝 OLD PROMPT:")
-                            print("-" * 80)
-                            print(f"  {task.prompt}")
-                            print()
-
-                            logger.debug(f"Task {task.id} failed LLM review. Regenerating prompt only (retry {retry_count + 1}/{max_retries})...")
-
-                            # Regenerate only the prompt, keeping the same constraints
-                            # Pass LLM review feedback to help improve the prompt
-                            llm_feedback = {
-                                "issues": review_result.get("issues", []),
-                                "reasoning": review_result.get("reasoning", "No specific reasoning provided"),
-                            }
-
-                            new_task = await self.task_generator.regenerate_prompt_for_task(
-                                task=task,
-                                llm_review_feedback=llm_feedback,
-                                base_url=self.web_project.frontend_url,
-                            )
-
-                            if new_task:
-                                # Update task in map with regenerated prompt
-                                task_info["task"] = new_task
-                                task_info["retry_count"] = retry_count + 1
-
-                                import sys
-
-                                print("📝 REGENERATED PROMPT:")
-                                print("-" * 80)
-                                print(f"  {new_task.prompt}")
-                                print("=" * 80)
-                                sys.stdout.flush()
-                                print()
-
-                                logger.debug(f"Regenerated prompt for task {task_num} (new task ID: {new_task.id})")
-
-                                # Immediately review the regenerated prompt
-                                print("=" * 80)
-                                print(f"🔄 Reviewing regenerated prompt for Task {task_num} (Retry {task_info['retry_count']}/{max_retries})")
-                                print("=" * 80)
-                                print(f"Giving regenerated task {task_num} to LLM for review...")
-                                print()
-                                sys.stdout.flush()
-
-                                # Extract seed value from new task URL
-                                new_seed_value = self._extract_seed_from_url(new_task.url)
-
-                                # Get constraints from new task
-                                new_constraints = new_task.use_case.constraints if new_task.use_case and new_task.use_case.constraints else None
-                                new_constraints_str = new_task.use_case.constraints_to_str() if new_task.use_case else ""
-
-                                # Review the regenerated prompt
-                                logger.debug(f"Reviewing regenerated task {new_task.id} with LLM (attempt {task_info['retry_count'] + 1}): checking if prompt matches constraints")
-                                new_review_result = await self.llm_reviewer.review_task_and_constraints(new_task)
-                                new_review_result["task_id"] = new_task.id
-                                new_review_result["retry_count"] = task_info["retry_count"]
-
-                                task_info["review_result"] = new_review_result
-
-                                # Print task details and review result immediately after review
-                                sys.stdout.flush()  # Ensure previous prints are flushed
-
-                                print("-" * 80)
-                                print("📝 TASK DETAILS (After Regeneration):")
-                                print("-" * 80)
-                                print(f"Task ID: {new_task.id}")
-                                print(f"Use Case: {use_case.name}")
-                                print(f"Seed: {new_seed_value if new_seed_value else 'N/A'}")
-                                print(f"Constraints: {len(new_constraints) if new_constraints else 0} constraint(s)")
-                                if new_constraints_str:
-                                    print("\nConstraints Details:")
-                                    for line in new_constraints_str.split("\n"):
-                                        if line.strip():
-                                            print(f"  {line}")
-                                print("\nPrompt:")
-                                print(f"  {new_task.prompt}")
-                                print("-" * 80)
-                                print("🤖 LLM REVIEW RESULT:")
-                                print("-" * 80)
-                                print(f"Valid: {'✅ YES' if new_review_result.get('valid', False) else '❌ NO'}")
-                                if new_review_result.get("issues"):
-                                    print("\nIssues found:")
-                                    for issue in new_review_result.get("issues", []):
-                                        print(f"  - {issue}")
-                                if new_review_result.get("reasoning"):
-                                    print("\nReasoning:")
-                                    print(f"  {new_review_result.get('reasoning')}")
-                                print("=" * 80)
-                                sys.stdout.flush()
-                                print()
-
-                                # Check if regenerated prompt passed review
-                                if new_review_result.get("valid", False):
-                                    # Regenerated prompt passed - finalize it
-                                    task_info["finalized"] = True
-                                    print(f"✅ Task {task_num} passed LLM review after regeneration!\n")
-                                    sys.stdout.flush()
-                                    logger.debug(f"Regenerated task {new_task.id} passed LLM review on attempt {task_info['retry_count'] + 1}")
-                                else:
-                                    # Regenerated prompt also failed
-                                    import sys
-
-                                    print(f"❌ Task {task_num} failed LLM review after regeneration (Attempt {task_info['retry_count'] + 1}/{max_retries + 1})\n")
-                                    sys.stdout.flush()
-                                    # Will retry again on next iteration if retry_count < max_retries
-                                    # (The while loop will continue and process this task again)
-                            else:
-                                # Failed to regenerate prompt - finalize with failure
-                                import sys
-
-                                print(f"❌ Failed to regenerate prompt for Task {task_num}. Marking as failed.\n")
-                                sys.stdout.flush()
-                                logger.warning(f"Failed to regenerate prompt for task {task_num}. Marking as failed.")
-                                task_info["finalized"] = True
-                        else:
-                            # Max retries reached - finalize with failure
-                            import sys
-
-                            print(f"❌ Task {task_num} failed LLM review after {max_retries} retries. Marking as failed.\n")
-                            sys.stdout.flush()
-                            logger.warning(f"Task {task.id} failed LLM review after {max_retries} retries. Marking as failed.")
-                            task_info["finalized"] = True
+                # Print result status
+                if review_result.get("valid", False):
+                    print(f"✅ Task {task_num} passed LLM review!\n")
                 else:
-                    # LLM reviewer disabled - mark as passed
-                    task_info["review_result"] = {
-                        "valid": True,
-                        "task_id": task.id,
-                        "retry_count": 0,
-                        "skipped": True,
-                        "reasoning": "LLM review is disabled",
-                    }
-                    task_info["finalized"] = True
+                    print(f"❌ Task {task_num} failed LLM review\n")
+                sys.stdout.flush()
+
+                logger.debug(f"Task {task.id} LLM review result: valid={review_result.get('valid', False)}")
+            else:
+                # LLM reviewer disabled - mark as passed
+                review_result = {
+                    "valid": True,
+                    "task_id": task.id,
+                    "retry_count": 0,
+                    "skipped": True,
+                    "reasoning": "LLM review is disabled",
+                }
+
+            # Store task and review result
+            task_review_map[task_index] = {
+                "task": task,
+                "review_result": review_result,
+            }
+
+        # Print summary of review results
+        import sys
+
+        sys.stdout.flush()
+        print("=" * 80)
+        print("📊 REVIEW SUMMARY")
+        print("=" * 80)
+        passed_count = sum(1 for info in task_review_map.values() if info.get("review_result", {}).get("valid", False))
+        total_count = len(task_review_map)
+        print(f"Tasks Passed: {passed_count}/{total_count}")
+        for task_idx, task_info in sorted(task_review_map.items()):
+            task_num = task_idx + 1
+            review_result = task_info.get("review_result", {})
+            is_valid = review_result.get("valid", False)
+            status = "✅ PASSED" if is_valid else "❌ FAILED"
+            print(f"  Task {task_num}: {status}")
+        print("=" * 80 + "\n")
+        sys.stdout.flush()
 
         # Store final results
         for _task_index, task_info in sorted(task_review_map.items()):
