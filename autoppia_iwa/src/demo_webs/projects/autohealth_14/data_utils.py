@@ -12,7 +12,7 @@ async def fetch_health_data(
     method: str | None = None,
     filter_key: str | None = None,
     seed_value: int | None = None,
-    count: int = 100,
+    count: int = 50,
 ) -> list[dict]:
     """Fetch dataset rows for the given entity type."""
     from .main import FRONTEND_PORT_INDEX, health_project

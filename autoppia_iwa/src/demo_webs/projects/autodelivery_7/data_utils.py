@@ -10,7 +10,7 @@ async def fetch_autodelivery_data(
     method: str | None = None,
     filter_key: str | None = None,
     seed_value: int | None = None,
-    count: int = 100,
+    count: int = 50,
 ) -> list[dict]:
     """Fetch data for the requested entity type."""
     from .main import FRONTEND_PORT_INDEX, autodelivery_project

@@ -9,7 +9,7 @@ from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, 
 from .data_utils import fetch_movies_data
 
 
-async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+async def _get_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
     return await fetch_movies_data(seed_value=seed_value, count=count)
 
 
@@ -806,7 +806,6 @@ def generate_edit_profile_constraints():
     """
     Generates constraints specifically for editing user profiles.
     Returns the constraints as structured data.
-    Includes username and password constraints explicitly.
     """
     from random import choice
 

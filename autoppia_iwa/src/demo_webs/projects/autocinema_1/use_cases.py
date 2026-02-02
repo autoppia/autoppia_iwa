@@ -38,7 +38,7 @@ from .generation_functions import (
 from .replace_functions import login_replace_func, register_replace_func, replace_film_placeholders
 
 
-async def _get_movies_data_for_prompts(seed_value: int | None = None, count: int = 200) -> list[dict]:
+async def _get_movies_data_for_prompts(seed_value: int | None = None, count: int = 50) -> list[dict]:
     """Fetch movies data from API for use in prompt generation."""
     return await fetch_movies_data(seed_value=seed_value, count=count)
 
@@ -960,7 +960,7 @@ ADD_COMMENT_USE_CASE = UseCase(
 async def update_use_cases_prompt_info(
     seed_value: int | None = None,
     dataset: list[dict] | None = None,
-    count: int | None = 200,
+    count: int | None = 50,
 ):
     """
     Update use cases' additional_prompt_info with data from API.
@@ -968,7 +968,7 @@ async def update_use_cases_prompt_info(
     """
     movies_data = dataset
     if movies_data is None:
-        movies_data = await _get_movies_data_for_prompts(seed_value=seed_value, count=count or 200)
+        movies_data = await _get_movies_data_for_prompts(seed_value=seed_value, count=count or 50)
     if movies_data is None:
         return
 

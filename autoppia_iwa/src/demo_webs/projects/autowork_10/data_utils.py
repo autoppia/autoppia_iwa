@@ -5,7 +5,7 @@ Shared dataset helpers for autowork_10.
 from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
 
 
-async def fetch_experts_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+async def fetch_experts_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
     """Fetch and normalize experts data."""
     from .data import expert_data_modified
     from .main import FRONTEND_PORT_INDEX, work_project

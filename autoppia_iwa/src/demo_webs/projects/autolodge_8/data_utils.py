@@ -5,7 +5,7 @@ Shared dataset helpers for autolodge_8.
 from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
 
 
-async def fetch_hotels_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+async def fetch_hotels_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
     """Fetch and normalize hotel data."""
     from .data import get_modify_data
     from .main import FRONTEND_PORT_INDEX, lodge_project

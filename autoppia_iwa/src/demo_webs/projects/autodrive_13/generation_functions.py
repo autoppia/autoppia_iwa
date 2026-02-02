@@ -27,7 +27,7 @@ async def _get_data(
     method: str | None = None,
     filter_key: str | None = None,
     seed_value: int | None = None,
-    count: int = 100,
+    count: int = 50,
 ) -> list[dict]:
     return await fetch_drive_data(
         entity_type=entity_type,

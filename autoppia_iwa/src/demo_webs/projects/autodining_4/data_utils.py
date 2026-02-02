@@ -21,7 +21,7 @@ def _transform_all(records: list[dict], mapping: dict) -> list[dict]:
     return [_apply_mapping(record, mapping) for record in records]
 
 
-async def fetch_restaurant_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+async def fetch_restaurant_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
     """Fetch restaurant data from the backend with a small in-memory cache."""
     from .main import FRONTEND_PORT_INDEX, dining_project
 

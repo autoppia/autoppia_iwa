@@ -40,7 +40,7 @@ from .generation_functions import (
 from .replace_functions import login_replace_func, register_replace_func, replace_book_placeholders
 
 
-async def _get_books_data_for_prompts(seed_value: int | None = None, count: int = 200) -> list[dict]:
+async def _get_books_data_for_prompts(seed_value: int | None = None, count: int = 50) -> list[dict]:
     """Fetch books data from API for use in prompt generation."""
     return await fetch_books_data(seed_value=seed_value, count=count)
 
@@ -1299,7 +1299,7 @@ PURCHASE_BOOK_USE_CASE = UseCase(
 async def update_use_cases_prompt_info(
     seed_value: int | None = None,
     dataset: list[dict] | None = None,
-    count: int | None = 200,
+    count: int | None = 50,
 ):
     """
     Update use cases' additional_prompt_info with data from API.
@@ -1307,7 +1307,7 @@ async def update_use_cases_prompt_info(
     """
     books_data = dataset
     if books_data is None:
-        books_data = await _get_books_data_for_prompts(seed_value=seed_value, count=count or 200)
+        books_data = await _get_books_data_for_prompts(seed_value=seed_value, count=count or 50)
     if books_data is None:
         return
 

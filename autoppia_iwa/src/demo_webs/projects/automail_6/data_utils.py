@@ -17,7 +17,7 @@ def _transform_all(records: list[dict], mapping: dict) -> list[dict]:
     return [_apply_mapping(record, mapping) for record in records]
 
 
-async def fetch_emails_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+async def fetch_emails_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
     """Fetch and normalize emails data from the backend."""
     from .data import transform_emails_list
     from .main import FRONTEND_PORT_INDEX, automail_project
