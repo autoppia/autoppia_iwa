@@ -309,7 +309,6 @@ class SimpleTaskGenerator:
         Finds the directory in src/demo_webs/projects/ that starts with project.id.
         Example: "autocinema" → finds "autocinema_1"
         """
-        from pathlib import Path
 
         project_id = self.web_project.id
         projects_dir = Path(__file__).resolve().parents[3] / "demo_webs" / "projects"
