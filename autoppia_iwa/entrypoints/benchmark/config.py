@@ -40,6 +40,7 @@ class BenchmarkConfig:
     
     # Solo para modo stateful: límite de pasos por tarea
     max_steps_per_task: int = 50
+    
 
     # Persistence / plotting
     save_results_json: bool = True

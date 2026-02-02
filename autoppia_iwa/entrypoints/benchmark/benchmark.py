@@ -72,10 +72,8 @@ class Benchmark:
             f"{self.config.runs} runs, evaluator_mode={self.config.evaluator_mode}"
         )
         
-        if self.config.evaluator_mode == "iterative":
-            logger.info(f"Iterative mode: max {self.config.max_iterations_per_task} iterations per task")
-            if self.config.use_cached_solutions:
-                logger.warning("use_cached_solutions is not compatible with iterative mode and will be ignored")
+        if self.config.evaluator_mode == "stateful":
+            logger.info(f"Stateful mode: max {self.config.max_steps_per_task} steps per task")
 
     # ---------------------------------------------------------------------
     # Evaluator creation
@@ -92,7 +90,6 @@ class Benchmark:
             max_consecutive_action_failures=2,
             verbose_logging=False,
             debug_mode=False,
-            dynamic_phase_config=self.config.dynamic_phase_config,
         )
         
         logger.debug(f"Creating ConcurrentEvaluator for project {project.id}")
@@ -164,13 +161,8 @@ class Benchmark:
 
                 if not actions:
                     # Sin acciones = agente terminó o error
-                    step_result = await evaluator.step(None)
-                    total_actions_executed += 1
-                    final_score = step_result.score.raw_score
-                    tests_passed = step_result.score.tests_passed
-                    total_tests = step_result.score.total_tests
-                    step_index += 1
-                    continue
+                    logger.debug(f"[stateful_eval] agent {agent.name} returned no actions, terminating")
+                    break
 
                 # Calcular límite con total_actions_executed (como en subnet)
                 actions_to_execute = actions[:min(len(actions), max_steps - total_actions_executed)]
@@ -404,40 +396,6 @@ class Benchmark:
             logger.error(f"Evaluation with visualization failed: {e}", exc_info=True)
             # Fallback to regular evaluation without visualization
             return await self._evaluate_solutions_for_task(project, task, solutions, run_index)
-
-    async def _evaluate_solutions_for_task(
-        self,
-        project: WebProject,
-        task: Task,
-        solutions: list[TaskSolution | None],
-        run_index: int,
-    ):
-        """
-        Evaluate all agent solutions produced for a single Task.
-        Stores GIF recordings if evaluation returns them and recording is enabled.
-        """
-        # Filter out None solutions defensively
-        valid_solutions = [s for s in solutions if s is not None]
-        if not valid_solutions:
-            logger.warning(f"No valid solutions to evaluate for task {task.id} (run {run_index})")
-            return []
-
-        evaluator = ConcurrentEvaluator(
-            project,
-            EvaluatorConfig(
-                enable_grouping_tasks=False,
-                chunk_size=20,
-                should_record_gif=self.config.record_gif,
-            ),
-        )
-        results = await evaluator.evaluate_task_solutions(task, valid_solutions)
-
-        if self.config.record_gif:
-            for res in results:
-                if getattr(res, "gif_recording", None):
-                    agent_name = next((a.name for a in self.config.agents if a.id == res.web_agent_id), "unknown")
-                    self._persist_gif_recording(res.gif_recording, agent_name, task.id, run_index, self.config.recordings_dir)
-        return results
 
     # ---------------------------------------------------------------------
     # Per-project execution

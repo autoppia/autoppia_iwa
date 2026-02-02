@@ -32,29 +32,25 @@ PROJECT_IDS = [
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 
-# Configuración en modo ITERATIVO
+# Configuración en modo STATEFUL (iterativo)
 CFG = BenchmarkConfig(
     projects=PROJECTS,
     agents=AGENTS,
-    # ==================== MODO ITERATIVO ====================
-    evaluator_mode="iterative",  # ← El agente decide acción por acción
-    max_iterations_per_task=50,  # ← Máximo 50 acciones por tarea
+    # ==================== MODO STATEFUL ====================
+    evaluator_mode="stateful",  # ← El agente decide acción por acción
+    max_steps_per_task=50,  # ← Máximo 50 acciones por tarea
     # =======================================================
     # Tasks
-    use_cached_tasks=True,
     prompts_per_use_case=1,
-    num_use_cases=0,
     use_cases=[],
     # Execution
     runs=1,
     max_parallel_agent_calls=1,
-    use_cached_solutions=False,  # No compatible con iterativo
     record_gif=True,  # Recomendado para ver navegación adaptativa
     # Dynamic mode
     dynamic=False,
     # Persistence
     save_results_json=True,
-    plot_results=False,
 )
 
 
@@ -79,8 +75,8 @@ def main():
             f"{CFG.runs} runs, evaluator_mode={CFG.evaluator_mode}"
         )
         
-        if CFG.evaluator_mode == "iterative":
-            logger.info(f"Iterative mode enabled: max {CFG.max_iterations_per_task} iterations per task")
+        if CFG.evaluator_mode == "stateful":
+            logger.info(f"Stateful mode enabled: max {CFG.max_steps_per_task} steps per task")
 
         # Create and run benchmark
         benchmark = Benchmark(CFG)
