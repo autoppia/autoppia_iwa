@@ -17,7 +17,7 @@ from autoppia_iwa.src.data_generation.tasks import Task
 from autoppia_iwa.src.data_generation.tests import JudgeBaseOnHTML, JudgeBaseOnScreenshot
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig
-from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
+from autoppia_iwa.src.evaluation.concurrent_evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_task
 from autoppia_iwa.src.shared.web_voyager_utils import TaskData, generate_hash, load_real_tasks
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
