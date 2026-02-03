@@ -63,7 +63,7 @@ AGENTS = [
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
-    "autobooks",
+    "autohealth",
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 USE_CASES = [
@@ -114,7 +114,7 @@ CFG = BenchmarkConfig(
     projects=PROJECTS,
     agents=AGENTS,
     # Evaluator mode
-    evaluator_mode="stateful",  # ← Agente genera lista completa de acciones
+    evaluator_mode="concurrent",  # ← Agente genera lista completa de acciones
     # Tasks
     prompts_per_use_case=1,
     # use_cases=None means all use-cases

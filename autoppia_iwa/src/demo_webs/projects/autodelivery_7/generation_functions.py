@@ -20,7 +20,7 @@ from .data import (
     FIELD_OPERATORS_SEARCH_RESTAURANT_MAP,
     FIELD_OPERATORS_VIEW_RESTAURANT_MAP,
 )
-from .data_utils import get_all_data
+from .data_utils import fetch_data
 
 
 def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]] | None:
@@ -43,7 +43,8 @@ async def _ensure_restaurant_dataset(
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        restaurants = await fetch_data(entity_type="restaurants", method="distribute", filter_key="cuisine", seed_value=seed)
+        dataset = {"restaurants": restaurants}
 
     if dataset and "restaurants" in dataset:
         return dataset["restaurants"]

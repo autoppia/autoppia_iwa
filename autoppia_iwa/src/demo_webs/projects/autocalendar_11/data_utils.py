@@ -17,8 +17,22 @@ def _transform_all(records: list[dict], mapping: dict) -> list[dict]:
     return [_apply_mapping(record, mapping) for record in records]
 
 
-async def fetch_events_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
-    """Fetch and normalize events data for autocalendar."""
+async def fetch_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
+    """
+    Fetch and normalize events data for autocalendar.
+
+    This is the unified function replacing:
+    - fetch_events_data()
+    - get_data()
+    - get_all_data()
+
+    Args:
+        seed_value: Seed value for deterministic selection
+        count: Number of items to fetch
+
+    Returns:
+        list[dict] of normalized events
+    """
     from .main import FRONTEND_PORT_INDEX, autocalendar_project
 
     field_mapping = {"allDay": "all_day", "recurrenceEndDate": "recurrence_end_date"}
@@ -36,14 +50,3 @@ async def fetch_events_data(seed_value: int | None = None, count: int = 50) -> l
     if not items:
         return []
     return _transform_all(items, field_mapping)
-
-
-async def get_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
-    """Main data loader function for autocalendar_11."""
-    return await fetch_events_data(seed_value=seed_value, count=count)
-
-
-async def get_all_data(seed_value: int | None = None, count: int = 50) -> dict[str, list[dict]]:
-    """Load complete dataset for this project."""
-    events = await get_data(seed_value=seed_value, count=count)
-    return {"events": events}

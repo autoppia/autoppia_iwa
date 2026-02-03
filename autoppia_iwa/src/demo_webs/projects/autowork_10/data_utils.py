@@ -5,8 +5,22 @@ Shared dataset helpers for autowork_10.
 from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
 
 
-async def fetch_experts_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
-    """Fetch and normalize experts data."""
+async def fetch_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
+    """
+    Fetch and normalize experts data.
+
+    This is the unified function replacing:
+    - fetch_experts_data()
+    - get_data()
+    - get_all_data()
+
+    Args:
+        seed_value: Seed value for deterministic selection
+        count: Number of items to fetch
+
+    Returns:
+        list[dict] of normalized experts
+    """
     from .data import expert_data_modified
     from .main import FRONTEND_PORT_INDEX, work_project
 
@@ -22,14 +36,3 @@ async def fetch_experts_data(seed_value: int | None = None, count: int = 50) -> 
     if not items:
         return []
     return expert_data_modified(items)
-
-
-async def get_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
-    """Main data loader function for autowork_10."""
-    return await fetch_experts_data(seed_value=seed_value, count=count)
-
-
-async def get_all_data(seed_value: int | None = None, count: int = 50) -> dict[str, list[dict]]:
-    """Load complete dataset for this project."""
-    experts = await get_data(seed_value=seed_value, count=count)
-    return {"experts": experts}

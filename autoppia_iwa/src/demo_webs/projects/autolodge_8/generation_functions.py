@@ -24,7 +24,7 @@ from .data import (
     FIELD_OPERATORS_SUBMIT_REVIEW_MAP,
     FIELD_OPERATORS_VIEW_HOTEL_MAP,
 )
-from .data_utils import get_all_data
+from .data_utils import fetch_data
 
 
 async def _ensure_hotel_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
@@ -32,7 +32,8 @@ async def _ensure_hotel_dataset(task_url: str | None = None, dataset: dict[str, 
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        hotels = await fetch_data(seed_value=seed)
+        dataset = {"hotels": hotels}
 
     if dataset and "hotels" in dataset:
         return dataset["hotels"]

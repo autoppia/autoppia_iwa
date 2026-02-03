@@ -35,12 +35,13 @@ async def _ensure_expert_dataset(task_url: str | None = None, dataset: dict[str,
     """Extract experts data from the pre-loaded dataset, or fetch from server if not available."""
     from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
-    from .data_utils import get_all_data
+    from .data_utils import fetch_data
 
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        experts = await fetch_data(seed_value=seed)
+        dataset = {"experts": experts}
 
     if dataset and "experts" in dataset:
         return dataset["experts"]
@@ -722,9 +723,9 @@ async def generate_edit_about_constraint() -> list[dict[str, Any]]:
     allowed_ops = FIELD_OPERATORS_MAP_EDIT_PROFILE_FIELD[field]
     op = ComparisonOperator(random.choice(allowed_ops))
     field_value = random.choice(about_data)
-    about_dataset = [{"about": n} for n in about_data]
+    about_dataset = [{"value": n} for n in about_data]
     value = _generate_constraint_value(op, field_value, field, dataset=about_dataset)
-    if value is None:
+    if value is not None:
         constraint_list.append(create_constraint_dict(field, op, value))
     return constraint_list
 
@@ -757,9 +758,9 @@ async def generate_edit_profile_name_constraint() -> list[dict[str, Any]]:
     allowed_ops = FIELD_OPERATORS_MAP_EDIT_PROFILE_FIELD[field]
     op = ComparisonOperator(random.choice(allowed_ops))
     field_value = random.choice(user_names)
-    messages_dataset = [{"name": n} for n in user_names]
+    messages_dataset = [{"value": n} for n in user_names]
     value = _generate_constraint_value(op, field_value, field, dataset=messages_dataset)
-    if value is None:
+    if value is not None:
         constraint_list.append(create_constraint_dict(field, op, value))
     return constraint_list
 
@@ -790,9 +791,9 @@ async def generate_edit_profile_title_constraint() -> list[dict[str, Any]]:
     allowed_ops = FIELD_OPERATORS_MAP_EDIT_PROFILE_FIELD[field]
     op = ComparisonOperator(random.choice(allowed_ops))
     field_value = random.choice(title_data)
-    title_dataset = [{"title": t} for t in title_data]
+    title_dataset = [{"value": t} for t in title_data]
     value = _generate_constraint_value(op, field_value, field, dataset=title_dataset)
-    if value is None:
+    if value is not None:
         constraint_list.append(create_constraint_dict(field, op, value))
     return constraint_list
 
@@ -836,9 +837,9 @@ async def generate_edit_profile_location_constraint() -> list[dict[str, Any]]:
     allowed_ops = FIELD_OPERATORS_MAP_EDIT_PROFILE_FIELD[field]
     op = ComparisonOperator(random.choice(allowed_ops))
     field_value = random.choice(locations)
-    location_dataset = [{"location": t} for t in locations]
+    location_dataset = [{"value": t} for t in locations]
     value = _generate_constraint_value(op, field_value, field, dataset=location_dataset)
-    if value is None:
+    if value is not None:
         constraint_list.append(create_constraint_dict(field, op, value))
     return constraint_list
 
@@ -871,9 +872,9 @@ async def generate_edit_profile_email_constraint() -> list[dict[str, Any]]:
     allowed_ops = FIELD_OPERATORS_MAP_EDIT_PROFILE_FIELD[field]
     op = ComparisonOperator(random.choice(allowed_ops))
     field_value = random.choice(emails)
-    email_dataset = [{"email": e} for e in emails]
+    email_dataset = [{"value": e} for e in emails]
     value = _generate_constraint_value(op, field_value, field, dataset=email_dataset)
-    if value is None:
+    if value is not None:
         constraint_list.append(create_constraint_dict(field, op, value))
     return constraint_list
 

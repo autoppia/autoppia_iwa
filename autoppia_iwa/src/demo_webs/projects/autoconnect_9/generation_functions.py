@@ -24,7 +24,7 @@ from .data import (
     FIELD_OPERATORS_VIEW_JOB_MAP,
     FIELD_OPERATORS_VIEW_USER_PROFILE_MAP,
 )
-from .data_utils import get_all_data
+from .data_utils import fetch_data
 
 
 def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]] | None:
@@ -45,16 +45,30 @@ async def _ensure_entity_dataset(
     *,
     entity_type: str,
     method: str | None = None,
-) -> list[dict[str, Any]]:
-    """Extract entity data from the pre-loaded dataset, or fetch from server if not available."""
-    # Fetch data if dataset is not provided or is empty
-    if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+) -> dict[str, list[dict[str, Any]]]:
+    """
+    Extract entity data from the pre-loaded dataset, or fetch from server if not available.
 
+    Dynamically fetches only the requested entity_type using the provided method.
+    Returns a dictionary with entity_type as the key.
+    """
+    # If dataset is provided and contains the requested entity, return it in the expected format
     if dataset and entity_type in dataset:
-        return dataset[entity_type]
-    return []
+        return {entity_type: dataset[entity_type]}
+
+    # Otherwise, fetch the specific entity type dynamically using the provided parameters
+    seed = get_seed_from_url(task_url) if task_url else None
+    # Normalize empty strings to None for method
+    normalized_method = method if method and method.strip() else None
+
+    fetched_dataset = await fetch_data(
+        entity_type=entity_type,
+        method=normalized_method if normalized_method else "select",
+        seed_value=seed,
+    )
+
+    # Return as dictionary with entity_type as key
+    return {entity_type: fetched_dataset}
 
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
@@ -224,7 +238,8 @@ async def generate_view_user_profile_constraints(task_url: str | None = None, da
     """
     Generates constraints for viewing a user profile based on the provided user profile data.
     """
-    dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="users")
+    dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="users")
+    dataset = dataset_dict.get("users", [])
     field_operators = FIELD_OPERATORS_VIEW_USER_PROFILE_MAP
     all_constraints = _generate_constraints(dataset, field_operators, num_constraints=1)
 
@@ -232,7 +247,8 @@ async def generate_view_user_profile_constraints(task_url: str | None = None, da
 
 
 async def generate_connect_with_user_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    users = await _ensure_entity_dataset(task_url, dataset, entity_type="users")
+    users_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="users")
+    users = users_dict.get("users", [])
     dataset = [u for u in users if u.get("username") != "alexsmith"]
 
     field_operators = FIELD_OPERATORS_CONNECT_WITH_USER_MAP
@@ -247,7 +263,8 @@ async def generate_like_post_constraints(task_url: str | None = None, dataset: l
     """
     Generates constraints for liking a post based on the provided post data.
     """
-    dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="posts")
+    dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="posts")
+    dataset = dataset_dict.get("posts", [])
     field_operators = FIELD_OPERATORS_LIKE_POST_MAP
     field_map = {"poster_content": "content", "poster_name": "name"}
 
@@ -291,7 +308,8 @@ async def generate_comment_on_post_constraints(task_url: str | None = None, data
     new_field_operators = {fixed_field: operators}
     all_constraints = _generate_constraints(sample_comments, new_field_operators)
 
-    dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="posts")
+    dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="posts")
+    dataset = dataset_dict.get("posts", [])
     field_map = {"poster_content": "content", "poster_name": "name"}
     constraints = _generate_constraints(dataset, field_operators, field_map)
     all_constraints.extend(constraints)
@@ -343,7 +361,8 @@ async def generate_follow_page_constraints(task_url: str | None = None, dataset:
     Generates constraints for following a company page based on the provided user profile data.
     """
 
-    dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="recommendations")
+    dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="recommendations")
+    dataset = dataset_dict.get("recommendations", [])
     field_operators = FIELD_OPERATORS_FOLLOW_PAGE_MAP
     field_map = {"recommendation": "title"}
     all_constraints = _generate_constraints(dataset, field_operators, field_map)
@@ -359,7 +378,8 @@ async def generate_unfollow_page_constraints(task_url: str | None = None, datase
 
 
 async def generate_apply_for_job_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="jobs")
+    dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="jobs")
+    dataset = dataset_dict.get("jobs", [])
 
     field_map = {
         "job_title": "title",
@@ -375,7 +395,8 @@ async def generate_search_users_constraints(task_url: str | None = None, dataset
     """
     Generates constraints for searching users based on the provided user profile data.
     """
-    dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="users")
+    dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="users")
+    dataset = dataset_dict.get("users", [])
     field_operators = FIELD_OPERATORS_SEARCH_USERS_MAP
     field_map = {"query": ["name", "title"]}
     all_constraints = _generate_constraints(dataset, field_operators, field_map)
@@ -388,7 +409,8 @@ async def generate_search_jobs_constraints(task_url: str | None = None, dataset:
     Generates constraints for searching jobs based on the provided job data.
     Replaces raw salary values with predefined filter options if applicable.
     """
-    dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="jobs")
+    dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="jobs")
+    dataset = dataset_dict.get("jobs", [])
     field_operators = FIELD_OPERATORS_SEARCH_JOBS_MAP
     field_map = {"query": ["title", "company"]}
 
@@ -445,7 +467,8 @@ async def generate_view_job_constraints(task_url: str | None = None, dataset: li
     """
     Generates constraints for viewing a job based on the provided job data.
     """
-    dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="jobs")
+    dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="jobs")
+    dataset = dataset_dict.get("jobs", [])
     field_operators = FIELD_OPERATORS_VIEW_JOB_MAP
     field_map = {"job_title": "title"}
     all_constraints = _generate_constraints(dataset, field_operators, field_map)
@@ -536,7 +559,8 @@ async def generate_back_to_all_jobs_constraints(task_url: str | None = None, dat
     Generates constraints for navigating back to the jobs list.
     """
     constraints_list = []
-    dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="jobs")
+    dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="jobs")
+    dataset = dataset_dict.get("jobs", [])
     job = random.choice(dataset)
     possible_fields = ["location", "title", "company"]
     selected_fields = random.sample(possible_fields, random.randint(1, len(possible_fields)))
@@ -564,7 +588,8 @@ async def generate_back_to_all_jobs_constraints(task_url: str | None = None, dat
 
 async def generate_save_post_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints_list = []
-    dataset = await _ensure_entity_dataset(task_url=task_url, dataset=dataset, entity_type="posts")
+    dataset_dict = await _ensure_entity_dataset(task_url=task_url, dataset=dataset, entity_type="posts")
+    dataset = dataset_dict.get("posts", [])
 
     transformed_posts = []
 
@@ -608,7 +633,8 @@ async def generate_cancel_application_constraints(task_url: str | None = None, d
 
 async def generate_edit_profile_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraint_list = []
-    dataset = await _ensure_entity_dataset(task_url=task_url, dataset=dataset, entity_type="users")
+    dataset_dict = await _ensure_entity_dataset(task_url=task_url, dataset=dataset, entity_type="users")
+    dataset = dataset_dict.get("users", [])
     possible_fields = ["name", "bio", "about", "title"]
     selected_fields = random.sample(possible_fields, random.randint(1, len(possible_fields)))
     random_user = random.choice(dataset)
@@ -655,7 +681,8 @@ def _get_experience_data_for_user(user: dict) -> list[dict[str, Any]]:
 
 async def generate_edit_experience_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraint_list = []
-    dataset = await _ensure_entity_dataset(task_url=task_url, dataset=dataset, entity_type="users")
+    dataset_dict = await _ensure_entity_dataset(task_url=task_url, dataset=dataset, entity_type="users")
+    dataset = dataset_dict.get("users", [])
     possible_fields = ["company", "duration", "title", "location", "description"]
     selected_fields = random.sample(possible_fields, random.randint(1, len(possible_fields)))
     # Select Emily Patel explicitly
@@ -690,7 +717,8 @@ async def generate_unhide_post_constraints(task_url: str | None = None, dataset:
 
 async def generate_add_experience_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraint_list = []
-    dataset = await _ensure_entity_dataset(task_url=task_url, dataset=dataset, entity_type="users")
+    dataset_dict = await _ensure_entity_dataset(task_url=task_url, dataset=dataset, entity_type="users")
+    dataset = dataset_dict.get("users", [])
     possible_fields = ["company", "duration", "title", "location", "description"]
     # selected_fields = random.sample(possible_fields, random.randint(1, len(possible_fields)))
     random_user = random.choice(dataset)

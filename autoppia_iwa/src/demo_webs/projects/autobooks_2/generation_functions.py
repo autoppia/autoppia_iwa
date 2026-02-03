@@ -6,7 +6,7 @@ from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
-from .data_utils import get_all_data
+from .data_utils import fetch_data
 
 
 def generate_registration_constraints():
@@ -58,7 +58,8 @@ async def generate_book_constraints(task_url: str | None = None, dataset: dict[s
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        books = await fetch_data(seed_value=seed)
+        dataset = {"books": books}
 
     # Extract books from dataset
     books = dataset.get("books", []) if dataset else []
@@ -99,7 +100,8 @@ async def generate_search_book_constraints(task_url: str | None = None, dataset:
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        books = await fetch_data(seed_value=seed)
+        dataset = {"books": books}
 
     # Extract books from dataset
     books = dataset.get("books", []) if dataset else []
@@ -199,7 +201,8 @@ async def generate_book_filter_constraints(task_url: str | None = None, dataset:
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        books = await fetch_data(seed_value=seed)
+        dataset = {"books": books}
 
     # Extract books from dataset
     books = dataset.get("books", []) if dataset else []
@@ -449,7 +452,8 @@ async def generate_add_comment_constraints(task_url: str | None = None, dataset:
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        books = await fetch_data(seed_value=seed)
+        dataset = {"books": books}
 
     # Extract books from dataset
     books_data = dataset.get("books", []) if dataset else []
@@ -572,7 +576,8 @@ async def generate_edit_book_constraints(task_url: str | None = None, dataset: d
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        books = await fetch_data(seed_value=seed)
+        dataset = {"books": books}
     all_genres = list(set(genre for book in dataset.get("books", []) for genre in book["genres"]))
 
     # Generar constraints
@@ -666,7 +671,8 @@ async def generate_add_book_constraints(task_url: str | None = None, dataset: di
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        books = await fetch_data(seed_value=seed)
+        dataset = {"books": books}
     all_genres = list(set(genre for book in dataset.get("books", []) for genre in book["genres"]))
 
     # Generar constraints
@@ -767,7 +773,8 @@ async def generate_edit_profile_constraints(task_url: str | None = None, dataset
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        books = await fetch_data(seed_value=seed)
+        dataset = {"books": books}
     all_genres = list(set(genre for book in dataset.get("books", []) for genre in book["genres"]))
 
     # Generar constraints
