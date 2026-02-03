@@ -87,7 +87,7 @@ with StatefulEvaluator(task=task) as evaluator:
 - El agente puede devolver múltiples acciones por llamada (ejecutadas en batch)
 - Usado en la subnet para evaluar miners remotos
 
-**Casos de uso típicos:** 
+**Casos de uso típicos:**
 - Evaluar miners remotos en la subnet (HTTP)
 - Modo stateful del benchmark (agentes iterativos)
 - Entrenar agentes de RL/PPO que necesitan feedback después de cada acción

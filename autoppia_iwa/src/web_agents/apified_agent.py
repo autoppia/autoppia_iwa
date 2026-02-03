@@ -1,5 +1,6 @@
 import asyncio
 import ipaddress
+from typing import Any
 from urllib.parse import urlparse, urlunparse
 
 import aiohttp
@@ -32,6 +33,29 @@ class ApifiedWebAgent(IWebAgent):
                 self.base_url = f"http://{host}"
         self.timeout = timeout
         super().__init__()
+        self._cached_solution: TaskSolution | None = None
+
+    async def act(
+        self,
+        *,
+        task: Task,
+        snapshot_html: str,
+        url: str,
+        step_index: int,
+        history: list[dict[str, Any]] | None = None,
+    ) -> list[BaseAction]:
+        """
+        Act method for stateful mode. For concurrent mode agents, this returns
+        all actions on the first step (step_index == 0) and empty list afterwards.
+        """
+        if step_index == 0:
+            # First call: generate solution and cache it
+            solution = await self.solve_task(task)
+            self._cached_solution = solution
+            return solution.actions
+        else:
+            # Subsequent calls: return empty list (all actions already returned)
+            return []
 
     async def solve_task(self, task: Task) -> TaskSolution:
         timeout = aiohttp.ClientTimeout(total=self.timeout)

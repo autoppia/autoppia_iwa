@@ -13,7 +13,6 @@ from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
 from autoppia_iwa.entrypoints.benchmark.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.web_agents.cua import ApifiedWebCUA
 
 # Configuración para modo STATEFUL
 PROJECT_IDS = ["autobooks"]
@@ -21,7 +20,7 @@ PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 
 # ✅ IMPORTANTE: En modo stateful, los agentes DEBEN ser HTTP (ApifiedWebCUA)
 # El agente debe estar corriendo en un servidor y exponer el endpoint /act
-# 
+#
 # Ejemplo: Si tienes un agente corriendo en http://localhost:5000
 # AGENTS = [
 #     ApifiedWebCUA(base_url="http://localhost:5000", id="1", name="MyAgent"),
@@ -33,7 +32,6 @@ PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 AGENTS = [
     # Ejemplo: Agente HTTP corriendo localmente
     # ApifiedWebCUA(base_url="http://localhost:5000", id="1", name="LocalAgent"),
-    
     # O agente remoto
     # ApifiedWebCUA(base_url="http://mi-agente.com", id="1", name="RemoteAgent"),
 ]
@@ -44,7 +42,7 @@ CFG = BenchmarkConfig(
     agents=AGENTS,
     # Evaluator mode
     evaluator_mode="stateful",  # ← Modo iterativo
-    max_steps_per_task=50,      # ← Límite de pasos
+    max_steps_per_task=50,  # ← Límite de pasos
     # Tasks
     use_cached_tasks=True,
     prompts_per_use_case=1,
@@ -77,10 +75,7 @@ def main():
             logger.error("No agents configured in AGENTS.")
             return
 
-        logger.info(
-            f"Configuration: {len(CFG.projects)} projects, {len(CFG.agents)} agents, "
-            f"{CFG.runs} runs, evaluator_mode={CFG.evaluator_mode}"
-        )
+        logger.info(f"Configuration: {len(CFG.projects)} projects, {len(CFG.agents)} agents, {CFG.runs} runs, evaluator_mode={CFG.evaluator_mode}")
         logger.info(f"Stateful mode: max {CFG.max_steps_per_task} steps per task")
 
         # Create and run benchmark

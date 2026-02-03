@@ -168,7 +168,13 @@ class SimpleTaskGenerator:
                     if "seed_value" in sig.parameters:
                         replace_kwargs["seed_value"] = seed
                     if "dataset" in sig.parameters:
-                        replace_kwargs["dataset"] = dataset
+                        # Only extract if dataset is a dict, otherwise pass through as-is
+                        if isinstance(dataset, dict) and dataset:
+                            # Extract first list value from dict (most projects use {"entity_type": [...]})
+                            entity_list = next((v for v in dataset.values() if isinstance(v, list)), None)
+                            replace_kwargs["dataset"] = entity_list
+                        else:
+                            replace_kwargs["dataset"] = dataset
 
                 # Apply replacements (async or sync)
                 if hasattr(use_case, "apply_replacements_async"):

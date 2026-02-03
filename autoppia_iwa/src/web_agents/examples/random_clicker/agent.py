@@ -1,7 +1,8 @@
 import random
+from typing import Any
 
 from autoppia_iwa.src.data_generation.tasks.classes import Task
-from autoppia_iwa.src.execution.actions.actions import ClickAction
+from autoppia_iwa.src.execution.actions.actions import BaseAction, ClickAction
 from autoppia_iwa.src.web_agents.classes import BaseAgent, TaskSolution
 
 
@@ -13,6 +14,29 @@ class RandomClickerWebAgent(BaseAgent):
     def __init__(self, id: str | None = None, name="Random clicker", is_random: bool = True):
         super().__init__(id=id, name=name)
         self.is_random = is_random
+        self._cached_solution: TaskSolution | None = None
+
+    async def act(
+        self,
+        *,
+        task: Task,
+        snapshot_html: str,
+        url: str,
+        step_index: int,
+        history: list[dict[str, Any]] | None = None,
+    ) -> list[BaseAction]:
+        """
+        Act method for stateful mode. For concurrent mode agents, this returns
+        all actions on the first step (step_index == 0) and empty list afterwards.
+        """
+        if step_index == 0:
+            # First call: generate solution and cache it
+            solution = await self.solve_task(task)
+            self._cached_solution = solution
+            return solution.actions
+        else:
+            # Subsequent calls: return empty list (all actions already returned)
+            return []
 
     async def solve_task(self, task: Task) -> TaskSolution:
         """

@@ -43,13 +43,13 @@ async def health():
 @app.post("/act")
 async def act(request: ActRequest):
     # Tu lógica aquí: analiza el HTML y decide qué hacer
-    
+
     # Ejemplo: devolver acciones
     actions = [
         {"type": "ClickAction", "selector": "#login"},
         {"type": "TypeAction", "selector": "#username", "text": "user"},
     ]
-    
+
     return {"actions": actions}
 
 if __name__ == "__main__":

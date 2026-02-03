@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any, Dict, List, Optional
+from typing import Any
 from urllib.parse import urlparse, urlunparse
 
 import aiohttp
@@ -52,12 +52,12 @@ class ApifiedWebCUA(IWebAgent):
         snapshot_html: str,
         url: str,
         step_index: int,
-        history: Optional[List[Dict[str, Any]]] = None,
-    ) -> List[BaseAction]:
+        history: list[dict[str, Any]] | None = None,
+    ) -> list[BaseAction]:
         """
         Call the remote /act endpoint and translate the response into BaseAction instances.
         """
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "task_id": getattr(task, "id", None),
             "prompt": getattr(task, "prompt", None),
             "url": self._force_localhost(url),
@@ -89,8 +89,8 @@ class ApifiedWebCUA(IWebAgent):
         snapshot_html: str,
         url: str,
         step_index: int,
-        history: Optional[List[Dict[str, Any]]] = None,
-    ) -> List[BaseAction]:
+        history: list[dict[str, Any]] | None = None,
+    ) -> list[BaseAction]:
         return asyncio.run(
             self.act(
                 task=task,
@@ -104,14 +104,14 @@ class ApifiedWebCUA(IWebAgent):
     # ------------------------------------------------------------------ #
     # Helpers
     # ------------------------------------------------------------------ #
-    def _parse_actions_response(self, data: Dict[str, Any]) -> List[BaseAction]:
+    def _parse_actions_response(self, data: dict[str, Any]) -> list[BaseAction]:
         """
         Accepts a flexible response format:
           - {"actions": [ {type: "...", ...}, ... ]}
           - {"action": { ... }}
           - {"navigate_url": "http://..." }  (converted to NavigateAction)
         """
-        actions_payload: List[Dict[str, Any]] = []
+        actions_payload: list[dict[str, Any]] = []
 
         if isinstance(data.get("actions"), list):
             actions_payload = [a for a in data["actions"] if isinstance(a, dict)]
@@ -128,7 +128,7 @@ class ApifiedWebCUA(IWebAgent):
         if not actions_payload:
             return []
 
-        actions: List[BaseAction] = []
+        actions: list[BaseAction] = []
         for raw in actions_payload:
             try:
                 if isinstance(raw, dict) and raw.get("type") in {"NavigateAction", "navigate"}:
@@ -180,4 +180,3 @@ class ApifiedWebCUA(IWebAgent):
 
 
 __all__ = ["ApifiedWebCUA"]
-

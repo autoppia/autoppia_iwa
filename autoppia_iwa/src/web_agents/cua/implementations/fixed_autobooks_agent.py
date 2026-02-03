@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from typing import Any
+
 from autoppia_iwa.src.data_generation.tasks.classes import Task
-from autoppia_iwa.src.execution.actions.actions import NavigateAction
+from autoppia_iwa.src.execution.actions.actions import BaseAction, NavigateAction
 from autoppia_iwa.src.web_agents.classes import BaseAgent, TaskSolution
 
 
@@ -17,6 +19,29 @@ class FixedAutobooksAgent(BaseAgent):
 
     def __init__(self, id: str = "fixed_autobooks", name: str = "FixedAutobooksAgent"):
         super().__init__(id=id, name=name)
+        self._cached_solution: TaskSolution | None = None
+
+    async def act(
+        self,
+        *,
+        task: Task,
+        snapshot_html: str,
+        url: str,
+        step_index: int,
+        history: list[dict[str, Any]] | None = None,
+    ) -> list[BaseAction]:
+        """
+        Act method for stateful mode. For concurrent mode agents, this returns
+        all actions on the first step (step_index == 0) and empty list afterwards.
+        """
+        if step_index == 0:
+            # First call: generate solution and cache it
+            solution = await self.solve_task(task)
+            self._cached_solution = solution
+            return solution.actions
+        else:
+            # Subsequent calls: return empty list (all actions already returned)
+            return []
 
     async def solve_task(self, task: Task) -> TaskSolution:
         """
@@ -41,4 +66,3 @@ class FixedAutobooksAgent(BaseAgent):
         )
 
         return solution
-

@@ -1,21 +1,21 @@
 from __future__ import annotations
 
-from autoppia_iwa.src.web_agents.cua.webcua import (  # noqa: F401
+from autoppia_iwa.src.web_agents.cua.apified_cua import ApifiedWebCUA
+from autoppia_iwa.src.web_agents.cua.implementations import FixedAutobooksAgent
+from autoppia_iwa.src.web_agents.cua.webcua import (
     AsyncWebCUASession,
-    SyncWebCUASession,
-    ScoreDetails,
     BrowserSnapshot,
+    ScoreDetails,
     StepResult,
+    SyncWebCUASession,
 )
-from autoppia_iwa.src.web_agents.cua.apified_cua import ApifiedWebCUA  # noqa: F401
-from autoppia_iwa.src.web_agents.cua.implementations import FixedAutobooksAgent  # noqa: F401
 
 __all__ = [
-    "AsyncWebCUASession",
-    "SyncWebCUASession",
-    "ScoreDetails",
-    "BrowserSnapshot",
-    "StepResult",
     "ApifiedWebCUA",
+    "AsyncWebCUASession",
+    "BrowserSnapshot",
     "FixedAutobooksAgent",
+    "ScoreDetails",
+    "StepResult",
+    "SyncWebCUASession",
 ]
