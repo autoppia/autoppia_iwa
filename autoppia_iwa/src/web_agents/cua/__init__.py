@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from autoppia_iwa.src.web_agents.cua.apified_cua import ApifiedWebCUA
-from autoppia_iwa.src.web_agents.cua.implementations import FixedAutobooksAgent
 from autoppia_iwa.src.web_agents.cua.webcua import (
     AsyncWebCUASession,
     BrowserSnapshot,
@@ -14,7 +13,6 @@ __all__ = [
     "ApifiedWebCUA",
     "AsyncWebCUASession",
     "BrowserSnapshot",
-    "FixedAutobooksAgent",
     "ScoreDetails",
     "StepResult",
     "SyncWebCUASession",

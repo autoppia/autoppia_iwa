@@ -13,7 +13,7 @@ from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
 from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.web_agents.cua import ApifiedWebCUA
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
 # from autoppia_iwa.src.execution.dynamic import DynamicPhaseConfig
 
@@ -57,14 +57,8 @@ SOTA_AGENTS = [
 ]
 
 # Active agents to run.
-# For this smoke-style test, we use a fixed agent that always returns
-# the same hard-coded trajectory designed for a single Autobooks task.
-# AGENTS = [
-#     # FixedAutobooksAgent(id="1", name="FixedAutobooksAgent"),
-#     ApifiedWebAgent(id="2", name="Autoppia_agent", host="127.0.0.1", port=5000, timeout=248)
-# ]
 AGENTS = [
-    ApifiedWebCUA(base_url="http://localhost:5000", id="1", name="MyAgent"),
+    ApifiedWebAgent(base_url="http://localhost:5000", id="1", name="LocalAgent"),
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)
