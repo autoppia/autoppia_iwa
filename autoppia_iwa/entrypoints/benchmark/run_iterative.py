@@ -13,9 +13,9 @@ from loguru import logger
 
 from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
-from autoppia_iwa.entrypoints.benchmark.task_generation import get_projects_by_ids
+from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.web_agents.cua import FixedAutobooksAgent
+from autoppia_iwa.src.web_agents.cua import ApifiedWebCUA
 
 # =========================
 # 💡 Configuración ITERATIVA
@@ -23,7 +23,8 @@ from autoppia_iwa.src.web_agents.cua import FixedAutobooksAgent
 
 # Agentes a evaluar
 AGENTS = [
-    FixedAutobooksAgent(id="1", name="FixedAutobooksAgent"),
+    # FixedAutobooksAgent(id="1", name="FixedAutobooksAgent"),
+    ApifiedWebCUA(base_url="http://localhost:5000", id="1", name="LocalAgent"),
 ]
 
 # Proyectos a evaluar

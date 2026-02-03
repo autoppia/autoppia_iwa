@@ -11,8 +11,9 @@ from loguru import logger
 
 from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
-from autoppia_iwa.entrypoints.benchmark.task_generation import get_projects_by_ids
+from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
+from autoppia_iwa.src.web_agents.cua import ApifiedWebCUA
 
 # Configuración para modo STATEFUL
 PROJECT_IDS = ["autobooks"]
@@ -31,7 +32,7 @@ PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 
 AGENTS = [
     # Ejemplo: Agente HTTP corriendo localmente
-    # ApifiedWebCUA(base_url="http://localhost:5000", id="1", name="LocalAgent"),
+    ApifiedWebCUA(base_url="http://localhost:5000", id="1", name="LocalAgent"),
     # O agente remoto
     # ApifiedWebCUA(base_url="http://mi-agente.com", id="1", name="RemoteAgent"),
 ]
@@ -44,19 +45,15 @@ CFG = BenchmarkConfig(
     evaluator_mode="stateful",  # ← Modo iterativo
     max_steps_per_task=50,  # ← Límite de pasos
     # Tasks
-    use_cached_tasks=True,
     prompts_per_use_case=1,
-    num_use_cases=0,
     # Execution
     runs=1,
     max_parallel_agent_calls=1,
-    use_cached_solutions=False,  # No compatible con modo stateful
     record_gif=False,
     # Dynamic mode
     dynamic=False,
     # Persistence
     save_results_json=True,
-    plot_results=False,
 )
 
 
