@@ -975,8 +975,6 @@ async def update_use_cases_prompt_info(
     # Update use cases that need movie data
     FILM_DETAIL_USE_CASE.additional_prompt_info = _get_film_detail_info(movies_data)
     ADD_TO_WATCHLIST_USE_CASE.additional_prompt_info = _get_add_to_watchlist_info(movies_data)
-    ADD_PRODUCT_TO_WATCHLIST_USE_CASE.additional_prompt_info = _get_add_to_watchlist_info(movies_data)
-    RATE_FILM_USE_CASE.additional_prompt_info = _get_add_to_watchlist_info(movies_data)
     REMOVE_FROM_WATCHLIST_USE_CASE.additional_prompt_info = _get_add_to_watchlist_info(movies_data)
     SHARE_FILM_USE_CASE.additional_prompt_info = _get_share_film_info(movies_data)
     WATCH_TRAILER_USE_CASE.additional_prompt_info = _get_watch_trailer_info(movies_data)
