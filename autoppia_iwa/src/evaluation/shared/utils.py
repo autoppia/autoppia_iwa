@@ -11,8 +11,8 @@ from loguru import logger
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
 from autoppia_iwa.src.evaluation.classes import EvaluationStats, Feedback, TestResult
-from autoppia_iwa.src.evaluation.evaluator.feedback_generator import FeedbackGenerator
-from autoppia_iwa.src.evaluation.evaluator.test_runner import TestRunner
+from autoppia_iwa.src.evaluation.shared.feedback_generator import FeedbackGenerator
+from autoppia_iwa.src.evaluation.shared.test_runner import TestRunner
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
 

@@ -39,7 +39,7 @@ def transform_all(records: list[dict], mapping: dict) -> list[dict]:
     return [apply_mapping(record, mapping) for record in records]
 
 
-async def fetch_movies_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+async def fetch_movies_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
     """Fetch and normalize movies data from the backend API."""
     from .main import FRONTEND_PORT_INDEX, cinema_project
 
