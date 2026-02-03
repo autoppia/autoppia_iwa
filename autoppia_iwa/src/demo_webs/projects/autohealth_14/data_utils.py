@@ -98,6 +98,8 @@ def transform_medical_records_to_modified(medical_records: list[dict]) -> list[d
             new_data["record_date"] = new_data.pop("date")
         if "type" in new_data:
             new_data["record_type"] = new_data.pop("type")
+        if "doctorName" in new_data:
+            new_data["doctor_name"] = new_data.pop("doctorName")
         modified.append(new_data)
     return modified
 
@@ -125,4 +127,5 @@ async def get_all_data(seed_value: int | None = None, count: int = 50) -> dict[s
         "appointments": await get_data(entity_type="appointments", method="select", seed_value=seed_value, count=count),
         "doctors": await get_data(entity_type="doctors", method="select", seed_value=seed_value, count=count),
         "prescriptions": await get_data(entity_type="prescriptions", method="select", seed_value=seed_value, count=count),
+        "medical-records": await get_data(entity_type="medical-records", method="select", seed_value=seed_value, count=count),
     }
