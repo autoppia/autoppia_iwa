@@ -4,7 +4,7 @@ import random
 import string
 import uuid
 from abc import ABC, abstractmethod
-from typing import Any, List, Optional, Dict
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -15,16 +15,16 @@ from autoppia_iwa.src.execution.actions.base import BaseAction
 class IWebAgent(ABC):
     """
     Interface for all web agents in IWA.
-    
+
     ✅ IMPORTANTE: Todos los agentes usan el mismo endpoint /act
-    
+
     Los agentes son servicios HTTP que exponen el endpoint /act.
     Reciben el estado del browser y devuelven acciones a ejecutar.
-    
+
     Esta interfaz se usa tanto en:
     - Modo concurrent: Se llama una vez y el agente devuelve todas las acciones
     - Modo stateful: Se llama iterativamente, el agente ve el estado en cada paso
-    
+
     Example implementations:
     - ApifiedWebCUA: HTTP API-based agent (para benchmark y subnet)
     - Miners: Repositorios GitHub deployados como contenedores HTTP
@@ -41,22 +41,22 @@ class IWebAgent(ABC):
         snapshot_html: str,
         url: str,
         step_index: int,
-        history: Optional[List[Dict[str, Any]]] = None,
-    ) -> List[BaseAction]:
+        history: list[dict[str, Any]] | None = None,
+    ) -> list[BaseAction]:
         """
         Decide acciones basándose en el estado actual del browser.
-        
+
         Este método se usa tanto en modo concurrent como stateful:
         - Concurrent: Se llama UNA vez con snapshot inicial, devuelve TODAS las acciones
         - Stateful: Se llama ITERATIVAMENTE, devuelve acciones para el siguiente paso
-        
+
         Args:
             task: La tarea a resolver
             snapshot_html: HTML actual de la página
             url: URL actual
             step_index: Número de iteración (0 en concurrent, incrementa en stateful)
             history: Historial opcional de acciones previas
-            
+
         Returns:
             Lista de acciones a ejecutar (puede ser múltiples para batch execution)
         """

@@ -38,7 +38,7 @@ from .data import (
     SCROLL_DIRECTIONS,
     SCROLL_SECTIONS_TITLES,
 )
-from .data_utils import get_data
+from .data_utils import fetch_data
 
 MOCK_DATES = generate_mock_dates()
 MOCK_DATE_STRINGS = generate_mock_date_strings(MOCK_DATES)
@@ -53,7 +53,7 @@ MOCK_SPECIAL_REQUESTS = ["window seat", "allergies: nuts", "quiet table"]
 async def _get_restaurant_queries() -> list[str]:
     """Get restaurant queries including names from API data."""
     try:
-        restaurant_data = await get_data(count=50)  # Get a reasonable sample
+        restaurant_data = await fetch_data(count=50)  # Get a reasonable sample
         restaurant_names = [r.get("name", "") for r in restaurant_data if r.get("name")]
         return _BASE_RESTAURANT_QUERIES + restaurant_names
     except Exception:
@@ -196,7 +196,7 @@ async def _generate_value_for_field(field_name: str) -> Any:
         possible_queries = await _get_restaurant_queries()
         return random.choice(possible_queries) if possible_queries else "pizza"
     elif field_name == "restaurant_name" or field_name == "name":
-        restaurant_data = await get_data()
+        restaurant_data = await fetch_data()
         if restaurant_data:
             return random.choice(restaurant_data).get("name", "Default Restaurant")
         return "Default Restaurant"
@@ -247,38 +247,44 @@ async def _generate_value_for_field(field_name: str) -> Any:
 
 # --- Constraint Generators ---
 async def generate_view_restaurant_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url)
-        dataset = await get_data(seed_value=seed)
+    if not dataset:
+        seed = get_seed_from_url(task_url) if task_url else None
+        restaurants = await fetch_data(seed_value=seed)
+    else:
+        restaurants = dataset
     return generate_restaurant_constraints(
         fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"],
         allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT,
         max_constraints=4,
-        dataset=dataset,
+        dataset=restaurants,
     )
 
 
 async def generate_view_full_menu_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url)
-        dataset = await get_data(seed_value=seed)
+    if not dataset:
+        seed = get_seed_from_url(task_url) if task_url else None
+        restaurants = await fetch_data(seed_value=seed)
+    else:
+        restaurants = dataset
     return generate_restaurant_constraints(
         fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"],
         allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT,
         max_constraints=4,
-        dataset=dataset,
+        dataset=restaurants,
     )
 
 
 async def generate_collapse_menu_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url)
-        dataset = await get_data(seed_value=seed)
+    if not dataset:
+        seed = get_seed_from_url(task_url) if task_url else None
+        restaurants = await fetch_data(seed_value=seed)
+    else:
+        restaurants = dataset
     return generate_restaurant_constraints(
         fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"],
         allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT,
         max_constraints=4,
-        dataset=dataset,
+        dataset=restaurants,
     )
 
 
@@ -309,35 +315,39 @@ async def generate_constraints_for_single_field(field: str, allowed_operators: d
 
 
 async def generate_book_restaurant_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url)
-        dataset = await get_data(seed_value=seed)
+    if not dataset:
+        seed = get_seed_from_url(task_url) if task_url else None
+        restaurants = await fetch_data(seed_value=seed)
+    else:
+        restaurants = dataset
     restaurant_constraints = generate_restaurant_constraints(
         fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"],
         allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT,
         max_constraints=3,
-        dataset=dataset,
+        dataset=restaurants,
     )
     booking_constraints = await _generate_constraints_for_fields(
         all_fields=["people_count", "selected_date", "selected_time"],
         allowed_ops=OPERATORS_ALLOWED_BOOK_RESTAURANT,
         required_fields=["people_count", "selected_date", "selected_time"],
         validate_dates=True,
-        dataset=dataset,
+        dataset=restaurants,
     )
     all_constraints = restaurant_constraints + booking_constraints
     return all_constraints
 
 
 async def generate_country_selected_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url)
-        dataset = await get_data(seed_value=seed)
+    if not dataset:
+        seed = get_seed_from_url(task_url) if task_url else None
+        restaurants = await fetch_data(seed_value=seed)
+    else:
+        restaurants = dataset
     restaurant_constraints = generate_restaurant_constraints(
         fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"],
         allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT,
         max_constraints=3,
-        dataset=dataset,
+        dataset=restaurants,
     )
     country_field = random.choice(["country_name", "country_code"])
     booking_contraints = await _generate_constraints_for_fields(
@@ -345,7 +355,7 @@ async def generate_country_selected_constraints(task_url: str | None = None, dat
         allowed_ops=OPERATORS_ALLOWED_COUNTRY_SELECTED,
         required_fields=[country_field],
         validate_dates=True,
-        dataset=dataset,
+        dataset=restaurants,
     )
     all_constraints = restaurant_constraints + booking_contraints
 
@@ -353,21 +363,23 @@ async def generate_country_selected_constraints(task_url: str | None = None, dat
 
 
 async def generate_occasion_selected_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url)
-        dataset = await get_data(seed_value=seed)
+    if not dataset:
+        seed = get_seed_from_url(task_url) if task_url else None
+        restaurants = await fetch_data(seed_value=seed)
+    else:
+        restaurants = dataset
     restaurant_constraints = generate_restaurant_constraints(
         fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"],
         allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT,
         max_constraints=3,
-        dataset=dataset,
+        dataset=restaurants,
     )
     booking_contraints = await _generate_constraints_for_fields(
         all_fields=["people_count", "selected_date", "selected_time"],
         allowed_ops=OPERATORS_ALLOWED_COUNTRY_SELECTED,
         required_fields=["occasion_type"],
         validate_dates=True,
-        dataset=dataset,
+        dataset=restaurants,
     )
     all_constraints = restaurant_constraints + booking_contraints
 
@@ -375,14 +387,16 @@ async def generate_occasion_selected_constraints(task_url: str | None = None, da
 
 
 async def generate_reservation_complete_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url)
-        dataset = await get_data(seed_value=seed)
+    if not dataset:
+        seed = get_seed_from_url(task_url) if task_url else None
+        restaurants = await fetch_data(seed_value=seed)
+    else:
+        restaurants = dataset
     restaurant_constraints = generate_restaurant_constraints(
         fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"],
         allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT,
         max_constraints=3,
-        dataset=dataset,
+        dataset=restaurants,
     )
     booking_contraints = await _generate_constraints_for_fields(
         all_fields=["people_count", "country_code", "phone_number", "occasion_typeselected_date", "selected_time"],
@@ -390,7 +404,7 @@ async def generate_reservation_complete_constraints(task_url: str | None = None,
         required_fields=["occasion_type"],
         validate_dates=True,
         max_optional=3,
-        dataset=dataset,
+        dataset=restaurants,
     )
     all_constraints = restaurant_constraints + booking_contraints
 
@@ -495,7 +509,7 @@ async def _generate_constraints_for_fields(
     dataset: list[dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     """Generate constraints for fields. If dataset is None, it will be fetched when needed."""
-    if dataset is None or dataset == {}:
+    if not dataset:
         dataset = []
     if required_fields is None:
         required_fields = []

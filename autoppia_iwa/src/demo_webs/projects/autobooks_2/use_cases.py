@@ -1,6 +1,6 @@
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
-from .data_utils import fetch_books_data
+from .data_utils import fetch_data
 from .events import (
     AddBookEvent,
     AddCommentEvent,
@@ -42,7 +42,7 @@ from .replace_functions import login_replace_func, register_replace_func, replac
 
 async def _get_books_data_for_prompts(seed_value: int | None = None, count: int = 50) -> list[dict]:
     """Fetch books data from API for use in prompt generation."""
-    return await fetch_books_data(seed_value=seed_value, count=count)
+    return await fetch_data(seed_value=seed_value, count=count)
 
 
 def _generate_book_names_list(books_data: list[dict]) -> str:

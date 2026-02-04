@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Any, Awaitable, List, Optional, Protocol, runtime_checkable
+from collections.abc import Awaitable
+from typing import Any, Protocol, runtime_checkable
 
 from playwright.async_api import Page
 
@@ -23,7 +24,7 @@ class BrowserSnapshot(Protocol):
 class StepResult(Protocol):
     score: ScoreDetails
     snapshot: BrowserSnapshot
-    action_result: Optional[ActionExecutionResult]
+    action_result: ActionExecutionResult | None
 
 
 @runtime_checkable
@@ -32,28 +33,21 @@ class AsyncWebCUASession(Protocol):
     Async interface for a step-wise browser + backend session over Autoppia tasks.
     """
 
-    async def reset(self) -> StepResult:
-        ...
+    async def reset(self) -> StepResult: ...
 
-    async def step(self, action: Optional[BaseAction]) -> StepResult:
-        ...
+    async def step(self, action: BaseAction | None) -> StepResult: ...
 
-    async def get_score_details(self) -> ScoreDetails:
-        ...
+    async def get_score_details(self) -> ScoreDetails: ...
 
-    async def close(self) -> None:
-        ...
+    async def close(self) -> None: ...
 
-    async def run_with_timeout(self, awaitable: Awaitable[Any], timeout_s: float) -> Any:
-        ...
+    async def run_with_timeout(self, awaitable: Awaitable[Any], timeout_s: float) -> Any: ...
 
     @property
-    def page(self) -> Page:
-        ...
+    def page(self) -> Page: ...
 
     @property
-    def history(self) -> List[ActionExecutionResult]:
-        ...
+    def history(self) -> list[ActionExecutionResult]: ...
 
 
 @runtime_checkable
@@ -62,41 +56,31 @@ class SyncWebCUASession(Protocol):
     Sync wrapper interface around a WebCUA session, suitable for RL envs.
     """
 
-    def reset(self) -> StepResult:
-        ...
+    def reset(self) -> StepResult: ...
 
-    def step(self, action: Optional[BaseAction]) -> StepResult:
-        ...
+    def step(self, action: BaseAction | None) -> StepResult: ...
 
-    def get_score_details(self) -> ScoreDetails:
-        ...
+    def get_score_details(self) -> ScoreDetails: ...
 
-    def get_partial_score(self) -> ScoreDetails:
-        ...
+    def get_partial_score(self) -> ScoreDetails: ...
 
-    def execute_action(self, action: BaseAction) -> StepResult:
-        ...
+    def execute_action(self, action: BaseAction) -> StepResult: ...
 
-    def run_with_timeout(self, awaitable: Awaitable[Any], timeout_s: float) -> Any:
-        ...
+    def run_with_timeout(self, awaitable: Awaitable[Any], timeout_s: float) -> Any: ...
 
-    def close(self) -> None:
-        ...
+    def close(self) -> None: ...
 
     @property
-    def page(self) -> Page:
-        ...
+    def page(self) -> Page: ...
 
     @property
-    def history(self) -> List[ActionExecutionResult]:
-        ...
+    def history(self) -> list[ActionExecutionResult]: ...
 
 
 __all__ = [
     "AsyncWebCUASession",
-    "SyncWebCUASession",
-    "ScoreDetails",
     "BrowserSnapshot",
+    "ScoreDetails",
     "StepResult",
+    "SyncWebCUASession",
 ]
-

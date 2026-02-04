@@ -39,8 +39,22 @@ def transform_all(records: list[dict], mapping: dict) -> list[dict]:
     return [apply_mapping(record, mapping) for record in records]
 
 
-async def fetch_movies_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
-    """Fetch and normalize movies data from the backend API."""
+async def fetch_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
+    """
+    Fetch and normalize movies data from the backend API.
+
+    This is the unified function replacing:
+    - fetch_movies_data()
+    - get_data()
+    - get_all_data()
+
+    Args:
+        seed_value: Seed value for deterministic selection
+        count: Number of items to fetch
+
+    Returns:
+        list[dict] of normalized movies
+    """
     from .main import FRONTEND_PORT_INDEX, cinema_project
 
     project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{cinema_project.id}"
@@ -64,14 +78,3 @@ async def fetch_movies_data(seed_value: int | None = None, count: int = 50) -> l
         mapped_items = transform_all(items, field_mapping)
         return mapped_items
     return []
-
-
-async def get_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
-    """Main data loader function for autocinema_1."""
-    return await fetch_movies_data(seed_value=seed_value, count=count)
-
-
-async def get_all_data(seed_value: int | None = None, count: int = 50) -> dict[str, list[dict]]:
-    """Load complete dataset for this project."""
-    films = await get_data(seed_value=seed_value, count=count)
-    return {"films": films}

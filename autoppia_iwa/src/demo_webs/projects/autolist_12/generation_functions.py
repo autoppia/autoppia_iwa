@@ -20,7 +20,7 @@ from .data import (
     TEAM_MEMBERS_OPTIONS,
     TEAMS,
 )
-from .data_utils import get_all_data
+from .data_utils import fetch_data
 
 
 async def _ensure_task_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
@@ -28,7 +28,8 @@ async def _ensure_task_dataset(task_url: str | None = None, dataset: dict[str, l
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        tasks = await fetch_data(seed_value=seed)
+        dataset = {"tasks": tasks}
 
     if dataset and "tasks" in dataset:
         return dataset["tasks"]

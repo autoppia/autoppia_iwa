@@ -22,7 +22,7 @@ from .data import (
     FIELD_OPERATORS_VIEW_EMAIL_MAP,
     get_all_email_words,
 )
-from .data_utils import get_all_data
+from .data_utils import fetch_data
 
 TEMPLATES = [
     {
@@ -63,7 +63,8 @@ async def _ensure_email_dataset(task_url: str | None = None, dataset: dict[str, 
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        emails = await fetch_data(seed_value=seed)
+        dataset = {"emails": emails}
 
     if dataset and "emails" in dataset:
         return dataset["emails"]

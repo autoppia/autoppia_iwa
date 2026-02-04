@@ -6,7 +6,7 @@ from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
-from .data_utils import get_all_data
+from .data_utils import fetch_data
 
 
 def generate_registration_constraints():
@@ -44,7 +44,7 @@ def generate_logout_constraints():
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "username equals <web_agent_id>"
+    constraints_str = "username equals <web_agent_id> AND password equals PASSWORD"
     return parse_constraints_str(constraints_str)
 
 
@@ -55,10 +55,13 @@ async def generate_book_constraints(task_url: str | None = None, dataset: dict[s
     """
     from .utils import build_constraints_info, parse_constraints_str
 
+    constraints = []
+
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        books = await fetch_data(seed_value=seed)
+        dataset = {"books": books}
 
     # Extract books from dataset
     books = dataset.get("books", []) if dataset else []
@@ -69,7 +72,13 @@ async def generate_book_constraints(task_url: str | None = None, dataset: dict[s
 
     # Convertir el string a la estructura de datos
     if constraints_str:
-        return parse_constraints_str(constraints_str)
+        constraints = parse_constraints_str(constraints_str)
+        # Always add username and password constraints explicitly
+        constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<username>"})
+        constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<password>"})
+
+        return constraints
+
     return None
 
 
@@ -81,7 +90,7 @@ def generate_delete_book_constraints():
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "id equals <web_agent_id>"
+    constraints_str = "username equals <username> AND password equals <password> AND id equals <web_agent_id>"
 
     # Convertir el string a la estructura de datos
     if constraints_str:
@@ -99,7 +108,8 @@ async def generate_search_book_constraints(task_url: str | None = None, dataset:
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        books = await fetch_data(seed_value=seed)
+        dataset = {"books": books}
 
     # Extract books from dataset
     books = dataset.get("books", []) if dataset else []
@@ -199,7 +209,8 @@ async def generate_book_filter_constraints(task_url: str | None = None, dataset:
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        books = await fetch_data(seed_value=seed)
+        dataset = {"books": books}
 
     # Extract books from dataset
     books = dataset.get("books", []) if dataset else []
@@ -449,7 +460,8 @@ async def generate_add_comment_constraints(task_url: str | None = None, dataset:
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        books = await fetch_data(seed_value=seed)
+        dataset = {"books": books}
 
     # Extract books from dataset
     books_data = dataset.get("books", []) if dataset else []
@@ -572,11 +584,16 @@ async def generate_edit_book_constraints(task_url: str | None = None, dataset: d
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        books = await fetch_data(seed_value=seed)
+        dataset = {"books": books}
     all_genres = list(set(genre for book in dataset.get("books", []) for genre in book["genres"]))
 
     # Generar constraints
     constraints = []
+
+    # Always add username and password constraints explicitly
+    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<username>"})
+    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<password>"})
 
     # Seleccionar 1, 2, 3 o 4 campos para editar
     selected_fields = sample(editable_fields, k=choice([1, 2, 3, 4]))
@@ -666,11 +683,16 @@ async def generate_add_book_constraints(task_url: str | None = None, dataset: di
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        books = await fetch_data(seed_value=seed)
+        dataset = {"books": books}
     all_genres = list(set(genre for book in dataset.get("books", []) for genre in book["genres"]))
 
     # Generar constraints
     constraints = []
+
+    # Always add username and password constraints explicitly
+    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<username>"})
+    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "PASSWORD"})
 
     # Seleccionar 1, 2, 3 o 4 campos para editar
     selected_fields = sample(editable_fields, k=choice([1, 2, 3, 4]))
@@ -767,11 +789,16 @@ async def generate_edit_profile_constraints(task_url: str | None = None, dataset
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        books = await fetch_data(seed_value=seed)
+        dataset = {"books": books}
     all_genres = list(set(genre for book in dataset.get("books", []) for genre in book["genres"]))
 
     # Generar constraints
     constraints = []
+
+    # Always add username and password constraints explicitly
+    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<username>"})
+    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<password>"})
 
     # Select random fields to edit
     selected_fields = sample(editable_fields, k=choice([1, 2, 3]))

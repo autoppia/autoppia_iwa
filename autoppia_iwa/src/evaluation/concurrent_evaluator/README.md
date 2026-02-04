@@ -70,22 +70,22 @@ for result in results:
 config = EvaluatorConfig(
     # GIF recording
     should_record_gif=True,
-    
+
     # Optimización
     enable_grouping_tasks=True,  # Agrupa soluciones idénticas
     chunk_size=20,               # Número de evaluaciones en paralelo
-    
+
     # Timeouts
     browser_timeout=10000,       # Timeout del navegador (ms)
     task_delay_in_seconds=0.1,   # Delay entre acciones
-    
+
     # Error handling
     max_consecutive_action_failures=2,
-    
+
     # Logging
     verbose_logging=False,
     debug_mode=False,
-    
+
     # Fases dinámicas (D1/D3/D4)
     dynamic_phase_config=DynamicPhaseConfig(
         d1_enabled=True,

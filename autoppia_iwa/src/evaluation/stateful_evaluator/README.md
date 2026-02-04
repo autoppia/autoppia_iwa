@@ -54,16 +54,16 @@ from autoppia_iwa.src.evaluation import StatefulEvaluator
 with StatefulEvaluator(task=task) as evaluator:
     # Reset inicial
     result = evaluator.reset()
-    
+
     # Loop de RL
     done = False
     while not done:
         action = policy.select_action(result.snapshot)
         result = evaluator.step(action)
-        
+
         reward = result.score.raw_score
         done = result.score.success
-        
+
         policy.update(reward, done)
 ```
 
@@ -128,14 +128,14 @@ class RLEnvironment:
     def __init__(self, task):
         self.evaluator = StatefulEvaluator(task=task, capture_screenshot=True)
         self.evaluator.reset()
-    
+
     def reset(self):
         result = self.evaluator.reset()
         return self._extract_state(result.snapshot)
-    
+
     def step(self, action):
         result = self.evaluator.step(action)
-        
+
         state = self._extract_state(result.snapshot)
         reward = result.score.raw_score
         done = result.score.success or result.score.raw_score == 0.0
@@ -143,9 +143,9 @@ class RLEnvironment:
             "tests_passed": result.score.tests_passed,
             "total_tests": result.score.total_tests
         }
-        
+
         return state, reward, done, info
-    
+
     def _extract_state(self, snapshot):
         # Convertir HTML/screenshot a representación para RL
         return torch.tensor(...)  # Tu representación
@@ -157,7 +157,7 @@ agent = PPOAgent()
 for episode in range(1000):
     state = env.reset()
     done = False
-    
+
     while not done:
         action = agent.select_action(state)
         next_state, reward, done, info = env.step(action)
@@ -172,30 +172,30 @@ from autoppia_iwa.src.evaluation import AsyncStatefulEvaluator
 
 async def train_dqn(task, agent, episodes=1000):
     evaluator = AsyncStatefulEvaluator(task=task)
-    
+
     for episode in range(episodes):
         result = await evaluator.reset()
         state = extract_features(result.snapshot)
-        
+
         done = False
         episode_reward = 0
-        
+
         while not done:
             action = agent.select_action(state, epsilon=0.1)
             result = await evaluator.step(action)
-            
+
             next_state = extract_features(result.snapshot)
             reward = result.score.raw_score
             done = result.score.success
-            
+
             agent.store_transition(state, action, reward, next_state, done)
             agent.train_step()
-            
+
             state = next_state
             episode_reward += reward
-        
+
         print(f"Episode {episode}: reward={episode_reward}")
-    
+
     await evaluator.close()
 ```
 
@@ -294,7 +294,7 @@ for action in exploratory_actions:
     result = await evaluator.step(action)
     print(f"Current URL: {result.snapshot.url}")
     print(f"Score: {result.score.raw_score}")
-    
+
     if result.score.success:
         print("Task completed!")
         break

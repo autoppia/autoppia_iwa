@@ -13,7 +13,7 @@ from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
 from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.web_agents.cua import FixedAutobooksAgent
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
 # from autoppia_iwa.src.execution.dynamic import DynamicPhaseConfig
 
@@ -57,15 +57,13 @@ SOTA_AGENTS = [
 ]
 
 # Active agents to run.
-# For this smoke-style test, we use a fixed agent that always returns
-# the same hard-coded trajectory designed for a single Autobooks task.
 AGENTS = [
-    FixedAutobooksAgent(id="1", name="FixedAutobooksAgent"),
+    ApifiedWebAgent(base_url="http://localhost:5000", id="1", name="LocalAgent"),
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
-    "autobooks",
+    "autohealth",
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 USE_CASES = [
@@ -120,13 +118,13 @@ CFG = BenchmarkConfig(
     # Tasks
     prompts_per_use_case=1,
     # use_cases=None means all use-cases
-    use_cases=USE_CASES,
+    use_cases=None,
     # Execution
     runs=1,  # single run is enough for this fixed agent
     max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
     record_gif=False,  # if your evaluator returns GIFs
     # Dynamic mode: disabled for this simple fixed-task test to avoid seed constraints.
-    dynamic=False,
+    dynamic=True,
     # TODO REVISAR PORQUE SOLO DEBEIRA HABER UNO
     # dynamic_phase_config=DynamicPhaseConfig(
     #     enable_d1_structure=True,
@@ -182,11 +180,8 @@ def main():
             logger.error("No agents configured in AGENTS.")
             return
 
-        logger.info(
-            f"Configuration: {len(CFG.projects)} projects, {len(CFG.agents)} agents, "
-            f"{CFG.runs} runs, evaluator_mode={CFG.evaluator_mode}"
-        )
-        
+        logger.info(f"Configuration: {len(CFG.projects)} projects, {len(CFG.agents)} agents, {CFG.runs} runs, evaluator_mode={CFG.evaluator_mode}")
+
         if CFG.evaluator_mode == "stateful":
             logger.info(f"Stateful mode enabled: max {CFG.max_steps_per_task} steps per task")
 

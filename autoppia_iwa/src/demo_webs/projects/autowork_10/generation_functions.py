@@ -31,20 +31,62 @@ from .data import (
 )
 
 
-async def _ensure_expert_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    """Extract experts data from the pre-loaded dataset, or fetch from server if not available."""
+async def _ensure_dataset(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None,
+    *,
+    entity_type: str,
+) -> list[dict[str, Any]] | list[str]:
+    """
+    Extract entity data from the pre-loaded dataset, or fetch from server if not available.
+
+    Args:
+        task_url: URL to extract seed from
+        dataset: Pre-loaded dataset dictionary
+        entity_type: Type of entity to fetch ("experts" or "skills")
+
+    Returns:
+        For "experts": list[dict[str, Any]] of expert data
+        For "skills": list[str] of skill names
+    """
     from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
-    from .data_utils import get_all_data
+    from .data_utils import fetch_data
 
-    # Fetch data if dataset is not provided or is empty
-    if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+    # If dataset is provided and contains the requested entity, return it
+    if dataset and entity_type in dataset:
+        entity_data = dataset[entity_type]
 
-    if dataset and "experts" in dataset:
-        return dataset["experts"]
-    return []
+        # For skills, ensure we return list[str]
+        if entity_type == "skills":
+            if entity_data and isinstance(entity_data[0], str):
+                return entity_data
+            elif entity_data and isinstance(entity_data[0], dict):
+                # Extract "name" field from each dict
+                return [skill.get("name") or str(skill) for skill in entity_data if skill]
+            return []
+
+        # For experts, return list[dict]
+        return entity_data if isinstance(entity_data, list) else []
+
+    # Otherwise, fetch the specific entity type dynamically
+    seed = get_seed_from_url(task_url) if task_url else None
+    fetched_data = await fetch_data(entity_type=entity_type, seed_value=seed)
+
+    if not fetched_data:
+        return []
+
+    # For skills, convert to list of strings
+    if entity_type == "skills":
+        if fetched_data and isinstance(fetched_data[0], str):
+            return fetched_data
+        elif fetched_data and isinstance(fetched_data[0], dict):
+            # Extract "name" field from each dict
+            return [skill.get("name") or str(skill) for skill in fetched_data if skill]
+        return []
+
+    # For experts, return list[dict]
+    return fetched_data
 
 
 def _generate_constraint_value(
@@ -206,25 +248,29 @@ def _generate_constraints(
     return all_constraints
 
 
-async def generate_book_consultant_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    dataset = await _ensure_expert_dataset(task_url, dataset)
+async def generate_book_consultant_constraint(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None) -> list[dict[str, Any]]:
+    experts_data = await _ensure_dataset(task_url, dataset, entity_type="experts")
+    if not isinstance(experts_data, list) or (experts_data and not isinstance(experts_data[0], dict)):
+        experts_data = []
     field_operators = FIELD_OPERATORS_USER_BOOK_CONSULTANT_MAP
     selected_field = ["slug"]
-    constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, selected_fields=selected_field)
+    constraints_list = _generate_constraints(experts_data, field_operators, min_constraints=2, selected_fields=selected_field)
 
     return constraints_list
 
 
-async def generate_hire_button_clicked_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    dataset = await _ensure_expert_dataset(task_url, dataset)
+async def generate_hire_button_clicked_constraint(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None) -> list[dict[str, Any]]:
+    experts_data = await _ensure_dataset(task_url, dataset, entity_type="experts")
+    if not isinstance(experts_data, list) or (experts_data and not isinstance(experts_data[0], dict)):
+        experts_data = []
     field_operators = FIELD_OPERATORS_MAP_HIRE_BUTTON
     selected_field = []
-    constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, selected_fields=selected_field)
+    constraints_list = _generate_constraints(experts_data, field_operators, min_constraints=2, selected_fields=selected_field)
 
     return constraints_list
 
 
-async def generate_content_expert_message_sent_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_content_expert_message_sent_constraint(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None) -> list[dict[str, Any]]:
     constraint = await generate_hire_button_clicked_constraint(task_url, dataset)
     messages = [
         "Hi, I'd like to connect with you.",
@@ -259,42 +305,48 @@ async def generate_content_expert_message_sent_constraint(task_url: str | None =
     return constraint
 
 
-async def generate_select_hiring_team_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_select_hiring_team_constraint(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None) -> list[dict[str, Any]]:
     field_mapping = {
         "team": {"field": "team", "dataset": [{"team": t} for t in ["Microsoft", "Apple", "Google"]]},
     }
-    dataset = await _ensure_expert_dataset(task_url, dataset)
+    experts_data = await _ensure_dataset(task_url, dataset, entity_type="experts")
+    if not isinstance(experts_data, list) or (experts_data and not isinstance(experts_data[0], dict)):
+        experts_data = []
     field_operators = FIELD_OPERATORS_MAP_HIRING_TEAM
     selected_fields = []
-    constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, selected_fields=selected_fields, field_map=field_mapping)
+    constraints_list = _generate_constraints(experts_data, field_operators, min_constraints=2, selected_fields=selected_fields, field_map=field_mapping)
 
     return constraints_list
 
 
-async def generate_hire_consultation_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_hire_consultation_constraint(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None) -> list[dict[str, Any]]:
     field_mapping = {
         "increaseHowMuch": {"field": "increaseHowMuch", "dataset": [{"increaseHowMuch": p} for p in ["5%", "10%", "15%"]]},
         "increaseWhen": {"field": "increaseWhen", "dataset": [{"increaseWhen": p} for p in ["Never", "After 3 months", "After 6 months", "After 12 months"]]},
         "paymentType": {"field": "paymentType", "dataset": [{"paymentType": p} for p in ["fixed", "hourly"]]},
     }
 
-    dataset = await _ensure_expert_dataset(task_url, dataset)
+    experts_data = await _ensure_dataset(task_url, dataset, entity_type="experts")
+    if not isinstance(experts_data, list) or (experts_data and not isinstance(experts_data[0], dict)):
+        experts_data = []
     field_operators = FIELD_OPERATORS_MAP_HIRING_CONSULTANT
     selected_fields = []
-    constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, field_map=field_mapping, selected_fields=selected_fields)
+    constraints_list = _generate_constraints(experts_data, field_operators, min_constraints=2, field_map=field_mapping, selected_fields=selected_fields)
 
     return constraints_list
 
 
-async def generate_quick_hire_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_quick_hire_constraint(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None) -> list[dict[str, Any]]:
     return await generate_book_consultant_constraint(task_url, dataset)
 
 
-async def generate_cancel_hire_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    dataset = await _ensure_expert_dataset(task_url, dataset)
+async def generate_cancel_hire_constraint(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None) -> list[dict[str, Any]]:
+    experts_data = await _ensure_dataset(task_url, dataset, entity_type="experts")
+    if not isinstance(experts_data, list) or (experts_data and not isinstance(experts_data[0], dict)):
+        experts_data = []
     field_operators = FIELD_OPERATORS_MAP_CANCEL_HIRE
     fixed_fields = ["slug"]
-    constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, selected_fields=fixed_fields)
+    constraints_list = _generate_constraints(experts_data, field_operators, min_constraints=2, selected_fields=fixed_fields)
 
     return constraints_list
 
@@ -374,10 +426,18 @@ async def generate_write_job_title_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_search_skill_constraint() -> list[dict[str, Any]]:
+async def generate_search_skill_constraint(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None) -> list[dict[str, Any]]:
     constraints_list = []
     possible_field = ["skill"]
-    popular_skill_data = [{"skill": q} for q in POPULAR_SKILLS]
+
+    # Fetch skills from server instead of using POPULAR_SKILLS
+    skills_list = await _ensure_dataset(task_url, dataset, entity_type="skills")
+    if not isinstance(skills_list, list) or (skills_list and not isinstance(skills_list[0], str)):
+        # Fallback to POPULAR_SKILLS if no skills fetched or wrong format
+        skills_list = POPULAR_SKILLS
+
+    # Convert list of strings to list of dicts as required by constraint generation
+    popular_skill_data = [{"skill": skill} for skill in skills_list]
     sample_skill = random.choice(popular_skill_data)
     for field in possible_field:
         allowed_ops = FIELD_OPERATORS_MAP_SEARCH_SKILL.get(field, [])
@@ -394,12 +454,20 @@ async def generate_search_skill_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_add_skill_constraint() -> list[dict[str, Any]]:
+async def generate_add_skill_constraint(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None) -> list[dict[str, Any]]:
     constraints_list = []
     possible_field = list(FIELD_OPERATORS_MAP_ADD_SKILL.keys())
     num_constraints = random.randint(1, len(possible_field))
     selected_field = random.sample(possible_field, num_constraints)
-    popular_skills_data = [{"skill": q} for q in POPULAR_SKILLS]
+
+    # Fetch skills from server instead of using POPULAR_SKILLS
+    skills_list = await _ensure_dataset(task_url, dataset, entity_type="skills")
+    if not isinstance(skills_list, list) or (skills_list and not isinstance(skills_list[0], str)):
+        # Fallback to POPULAR_SKILLS if no skills fetched or wrong format
+        skills_list = POPULAR_SKILLS
+
+    # Convert list of strings to list of dicts as required by constraint generation
+    popular_skills_data = [{"skill": skill} for skill in skills_list]
     sample_skill = random.choice(popular_skills_data)
     for field in selected_field:
         allowed_ops = FIELD_OPERATORS_MAP_ADD_SKILL.get(field, [])
@@ -417,12 +485,20 @@ async def generate_add_skill_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_submit_job_constraint() -> list[dict[str, Any]]:
+async def generate_submit_job_constraint(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None) -> list[dict[str, Any]]:
     constraints_list = []
     possible_fields = list(FIELD_OPERATORS_MAP_SUBMIT_JOB.keys())
     num_constraints = random.randint(2, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
-    popular_skill_data = [{"skills": s} for s in POPULAR_SKILLS]
+
+    # Fetch skills from server instead of using POPULAR_SKILLS
+    skills_list = await _ensure_dataset(task_url, dataset, entity_type="skills")
+    if not isinstance(skills_list, list) or (skills_list and not isinstance(skills_list[0], str)):
+        # Fallback to POPULAR_SKILLS if no skills fetched or wrong format
+        skills_list = POPULAR_SKILLS
+
+    # Convert list of strings to list of dicts as required by constraint generation
+    popular_skill_data = [{"skills": skill} for skill in skills_list]
     sample_skills = random.choice(popular_skill_data)
     title_data = [
         "Web Developers Jobs",
@@ -584,12 +660,20 @@ async def generate_write_job_description_constraint() -> list[dict[str, Any]]:
     return constraint
 
 
-async def generate_close_posting_job_constraint() -> list[dict[str, Any]]:
+async def generate_close_posting_job_constraint(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None) -> list[dict[str, Any]]:
     constraints_list = []
     possible_field = list(FIELD_OPERATORS_MAP_SUBMIT_JOB.keys())
     num_constraints = random.randint(2, len(possible_field))
     selected_field = random.sample(possible_field, num_constraints)
-    popular_skill_data = [{"skills": s} for s in POPULAR_SKILLS]
+
+    # Fetch skills from server instead of using POPULAR_SKILLS
+    skills_list = await _ensure_dataset(task_url, dataset, entity_type="skills")
+    if not isinstance(skills_list, list) or (skills_list and not isinstance(skills_list[0], str)):
+        # Fallback to POPULAR_SKILLS if no skills fetched or wrong format
+        skills_list = POPULAR_SKILLS
+
+    # Convert list of strings to list of dicts as required by constraint generation
+    popular_skill_data = [{"skills": skill} for skill in skills_list]
     sample_skills = random.choice(popular_skill_data)
     title_data = [
         "Web Developers Jobs",
@@ -679,13 +763,15 @@ async def generate_close_posting_job_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_favorite_expert_selected_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    dataset = await _ensure_expert_dataset(task_url, dataset)
+async def generate_favorite_expert_selected_constraint(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None) -> list[dict[str, Any]]:
+    experts_data = await _ensure_dataset(task_url, dataset, entity_type="experts")
+    if not isinstance(experts_data, list) or (experts_data and not isinstance(experts_data[0], dict)):
+        experts_data = []
     field_map = {"expert_name": "name", "expert_slug": "slug"}
-    return _generate_constraints(dataset, FIELD_OPERATORS_MAP_FAVORITE_EXPERT, field_map=field_map)
+    return _generate_constraints(experts_data, FIELD_OPERATORS_MAP_FAVORITE_EXPERT, field_map=field_map)
 
 
-async def generate_favorite_expert_removed_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_favorite_expert_removed_constraint(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None) -> list[dict[str, Any]]:
     return await generate_favorite_expert_selected_constraint(task_url, dataset)
 
 
@@ -722,9 +808,9 @@ async def generate_edit_about_constraint() -> list[dict[str, Any]]:
     allowed_ops = FIELD_OPERATORS_MAP_EDIT_PROFILE_FIELD[field]
     op = ComparisonOperator(random.choice(allowed_ops))
     field_value = random.choice(about_data)
-    about_dataset = [{"about": n} for n in about_data]
+    about_dataset = [{"value": n} for n in about_data]
     value = _generate_constraint_value(op, field_value, field, dataset=about_dataset)
-    if value is None:
+    if value is not None:
         constraint_list.append(create_constraint_dict(field, op, value))
     return constraint_list
 
@@ -757,9 +843,9 @@ async def generate_edit_profile_name_constraint() -> list[dict[str, Any]]:
     allowed_ops = FIELD_OPERATORS_MAP_EDIT_PROFILE_FIELD[field]
     op = ComparisonOperator(random.choice(allowed_ops))
     field_value = random.choice(user_names)
-    messages_dataset = [{"name": n} for n in user_names]
+    messages_dataset = [{"value": n} for n in user_names]
     value = _generate_constraint_value(op, field_value, field, dataset=messages_dataset)
-    if value is None:
+    if value is not None:
         constraint_list.append(create_constraint_dict(field, op, value))
     return constraint_list
 
@@ -790,9 +876,9 @@ async def generate_edit_profile_title_constraint() -> list[dict[str, Any]]:
     allowed_ops = FIELD_OPERATORS_MAP_EDIT_PROFILE_FIELD[field]
     op = ComparisonOperator(random.choice(allowed_ops))
     field_value = random.choice(title_data)
-    title_dataset = [{"title": t} for t in title_data]
+    title_dataset = [{"value": t} for t in title_data]
     value = _generate_constraint_value(op, field_value, field, dataset=title_dataset)
-    if value is None:
+    if value is not None:
         constraint_list.append(create_constraint_dict(field, op, value))
     return constraint_list
 
@@ -836,9 +922,9 @@ async def generate_edit_profile_location_constraint() -> list[dict[str, Any]]:
     allowed_ops = FIELD_OPERATORS_MAP_EDIT_PROFILE_FIELD[field]
     op = ComparisonOperator(random.choice(allowed_ops))
     field_value = random.choice(locations)
-    location_dataset = [{"location": t} for t in locations]
+    location_dataset = [{"value": t} for t in locations]
     value = _generate_constraint_value(op, field_value, field, dataset=location_dataset)
-    if value is None:
+    if value is not None:
         constraint_list.append(create_constraint_dict(field, op, value))
     return constraint_list
 
@@ -871,9 +957,9 @@ async def generate_edit_profile_email_constraint() -> list[dict[str, Any]]:
     allowed_ops = FIELD_OPERATORS_MAP_EDIT_PROFILE_FIELD[field]
     op = ComparisonOperator(random.choice(allowed_ops))
     field_value = random.choice(emails)
-    email_dataset = [{"email": e} for e in emails]
+    email_dataset = [{"value": e} for e in emails]
     value = _generate_constraint_value(op, field_value, field, dataset=email_dataset)
-    if value is None:
+    if value is not None:
         constraint_list.append(create_constraint_dict(field, op, value))
     return constraint_list
 
