@@ -44,7 +44,7 @@ def generate_logout_constraints():
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "username equals <web_agent_id>"
+    constraints_str = "username equals <web_agent_id> AND password equals PASSWORD"
     return parse_constraints_str(constraints_str)
 
 
@@ -54,6 +54,8 @@ async def generate_book_constraints(task_url: str | None = None, dataset: dict[s
     Returns the constraints as structured data.
     """
     from .utils import build_constraints_info, parse_constraints_str
+
+    constraints = []
 
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
@@ -70,7 +72,13 @@ async def generate_book_constraints(task_url: str | None = None, dataset: dict[s
 
     # Convertir el string a la estructura de datos
     if constraints_str:
-        return parse_constraints_str(constraints_str)
+        constraints = parse_constraints_str(constraints_str)
+        # Always add username and password constraints explicitly
+        constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<username>"})
+        constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<password>"})
+
+        return constraints
+
     return None
 
 
@@ -82,7 +90,7 @@ def generate_delete_book_constraints():
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "id equals <web_agent_id>"
+    constraints_str = "username equals <username> AND password equals <password> AND id equals <web_agent_id>"
 
     # Convertir el string a la estructura de datos
     if constraints_str:
@@ -583,6 +591,10 @@ async def generate_edit_book_constraints(task_url: str | None = None, dataset: d
     # Generar constraints
     constraints = []
 
+    # Always add username and password constraints explicitly
+    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<username>"})
+    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<password>"})
+
     # Seleccionar 1, 2, 3 o 4 campos para editar
     selected_fields = sample(editable_fields, k=choice([1, 2, 3, 4]))
 
@@ -677,6 +689,10 @@ async def generate_add_book_constraints(task_url: str | None = None, dataset: di
 
     # Generar constraints
     constraints = []
+
+    # Always add username and password constraints explicitly
+    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<username>"})
+    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "PASSWORD"})
 
     # Seleccionar 1, 2, 3 o 4 campos para editar
     selected_fields = sample(editable_fields, k=choice([1, 2, 3, 4]))
@@ -779,6 +795,10 @@ async def generate_edit_profile_constraints(task_url: str | None = None, dataset
 
     # Generar constraints
     constraints = []
+
+    # Always add username and password constraints explicitly
+    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<username>"})
+    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<password>"})
 
     # Select random fields to edit
     selected_fields = sample(editable_fields, k=choice([1, 2, 3]))

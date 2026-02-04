@@ -590,14 +590,14 @@ class WebVerificationPipeline:
                             print("=" * 80 + "\n")
                         else:
                             logger.warning("No reference task available for dynamic verification")
-                        # Store skip reason for Step 4
-                        use_case_results["dynamic_verification"] = {
-                            "skipped": True,
-                            "reason": "No reference task available (missing api_prompt or api_start_url)",
-                            "all_passed": False,
-                            "passed_count": 0,
-                            "total_count": 0,
-                        }
+                            # Store skip reason for Step 4
+                            use_case_results["dynamic_verification"] = {
+                                "skipped": True,
+                                "reason": "No reference task available (missing api_prompt or api_start_url)",
+                                "all_passed": False,
+                                "passed_count": 0,
+                                "total_count": 0,
+                            }
                     else:
                         logger.info("Dynamic verification is disabled")
                         # Store skip reason for Step 4

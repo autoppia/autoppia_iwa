@@ -275,9 +275,9 @@ class SimpleTaskGenerator:
         """
         Load complete dataset for the current project with given seed.
 
-        Each project has its own `get_all_data` function in its `data_utils.py` module
-        that returns a dictionary with all relevant entities for that project. This pattern
-        allows each project to auto-manage its data loading and maintain separation of concerns.
+        Uses the project's `fetch_data` function in its `data_utils.py` module.
+        For single-entity projects, wraps the result in a dictionary with entity type as key.
+        For multi-entity projects, fetches all entity types and combines them.
         """
         try:
             # Use the same method as _get_project_module_name to find the project directory
@@ -288,26 +288,95 @@ class SimpleTaskGenerator:
                 logger.debug(f"No project directory found for {self.web_project.id}")
                 return None
 
-            # Import and call get_all_data
+            # Import the module
             module = importlib.import_module(f"autoppia_iwa.src.demo_webs.projects.{project_dir}.data_utils")
-            get_all_data = getattr(module, "get_all_data", None)
+            fetch_data = getattr(module, "fetch_data", None)
 
-            if not get_all_data:
-                logger.debug(f"No get_all_data function found in {project_dir}/data_utils.py")
+            if not fetch_data:
+                logger.debug(f"No fetch_data function found in {project_dir}/data_utils.py")
                 return None
 
-            result = get_all_data(seed_value=seed)
-            dataset = await result if inspect.isawaitable(result) else result
+            # Inspect function signature to determine if entity_type is required
+            sig = inspect.signature(fetch_data)
+            has_entity_type_param = "entity_type" in sig.parameters
 
-            if dataset:
-                total_items = sum(len(v) for v in dataset.values() if isinstance(v, list))
-                _log_task_generation(f"Loaded dataset for {self.web_project.id} with seed={seed} ({total_items} items across {len(dataset)} entities)", context="OPTIMIZATION")
+            if has_entity_type_param:
+                # Multi-entity project (e.g., autocrm_5)
+                # Get entity types from project metadata or known list
+                entity_types = self._get_entity_types_for_project(project_dir)
+                if not entity_types:
+                    logger.debug(f"Could not determine entity types for {project_dir}")
+                    return None
 
-            return dataset
+                dataset = {}
+                for entity_type in entity_types:
+                    try:
+                        result = fetch_data(entity_type=entity_type, seed_value=seed, count=50)
+                        items = await result if inspect.isawaitable(result) else result
+                        if items:
+                            dataset[entity_type] = items
+                    except Exception as e:
+                        logger.debug(f"Error fetching {entity_type} for {project_dir}: {e}")
+                        continue
+
+                if dataset:
+                    total_items = sum(len(v) for v in dataset.values() if isinstance(v, list))
+                    _log_task_generation(f"Loaded dataset for {self.web_project.id} with seed={seed} ({total_items} items across {len(dataset)} entities)", context="OPTIMIZATION")
+                return dataset if dataset else None
+            else:
+                # Single-entity project (e.g., autocinema_1, autobooks_2)
+                result = fetch_data(seed_value=seed, count=50)
+                items = await result if inspect.isawaitable(result) else result
+
+                if not items:
+                    return None
+
+                # Determine entity type for this project
+                entity_type = self._get_entity_type_for_project(project_dir)
+                if not entity_type:
+                    logger.debug(f"Could not determine entity type for {project_dir}")
+                    return None
+
+                dataset = {entity_type: items}
+                total_items = len(items)
+                _log_task_generation(f"Loaded dataset for {self.web_project.id} with seed={seed} ({total_items} items across 1 entity)", context="OPTIMIZATION")
+                return dataset
 
         except Exception as e:
             logger.debug(f"Could not load dataset for {self.web_project.id}: {e}")
             return None
+
+    def _get_entity_type_for_project(self, project_dir: str) -> str | None:
+        """Get the primary entity type for a single-entity project."""
+        # Map project directories to their entity types
+        entity_type_map = {
+            "autocinema_1": "movies",
+            "autobooks_2": "books",
+            "autozone_3": "products",
+            "autodining_4": "restaurants",
+            "automail_6": "emails",
+            "autodelivery_7": "restaurants",
+            "autolodge_8": "hotels",
+            "autoconnect_9": "users",  # Primary entity, but has multiple
+            "autowork_10": "jobs",  # Primary entity, but has multiple
+            "autocalendar_11": "events",
+            "autolist_12": "tasks",
+            "autodrive_13": "places",  # Primary entity, but has multiple
+            "autohealth_14": "appointments",  # Primary entity, but has multiple
+        }
+        return entity_type_map.get(project_dir)
+
+    def _get_entity_types_for_project(self, project_dir: str) -> list[str] | None:
+        """Get all entity types for a multi-entity project."""
+        # Map project directories to their entity types
+        entity_types_map = {
+            "autocrm_5": ["matters", "clients", "logs", "events", "files"],
+            "autoconnect_9": ["users", "posts", "jobs", "recommendations"],
+            "autowork_10": ["jobs", "experts", "hires", "skills"],
+            "autodrive_13": ["places", "rides"],
+            "autohealth_14": ["appointments", "doctors", "prescriptions", "medical-records"],
+        }
+        return entity_types_map.get(project_dir)
 
     def _get_project_module_name(self) -> str | None:
         """Auto-detect project module name from filesystem.
