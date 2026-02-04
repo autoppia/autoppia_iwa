@@ -119,22 +119,22 @@ APPOINTMENT_BOOKED_SUCCESSFULLY_USE_CASE = UseCase(
 
 REQUEST_APPOINTMENT_USE_CASE = UseCase(
     name="REQUEST_APPOINTMENT",
-    description="The user submitted the homepage Request Appointment form with patient details and optional specialty.",
+    description="The user submitted the homepage Request Appointment form with patient details and optional speciality.",
     event=RequestAppointmentEvent,
     event_source_code=RequestAppointmentEvent.get_source_code_of_class(),
     constraints_generator=generate_request_appointment_constraints,
     examples=[
         {
-            "prompt": "Request an appointment where patient_name equals 'John Smith' and specialty equals 'Cardiology'",
-            "prompt_for_task_generation": "Request an appointment where patient_name equals 'John Smith' and specialty equals 'Cardiology'",
+            "prompt": "Request an appointment where patient_name equals 'John Smith' and speciality equals 'Cardiology'",
+            "prompt_for_task_generation": "Request an appointment where patient_name equals 'John Smith' and speciality equals 'Cardiology'",
         },
         {
-            "prompt": "Request an appointment where patient_email equals 'emily.johnson@example.com' and specialty equals 'Dermatology'",
-            "prompt_for_task_generation": "Request an appointment where patient_email equals 'emily.johnson@example.com' and specialty equals 'Dermatology'",
+            "prompt": "Request an appointment where patient_email equals 'emily.johnson@example.com' and speciality equals 'Dermatology'",
+            "prompt_for_task_generation": "Request an appointment where patient_email equals 'emily.johnson@example.com' and speciality equals 'Dermatology'",
         },
         {
-            "prompt": "Request an appointment where specialty equals 'Neurology' and patient_name contains 'Michael'",
-            "prompt_for_task_generation": "Request an appointment where specialty equals 'Neurology' and patient_name contains 'Michael'",
+            "prompt": "Request an appointment where speciality equals 'Neurology' and patient_name contains 'Michael'",
+            "prompt_for_task_generation": "Request an appointment where speciality equals 'Neurology' and patient_name contains 'Michael'",
         },
     ],
 )
@@ -147,19 +147,19 @@ REQUEST_QUICK_APPOINTMENT_USE_CASE = UseCase(
     constraints_generator=generate_request_quick_appointment_constraints,
     examples=[
         {
-            "prompt": "Request quick appointment where patient_name equals 'John Smith' and specialty equals 'Cardiology'",
-            "prompt_for_task_generation": "Request quick appointment where patient_name equals 'John Smith' and specialty equals 'Cardiology'",
+            "prompt": "Request quick appointment where patient_name equals 'John Smith' and speciality equals 'Cardiology'",
+            "prompt_for_task_generation": "Request quick appointment where patient_name equals 'John Smith' and speciality equals 'Cardiology'",
         },
         {
-            "prompt": "Submit quick appointment form where specialty equals 'Dermatology'",
-            "prompt_for_task_generation": "Request quick appointment where specialty equals 'Dermatology'",
+            "prompt": "Submit quick appointment form where speciality equals 'Dermatology'",
+            "prompt_for_task_generation": "Request quick appointment where speciality equals 'Dermatology'",
         },
     ],
 )
 
 SEARCH_APPOINTMENT_USE_CASE = UseCase(
     name="SEARCH_APPOINTMENT",
-    description="The user clicked Search on the Appointments page to apply doctor, specialty, or date filters.",
+    description="The user clicked Search on the Appointments page to apply doctor, speciality, or date filters.",
     event=SearchAppointmentEvent,
     event_source_code=SearchAppointmentEvent.get_source_code_of_class(),
     constraints_generator=generate_search_appointment_constraints,
@@ -169,8 +169,8 @@ SEARCH_APPOINTMENT_USE_CASE = UseCase(
             "prompt_for_task_generation": "Search appointments where doctor_name equals 'Dr. Alice Thompson'",
         },
         {
-            "prompt": "Search appointments where specialty equals 'Cardiology' and date equals '2025-09-20'",
-            "prompt_for_task_generation": "Search appointments where specialty equals 'Cardiology' and date equals '2025-09-20'",
+            "prompt": "Search appointments where speciality equals 'Cardiology' and date equals '2025-09-20'",
+            "prompt_for_task_generation": "Search appointments where speciality equals 'Cardiology' and date equals '2025-09-20'",
         },
         {
             "prompt": "Search appointments where date equals '2025-09-25'",
@@ -181,22 +181,26 @@ SEARCH_APPOINTMENT_USE_CASE = UseCase(
 
 SEARCH_DOCTORS_USE_CASE = UseCase(
     name="SEARCH_DOCTORS",
-    description="The user clicked Search on the Doctors page to apply name and/or specialty filters.",
+    description="The user clicked Search on the Doctors page to apply name, speciality, and/or language filters.",
     event=SearchDoctorsEvent,
     event_source_code=SearchDoctorsEvent.get_source_code_of_class(),
     constraints_generator=generate_search_doctors_constraints,
     examples=[
         {
-            "prompt": "Search doctors where action equals 'search' and search_term contains 'Alice'",
-            "prompt_for_task_generation": "Search doctors where action equals 'search' and search_term contains 'Alice'",
+            "prompt": "Search doctors where search_term contains 'Alice'",
+            "prompt_for_task_generation": "Search doctors where search_term contains 'Alice'",
         },
         {
-            "prompt": "Search doctors where specialty equals 'Cardiology'",
-            "prompt_for_task_generation": "Search doctors where specialty equals 'Cardiology'",
+            "prompt": "Search doctors where speciality equals 'Cardiology'",
+            "prompt_for_task_generation": "Search doctors where speciality equals 'Cardiology'",
         },
         {
-            "prompt": "Search doctors where specialty equals 'Dermatology'",
-            "prompt_for_task_generation": "Search doctors where specialty equals 'Dermatology'",
+            "prompt": "Search doctors where language equals 'Spanish'",
+            "prompt_for_task_generation": "Search doctors where language equals 'Spanish'",
+        },
+        {
+            "prompt": "Search doctors where speciality equals 'Dermatology' and language equals 'English'",
+            "prompt_for_task_generation": "Search doctors where speciality equals 'Dermatology' and language equals 'English'",
         },
     ],
 )
@@ -326,7 +330,7 @@ VIEW_MEDICAL_ANALYSIS_USE_CASE = UseCase(
 
 VIEW_DOCTOR_PROFILE_USE_CASE = UseCase(
     name="VIEW_DOCTOR_PROFILE",
-    description="The user viewed a doctor's profile, including name, rating, and speciality.",
+    description="The user viewed a doctor's profile, including name, rating, speciality, consultation fee, and languages.",
     event=ViewDoctorProfileEvent,
     event_source_code=ViewDoctorProfileEvent.get_source_code_of_class(),
     constraints_generator=generate_view_doctor_profile_constraints,
@@ -336,12 +340,12 @@ VIEW_DOCTOR_PROFILE_USE_CASE = UseCase(
             "prompt_for_task_generation": "View a doctor profile where doctor_name equals 'Dr. Alice Thompson' and rating greater than 4.5 and speciality equals 'Cardiology'",
         },
         {
-            "prompt": "View a doctor profile where doctor_name not equals 'Dr. Brian Patel' and rating less than 4.0 and speciality equals 'Dermatology'",
-            "prompt_for_task_generation": "View a doctor profile where doctor_name not equals 'Dr. Brian Patel' and rating less than 4.0 and speciality equals 'Dermatology'",
+            "prompt": "View a doctor profile where doctor_name contains 'Clara' and consultation_fee less than 200 and language equals 'Spanish'",
+            "prompt_for_task_generation": "View a doctor profile where doctor_name contains 'Clara' and consultation_fee less than 200 and language equals 'Spanish'",
         },
         {
-            "prompt": "View a doctor profile where doctor_name contains 'Clara' and rating equals 4.2 and speciality equals 'Pediatrics'",
-            "prompt_for_task_generation": "View a doctor profile where doctor_name contains 'Clara' and rating equals 4.2 and speciality equals 'Pediatrics'",
+            "prompt": "View a doctor profile where speciality equals 'Dermatology' and language equals 'English'",
+            "prompt_for_task_generation": "View a doctor profile where speciality equals 'Dermatology' and language equals 'English'",
         },
     ],
 )
@@ -357,8 +361,12 @@ VIEW_DOCTOR_EDUCATION_USE_CASE = UseCase(
             "prompt_for_task_generation": "View doctor education where doctor_name equals 'Dr. Alice Thompson' and speciality equals 'Cardiology'",
         },
         {
-            "prompt": "View doctor education where doctor_name contains 'Patel' and speciality equals 'Dermatology'",
-            "prompt_for_task_generation": "View doctor education where doctor_name contains 'Patel' and speciality equals 'Dermatology'",
+            "prompt": "View doctor education where doctor_name contains 'Patel' and rating greater than 4.5 and language equals 'English'",
+            "prompt_for_task_generation": "View doctor education where doctor_name contains 'Patel' and rating greater than 4.5 and language equals 'English'",
+        },
+        {
+            "prompt": "View doctor education where speciality equals 'Dermatology' and consultation_fee less than 200",
+            "prompt_for_task_generation": "View doctor education where speciality equals 'Dermatology' and consultation_fee less than 200",
         },
     ],
 )
@@ -573,6 +581,6 @@ ALL_USE_CASES = [
     OPEN_CONTACT_DOCTOR_FORM_USE_CASE,
     CONTACT_DOCTOR_USE_CASE,
     REFILL_PRESCRIPTION_USE_CASE,
-    # DOCTOR_CONTACTED_SUCCESSFULLY_USE_CASE,
-    # VIEW_REVIEWS_CLICKED_USE_CASE,
+    DOCTOR_CONTACTED_SUCCESSFULLY_USE_CASE,
+    VIEW_REVIEWS_CLICKED_USE_CASE,
 ]
