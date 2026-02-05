@@ -6,7 +6,7 @@ from .use_cases import ALL_USE_CASES
 
 FRONTEND_PORT_INDEX = 2
 _frontend_url = get_frontend_url(index=FRONTEND_PORT_INDEX)
-omnizone_project = WebProject(
+autozone_project = WebProject(
     id="autozone",
     name="Autoppia AutoZone",
     frontend_url=_frontend_url,

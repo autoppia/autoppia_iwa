@@ -14,7 +14,7 @@ async def test_full_task_generation():
 
     from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
     from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig
-    from autoppia_iwa.src.demo_webs.projects.autocinema_1.main import cinema_project
+    from autoppia_iwa.src.demo_webs.projects.autocinema_1.main import autocinema_project
     from autoppia_iwa.src.evaluation.evaluator.utils import extract_seed_from_url
 
     print("\n1️⃣ Configurando pipeline...")
@@ -24,7 +24,7 @@ async def test_full_task_generation():
         dynamic=True,  # ✅ Modo dinámico
     )
 
-    pipeline = TaskGenerationPipeline(web_project=cinema_project, config=config)
+    pipeline = TaskGenerationPipeline(web_project=autocinema_project, config=config)
 
     print("\n2️⃣ Generando tasks...")
     tasks = await pipeline.generate()
@@ -113,7 +113,7 @@ async def test_autobooks_tasks():
 
     from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
     from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig
-    from autoppia_iwa.src.demo_webs.projects.autobooks_2.main import books_project
+    from autoppia_iwa.src.demo_webs.projects.autobooks_2.main import autobooks_project
     from autoppia_iwa.src.evaluation.evaluator.utils import extract_seed_from_url
 
     config = TaskGenerationConfig(
@@ -122,7 +122,7 @@ async def test_autobooks_tasks():
         dynamic=True,
     )
 
-    pipeline = TaskGenerationPipeline(web_project=books_project, config=config)
+    pipeline = TaskGenerationPipeline(web_project=autobooks_project, config=config)
     tasks = await pipeline.generate()
 
     print(f"\n✅ Tasks generadas: {len(tasks)}")

@@ -21,12 +21,12 @@ async def fetch_data(seed_value: int | None = None, count: int = 50) -> list[dic
     Returns:
         list[dict] of products
     """
-    from .main import FRONTEND_PORT_INDEX, omnizone_project
+    from .main import FRONTEND_PORT_INDEX, autozone_project
 
-    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{omnizone_project.id}"
+    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{autozone_project.id}"
 
     items = await load_dataset_data(
-        backend_url=omnizone_project.backend_url,
+        backend_url=autozone_project.backend_url,
         project_key=project_key,
         entity_type="products",
         seed_value=seed_value if seed_value is not None else 1,

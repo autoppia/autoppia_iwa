@@ -37,17 +37,17 @@ async def fetch_data(seed_value: int | None = None, count: int = 50) -> list[dic
     Returns:
         list[dict] of normalized restaurants
     """
-    from .main import FRONTEND_PORT_INDEX, dining_project
+    from .main import FRONTEND_PORT_INDEX, autodining_project
 
     cache_key = (seed_value, count)
     if cache_key in _RESTAURANT_DATA_CACHE:
         return _RESTAURANT_DATA_CACHE[cache_key]
 
-    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{dining_project.id}"
+    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{autodining_project.id}"
 
     try:
         items = await load_dataset_data(
-            backend_url=dining_project.backend_url,
+            backend_url=autodining_project.backend_url,
             project_key=project_key,
             entity_type="restaurants",
             seed_value=seed_value if seed_value is not None else 0,
