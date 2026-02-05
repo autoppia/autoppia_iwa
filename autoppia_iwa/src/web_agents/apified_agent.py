@@ -1,12 +1,13 @@
 import asyncio
 import ipaddress
+from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse, urlunparse
 
 import aiohttp
 
 from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT
 from autoppia_iwa.src.data_generation.tasks.classes import Task
-from autoppia_iwa.src.execution.actions.actions import BaseAction
+from autoppia_iwa.src.execution.actions.actions import BaseAction, NavigateAction
 from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
 from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution
 
@@ -33,6 +34,56 @@ class ApifiedWebAgent(IWebAgent):
         self.timeout = timeout
         super().__init__()
 
+    async def act(
+        self,
+        *,
+        task: Task,
+        snapshot_html: str,
+        url: str,
+        step_index: int,
+        history: Optional[List[Dict[str, Any]]] = None,
+    ) -> List[BaseAction]:
+        """
+        Used by the benchmark. In concurrent mode (single call, step_index 0) calls
+        the remote /solve_task and returns the action list; otherwise returns [].
+        """
+        if step_index != 0:
+            return []
+        timeout = aiohttp.ClientTimeout(total=self.timeout)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            try:
+                payload = task.clean_task()
+                payload["url"] = self._force_localhost(payload.get("url") or url)
+                async with session.post(f"{self.base_url}/solve_task", json=payload) as response:
+                    response.raise_for_status()
+                    response_json = await response.json()
+            except Exception:
+                return []
+            actions_data = response_json.get("actions", [])
+            for action in actions_data:
+                if isinstance(action, dict) and action.get("type") in {"NavigateAction", "navigate"}:
+                    action["url"] = self._rewrite_to_remote(action.get("url"))
+            result: List[BaseAction] = []
+            for a in actions_data:
+                if not isinstance(a, dict):
+                    continue
+                built = self._create_action(a)
+                if built is not None:
+                    result.append(built)
+            return result
+
+    def _create_action(self, raw: dict) -> Optional[BaseAction]:
+        """Build one BaseAction from dict; rewrite NavigateAction URL."""
+        try:
+            action = BaseAction.create_action(raw)
+            if action is None:
+                return None
+            if isinstance(action, NavigateAction):
+                action.url = self._rewrite_to_remote(getattr(action, "url", None))
+            return action
+        except Exception:
+            return None
+
     async def solve_task(self, task: Task) -> TaskSolution:
         timeout = aiohttp.ClientTimeout(total=self.timeout)
         async with aiohttp.ClientSession(timeout=timeout) as session:
@@ -54,10 +105,13 @@ class ApifiedWebAgent(IWebAgent):
 
             web_agent_id = response_json.get("web_agent_id", "unknown")
             recording_str = response_json.get("recording", "")
-
-        rebuilt_actions = [BaseAction.create_action(action) for action in actions_data]
-        task_solution = TaskSolution(task_id=task.id, actions=rebuilt_actions, web_agent_id=web_agent_id, recording=recording_str)
-        return task_solution
+            rebuilt_actions: List[BaseAction] = []
+            for a in actions_data:
+                if isinstance(a, dict):
+                    built = self._create_action(a)
+                    if built is not None:
+                        rebuilt_actions.append(built)
+        return TaskSolution(task_id=task.id, actions=rebuilt_actions, web_agent_id=web_agent_id, recording=recording_str)
 
     def solve_task_sync(self, task: Task) -> TaskSolution:
         return asyncio.run(self.solve_task(task))

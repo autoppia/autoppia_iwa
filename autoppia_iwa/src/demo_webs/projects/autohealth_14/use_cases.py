@@ -95,20 +95,20 @@ APPOINTMENT_BOOKED_SUCCESSFULLY_USE_CASE = UseCase(
             "prompt_for_task_generation": "Appointment booked successfully where patient_name equals 'John Doe' and doctor_name equals 'Dr. Alice Thompson' and date equals '2025-09-23' and time equals '10:00 AM' and speciality equals 'Cardiology' and reason_for_visit equals 'Chest pain'",
         },
         {
-            "prompt": "Appointment booked successfully where patient_name not equals 'Sarah Lee' and insurance_provider equals 'BlueCross' and insurance_number contains 'BCX123' and doctor_name equals 'Dr. Daniel Roberts' and date greater than '2025-09-20'",
-            "prompt_for_task_generation": "Appointment booked successfully where patient_name not equals 'Sarah Lee' and insurance_provider equals 'BlueCross' and insurance_number contains 'BCX123' and doctor_name equals 'Dr. Daniel Roberts' and date greater than '2025-09-20'",
+            "prompt": "Appointment booked successfully where patient_name not equals 'Sarah Lee' and insurance_provider equals 'BlueCross' and insurance_number equals 'BCX123' and doctor_name equals 'Dr. Daniel Roberts' and date greater than '2025-09-20'",
+            "prompt_for_task_generation": "Appointment booked successfully where patient_name not equals 'Sarah Lee' and insurance_provider equals 'BlueCross' and insurance_number equals 'BCX123' and doctor_name equals 'Dr. Daniel Roberts' and date greater than '2025-09-20'",
         },
         {
-            "prompt": "Appointment booked successfully where patient_email contains '@gmail.com' and patient_phone starts with '+1' and emergency_contact equals 'Jane Doe' and emergency_phone equals '555-1234' and notes contains 'Bring previous reports'",
-            "prompt_for_task_generation": "Appointment booked successfully where patient_email contains '@gmail.com' and patient_phone starts with '+1' and emergency_contact equals 'Jane Doe' and emergency_phone equals '555-1234' and notes contains 'Bring previous reports'",
+            "prompt": "Appointment booked successfully where patient_email contains '@gmail.com' and patient_phone equals '+1-555-0101' and emergency_contact equals 'Jane Doe' and emergency_phone equals '555-1234' and notes contains 'Bring previous reports'",
+            "prompt_for_task_generation": "Appointment booked successfully where patient_email contains '@gmail.com' and patient_phone equals '+1-555-0101' and emergency_contact equals 'Jane Doe' and emergency_phone equals '555-1234' and notes contains 'Bring previous reports'",
         },
         {
             "prompt": "Appointment booked successfully where doctor_name contains 'Nguyen' and speciality equals 'Dermatology' and date less than '2025-10-01' and reason_for_visit equals 'Skin rash' and patient_name equals 'Emma Wilson'",
             "prompt_for_task_generation": "Appointment booked successfully where doctor_name contains 'Nguyen' and speciality equals 'Dermatology' and date less than '2025-10-01' and reason_for_visit equals 'Skin rash' and patient_name equals 'Emma Wilson'",
         },
         {
-            "prompt": "Appointment booked successfully where insurance_provider not equals 'Aetna' and insurance_number not contains 'XYZ' and patient_phone equals '444-5678' and patient_email equals 'michael.smith@example.com' and notes contains 'First-time consultation'",
-            "prompt_for_task_generation": "Appointment booked successfully where insurance_provider not equals 'Aetna' and insurance_number not contains 'XYZ' and patient_phone equals '444-5678' and patient_email equals 'michael.smith@example.com' and notes contains 'First-time consultation'",
+            "prompt": "Appointment booked successfully where insurance_provider not equals 'Aetna' and insurance_number not equals 'XYZ-999' and patient_phone equals '444-5678' and patient_email equals 'michael.smith@example.com' and notes contains 'First-time consultation'",
+            "prompt_for_task_generation": "Appointment booked successfully where insurance_provider not equals 'Aetna' and insurance_number not equals 'XYZ-999' and patient_phone equals '444-5678' and patient_email equals 'michael.smith@example.com' and notes contains 'First-time consultation'",
         },
         {
             "prompt": "Appointment booked successfully where emergency_contact equals 'Robert King' and emergency_phone equals '222-9999' and doctor_name equals 'Dr. Clara Nguyen' and date equals '2025-09-29' and time equals '2:30 PM' and speciality equals 'Orthopedics'",
@@ -211,6 +211,7 @@ SEARCH_PRESCRIPTION_USE_CASE = UseCase(
     event=SearchPrescriptionEvent,
     event_source_code=SearchPrescriptionEvent.get_source_code_of_class(),
     constraints_generator=generate_search_prescription_constraints,
+    additional_prompt_info="Use format: 'Search prescriptions where field operator value'. Always mention each constraint field explicitly (medicine_name, doctor_name).",
     examples=[
         {
             "prompt": "Search prescriptions where medicine_name equals 'Atorvastatin'",
@@ -312,6 +313,7 @@ VIEW_MEDICAL_ANALYSIS_USE_CASE = UseCase(
     event=ViewMedicalAnalysisEvent,
     event_source_code=ViewMedicalAnalysisEvent.get_source_code_of_class(),
     constraints_generator=generate_view_medical_analysis_constraints,
+    additional_prompt_info="Use format: 'View medical analysis where field operator value'. Always mention each constraint field explicitly (record_title, doctor_name, record_type).",
     examples=[
         {
             "prompt": "View medical analysis where record_title equals 'Complete Blood Count (CBC)' and record_type equals 'lab_result' and record_date equals '2024-01-15'",
@@ -446,12 +448,17 @@ CONTACT_DOCTOR_USE_CASE = UseCase(
     ],
 )
 
+DOCTOR_CONTACTED_SUCCESSFULLY_ADDITIONAL_INFO = """
+CRITICAL: Use explicit field names with operators in every constraint.
+Format: "Doctor contacted successfully where <field> <operator> '<value>'"
+Example: "Doctor contacted successfully where doctor_name equals 'Dr. Alice Thompson' and patient_name equals 'John Smith'"
+""".strip()
 DOCTOR_CONTACTED_SUCCESSFULLY_USE_CASE = UseCase(
     name="DOCTOR_CONTACTED_SUCCESSFULLY",
     description="The user has successfully contacted a doctor, providing personal details, contact preferences, and message context.",
     event=DoctorContactedSuccessfullyEvent,
     event_source_code=DoctorContactedSuccessfullyEvent.get_source_code_of_class(),
-    # additional_prompt_info=CONTACT_DOCTOR_SUCCESSFULLY_ADDITIONAL_INFO,
+    additional_prompt_info=DOCTOR_CONTACTED_SUCCESSFULLY_ADDITIONAL_INFO,
     constraints_generator=generate_doctor_contact_successfully_constraints,
     examples=[
         {
@@ -480,36 +487,12 @@ DOCTOR_CONTACTED_SUCCESSFULLY_USE_CASE = UseCase(
         },
     ],
 )
-VIEW_REVIEW_CLICKED_ADDITIONAL_INFO = """
-CRITICAL REQUIREMENTS:
-1. The request must start with: "View reviews clicked...".
-2. Do not mention a single constraint more than once in the request.
-
-Correct examples:
-- View reviews clicked where doctor_name equals 'Dr. Alice Thompson' and speciality equals 'Cardiology' and rating equals '4.8'.
-
-Incorrect examples:
-- View review 'Dr. Alice Thompson'.
-
-3. Pay attention to the constraints:
-Example:
-constraints:
-{
-'doctor_name': {'operator': 'equals', 'value': 'Dr. Alice Thompson'},
-'speciality': {'operator': 'equals', 'value': 'Cardiology'},
-'rating': {'operator': 'equals', 'value': '4.8'},
-}
-Correct:
-"View reviews clicked where doctor_name equals 'Dr. Alice Thompson' and speciality equals 'Cardiology' and rating equals '4.8'."
-Incorrect:
-"View reviews 'Dr. Alice Thompson' and speciality equals 'Cardiology'."
-""".strip()
 VIEW_REVIEWS_CLICKED_USE_CASE = UseCase(
     name="VIEW_REVIEWS_CLICKED",
     description="The user clicked to view reviews for a doctor.",
     event=ViewReviewClickedEvent,
     event_source_code=ViewReviewClickedEvent.get_source_code_of_class(),
-    additional_prompt_info=VIEW_REVIEW_CLICKED_ADDITIONAL_INFO,
+    additional_prompt_info="Use format: 'View reviews clicked where field operator value' (e.g. doctor_name equals 'Dr. X'). Always mention the field name explicitly.",
     constraints_generator=generate_view_review_clicked_constraints,
     examples=[
         {
@@ -517,12 +500,16 @@ VIEW_REVIEWS_CLICKED_USE_CASE = UseCase(
             "prompt_for_task_generation": "View reviews clicked where doctor_name equals 'Dr. Alice Thompson'",
         },
         {
-            "prompt": "View reviews clicked where doctor_name equals 'Dr. Michael Johnson'",
-            "prompt_for_task_generation": "View reviews clicked where doctor_name equals 'Dr. Michael Johnson'",
+            "prompt": "View reviews clicked where doctor_name equals 'Dr. Brian Patel'",
+            "prompt_for_task_generation": "View reviews clicked where doctor_name equals 'Dr. Brian Patel'",
         },
         {
-            "prompt": "View reviews clicked where speciality equals 'Cardiologist'",
-            "prompt_for_task_generation": "View reviews clicked where speciality equals 'Cardiologist'",
+            "prompt": "View reviews clicked where doctor_name contains 'Nguyen'",
+            "prompt_for_task_generation": "View reviews clicked where doctor_name contains 'Nguyen'",
+        },
+        {
+            "prompt": "View reviews clicked where speciality equals 'Cardiology'",
+            "prompt_for_task_generation": "View reviews clicked where speciality equals 'Cardiology'",
         },
         {
             "prompt": "View reviews clicked where speciality contains 'Dermatology'",
@@ -531,10 +518,6 @@ VIEW_REVIEWS_CLICKED_USE_CASE = UseCase(
         {
             "prompt": "View reviews clicked where rating greater than 4.5",
             "prompt_for_task_generation": "View reviews clicked where rating greater than 4.5",
-        },
-        {
-            "prompt": "View reviews clicked where rating less than 3.0",
-            "prompt_for_task_generation": "View reviews clicked where rating less than 3.0",
         },
     ],
 )

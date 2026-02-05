@@ -96,6 +96,7 @@ class GlobalTestGenerationPipeline:
                 len(criteria),
             )
         except Exception as exc:
+            
             logger.error(
                 "Failed to instantiate CheckEventTest for Task %s: %s",
                 task.id,

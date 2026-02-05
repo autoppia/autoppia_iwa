@@ -191,7 +191,7 @@ FIELD_OPERATORS_MAP_OPEN_APPOINTMENT_FORM = {
     "doctor_name": STRING_OPERATORS,
     "speciality": STRING_OPERATORS,
     "time": [EQUALS],
-    "source": STRING_OPERATORS,
+    
 }
 
 FIELD_OPERATORS_MAP_APPOINTMENT_BOOKED_SUCCESSFULLY = {
@@ -214,32 +214,27 @@ FIELD_OPERATORS_MAP_REQUEST_APPOINTMENT = {
     "patient_name": STRING_OPERATORS,
     "patient_email": STRING_OPERATORS,
     "patient_phone": EQUALITY_OPERATORS,
-    "specialty": STRING_OPERATORS,
-    "source": STRING_OPERATORS,
-    "action": STRING_OPERATORS,
+    "speciality": STRING_OPERATORS,
 }
 
 FIELD_OPERATORS_MAP_REQUEST_QUICK_APPOINTMENT = {
     "patient_name": STRING_OPERATORS,
     "patient_email": STRING_OPERATORS,
     "patient_phone": EQUALITY_OPERATORS,
-    "specialty": STRING_OPERATORS,
-    "source": STRING_OPERATORS,
-    "action": STRING_OPERATORS,
+    "speciality": STRING_OPERATORS,
 }
 
 FIELD_OPERATORS_MAP_SEARCH_APPOINTMENT = {
     "filter_type": STRING_OPERATORS,
     "doctor_name": STRING_OPERATORS,
-    "specialty": STRING_OPERATORS,
+    "speciality": STRING_OPERATORS,
     "date": EQUALITY_OPERATORS,
-    "source": STRING_OPERATORS,
-    "action": STRING_OPERATORS,
 }
 
 FIELD_OPERATORS_MAP_SEARCH_DOCTORS = {
     "search_term": STRING_OPERATORS,
-    "specialty": STRING_OPERATORS,
+    "speciality": STRING_OPERATORS,
+    "language": STRING_OPERATORS,
 }
 
 FIELD_OPERATORS_MAP_SEARCH_PRESCRIPTION = {
@@ -258,13 +253,12 @@ FIELD_OPERATORS_MAP_VIEW_PRESCRIPTION = {
 
 FIELD_OPERATORS_MAP_REFILL_PRESCRIPTION = {
     "medicine_name": STRING_OPERATORS,
+    "doctor_name": STRING_OPERATORS,
 }
 
 FIELD_OPERATORS_MAP_SEARCH_MEDICAL_ANALYSIS = {
     "record_title": STRING_OPERATORS,
     "doctor_name": STRING_OPERATORS,
-    "source": STRING_OPERATORS,
-    "action": STRING_OPERATORS,
 }
 
 FIELD_OPERATORS_MAP_VIEW_MEDICAL_ANALYSIS = {
@@ -278,19 +272,26 @@ FIELD_OPERATORS_MAP_VIEW_DOCTOR_PROFILE = {
     "doctor_name": STRING_OPERATORS,
     "speciality": STRING_OPERATORS,
     "rating": LOGICAL_OPERATORS,
+    "consultation_fee": LOGICAL_OPERATORS,
+    "language": STRING_OPERATORS,
 }
 
 FIELD_OPERATORS_MAP_VIEW_DOCTOR_EDUCATION = {
     "doctor_name": STRING_OPERATORS,
     "speciality": STRING_OPERATORS,
-    "source": STRING_OPERATORS,
+    "rating": LOGICAL_OPERATORS,
+    "consultation_fee": LOGICAL_OPERATORS,
+    "language": STRING_OPERATORS,
 }
 
+# Map keys = constraint field names; must match event attributes we validate (or dataset keys via field_map).
+# E.g. doctor_name/speciality/rating/consultation_fee stored in event; "language" checked against event.languages. (UK spelling.)
 FIELD_OPERATORS_MAP_OPEN_CONTACT_DOCTOR_FORM = {
     "doctor_name": STRING_OPERATORS,
     "speciality": STRING_OPERATORS,
     "rating": LOGICAL_OPERATORS,
-    "source": STRING_OPERATORS,
+    "consultation_fee": LOGICAL_OPERATORS,
+    "language": STRING_OPERATORS,
 }
 
 FIELD_OPERATORS_MAP_CONTACT_DOCTOR = {**FIELD_OPERATORS_MAP_VIEW_DOCTOR_PROFILE}

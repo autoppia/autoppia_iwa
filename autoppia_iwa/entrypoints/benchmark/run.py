@@ -13,7 +13,7 @@ from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
 from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.web_agents.cua import FixedAutobooksAgent
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
 # from autoppia_iwa.src.execution.dynamic import DynamicPhaseConfig
 
@@ -56,16 +56,14 @@ SOTA_AGENTS = [
     # CLAUDE_CUA_AGENT,
 ]
 
-# Active agents to run.
-# For this smoke-style test, we use a fixed agent that always returns
-# the same hard-coded trajectory designed for a single Autobooks task.
+# Active agents to run. Simple agent (Flask /solve_task) on port 7000.
 AGENTS = [
-    FixedAutobooksAgent(id="1", name="FixedAutobooksAgent"),
+    ApifiedWebAgent(host="localhost", port=7000, id="simple", name="SimpleAgent", timeout=120),
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
-    "autobooks",
+    "autohealth"
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 USE_CASES = [
@@ -126,7 +124,7 @@ CFG = BenchmarkConfig(
     max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
     record_gif=False,  # if your evaluator returns GIFs
     # Dynamic mode: disabled for this simple fixed-task test to avoid seed constraints.
-    dynamic=False,
+    dynamic=True,
     # TODO REVISAR PORQUE SOLO DEBEIRA HABER UNO
     # dynamic_phase_config=DynamicPhaseConfig(
     #     enable_d1_structure=True,
@@ -191,6 +189,8 @@ def main():
             logger.info(f"Stateful mode enabled: max {CFG.max_steps_per_task} steps per task")
 
         # Create and run benchmark
+        print("[CONSTRAINTS_FLOW] Inicio benchmark")
+        print("CORREMOS EL BENCHMARK")
         benchmark = Benchmark(CFG)
         asyncio.run(benchmark.run())
 

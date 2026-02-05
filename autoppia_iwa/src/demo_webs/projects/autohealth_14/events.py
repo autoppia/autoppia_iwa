@@ -179,13 +179,13 @@ class RequestAppointmentEvent(Event, BaseEventValidator):
     patient_name: str | None = None
     patient_email: str | None = None
     patient_phone: str | None = None
-    specialty: str | None = None
+    speciality: str | None = None
 
     class ValidationCriteria(BaseModel):
         patient_name: str | CriterionValue | None = None
         patient_email: str | CriterionValue | None = None
         patient_phone: str | CriterionValue | None = None
-        specialty: str | CriterionValue | None = None
+        speciality: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -195,7 +195,7 @@ class RequestAppointmentEvent(Event, BaseEventValidator):
                 self._validate_field(self.patient_name, criteria.patient_name),
                 self._validate_field(self.patient_email, criteria.patient_email),
                 self._validate_field(self.patient_phone, criteria.patient_phone),
-                self._validate_field(self.specialty, criteria.specialty),
+                self._validate_field(self.speciality, criteria.speciality),
             ]
         )
 
@@ -212,7 +212,7 @@ class RequestAppointmentEvent(Event, BaseEventValidator):
             patient_name=data.get("patientName"),
             patient_email=data.get("patientEmail"),
             patient_phone=data.get("patientPhone"),
-            specialty=data.get("specialty"),
+            speciality=data.get("specialty"),
         )
 
 
@@ -222,13 +222,13 @@ class RequestQuickAppointmentEvent(Event, BaseEventValidator):
     patient_name: str | None = None
     patient_email: str | None = None
     patient_phone: str | None = None
-    specialty: str | None = None
+    speciality: str | None = None
 
     class ValidationCriteria(BaseModel):
         patient_name: str | CriterionValue | None = None
         patient_email: str | CriterionValue | None = None
         patient_phone: str | CriterionValue | None = None
-        specialty: str | CriterionValue | None = None
+        speciality: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -238,7 +238,7 @@ class RequestQuickAppointmentEvent(Event, BaseEventValidator):
                 self._validate_field(self.patient_name, criteria.patient_name),
                 self._validate_field(self.patient_email, criteria.patient_email),
                 self._validate_field(self.patient_phone, criteria.patient_phone),
-                self._validate_field(self.specialty, criteria.specialty),
+                self._validate_field(self.speciality, criteria.speciality),
             ]
         )
 
@@ -255,22 +255,22 @@ class RequestQuickAppointmentEvent(Event, BaseEventValidator):
             patient_name=data.get("patientName"),
             patient_email=data.get("patientEmail"),
             patient_phone=data.get("patientPhone"),
-            specialty=data.get("specialty"),
+            speciality=data.get("specialty"),
         )
 
 
 class SearchAppointmentEvent(Event, BaseEventValidator):
-    """Fired when user clicks Search on the Appointments page (applies doctor/specialty/date filters)."""
+    """Fired when user clicks Search on the Appointments page (applies doctor/speciality/date filters)."""
     event_name: str = "SEARCH_APPOINTMENT"
     filter_type: str | None = None
     doctor_name: str | None = None
-    specialty: str | None = None
+    speciality: str | None = None
     date: str | None = None
 
     class ValidationCriteria(BaseModel):
         filter_type: str | CriterionValue | None = None
         doctor_name: str | CriterionValue | None = None
-        specialty: str | CriterionValue | None = None
+        speciality: str | CriterionValue | None = None
         date: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
@@ -280,7 +280,7 @@ class SearchAppointmentEvent(Event, BaseEventValidator):
             [
                 self._validate_field(self.filter_type, criteria.filter_type),
                 self._validate_field(self.doctor_name, criteria.doctor_name),
-                self._validate_field(self.specialty, criteria.specialty),
+                self._validate_field(self.speciality, criteria.speciality),
                 self._validate_field(self.date, criteria.date),
             ]
         )
@@ -299,7 +299,7 @@ class SearchAppointmentEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             filter_type=data.get("filterType"),
             doctor_name=data.get("doctorName") or doctor.get("name"),
-            specialty=data.get("specialty") or doctor.get("specialty"),
+            speciality=data.get("specialty") or doctor.get("specialty"),
             date=data.get("date"),
         )
 
@@ -394,9 +394,11 @@ class ViewPrescriptionEvent(Event, BaseEventValidator):
 class RefillRequestEvent(Event, BaseEventValidator):
     event_name: str = "REFILL_PRESCRIPTION"
     medicine_name: str | None = None
+    doctor_name: str | None = None
 
     class ValidationCriteria(BaseModel):
         medicine_name: str | CriterionValue | None = None
+        doctor_name: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if criteria is None:
@@ -404,6 +406,7 @@ class RefillRequestEvent(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.medicine_name, criteria.medicine_name),
+                self._validate_field(self.doctor_name, criteria.doctor_name),
             ]
         )
 
@@ -419,6 +422,7 @@ class RefillRequestEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             medicine_name=data.get("medicineName") or prescription.get("medicineName"),
+            doctor_name=data.get("doctorName") or prescription.get("doctorName"),
         )
 
 
@@ -515,20 +519,34 @@ class ViewDoctorProfileEvent(Event, BaseEventValidator):
     doctor_name: str | None = None
     rating: float | None = None
     speciality: str | None = None
+    consultation_fee: float | None = None
+    languages: list[str] | None = None
 
     class ValidationCriteria(BaseModel):
         doctor_name: str | CriterionValue | None = None
         rating: float | CriterionValue | None = None
         speciality: str | CriterionValue | None = None
+        consultation_fee: float | CriterionValue | None = None
+        language: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
+        lang_ok = True
+        if criteria.language is not None:
+            if self.languages:
+                lang_ok = any(
+                    self._validate_field(lang, criteria.language) for lang in self.languages
+                )
+            else:
+                lang_ok = False
         return all(
             [
                 self._validate_field(self.doctor_name, criteria.doctor_name),
                 self._validate_field(self.rating, criteria.rating),
                 self._validate_field(self.speciality, criteria.speciality),
+                self._validate_field(self.consultation_fee, criteria.consultation_fee),
+                lang_ok,
             ]
         )
 
@@ -539,6 +557,7 @@ class ViewDoctorProfileEvent(Event, BaseEventValidator):
         data = data.get("data") if isinstance(data, dict) else {}
         data = data or {}
         doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
+        langs = data.get("languages") if data.get("languages") is not None else doctor.get("languages")
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
@@ -547,36 +566,68 @@ class ViewDoctorProfileEvent(Event, BaseEventValidator):
             doctor_name=data.get("doctorName") or doctor.get("name"),
             rating=data.get("rating") if data.get("rating") is not None else doctor.get("rating"),
             speciality=data.get("specialty") or doctor.get("specialty"),
+            consultation_fee=data.get("consultationFee") if data.get("consultationFee") is not None else doctor.get("consultationFee"),
+            languages=langs,
         )
 
 
 class ViewDoctorEducationEvent(Event, BaseEventValidator):
-    """Fired when user opens the Education & Certifications tab on a doctor profile."""
+    """Evento que la web dispara cuando se abre la pestaña Education (lo que Playwright provoca al ejecutar acciones)."""
+    # Tipo de evento: en el paso 5 del evaluation flow se filtran los backend_events por este event_name (igual al del test de la Task).
     event_name: str = "VIEW_DOCTOR_EDUCATION"
+    # Datos del evento: lo que la web envió al backend cuando disparó este evento (evidencia de lo que hizo el agente en Playwright).
     doctor_name: str | None = None
     speciality: str | None = None
+    rating: float | None = None
+    consultation_fee: float | None = None
+    languages: list[str] | None = None
 
+    # Plantilla de lo que puede pedir el test de la Task: event_criteria = constraints (campo, operador, valor).
     class ValidationCriteria(BaseModel):
         doctor_name: str | CriterionValue | None = None
         speciality: str | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
+        consultation_fee: float | CriterionValue | None = None
+        language: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        """Paso 5 evaluación: compara los datos de este evento (lo que guardó el backend) con lo que pide el test de la Task (event_criteria). Si todo coincide → True; si falta una → False."""
+        # Si el test no tiene criterios, damos el test por pasado.
         if not criteria:
             return True
+        # Criterio idioma: por defecto OK; si el test pide idioma, hay que comprobarlo.
+        lang_ok = True
+        if criteria.language is not None:
+            if self.languages:
+                # Al menos un idioma del evento debe cumplir lo que pide el test (equals, contains, etc.).
+                lang_ok = any(
+                    self._validate_field(lang, criteria.language) for lang in self.languages
+                )
+            else:
+                lang_ok = False
+        # Todas las condiciones del test deben cumplirse: valor del evento vs valor que pide el test, campo a campo.
         return all(
             [
                 self._validate_field(self.doctor_name, criteria.doctor_name),
                 self._validate_field(self.speciality, criteria.speciality),
+                self._validate_field(self.rating, criteria.rating),
+                self._validate_field(self.consultation_fee, criteria.consultation_fee),
+                lang_ok,
             ]
         )
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "ViewDoctorEducationEvent":
+        """Paso 5 evaluación: convierte un evento crudo (de get_backend_events) en este objeto con doctor_name, speciality, etc., para poder compararlo con las event_criteria del test."""
+        # Campos base del evento (tipo, timestamp, web_agent_id).
         base_event = Event.parse(backend_event)
+        # Payload que guardó el backend cuando la web disparó el evento (tras las acciones de Playwright).
         data = backend_event.data
         data = data.get("data") if isinstance(data, dict) else {}
         data = data or {}
+        # Si el payload trae objeto doctor, usarlo para rellenar campos.
         doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
+        # Construir el evento con los datos que luego se compararán con las constraints del test.
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
@@ -584,18 +635,23 @@ class ViewDoctorEducationEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             doctor_name=data.get("doctorName") or doctor.get("name"),
             speciality=data.get("specialty") or doctor.get("specialty"),
+            rating=data.get("rating") if data.get("rating") is not None else doctor.get("rating"),
+            consultation_fee=data.get("consultationFee") if data.get("consultationFee") is not None else doctor.get("consultationFee"),
+            languages=data.get("languages") if data.get("languages") is not None else doctor.get("languages"),
         )
 
 
 class SearchDoctorsEvent(Event, BaseEventValidator):
-    """Fired when user clicks Search on the Doctors page (applies name/specialty filters)."""
+    """Fired when user clicks Search on the Doctors page (applies name, speciality, language filters)."""
     event_name: str = "SEARCH_DOCTORS"
     search_term: str | None = None
-    specialty: str | None = None
+    speciality: str | None = None
+    language: str | None = None
 
     class ValidationCriteria(BaseModel):
         search_term: str | CriterionValue | None = None
-        specialty: str | CriterionValue | None = None
+        speciality: str | CriterionValue | None = None
+        language: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -603,7 +659,8 @@ class SearchDoctorsEvent(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.search_term, criteria.search_term),
-                self._validate_field(self.specialty, criteria.specialty),
+                self._validate_field(self.speciality, criteria.speciality),
+                self._validate_field(self.language, criteria.language),
             ]
         )
 
@@ -612,13 +669,15 @@ class SearchDoctorsEvent(Event, BaseEventValidator):
         base_event = Event.parse(backend_event)
         data = backend_event.data
         data = data.get("data") if isinstance(data, dict) else {}
+        data = data or {}
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             search_term=data.get("searchTerm"),
-            specialty=data.get("specialty"),
+            speciality=data.get("specialty"),
+            language=data.get("language"),
         )
 
 
@@ -628,20 +687,31 @@ class OpenContactDoctorFormEvent(Event, BaseEventValidator):
     doctor_name: str | None = None
     rating: float | None = None
     speciality: str | None = None
+    consultation_fee: float | None = None
+    languages: list[str] | None = None
 
     class ValidationCriteria(BaseModel):
         doctor_name: str | CriterionValue | None = None
         rating: float | CriterionValue | None = None
         speciality: str | CriterionValue | None = None
+        consultation_fee: float | CriterionValue | None = None
+        language: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
+        lang_ok = True
+        if criteria.language is not None:
+            lang_ok = bool(
+                self.languages and any(self._validate_field(lang, criteria.language) for lang in self.languages)
+            )
         return all(
             [
                 self._validate_field(self.doctor_name, criteria.doctor_name),
                 self._validate_field(self.rating, criteria.rating),
                 self._validate_field(self.speciality, criteria.speciality),
+                self._validate_field(self.consultation_fee, criteria.consultation_fee),
+                lang_ok,
             ]
         )
 
@@ -659,28 +729,42 @@ class OpenContactDoctorFormEvent(Event, BaseEventValidator):
             doctor_name=data.get("doctorName") or doctor.get("name"),
             rating=data.get("rating") if data.get("rating") is not None else doctor.get("rating"),
             speciality=data.get("specialty") or doctor.get("specialty"),
+            consultation_fee=data.get("consultationFee") if data.get("consultationFee") is not None else doctor.get("consultationFee"),
+            languages=data.get("languages") if data.get("languages") is not None else doctor.get("languages"),
         )
 
 
 class ContactDoctorEvent(Event, BaseEventValidator):
+    """Payload has doctor; event stores same fields as map so validation checks what we store."""
     event_name: str = "CONTACT_DOCTOR"
     doctor_name: str | None = None
     speciality: str | None = None
     rating: float | None = None
+    consultation_fee: float | None = None
+    languages: list[str] | None = None
 
     class ValidationCriteria(BaseModel):
         doctor_name: str | CriterionValue | None = None
         rating: float | CriterionValue | None = None
         speciality: str | CriterionValue | None = None
+        consultation_fee: float | CriterionValue | None = None
+        language: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
+        lang_ok = True
+        if criteria.language is not None:
+            lang_ok = bool(
+                self.languages and any(self._validate_field(lang, criteria.language) for lang in self.languages)
+            )
         return all(
             [
                 self._validate_field(self.doctor_name, criteria.doctor_name),
                 self._validate_field(self.rating, criteria.rating),
                 self._validate_field(self.speciality, criteria.speciality),
+                self._validate_field(self.consultation_fee, criteria.consultation_fee),
+                lang_ok,
             ]
         )
 
@@ -698,6 +782,8 @@ class ContactDoctorEvent(Event, BaseEventValidator):
             doctor_name=data.get("doctorName") or doctor.get("name"),
             rating=data.get("rating") if data.get("rating") is not None else doctor.get("rating"),
             speciality=data.get("specialty") or doctor.get("specialty"),
+            consultation_fee=data.get("consultationFee") if data.get("consultationFee") is not None else doctor.get("consultationFee"),
+            languages=data.get("languages") if data.get("languages") is not None else doctor.get("languages"),
         )
 
 
