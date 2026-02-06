@@ -58,12 +58,14 @@ SOTA_AGENTS = [
 
 # Active agents to run.
 AGENTS = [
-    ApifiedWebAgent(base_url="http://localhost:5000", id="1", name="LocalAgent"),
+    # ApifiedWebAgent(base_url="http://localhost:5000", id="1", name="LocalAgent"),
+    ApifiedWebAgent(id="1", name="Anthropic-CUA", host="127.0.0.1", port=5000, timeout=398)
+    # ApifiedWebCUA(base_url="http://localhost:5000", id="1", name="BrowserUse-OpenAI"),
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
-    "autohealth",
+    "autocinema",  # Web 1 autocinema
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 USE_CASES = [
@@ -117,8 +119,8 @@ CFG = BenchmarkConfig(
     evaluator_mode="concurrent",  # ← Agente genera lista completa de acciones
     # Tasks
     prompts_per_use_case=1,
-    # use_cases=None means all use-cases
-    use_cases=None,
+    use_cases=None,  # Use case for autocinema
+    use_cached_tasks=False,  # Use cached tasks if available
     # Execution
     runs=1,  # single run is enough for this fixed agent
     max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents

@@ -70,6 +70,8 @@ class Task(BaseModel):
         Serialize a Task object to a dictionary.
         """
         serialized = self.model_dump()
+        # Include original_prompt (PrivateAttr is not included in model_dump)
+        serialized["original_prompt"] = self.original_prompt
         # For sub-tests:
         serialized["tests"] = [test.model_dump() for test in self.tests]
         if self.use_case:
@@ -79,34 +81,25 @@ class Task(BaseModel):
     @classmethod
     def deserialize(cls, data: dict) -> "Task":
         """
-        Optionally custom method, but normally you can do Task(**data).
+        Deserialize a dictionary to a Task object.
         """
-        # # Create a copy to avoid modifying the input data
-        # task_data = data.copy()
+        from autoppia_iwa.src.data_generation.tests.classes import BaseTaskTest
 
-        # # Handle tests - convert to appropriate test objects
-        # if "tests" in task_data:
-        #     task_data["tests"] = [BaseTaskTest.deserialize(test) for test in task_data["tests"]]
-
-        # # Handle milestones recursively
-        # if task_data.get("milestones"):
-        #     task_data["milestones"] = [cls.deserialize(milestone) for milestone in task_data["milestones"]]
-
-        # # Handle BrowserSpecification
-        # if "specifications" in task_data:
-        #     task_data["specifications"] = BrowserSpecification.model_validate(task_data["specifications"])
-
-        # # Handle potential naming incompatibilities
-        # if "test_cases" in task_data and "tests" not in task_data:
-        #     task_data["tests"] = task_data.pop("test_cases")
-
-        # if "description" in task_data and not task_data.get("prompt"):
-        #     task_data["prompt"] = task_data.pop("description")
-
+        # Handle use_case deserialization
         if data.get("use_case"):
             data["use_case"] = UseCase.deserialize(data["use_case"])
+
+        # Handle tests deserialization - convert dicts back to test objects
+        if data.get("tests"):
+            data["tests"] = [BaseTaskTest.deserialize(test) for test in data["tests"]]
+
+        # Create task
         task = cls(**data)
-        object.__setattr__(task, "_original_prompt", data.get("prompt", ""))
+
+        # Restore original_prompt
+        original_prompt = data.get("original_prompt", data.get("prompt", ""))
+        object.__setattr__(task, "_original_prompt", original_prompt)
+
         return task
 
     def clean_task(self) -> dict:
@@ -150,7 +143,7 @@ class Task(BaseModel):
 
 class TaskGenerationConfig(BaseModel):
     # Task quantity controls
-    prompts_per_use_case: int  = 1  # Number of task variations to generate per use case (<=0/None => auto)
+    prompts_per_use_case: int = 1  # Number of task variations to generate per use case (<=0/None => auto)
     # Specific use cases to focus on. If None, generates for all available use cases.
     use_cases: list[str] | None = None
     dynamic: bool = False

@@ -387,9 +387,24 @@ class Benchmark:
     # Per-project execution
     # ---------------------------------------------------------------------
     async def _generate_tasks_for_project(self, project: WebProject) -> list[Task]:
+        from autoppia_iwa.config.config import PROJECT_BASE_DIR
+        from autoppia_iwa.entrypoints.benchmark.utils.tasks import load_tasks_from_json, save_tasks_to_json
         from autoppia_iwa.src.data_generation.tasks.classes import TaskGenerationConfig
         from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
 
+        # Check if we should use cached tasks
+        use_cached = getattr(self.config, "use_cached_tasks", False)
+        cache_dir = str(PROJECT_BASE_DIR.parent / "benchmark-output" / "cache" / "tasks")
+
+        if use_cached:
+            cached_tasks = await load_tasks_from_json(project, cache_dir)
+            if cached_tasks:
+                logger.info(f"Using {len(cached_tasks)} cached tasks for '{project.name}'")
+                return cached_tasks
+            else:
+                logger.info(f"No cached tasks found for '{project.name}', generating new tasks...")
+
+        # Generate new tasks
         config = TaskGenerationConfig(
             prompts_per_use_case=self.config.prompts_per_use_case,
             use_cases=self.config.use_cases,
@@ -404,6 +419,9 @@ class Benchmark:
                     visualizer.show_task_with_tests(task)
             except Exception as e:
                 logger.warning(f"Task visualization failed: {e}")
+
+            # Save to cache
+            await save_tasks_to_json(tasks, project, cache_dir)
 
         return tasks
 
