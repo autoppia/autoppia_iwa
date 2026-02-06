@@ -55,13 +55,13 @@ async def fetch_data(seed_value: int | None = None, count: int = 50) -> list[dic
     Returns:
         list[dict] of normalized movies
     """
-    from .main import FRONTEND_PORT_INDEX, cinema_project
+    from .main import FRONTEND_PORT_INDEX, autocinema_project
 
-    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{cinema_project.id}"
+    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{autocinema_project.id}"
     entity_type = "movies"
 
     items = await load_dataset_data(
-        backend_url=cinema_project.backend_url,
+        backend_url=autocinema_project.backend_url,
         project_key=project_key,
         entity_type=entity_type,
         seed_value=seed_value if seed_value is not None else 0,

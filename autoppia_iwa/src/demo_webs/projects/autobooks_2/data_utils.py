@@ -36,13 +36,13 @@ async def fetch_data(seed_value: int | None = None, count: int = 50) -> list[dic
     Returns:
         list[dict] of normalized books
     """
-    from .main import FRONTEND_PORT_INDEX, books_project
+    from .main import FRONTEND_PORT_INDEX, autobooks_project
 
-    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{books_project.id}"
+    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{autobooks_project.id}"
     entity_type = "books"
 
     items = await load_dataset_data(
-        backend_url=books_project.backend_url,
+        backend_url=autobooks_project.backend_url,
         project_key=project_key,
         entity_type=entity_type,
         seed_value=seed_value if seed_value is not None else 0,

@@ -46,19 +46,19 @@ from .module_generator import ConfigError as ModuleConfigError, generate_module_
 PROJECTS_BASE = PROJECT_BASE_DIR / "src" / "demo_webs" / "projects"
 DECKS_BASE = Path(__file__).resolve().parents[1] / "deck"
 DECK_ALIASES = {
-    "autocrm_5": "autocrm",
+    "autobooks_2": "autobooks",
     "autocalendar_11": "autocalendar",
+    "autocinema_1": "autocinema",
     "autoconnect_9": "autoconnect",
+    "autocrm_5": "autocrm",
     "autodelivery_7": "autodelivery",
+    "autodining_4": "autodining",
     "autodrive_13": "autodrive",
     "autolist_12": "autolist",
     "autolodge_8": "autolodge",
     "automail_6": "automail",
     "autowork_10": "autowork",
-    "books_2": "autobooks",
-    "cinema_1": "autocinema",
-    "dining_4": "autodining",
-    "omnizone_3": "autozone",
+    "autozone_3": "autozone",
 }
 MODULE_PREFIX = "autoppia_iwa.src.demo_webs.projects"
 LLM_SAMPLE_SIZE = 1
