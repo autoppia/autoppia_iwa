@@ -29,11 +29,18 @@ AGENTS = [
     ApifiedWebCUA(base_url="http://localhost:5000", id="1", name="LocalAgent", timeout=120),
 ]
 
+<<<<<<< HEAD
 # =============================================================================
 # 2) PROJECTS & USE CASES
 # =============================================================================
 
 PROJECT_IDS = ["autocinema"]
+=======
+# 2) Projects to evaluate (by id from demo_web_projects)
+PROJECT_IDS = [
+    "autocinema"
+]
+>>>>>>> b56bc1c4 (refactor: Enhance autocinema constraint generation)
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 USE_CASES = ["FILM_DETAIL"]  # or None for all use cases
 

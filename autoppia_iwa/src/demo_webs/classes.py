@@ -31,7 +31,8 @@ class UseCase(BaseModel):
 
     def apply_replacements(self, text: str, *args, **kwargs) -> str:
         if self.replace_func and isinstance(text, str):
-            result = self.replace_func(text, *args, **kwargs)
+            kwargs_with_constraints = {**kwargs, "constraints": self.constraints}
+            result = self.replace_func(text, *args, **kwargs_with_constraints)
             # Support both sync and async replace functions
             if asyncio.iscoroutine(result):
                 # If called in sync context, run to completion
@@ -51,7 +52,8 @@ class UseCase(BaseModel):
     async def apply_replacements_async(self, text: str, *args, **kwargs) -> str:
         """Async version that awaits async replace functions when provided."""
         if self.replace_func and isinstance(text, str):
-            result = self.replace_func(text, *args, **kwargs)
+            kwargs_with_constraints = {**kwargs, "constraints": self.constraints}
+            result = self.replace_func(text, *args, **kwargs_with_constraints)
             if asyncio.iscoroutine(result):
                 return await result
             return result
