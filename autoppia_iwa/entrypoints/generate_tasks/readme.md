@@ -1,21 +1,28 @@
 
-## 📘 **README — Task Generation API**
+## 📘 **README — Task Generation (API & CLI)**
 
 ### 🧩 Overview
 
-The **Task Generation API** provides an endpoint for generating benchmark tasks for demo web projects in the **Autoppia IWA** platform.
+The **Task Generation** module provides **two modes** for generating benchmark tasks for demo web projects in the **Autoppia IWA** platform:
+
+1. **API Mode** — FastAPI REST endpoint for programmatic task generation (returns prompts only, no file saving)
+2. **CLI Mode** — Command-line script for generating and saving tasks using configuration constants
 
 It uses **FastAPI** and integrates with `autoppia_iwa.entrypoints.benchmark.task_generation` to dynamically create project-specific benchmark tasks across multiple runs.
 
 ---
 
+## 🌐 **API Mode**
+
 ### ⚙️ **Endpoint**
 
 #### **POST** `/generate-tasks`
 
-Generate benchmark tasks for one or more demo web projects.
+Generate benchmark tasks for one or more demo web projects via HTTP API.
 
-Each project’s results are grouped by **use case**, and multiple runs are combined together — meaning prompts from each run are appended to the same use-case group.
+**Note:** The API endpoint returns task prompts in the response only. It does **not** save tasks to files. Use CLI mode if you need to save tasks to JSON cache files.
+
+Each project's results are grouped by **use case**, and multiple runs are combined together — meaning prompts from each run are appended to the same use-case group.
 
 ---
 
@@ -72,40 +79,94 @@ curl --location 'http://localhost:5080/generate-tasks' \
 ```
 
 > 💡 Each `use_case` key contains **prompts combined from all runs**, ensuring diverse generation results across multiple iterations.
+> ⚠️ **Note:** The API endpoint returns prompts only. It does not save tasks to files. Use CLI mode if you need to save full task objects to JSON cache files.
 
 ---
 
-### 🧱 **Project Structure**
+## 💻 **CLI Mode**
+
+### Overview
+
+CLI mode generates tasks using configuration constants defined in the source file and automatically saves them to JSON cache files. This is useful for quick local testing or batch generation.
+
+### Configuration
+
+Edit the constants in `generate_tasks_endpoint.py` to customize CLI behavior:
+
+```python
+PROJECT_ID = "autobooks"  # Project ID to generate tasks for
+USE_CASE_NAMES = ["SEARCH_BOOK"]  # List of use case names, or None for all use cases
+NUM_TASKS = 2  # Number of tasks per use case
+DYNAMIC = True  # Set to False if you don't want dynamic seeds
+```
+
+### Usage
+
+Run the module with the `--cli` flag:
+
+```bash
+python -m autoppia_iwa.entrypoints.generate_tasks.generate_tasks_endpoint --cli
+```
+
+### Output
+
+- Tasks are generated based on the configuration constants
+- Full task objects are automatically saved to JSON cache files
+- Cache location: `benchmark-output/cache/tasks/<project_id>_tasks.json`
+- Summary is printed to console showing tasks generated per use case
+
+### Example Output
+
+```
+Generating 2 tasks for 1 use case(s): ['SEARCH_BOOK'] in project 'AutoBooks'
+Generated 2 total tasks:
+  - SEARCH_BOOK: 2 tasks
+✅ Successfully saved 2 tasks to cache
+Cache location: /path/to/benchmark-output/cache/tasks
+```
+
+---
+
+## 🧱 **Project Structure**
 
 ```
 autoppia_iwa/
 └── entrypoints/
     └── generate_tasks/
-        ├── generate_tasks_endpoint.py   # FastAPI endpoint implementation
-        └── deploy_service.sh            # PM2 deployment script
+        ├── generate_tasks_endpoint.py   # Unified API & CLI implementation
+        ├── deploy_endpoint.sh            # PM2 deployment script
+        └── readme.md                     # This file
 ```
 
 ---
 
-### 🖥️ **Run Locally**
+## 🖥️ **Run Locally**
 
-#### 1. Create and activate a virtual environment
+### 1. Create and activate a virtual environment
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 ```
 
-#### 2. Install dependencies
+### 2. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-#### 3. Start the FastAPI service
+### 3. Choose your mode
+
+#### **API Mode** — Start the FastAPI service
 
 ```bash
 python -m autoppia_iwa.entrypoints.generate_tasks.generate_tasks_endpoint --port 5080
+```
+
+Or with custom host/port:
+
+```bash
+python -m autoppia_iwa.entrypoints.generate_tasks.generate_tasks_endpoint --host 0.0.0.0 --port 5080
 ```
 
 Open your browser at:
@@ -113,17 +174,25 @@ Open your browser at:
 👉 **[http://localhost:5080/docs](http://localhost:5080/docs)** — interactive Swagger UI
 👉 **[http://localhost:5080/redoc](http://localhost:5080/redoc)** — alternative documentation view
 
----
-
-### 🚀 **Deploy with PM2**
-
-You can run the API persistently using the included **`deploy_service.sh`** script.
-
-#### Run Deployment
+#### **CLI Mode** — Generate tasks and save to files
 
 ```bash
-chmod +x deploy_service.sh
-./deploy_service.sh 5080
+python -m autoppia_iwa.entrypoints.generate_tasks.generate_tasks_endpoint --cli
+```
+
+> 💡 **Note:** Edit the configuration constants in `generate_tasks_endpoint.py` before running CLI mode to customize project, use cases, and other settings.
+
+---
+
+## 🚀 **Deploy with PM2**
+
+You can run the API persistently using the included **`deploy_endpoint.sh`** script.
+
+### Run Deployment
+
+```bash
+chmod +x deploy_endpoint.sh
+./deploy_endpoint.sh 5080
 ```
 
 This script will:
@@ -136,22 +205,22 @@ This script will:
 Example:
 
 ```bash
-./deploy_service.sh 5090
+./deploy_endpoint.sh 5090
 ```
 
-#### View Status
+### View Status
 
 ```bash
 pm2 status
 ```
 
-#### View Logs
+### View Logs
 
 ```bash
 pm2 logs generate-tasks-5080
 ```
 
-#### Stop the Service
+### Stop the Service
 
 ```bash
 pm2 delete generate-tasks-5080
@@ -159,7 +228,7 @@ pm2 delete generate-tasks-5080
 
 ---
 
-### 🔧 **Environment Variables**
+## 🔧 **Environment Variables**
 
 | Variable            | Description                               | Default |
 | ------------------- | ----------------------------------------- | ------- |
@@ -169,12 +238,12 @@ Example:
 
 ```bash
 export UVICORN_LOG_LEVEL=debug
-./deploy_service.sh 5080
+./deploy_endpoint.sh 5080
 ```
 
 ---
 
-### 🧰 **Tech Stack**
+## 🧰 **Tech Stack**
 
 * **FastAPI** — modern async web framework
 * **Uvicorn** — lightning-fast ASGI server
@@ -183,6 +252,6 @@ export UVICORN_LOG_LEVEL=debug
 
 ---
 
-### 📄 **License**
+## 📄 **License**
 
-This API component is part of the **Autoppia IWA** project and follows the same license terms as the parent repository.
+This component is part of the **Autoppia IWA** project and follows the same license terms as the parent repository.

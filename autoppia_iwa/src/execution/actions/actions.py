@@ -715,37 +715,83 @@ class GetDropDownOptionsAction(BaseActionWithSelector):
         Finds the dropdown in any frame.
         """
         page = _ensure_page(page, "GetDropDownOptionsAction")
-        xpath = self.get_playwright_selector()
+        playwright_selector = self.get_playwright_selector()
         all_options = []
         found_dropdown = False
 
+        # Extract raw XPath from Playwright selector if it's an XPath selector
+        # Playwright selectors can be: "xpath=//select[@id='x']", "#id", ".class", etc.
+        raw_xpath = None
+        if playwright_selector.startswith("xpath="):
+            raw_xpath = playwright_selector[6:]  # Remove "xpath=" prefix
+        elif playwright_selector.startswith("//") or playwright_selector.startswith("(//"):
+            raw_xpath = playwright_selector
+        else:
+            # For non-XPath selectors (ID, class, etc.), try using Playwright's selector evaluation
+            # Convert to XPath or use Playwright's querySelector
+            action_logger.debug(f"Non-XPath selector detected: {playwright_selector}, attempting conversion")
+
         for i, frame in enumerate(page.frames):
             try:
-                options = await frame.evaluate(
-                    """
-                    (xpath) => {
-                        try {
-                            const select = document.evaluate(xpath, document, null,
-                                XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-                            if (!select) return null;
-                            return {
-                                options: Array.from(select.options).map(opt => ({
-                                    text: opt.text.trim(),
-                                    value: opt.value,
-                                    index: opt.index
-                                })),
-                                id: select.id || null,
-                                name: select.name || null
-                            };
-                        } catch (e) {
-                            return { error: e.toString() };
+                # If we have a raw XPath, use document.evaluate
+                if raw_xpath:
+                    options = await frame.evaluate(
+                        """
+                        (xpath) => {
+                            try {
+                                const select = document.evaluate(xpath, document, null,
+                                    XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+                                if (!select) return null;
+                                if (select.tagName.toLowerCase() !== 'select') return null;
+                                return {
+                                    options: Array.from(select.options).map(opt => ({
+                                        text: opt.text.trim(),
+                                        value: opt.value,
+                                        index: opt.index
+                                    })),
+                                    id: select.id || null,
+                                    name: select.name || null
+                                };
+                            } catch (e) {
+                                return { error: e.toString() };
+                            }
                         }
-                    }
-                    """,
-                    xpath,
-                )
+                        """,
+                        raw_xpath,
+                    )
+                else:
+                    # For non-XPath selectors, use Playwright's selector evaluation
+                    try:
+                        select_element = await frame.wait_for_selector(
+                            playwright_selector,
+                            state="attached",
+                            timeout=2000,
+                            strict=False,
+                        )
+                        if select_element:
+                            options = await select_element.evaluate(
+                                """
+                                (select) => {
+                                    if (select.tagName.toLowerCase() !== 'select') return null;
+                                    return {
+                                        options: Array.from(select.options).map(opt => ({
+                                            text: opt.text.trim(),
+                                            value: opt.value,
+                                            index: opt.index
+                                        })),
+                                        id: select.id || null,
+                                        name: select.name || null
+                                    };
+                                }
+                                """
+                            )
+                        else:
+                            options = None
+                    except Exception as e:
+                        action_logger.debug(f"Frame {i} Playwright selector evaluation failed: {e!s}")
+                        options = None
 
-                if options and "error" not in options:
+                if options and "error" not in options and options.get("options"):
                     found_dropdown = True
                     action_logger.debug(f"Dropdown found in frame {i} (ID: {options.get('id')}, Name: {options.get('name')})")
 
@@ -754,8 +800,10 @@ class GetDropDownOptionsAction(BaseActionWithSelector):
 
                     # Stop searching after finding the first dropdown with options
                     break
-                elif "error" in options:
+                elif options and "error" in options:
                     action_logger.debug(f"Frame {i} evaluation error: {options['error']}")
+                elif options and not options.get("options"):
+                    action_logger.debug(f"Frame {i}: Element found but has no options or is not a select element")
 
             except Exception as e:
                 action_logger.debug(f"Frame {i} evaluate error: {e!s}")
@@ -764,7 +812,7 @@ class GetDropDownOptionsAction(BaseActionWithSelector):
             msg = "\n".join(all_options) + "\nUse the exact string in SelectDropDownOptionAction"
             action_logger.info(msg)
         else:
-            action_logger.warning("No dropdown options found in any frame.")
+            action_logger.warning(f"No dropdown options found in any frame. Selector used: {playwright_selector}")
 
 
 class SelectDropDownOptionAction(BaseActionWithSelector):

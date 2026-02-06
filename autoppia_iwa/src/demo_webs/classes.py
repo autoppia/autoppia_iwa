@@ -166,10 +166,16 @@ class UseCase(BaseModel):
 
     def serialize(self) -> dict:
         """Serialize a UseCase object to a dictionary."""
+        from autoppia_iwa.src.data_generation.tests.simple.utils import enum_to_raw_recursive
+
         serialized = self.model_dump()
         serialized["event"] = self.event.__name__
         if "event_source_code" in serialized:
             serialized["event_source_code"] = True
+        # Explicitly ensure constraints are included (they're needed for validation)
+        # Convert ComparisonOperator enums to strings for JSON serialization
+        if self.constraints is not None:
+            serialized["constraints"] = enum_to_raw_recursive(self.constraints)
         return serialized
 
     @classmethod
