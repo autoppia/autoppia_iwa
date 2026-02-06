@@ -2,7 +2,6 @@ from autoppia_iwa.src.demo_webs.classes import UseCase
 
 from .events import (
     AppointmentBookedSuccessfullyEvent,
-    BookAppointmentEvent,
     ContactDoctorEvent,
     DoctorContactedSuccessfullyEvent,
     OpenAppointmentFormEvent,
@@ -12,18 +11,15 @@ from .events import (
     SearchMedicalAnalysisEvent,
     FilterDoctorReviewsEvent,
     RefillRequestEvent,
-    RequestAppointmentEvent,
     RequestQuickAppointmentEvent,
     SearchDoctorsEvent,
     ViewDoctorProfileEvent,
     ViewDoctorEducationEvent,
     ViewMedicalAnalysisEvent,
     ViewPrescriptionEvent,
-    ViewReviewClickedEvent,
 )
 from .generation_functions import (
     generate_appointment_booked_successfully_constraints,
-    generate_book_appointment_constraints,
     generate_contact_doctor_constraints,
     generate_doctor_contact_successfully_constraints,
     generate_search_appointment_constraints,
@@ -31,7 +27,6 @@ from .generation_functions import (
     generate_search_medical_analysis_constraints,
     generate_filter_doctor_reviews_constraints,
     generate_refill_prescription_constraints,
-    generate_request_appointment_constraints,
     generate_request_quick_appointment_constraints,
     generate_search_doctors_constraints,
     generate_view_doctor_profile_constraints,
@@ -40,29 +35,6 @@ from .generation_functions import (
     generate_open_contact_doctor_form_constraints,
     generate_view_medical_analysis_constraints,
     generate_view_prescription_constraints,
-    generate_view_review_clicked_constraints,
-)
-
-BOOK_APPOINTMENT_USE_CASE = UseCase(
-    name="BOOK_APPOINTMENT",
-    description="The user booked an appointment with a doctor for a given date, time, and speciality",
-    event=BookAppointmentEvent,
-    event_source_code=BookAppointmentEvent.get_source_code_of_class(),
-    constraints_generator=generate_book_appointment_constraints,
-    examples=[
-        {
-            "prompt": "Book an appointment where doctor_name equals 'Dr. Alice Thompson' and date equals '2025-09-20' and time equals '9:00 AM' and speciality equals 'Cardiology'",
-            "prompt_for_task_generation": "Book an appointment where doctor_name equals 'Dr. Alice Thompson' and date equals '2025-09-20' and time equals '9:00 AM' and speciality equals 'Cardiology'",
-        },
-        {
-            "prompt": "Book an appointment where doctor_name not equals 'Dr. Clara Nguyen' and date not equals '2025-09-21' and time equals '9:00 AM' and speciality equals 'Cardiology'",
-            "prompt_for_task_generation": "Book an appointment where doctor_name not equals 'Dr. Clara Nguyen' and date not equals '2025-09-21' and time equals '9:00 AM' and speciality equals 'Cardiology'",
-        },
-        {
-            "prompt": "Book an appointment where doctor_name contains 'Daniel' and date less than '2025-09-25' and time greater than '10:00 AM' and speciality equals 'Orthopedics'",
-            "prompt_for_task_generation": "Book an appointment where doctor_name contains 'Daniel' and date less than '2025-09-25' and time greater than '10:00 AM' and speciality equals 'Orthopedics'",
-        },
-    ],
 )
 
 OPEN_APPOINTMENT_FORM_USE_CASE = UseCase(
@@ -117,28 +89,6 @@ APPOINTMENT_BOOKED_SUCCESSFULLY_USE_CASE = UseCase(
     ],
 )
 
-REQUEST_APPOINTMENT_USE_CASE = UseCase(
-    name="REQUEST_APPOINTMENT",
-    description="The user submitted the homepage Request Appointment form with patient details and optional speciality.",
-    event=RequestAppointmentEvent,
-    event_source_code=RequestAppointmentEvent.get_source_code_of_class(),
-    constraints_generator=generate_request_appointment_constraints,
-    examples=[
-        {
-            "prompt": "Request an appointment where patient_name equals 'John Smith' and speciality equals 'Cardiology'",
-            "prompt_for_task_generation": "Request an appointment where patient_name equals 'John Smith' and speciality equals 'Cardiology'",
-        },
-        {
-            "prompt": "Request an appointment where patient_email equals 'emily.johnson@example.com' and speciality equals 'Dermatology'",
-            "prompt_for_task_generation": "Request an appointment where patient_email equals 'emily.johnson@example.com' and speciality equals 'Dermatology'",
-        },
-        {
-            "prompt": "Request an appointment where speciality equals 'Neurology' and patient_name contains 'Michael'",
-            "prompt_for_task_generation": "Request an appointment where speciality equals 'Neurology' and patient_name contains 'Michael'",
-        },
-    ],
-)
-
 REQUEST_QUICK_APPOINTMENT_USE_CASE = UseCase(
     name="REQUEST_QUICK_APPOINTMENT",
     description="The user submitted the homepage quick appointment form (hero); a popup confirms 'We will contact you as soon as possible'.",
@@ -187,8 +137,8 @@ SEARCH_DOCTORS_USE_CASE = UseCase(
     constraints_generator=generate_search_doctors_constraints,
     examples=[
         {
-            "prompt": "Search doctors where search_term contains 'Alice'",
-            "prompt_for_task_generation": "Search doctors where search_term contains 'Alice'",
+            "prompt": "Search doctors where doctor_name contains 'Alice'",
+            "prompt_for_task_generation": "Search doctors where doctor_name contains 'Alice'",
         },
         {
             "prompt": "Search doctors where speciality equals 'Cardiology'",
@@ -487,40 +437,6 @@ DOCTOR_CONTACTED_SUCCESSFULLY_USE_CASE = UseCase(
         },
     ],
 )
-VIEW_REVIEWS_CLICKED_USE_CASE = UseCase(
-    name="VIEW_REVIEWS_CLICKED",
-    description="The user clicked to view reviews for a doctor.",
-    event=ViewReviewClickedEvent,
-    event_source_code=ViewReviewClickedEvent.get_source_code_of_class(),
-    additional_prompt_info="Use format: 'View reviews clicked where field operator value' (e.g. doctor_name equals 'Dr. X'). Always mention the field name explicitly.",
-    constraints_generator=generate_view_review_clicked_constraints,
-    examples=[
-        {
-            "prompt": "View reviews clicked where doctor_name equals 'Dr. Alice Thompson'",
-            "prompt_for_task_generation": "View reviews clicked where doctor_name equals 'Dr. Alice Thompson'",
-        },
-        {
-            "prompt": "View reviews clicked where doctor_name equals 'Dr. Brian Patel'",
-            "prompt_for_task_generation": "View reviews clicked where doctor_name equals 'Dr. Brian Patel'",
-        },
-        {
-            "prompt": "View reviews clicked where doctor_name contains 'Nguyen'",
-            "prompt_for_task_generation": "View reviews clicked where doctor_name contains 'Nguyen'",
-        },
-        {
-            "prompt": "View reviews clicked where speciality equals 'Cardiology'",
-            "prompt_for_task_generation": "View reviews clicked where speciality equals 'Cardiology'",
-        },
-        {
-            "prompt": "View reviews clicked where speciality contains 'Dermatology'",
-            "prompt_for_task_generation": "View reviews clicked where speciality contains 'Dermatology'",
-        },
-        {
-            "prompt": "View reviews clicked where rating greater than 4.5",
-            "prompt_for_task_generation": "View reviews clicked where rating greater than 4.5",
-        },
-    ],
-)
 FILTER_DOCTOR_REVIEWS_USE_CASE = UseCase(
     name="FILTER_DOCTOR_REVIEWS",
     description="The user filtered or sorted a doctor's reviews (by star rating and/or sort order: newest, oldest, highest, lowest).",
@@ -547,10 +463,8 @@ FILTER_DOCTOR_REVIEWS_USE_CASE = UseCase(
     ],
 )
 ALL_USE_CASES = [
-    BOOK_APPOINTMENT_USE_CASE,
     OPEN_APPOINTMENT_FORM_USE_CASE,
     APPOINTMENT_BOOKED_SUCCESSFULLY_USE_CASE,
-    REQUEST_APPOINTMENT_USE_CASE,
     REQUEST_QUICK_APPOINTMENT_USE_CASE,
     SEARCH_APPOINTMENT_USE_CASE,
     SEARCH_DOCTORS_USE_CASE,
@@ -565,5 +479,4 @@ ALL_USE_CASES = [
     CONTACT_DOCTOR_USE_CASE,
     REFILL_PRESCRIPTION_USE_CASE,
     DOCTOR_CONTACTED_SUCCESSFULLY_USE_CASE,
-    VIEW_REVIEWS_CLICKED_USE_CASE,
 ]

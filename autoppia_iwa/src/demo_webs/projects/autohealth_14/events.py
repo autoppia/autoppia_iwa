@@ -4,50 +4,6 @@ from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue
 
 
-class BookAppointmentEvent(Event, BaseEventValidator):
-    event_name: str = "BOOK_APPOINTMENT"
-    date: str | None = None
-    doctor_name: str | None = None
-    speciality: str | None = None
-    time: str | None = None
-
-    class ValidationCriteria(BaseModel):
-        date: str | CriterionValue | None = None
-        doctor_name: str | CriterionValue | None = None
-        speciality: str | CriterionValue | None = None
-        time: str | CriterionValue | None = None
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if criteria is None:
-            return True
-        return all(
-            [
-                self._validate_field(self.date, criteria.date),
-                self._validate_field(self.doctor_name, criteria.doctor_name),
-                self._validate_field(self.speciality, criteria.speciality),
-                self._validate_field(self.time, criteria.time),
-            ]
-        )
-
-    @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "BookAppointmentEvent":
-        base_event = Event.parse(backend_event)
-        data = backend_event.data
-        data = data.get("data") or {}
-        doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
-        appointment = data.get("appointment") if isinstance(data.get("appointment"), dict) else {}
-        return cls(
-            event_name=base_event.event_name,
-            timestamp=base_event.timestamp,
-            web_agent_id=base_event.web_agent_id,
-            user_id=base_event.user_id,
-            date=data.get("date") or appointment.get("date"),
-            doctor_name=data.get("doctorName") or doctor.get("name"),
-            speciality=data.get("specialty") or doctor.get("specialty"),
-            time=data.get("time") or appointment.get("time"),
-        )
-
-
 class OpenAppointmentFormEvent(Event, BaseEventValidator):
     """Fired when user clicks Book Appointment and opens the appointment booking form/modal."""
     event_name: str = "OPEN_APPOINTMENT_FORM"
@@ -170,49 +126,6 @@ class AppointmentBookedSuccessfullyEvent(Event, BaseEventValidator):
             patient_phone=data.get("patientPhone"),
             reason_for_visit=data.get("reasonForVisit"),
             time=data.get("time") or appointment.get("time"),
-        )
-
-
-class RequestAppointmentEvent(Event, BaseEventValidator):
-    """Fired when user submits the homepage Request Appointment form (quick appointment hero)."""
-    event_name: str = "REQUEST_APPOINTMENT"
-    patient_name: str | None = None
-    patient_email: str | None = None
-    patient_phone: str | None = None
-    speciality: str | None = None
-
-    class ValidationCriteria(BaseModel):
-        patient_name: str | CriterionValue | None = None
-        patient_email: str | CriterionValue | None = None
-        patient_phone: str | CriterionValue | None = None
-        speciality: str | CriterionValue | None = None
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        return all(
-            [
-                self._validate_field(self.patient_name, criteria.patient_name),
-                self._validate_field(self.patient_email, criteria.patient_email),
-                self._validate_field(self.patient_phone, criteria.patient_phone),
-                self._validate_field(self.speciality, criteria.speciality),
-            ]
-        )
-
-    @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "RequestAppointmentEvent":
-        base_event = Event.parse(backend_event)
-        data = backend_event.data
-        data = data.get("data") if isinstance(data, dict) else {}
-        return cls(
-            event_name=base_event.event_name,
-            timestamp=base_event.timestamp,
-            web_agent_id=base_event.web_agent_id,
-            user_id=base_event.user_id,
-            patient_name=data.get("patientName"),
-            patient_email=data.get("patientEmail"),
-            patient_phone=data.get("patientPhone"),
-            speciality=data.get("specialty"),
         )
 
 
@@ -644,12 +557,12 @@ class ViewDoctorEducationEvent(Event, BaseEventValidator):
 class SearchDoctorsEvent(Event, BaseEventValidator):
     """Fired when user clicks Search on the Doctors page (applies name, speciality, language filters)."""
     event_name: str = "SEARCH_DOCTORS"
-    search_term: str | None = None
+    doctor_name: str | None = None
     speciality: str | None = None
     language: str | None = None
 
     class ValidationCriteria(BaseModel):
-        search_term: str | CriterionValue | None = None
+        doctor_name: str | CriterionValue | None = None
         speciality: str | CriterionValue | None = None
         language: str | CriterionValue | None = None
 
@@ -658,7 +571,7 @@ class SearchDoctorsEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.search_term, criteria.search_term),
+                self._validate_field(self.doctor_name, criteria.doctor_name),
                 self._validate_field(self.speciality, criteria.speciality),
                 self._validate_field(self.language, criteria.language),
             ]
@@ -670,12 +583,13 @@ class SearchDoctorsEvent(Event, BaseEventValidator):
         data = backend_event.data
         data = data.get("data") if isinstance(data, dict) else {}
         data = data or {}
+        # Frontend sends searchTerm (doctor name searched); map to doctor_name for consistency
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            search_term=data.get("searchTerm"),
+            doctor_name=data.get("doctorName"),
             speciality=data.get("specialty"),
             language=data.get("language"),
         )
@@ -853,44 +767,6 @@ class DoctorContactedSuccessfullyEvent(Event, BaseEventValidator):
         )
 
 
-class ViewReviewClickedEvent(Event, BaseEventValidator):
-    event_name: str = "VIEW_REVIEWS_CLICKED"
-    doctor_name: str | None = None
-    rating: float | None = None
-    speciality: str | None = None
-
-    class ValidationCriteria(BaseModel):
-        doctor_name: str | CriterionValue | None = None
-        rating: float | CriterionValue | None = None
-        speciality: str | CriterionValue | None = None
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        return all(
-            [
-                self._validate_field(self.doctor_name, criteria.doctor_name),
-                self._validate_field(self.speciality, criteria.speciality),
-                self._validate_field(self.rating, criteria.rating),
-            ]
-        )
-
-    @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "ViewReviewClickedEvent":
-        base_event = Event.parse(backend_event)
-        data = backend_event.data
-        data = data.get("data")
-        return cls(
-            event_name=base_event.event_name,
-            timestamp=base_event.timestamp,
-            web_agent_id=base_event.web_agent_id,
-            user_id=base_event.user_id,
-            doctor_name=data.get("doctorName"),
-            speciality=data.get("specialty"),
-            rating=data.get("rating"),
-        )
-
-
 class FilterDoctorReviewsEvent(Event, BaseEventValidator):
     """Fired when user filters or sorts doctor reviews (by star rating and/or sort order)."""
     event_name: str = "FILTER_DOCTOR_REVIEWS"
@@ -936,9 +812,7 @@ class FilterDoctorReviewsEvent(Event, BaseEventValidator):
 
 
 EVENTS = [
-    BookAppointmentEvent,
     AppointmentBookedSuccessfullyEvent,
-    RequestAppointmentEvent,
     RequestQuickAppointmentEvent,
     SearchAppointmentEvent,
     SearchDoctorsEvent,
@@ -953,14 +827,11 @@ EVENTS = [
     OpenContactDoctorFormEvent,
     ContactDoctorEvent,
     DoctorContactedSuccessfullyEvent,
-    ViewReviewClickedEvent,
     FilterDoctorReviewsEvent,
 ]
 
 BACKEND_EVENT_TYPES = {
-    "BOOK_APPOINTMENT": BookAppointmentEvent,
     "APPOINTMENT_BOOKED_SUCCESSFULLY": AppointmentBookedSuccessfullyEvent,
-    "REQUEST_APPOINTMENT": RequestAppointmentEvent,
     "REQUEST_QUICK_APPOINTMENT": RequestQuickAppointmentEvent,
     "SEARCH_APPOINTMENT": SearchAppointmentEvent,
     "SEARCH_DOCTORS": SearchDoctorsEvent,
@@ -975,6 +846,5 @@ BACKEND_EVENT_TYPES = {
     "OPEN_CONTACT_DOCTOR_FORM": OpenContactDoctorFormEvent,
     "CONTACT_DOCTOR": ContactDoctorEvent,
     "DOCTOR_CONTACTED_SUCCESSFULLY": DoctorContactedSuccessfullyEvent,
-    "VIEW_REVIEWS_CLICKED": ViewReviewClickedEvent,
     "FILTER_DOCTOR_REVIEWS": FilterDoctorReviewsEvent,
 }
