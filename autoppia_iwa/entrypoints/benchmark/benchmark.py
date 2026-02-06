@@ -388,7 +388,7 @@ class Benchmark:
     # ---------------------------------------------------------------------
     async def _generate_tasks_for_project(self, project: WebProject) -> list[Task]:
         from autoppia_iwa.config.config import PROJECT_BASE_DIR
-        from autoppia_iwa.entrypoints.benchmark.utils.tasks import load_tasks_from_json, save_tasks_to_json
+        from autoppia_iwa.entrypoints.benchmark.utils.task_generation import load_tasks_from_json, save_tasks_to_json
         from autoppia_iwa.src.data_generation.tasks.classes import TaskGenerationConfig
         from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
 
