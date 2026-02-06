@@ -5,8 +5,191 @@ from typing import Any
 from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
+<<<<<<< HEAD
 from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
 from .data_utils import fetch_data
+=======
+from ..shared_utils import create_constraint_dict
+from .data import (
+    ALL_GENRES,
+    COMMENT_KEYWORDS,
+    COMMENTER_NAMES,
+    CONTACT_EMAILS,
+    CONTACT_MESSAGES,
+    CONTACT_NAMES,
+    CONTACT_SUBJECTS,
+    FIELD_OPERATORS_MAP_ADD_COMMENT,
+    FIELD_OPERATORS_MAP_ADD_FILM,
+    FIELD_OPERATORS_MAP_CONTACT,
+    FIELD_OPERATORS_MAP_EDIT_FILM,
+    FIELD_OPERATORS_MAP_EDIT_USER,
+    FIELD_OPERATORS_MAP_FILM,
+    FIELD_OPERATORS_MAP_FILTER_FILM,
+    FIELD_OPERATORS_MAP_SEARCH_FILM,
+    FILM_RANDOM_WORDS,
+    PROFILE_BIOS,
+    PROFILE_LOCATIONS,
+    PROFILE_NAMES,
+    PROFILE_TEXT_ELEMENTS,
+    PROFILE_WEBSITES,
+)
+from .data_utils import get_all_data
+>>>>>>> b56bc1c4 (refactor: Enhance autocinema constraint generation)
+
+
+async def _ensure_dataset(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None) -> dict:
+    """Fetch full dataset if not provided or empty. Single source of truth for data loading."""
+    if dataset is None or dataset == {}:
+        seed = get_seed_from_url(task_url) if task_url else None
+        return await get_all_data(seed_value=seed) or {}
+    return dataset
+
+
+async def _get_films_data(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None) -> list[dict]:
+    """Extract films from the pre-loaded dataset, or fetch from server if not available."""
+    data = await _ensure_dataset(task_url, dataset)
+    if data and "films" in data:
+        return data["films"]
+    return []
+
+
+def _generate_constraint_value(
+    operator: ComparisonOperator,
+    field_value: Any,
+    field: str,
+    dataset: list[dict],
+) -> Any:
+    """
+    Generate a constraint value for a given operator, field, and dataset.
+    Handles str, int, float, list (genres) for film/profile/contact data.
+    """
+    if operator == ComparisonOperator.EQUALS:
+        if isinstance(field_value, list) and field_value:
+            return choice(field_value)
+        return field_value
+
+    if operator == ComparisonOperator.NOT_EQUALS:
+        if isinstance(field_value, (int, float)):
+            others = [d.get(field) for d in dataset if d.get(field) is not None and d.get(field) != field_value]
+            return choice(others) if others else (field_value + 1 if isinstance(field_value, int) else field_value + 0.1)
+        if isinstance(field_value, str):
+            others = [d.get(field) for d in dataset if d.get(field) and d.get(field) != field_value]
+            return choice(others) if others else (field_value + "x" if field_value else "other")
+        return field_value
+
+    if operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
+        if len(field_value) > 2:
+            start = random.randint(0, max(0, len(field_value) - 2))
+            end = random.randint(start + 1, len(field_value))
+            return field_value[start:end]
+        return field_value
+
+    if operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
+        for _ in range(100):
+            test_str = "".join(random.choice("abcdefghijklmnopqrstuvwxyz") for _ in range(3))
+            if test_str.lower() not in (field_value or "").lower():
+                return test_str
+        return "xyz"
+
+    if operator == ComparisonOperator.CONTAINS and isinstance(field_value, list) and field_value:
+        item = choice(field_value)
+        return item.get("name", item) if isinstance(item, dict) else item
+
+    if operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, list):
+        all_vals = []
+        for d in dataset:
+            v = d.get(field)
+            if isinstance(v, list):
+                for x in v:
+                    all_vals.append(x.get("name", x) if isinstance(x, dict) else x)
+            elif v is not None:
+                all_vals.append(v.get("name", v) if isinstance(v, dict) else v)
+        field_set = {x.get("name", x) if isinstance(x, dict) else x for x in field_value}
+        remaining = [v for v in all_vals if v not in field_set]
+        return choice(remaining) if remaining else None
+
+    if operator in (ComparisonOperator.GREATER_THAN, ComparisonOperator.LESS_THAN, ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL):
+        if isinstance(field_value, (int, float)):
+            delta = random.uniform(0.5, 2.0) if isinstance(field_value, float) else random.randint(1, 5)
+            if operator == ComparisonOperator.GREATER_THAN:
+                return field_value - delta
+            if operator == ComparisonOperator.LESS_THAN:
+                return field_value + delta
+            if operator in (ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL):
+                return field_value
+        return field_value
+
+    if operator == ComparisonOperator.IN_LIST and isinstance(field_value, list):
+        all_vals = list({v for d in dataset for v in (d.get(field) if isinstance(d.get(field), list) else [])})
+        if not all_vals:
+            return [field_value[0]] if field_value else []
+        random.shuffle(all_vals)
+        subset = random.sample(all_vals, min(2, len(all_vals)))
+        if field_value and field_value[0] not in subset:
+            subset.append(field_value[0])
+        return list(set(subset))
+
+    if operator == ComparisonOperator.NOT_IN_LIST and isinstance(field_value, list):
+        all_vals = list({v for d in dataset for v in (d.get(field) if isinstance(d.get(field), list) else [])})
+        if field_value:
+            all_vals = [v for v in all_vals if v not in field_value]
+        return random.sample(all_vals, min(2, len(all_vals))) if all_vals else []
+
+    return None
+
+
+def _generate_constraints(
+    dataset: list[dict],
+    field_operators: dict,
+    field_map: dict | None = None,
+    min_constraints: int = 1,
+    num_constraints: int | None = None,
+    selected_fields: list[str] | None = None,
+) -> list[dict[str, Any]]:
+    """
+    Generates constraints based on the dataset and field operator mapping.
+    DB first: dataset must contain valid entities; empty dataset returns no constraints.
+    """
+    if not dataset:
+        return []
+    all_constraints = []
+    sample_data = choice(dataset)
+    possible_fields = list(field_operators.keys())
+    if selected_fields:
+        possible_fields = [f for f in possible_fields if f in selected_fields]
+    if not possible_fields:
+        possible_fields = list(field_operators.keys())
+    if num_constraints is not None:
+        n = min(num_constraints, len(possible_fields))
+        possible_fields = list(random.sample(possible_fields, n))
+    if field_map is None:
+        field_map = {}
+
+    for field in possible_fields:
+        allowed_ops = field_operators.get(field, [])
+        if not allowed_ops:
+            continue
+        op = ComparisonOperator(choice(allowed_ops))
+        new_field = field_map.get(field, field)
+        field_value = None
+        constraint_value = None
+        if isinstance(new_field, dict):
+            custom_dataset = new_field.get("dataset", [])
+            new_field = new_field.get("field", field)
+            if custom_dataset:
+                field_value = choice(custom_dataset).get(new_field)
+                if field_value is not None and new_field:
+                    constraint_value = _generate_constraint_value(op, field_value, new_field, custom_dataset)
+        else:
+            lookup = new_field if isinstance(new_field, str) else field
+            field_value = sample_data.get(lookup)
+            if field_value is not None and constraint_value is None:
+                constraint_value = _generate_constraint_value(op, field_value, lookup, dataset)
+
+        if constraint_value is not None:
+            all_constraints.append(create_constraint_dict(field, op, constraint_value))
+
+    return all_constraints
 
 
 def generate_registration_constraints(dataset: list[dict]):
@@ -48,18 +231,10 @@ def generate_logout_constraints(dataset: list[dict]):
 
 
 async def generate_search_film_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
-    """
-    Generates constraints for search film use case.
-
-    Args:
-        task_url: Optional task URL to extract seed from
-        dataset: Dataset dictionary with films
-
-    Returns:
-        List of constraint dictionaries
-    """
+    """Generate constraints for SEARCH_FILM: query equals/not_equals film name from DB."""
     from .utils import parse_constraints_str
 
+<<<<<<< HEAD
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = await resolve_v2_seed_from_url(task_url) if task_url else None
@@ -74,19 +249,30 @@ async def generate_search_film_constraints(task_url: str | None = None, dataset:
     operators = ["equals", "not_equals"]
     constraints_str = f"query {choice(operators)} {choice(movie_names)}"
     return parse_constraints_str(constraints_str)
+=======
+    try:
+        films = await _get_films_data(task_url, dataset)
+        if not films:
+            data = await _ensure_dataset(task_url, dataset)
+            films = data.get("films", []) if data else []
+            if not films:
+                return parse_constraints_str("query equals The Matrix")
+        search_dataset = [{"query": m["name"]} for m in films]
+        constraints_list = _generate_constraints(
+            search_dataset, FIELD_OPERATORS_MAP_SEARCH_FILM, num_constraints=1, selected_fields=["query"]
+        )
+        return constraints_list if constraints_list else parse_constraints_str("query equals The Matrix")
+    except Exception:
+        return parse_constraints_str("query equals The Matrix")
+>>>>>>> b56bc1c4 (refactor: Enhance autocinema constraint generation)
 
 
 async def generate_film_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
     """
-    Generates constraints for film-related use cases.
-
-    Args:
-        task_url: Optional task URL to extract seed from
-        dataset: Dataset dictionary with films
-
-    Returns:
-        List of constraint dictionaries
+    Generates constraints for film-related use cases using dynamic generation.
+    Returns the constraints as structured data.
     """
+<<<<<<< HEAD
     from .utils import build_constraints_info, parse_constraints_str
 
     # Fetch data if dataset is not provided or is empty
@@ -200,6 +386,8 @@ async def generate_film_filter_constraints(task_url: str | None = None, dataset:
     """
     from random import choice
 
+=======
+>>>>>>> b56bc1c4 (refactor: Enhance autocinema constraint generation)
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = await resolve_v2_seed_from_url(task_url) if task_url else None
@@ -210,304 +398,81 @@ async def generate_film_filter_constraints(task_url: str | None = None, dataset:
     if not films:
         return []
 
-    existing_years = list(set(movie["year"] for movie in films))
-    existing_genres = list(set(genre for movie in films for genre in movie["genres"]))
+    # Use FIELD_OPERATORS_MAP_FILM for dynamic constraint generation
+    num_constraints = random.randint(1, 3)
+    return _generate_constraints(
+        films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints
+    )
 
+
+def generate_contact_constraints() -> list:
+    """Generate constraints for CONTACT from map and synthetic dataset (data.py pools)."""
+    contact_dataset = [
+        {
+            "name": choice(CONTACT_NAMES),
+            "email": choice(CONTACT_EMAILS),
+            "subject": choice(CONTACT_SUBJECTS),
+            "message": choice(CONTACT_MESSAGES),
+        }
+        for _ in range(15)
+    ]
+    return _generate_constraints(
+        contact_dataset, FIELD_OPERATORS_MAP_CONTACT, num_constraints=random.randint(1, 4)
+    )
+
+
+def _build_filter_film_dataset(films: list[dict]) -> list[dict]:
+    """Build dataset for FILTER_FILM: one row per (genre_name, year) to match FilterFilmEvent payload."""
+    rows = []
+    for f in films:
+        year = f.get("year")
+        if year is None:
+            continue
+        for g in f.get("genres") or []:
+            name = g if isinstance(g, str) else (g.get("name") if isinstance(g, dict) else None)
+            if name:
+                rows.append({"genre_name": name, "year": year})
+    return rows if rows else [{"genre_name": "Drama", "year": 2020}]
+
+
+async def generate_film_filter_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
+    """Generate constraints for FILTER_FILM: genre_name and/or year (aligned with FilterFilmEvent)."""
+    films = await _get_films_data(task_url, dataset)
+    if not films:
+        return []
+    filter_dataset = _build_filter_film_dataset(films)
     generation_type = choice(["single_genre", "single_year", "genre_and_year"])
-
-    constraints = []
-
     if generation_type == "single_genre":
-        if existing_genres:
-            constraints.append({"field": "genres", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": choice(existing_genres)})
-
-    elif generation_type == "single_year":
-        if existing_years:
-            constraints.append(
-                {
-                    "field": "year",
-                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.GREATER_EQUAL), ComparisonOperator(ComparisonOperator.LESS_EQUAL)]),
-                    "value": choice(existing_years),
-                }
-            )
-
-    elif generation_type == "genre_and_year" and existing_genres and existing_years:
-        constraints.extend(
-            [
-                {"field": "genres", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": choice(existing_genres)},
-                {
-                    "field": "year",
-                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.GREATER_EQUAL), ComparisonOperator(ComparisonOperator.LESS_EQUAL)]),
-                    "value": choice(existing_years),
-                },
-            ]
+        return _generate_constraints(
+            filter_dataset, FIELD_OPERATORS_MAP_FILTER_FILM, num_constraints=1, selected_fields=["genre_name"]
         )
+    if generation_type == "single_year":
+        return _generate_constraints(
+            filter_dataset, FIELD_OPERATORS_MAP_FILTER_FILM, num_constraints=1, selected_fields=["year"]
+        )
+    return _generate_constraints(
+        filter_dataset, FIELD_OPERATORS_MAP_FILTER_FILM, num_constraints=2, selected_fields=["genre_name", "year"]
+    )
 
-    return constraints
 
-
-def generate_constraint_from_solution(movie: dict, field: str, operator: ComparisonOperator, movies_data: list[dict]) -> dict[str, Any]:
+def generate_constraint_from_solution(movie: dict, field: str, operator: ComparisonOperator, movies_data: list[dict]) -> dict[str, Any] | None:
     """
-    Genera un constraint para un campo y operador específicos que la película solución satisface.
-    Utiliza el conjunto completo de películas para generar constraints más realistas.
+    Generate one constraint (field, operator, value) that the solution movie satisfies.
+    Delegates value generation to _generate_constraint_value (map-driven, no hardcoded fields).
     """
-    constraint = {"field": field, "operator": operator}
-
-    if field == "name":
-        if operator == ComparisonOperator.EQUALS:
-            constraint["value"] = movie[field]
-        elif operator == ComparisonOperator.NOT_EQUALS:
-            # Buscar un valor diferente de otra película
-            other_values = [m[field] for m in movies_data if m[field] != movie[field]]
-            if other_values:
-                constraint["value"] = random.choice(other_values)
-            else:
-                constraint["value"] = "Other " + field
-        elif operator == ComparisonOperator.CONTAINS:
-            if len(movie[field]) > 3:
-                start = random.randint(0, len(movie[field]) - 3)
-                length = random.randint(2, min(5, len(movie[field]) - start))
-                constraint["value"] = movie[field][start : start + length]
-            else:
-                constraint["value"] = movie[field]
-        elif operator == ComparisonOperator.NOT_CONTAINS:
-            # Esto es más complejo - encontrar una subcadena que no esté en el campo de la película
-            alphabet = "abcdefghijklmnopqrstuvwxyz"
-            while True:
-                test_str = "".join(random.choice(alphabet) for _ in range(3))
-                if test_str.lower() not in movie[field].lower():
-                    constraint["value"] = test_str
-                    break
-
-    elif field == "director":
-        director_value = movie[field]
-        is_list = isinstance(director_value, list)
-
-        if is_list:
-            # Director is a list (multiple directors) - use list operators
-            if operator == ComparisonOperator.IN_LIST:
-                # Use one or more directors from the list
-                if director_value:
-                    num_directors = min(len(director_value), random.randint(1, 2))
-                    constraint["value"] = random.sample(director_value, num_directors)
-                else:
-                    return None
-            elif operator == ComparisonOperator.NOT_IN_LIST:
-                # Find directors not in the list
-                all_directors = set()
-                for m in movies_data:
-                    dir_val = m.get(field)
-                    if isinstance(dir_val, list):
-                        all_directors.update(dir_val)
-                    elif dir_val:
-                        all_directors.add(dir_val)
-                available = list(all_directors - set(director_value))
-                if available:
-                    num_directors = min(len(available), random.randint(1, 3))
-                    constraint["value"] = random.sample(available, num_directors)
-                else:
-                    constraint["value"] = ["Unknown Director"]
-        else:
-            # Director is a string (single director) - use string operators
-            if operator == ComparisonOperator.EQUALS:
-                constraint["value"] = director_value
-            elif operator == ComparisonOperator.NOT_EQUALS:
-                # Buscar un valor diferente de otra película
-                other_values = []
-                for m in movies_data:
-                    dir_val = m.get(field)
-                    # Handle both string and list cases
-                    if isinstance(dir_val, list):
-                        # For list, take first director or all if single
-                        if dir_val:
-                            other_values.append(dir_val[0] if len(dir_val) == 1 else str(dir_val))
-                    elif dir_val and dir_val != director_value:
-                        other_values.append(dir_val)
-                if other_values:
-                    constraint["value"] = random.choice(other_values)
-                else:
-                    constraint["value"] = "Other Director"
-            elif operator == ComparisonOperator.CONTAINS:
-                if len(director_value) > 3:
-                    start = random.randint(0, len(director_value) - 3)
-                    length = random.randint(2, min(5, len(director_value) - start))
-                    constraint["value"] = director_value[start : start + length]
-                else:
-                    constraint["value"] = director_value
-            elif operator == ComparisonOperator.NOT_CONTAINS:
-                # Esto es más complejo - encontrar una subcadena que no esté en el campo de la película
-                alphabet = "abcdefghijklmnopqrstuvwxyz"
-                while True:
-                    test_str = "".join(random.choice(alphabet) for _ in range(3))
-                    if test_str.lower() not in director_value.lower():
-                        constraint["value"] = test_str
-                        break
-
-    elif field == "year" or field == "duration":
-        value = movie[field]
-        if operator == ComparisonOperator.EQUALS:
-            constraint["value"] = value
-        elif operator == ComparisonOperator.NOT_EQUALS:
-            # Buscar un valor diferente de otra película
-            other_values = [m[field] for m in movies_data if m[field] != value]
-            if other_values:
-                constraint["value"] = random.choice(other_values)
-            else:
-                constraint["value"] = value + (1 if random.random() > 0.5 else -1)
-        elif operator == ComparisonOperator.GREATER_THAN:
-            # Encontrar un valor menor que el de la película
-            lower_values = [m[field] for m in movies_data if m[field] < value]
-            if lower_values:
-                constraint["value"] = random.choice(lower_values)
-            else:
-                constraint["value"] = value - 1
-        elif operator == ComparisonOperator.LESS_THAN:
-            # Encontrar un valor mayor que el de la película
-            higher_values = [m[field] for m in movies_data if m[field] > value]
-            if higher_values:
-                constraint["value"] = random.choice(higher_values)
-            else:
-                constraint["value"] = value + 1
-        elif operator == ComparisonOperator.GREATER_EQUAL:
-            # Podemos usar un valor igual o menor
-            valid_values = [m[field] for m in movies_data if m[field] <= value]
-            if valid_values:
-                constraint["value"] = random.choice(valid_values)
-            else:
-                constraint["value"] = value
-        elif operator == ComparisonOperator.LESS_EQUAL:
-            # Podemos usar un valor igual o mayor
-            valid_values = [m[field] for m in movies_data if m[field] >= value]
-            if valid_values:
-                constraint["value"] = random.choice(valid_values)
-            else:
-                constraint["value"] = value
-        elif operator == ComparisonOperator.IN_LIST:
-            # Incluir el valor de la película y posiblemente algunos otros valores
-            other_values = [m[field] for m in movies_data if m[field] != value]
-            sample_size = min(2, len(other_values))
-            if other_values and sample_size > 0:
-                constraint["value"] = [value, *random.sample(other_values, sample_size)]
-            else:
-                constraint["value"] = [value]
-        elif operator == ComparisonOperator.NOT_IN_LIST:
-            # Encontrar valores que no incluyan el de la película
-            other_values = [m[field] for m in movies_data if m[field] != value]
-            if other_values:
-                constraint["value"] = random.sample(other_values, min(3, len(other_values)))
-            else:
-                constraint["value"] = [value + 1, value + 2]
-
-    elif field == "rating":
-        value = movie[field]
-        if operator == ComparisonOperator.EQUALS:
-            constraint["value"] = value
-        elif operator == ComparisonOperator.NOT_EQUALS:
-            # Buscar un valor diferente de otra película
-            other_values = [m[field] for m in movies_data if m[field] != value]
-            if other_values:
-                constraint["value"] = random.choice(other_values)
-            else:
-                # Asegurarse de que el valor alternativo esté en el rango 0-5
-                constraint["value"] = max(0, min(5, value + (0.1 if random.random() > 0.5 else -0.1)))
-        elif operator == ComparisonOperator.GREATER_THAN:
-            # Encontrar un valor menor que el de la película
-            lower_values = [m[field] for m in movies_data if m[field] < value]
-            if lower_values:
-                constraint["value"] = random.choice(lower_values)
-            else:
-                # Asegurarse de que el valor sea positivo y menor que el original
-                constraint["value"] = max(0, value - 0.1)
-        elif operator == ComparisonOperator.LESS_THAN:
-            # Encontrar un valor mayor que el de la película
-            higher_values = [m[field] for m in movies_data if m[field] > value]
-            if higher_values:
-                constraint["value"] = random.choice(higher_values)
-            else:
-                # Asegurarse de que el valor no exceda 5
-                constraint["value"] = min(5, value + 0.1)
-        elif operator == ComparisonOperator.GREATER_EQUAL:
-            # Podemos usar un valor igual o menor
-            valid_values = [m[field] for m in movies_data if m[field] <= value]
-            if valid_values:
-                constraint["value"] = random.choice(valid_values)
-            else:
-                constraint["value"] = value
-        elif operator == ComparisonOperator.LESS_EQUAL:
-            # Podemos usar un valor igual o mayor
-            valid_values = [m[field] for m in movies_data if m[field] >= value]
-            if valid_values:
-                constraint["value"] = random.choice(valid_values)
-            else:
-                constraint["value"] = value
-        elif operator == ComparisonOperator.IN_LIST:
-            # Incluir el valor de la película y posiblemente algunos otros valores
-            other_values = [m[field] for m in movies_data if m[field] != value]
-            sample_size = min(2, len(other_values))
-            if other_values and sample_size > 0:
-                constraint["value"] = [value, *random.sample(other_values, sample_size)]
-            else:
-                constraint["value"] = [value]
-        elif operator == ComparisonOperator.NOT_IN_LIST:
-            # Encontrar valores que no incluyan el de la película
-            other_values = [m[field] for m in movies_data if m[field] != value]
-            if other_values:
-                constraint["value"] = random.sample(other_values, min(3, len(other_values)))
-            else:
-                # Asegurarse de que los valores estén en el rango 0-5
-                constraint["value"] = [max(0, min(5, value + 0.1)), max(0, min(5, value + 0.2))]
-
-    elif field == "genres":
-        if operator == ComparisonOperator.CONTAINS:
-            if movie[field]:
-                constraint["value"] = random.choice(movie[field])
-            else:
-                return None  # No se puede crear este constraint
-        elif operator == ComparisonOperator.NOT_CONTAINS:
-            # Encontrar un género que no esté en los géneros de la película
-            all_genres = set()
-            for m in movies_data:
-                all_genres.update(m["genres"])
-
-            movie_genres = set(movie[field])
-            available_genres = all_genres - movie_genres
-
-            if available_genres:
-                constraint["value"] = random.choice(list(available_genres))
-            else:
-                constraint["value"] = "Non-existent genre"
-        elif operator == ComparisonOperator.IN_LIST:
-            if movie[field]:
-                # Tomar uno o más géneros de la película para la lista
-                num_genres = min(len(movie[field]), random.randint(1, 2))
-                constraint["value"] = random.sample(movie[field], num_genres)
-            else:
-                return None  # No se puede crear este constraint
-        elif operator == ComparisonOperator.NOT_IN_LIST:
-            # Similar a NOT_CONTAINS pero creando una lista
-            all_genres = set()
-            for m in movies_data:
-                all_genres.update(m["genres"])
-
-            movie_genres = set(movie[field])
-            available_genres = all_genres - movie_genres
-
-            if available_genres:
-                num_genres = min(len(available_genres), random.randint(1, 3))
-                constraint["value"] = random.sample(list(available_genres), num_genres)
-            else:
-                constraint["value"] = ["Non-existent genre"]
-
-    # Verificar que el constraint generado es válido para la película solución
-    criterion = CriterionValue(value=constraint["value"], operator=operator)
+    field_value = movie.get(field)
+    value = _generate_constraint_value(operator, field_value, field, movies_data)
+    if value is None:
+        return None
+    constraint = {"field": field, "operator": operator, "value": value}
+    criterion = CriterionValue(value=value, operator=operator)
     if validate_criterion(movie.get(field), criterion):
         return constraint
-
-    # Si llegamos aquí, el constraint generado no es válido
     return None
 
 
 async def generate_add_comment_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
+<<<<<<< HEAD
     """
     Genera combinaciones de constraints para añadir comentarios.
 
@@ -527,81 +492,26 @@ async def generate_add_comment_constraints(task_url: str | None = None, dataset:
         dataset = {"films": films}
 
     films = dataset.get("films", []) or dataset.get("movies") if dataset else []
+=======
+    """Generate constraints for ADD_COMMENT from map and dataset (movie_name from films, others from data.py pools)."""
+    films = await _get_films_data(task_url, dataset)
+>>>>>>> b56bc1c4 (refactor: Enhance autocinema constraint generation)
     if not films:
         return []
-
-    movies = [movie["name"] for movie in films]
-
-    # Palabras y frases para generar comentarios
-    comment_keywords = [
-        "amazing",
-        "stunning",
-        "great",
-        "awesome",
-        "fantastic",
-        "brilliant",
-        "incredible",
-        "genius",
-        "classic",
-        "masterpiece",
-        "mind-blowing cinematography",
-        "perfect storytelling",
-        "incredible character development",
-        "visually spectacular",
-        "deeply emotional journey",
-        "groundbreaking narrative",
-        "exceptional performances",
-        "thought-provoking plot",
-        "revolutionary filmmaking",
-        "beautifully crafted",
-        "complex narrative",
-        "intricate storyline",
-        "subtle character arcs",
-        "nuanced performances",
-        "stunning visual effects",
-        "immersive soundtrack",
-        "innovative cinematography",
-        "masterful editing",
-        "atmospheric sound design",
-        "kept me on the edge of my seat",
-        "couldn't look away",
-        "completely absorbed",
-        "emotionally powerful",
-        "intellectually stimulating",
-        "redefines the genre",
-        "unlike anything I've seen before",
-        "sets a new standard",
-        "a true cinematic experience",
+    comment_dataset = [
+        {
+            "movie_name": m["name"],
+            "commenter_name": choice(COMMENTER_NAMES),
+            "content": choice(COMMENT_KEYWORDS),
+        }
+        for m in films
     ]
-
-    # Nombres para commenter_name
-    commenter_names = ["John", "Sarah", "Michael", "Emma", "David", "Lisa", "Alex", "Rachel", "Tom", "Emily"]
-
-    # Definición de operadores para cada campo
-
-    # Generar constraints
-    constraints = []
-
-    # Elegir campos aleatorios (1 o 2)
-    selected_fields = sample(["movie_name", "commenter_name", "content"], k=choice([1, 2, 3]))
-    for field in selected_fields:
-        # Elegir un operador aleatorio para el campo
-        operator = choice(FIELD_OPERATORS_MAP_ADD_COMMENT[field])
-
-        # Seleccionar valor basado en el campo
-        if field == "movie_name":
-            value = choice(movies)
-        elif field == "commenter_name":
-            value = choice(commenter_names)
-        else:  # content
-            value = choice(comment_keywords)
-
-        constraints.append({"field": field, "operator": ComparisonOperator(operator), "value": value})
-
-    return constraints
+    n = min(choice([1, 2, 3]), len(FIELD_OPERATORS_MAP_ADD_COMMENT))
+    return _generate_constraints(comment_dataset, FIELD_OPERATORS_MAP_ADD_COMMENT, num_constraints=n)
 
 
 async def generate_edit_film_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
+<<<<<<< HEAD
     """
     Generates constraints for editing film-related use cases.
 
@@ -721,198 +631,67 @@ async def generate_edit_film_constraints(task_url: str | None = None, dataset: d
             )
 
     return constraints
+=======
+    """Generate constraints for EDIT_FILM: name from base movie + 1–4 editable fields from map (DB first)."""
+    try:
+        films = await _get_films_data(task_url, dataset)
+        if not films:
+            data = await _ensure_dataset(task_url, dataset)
+            films = data.get("films", []) if data else []
+            if not films:
+                return [create_constraint_dict("name", ComparisonOperator.EQUALS, "The Matrix")]
+        base_movie = choice(films)
+        constraints = [create_constraint_dict("name", ComparisonOperator.EQUALS, base_movie["name"])]
+        editable_fields = list(FIELD_OPERATORS_MAP_EDIT_FILM.keys())
+        n = min(choice([1, 2, 3, 4]), len(editable_fields))
+        selected = list(sample(editable_fields, n))
+        extra = _generate_constraints(
+            [base_movie], FIELD_OPERATORS_MAP_EDIT_FILM, num_constraints=n, selected_fields=selected
+        )
+        constraints.extend(extra)
+        return constraints
+    except Exception:
+        return [create_constraint_dict("name", ComparisonOperator.EQUALS, "The Matrix")]
+>>>>>>> b56bc1c4 (refactor: Enhance autocinema constraint generation)
 
 
 def generate_add_film_constraints(dataset: list[dict]):
-    """
-    Generates constraints specifically for editing film-related use cases.
-    Returns the constraints as structured data.
-    """
-    from random import choice, randint, uniform
-
-    # Campos editables
-    editable_fields = ["director", "year", "genres", "rating", "duration", "cast"]
-
-    random_words = [
-        "car",
-        "star",
-        "red",
-        "blue",
-        "green",
-        "e",
-        "a",
-        "o",
-        "x",
-        "z",
-        # Palabras más largas
-        "cinema",
-        "movie",
-        "light",
-        "shadow",
-        "dream",
-        "story",
-        "heart",
-        "vision",
-        "gold",
-        "silver",
-        "thunder",
-        "wind",
-        "quantum",
-        "stellar",
-        "cosmic",
-        "rhythm",
-        "echo",
-        "spark",
-        "rebel",
-        "sage",
-    ]
-
-    all_genres = ["Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Thriller", "War", "Western"]
-
-    # Generar constraints
-    constraints = []
-
-    # Seleccionar 1, 2, 3 o 4 campos para editar
-    selected_fields = sample(editable_fields, k=choice([1, 2, 3, 4]))
-
-    for field in selected_fields:
-        if field == "director":
-            constraints.append(
-                {
-                    "field": field,
-                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.CONTAINS), ComparisonOperator(ComparisonOperator.NOT_CONTAINS)]),
-                    "value": choice(random_words),
-                }
-            )
-        elif field == "year":
-            constraints.append(
-                {
-                    "field": field,
-                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.GREATER_EQUAL), ComparisonOperator(ComparisonOperator.LESS_EQUAL)]),
-                    "value": randint(1950, 2024),
-                }
-            )
-        elif field == "genres":
-            constraints.append({"field": field, "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": choice(all_genres)})
-        elif field == "rating":
-            rating_value = round(uniform(0, 5), 1)
-            constraints.append(
-                {
-                    "field": field,
-                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.GREATER_EQUAL), ComparisonOperator(ComparisonOperator.LESS_EQUAL)]),
-                    "value": rating_value,
-                }
-            )
-        elif field == "duration":
-            constraints.append(
-                {
-                    "field": field,
-                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.GREATER_EQUAL), ComparisonOperator(ComparisonOperator.LESS_EQUAL)]),
-                    "value": randint(50, 180),
-                }
-            )
-        elif field == "cast":
-            constraints.append(
-                {
-                    "field": field,
-                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.CONTAINS), ComparisonOperator(ComparisonOperator.NOT_CONTAINS)]),
-                    "value": choice(random_words),
-                }
-            )
-
-    return constraints
+    """Generate constraints for ADD_FILM: 1–4 fields from map, values from dataset (sync; no task_url)."""
+    if not dataset or not isinstance(dataset, dict):
+        return _generate_constraints([], FIELD_OPERATORS_MAP_ADD_FILM, num_constraints=1) or [
+            create_constraint_dict("genres", ComparisonOperator.EQUALS, choice(ALL_GENRES))
+        ]
+    films = dataset.get("films", [])
+    if not films:
+        return _generate_constraints([], FIELD_OPERATORS_MAP_ADD_FILM, num_constraints=1) or [
+            create_constraint_dict("genres", ComparisonOperator.EQUALS, choice(ALL_GENRES))
+        ]
+    n = min(choice([1, 2, 3, 4]), len(FIELD_OPERATORS_MAP_ADD_FILM))
+    return _generate_constraints(films, FIELD_OPERATORS_MAP_ADD_FILM, num_constraints=n)
 
 
 def generate_edit_profile_constraints(dataset: list[dict]):
-    """
-    Generates constraints specifically for editing user profiles.
-    Returns the constraints as structured data.
-    """
-    from random import choice
-
-    # Editable profile fields (username and email are excluded as mentioned in requirements)
-    editable_fields = ["first_name", "last_name", "bio", "location", "website", "favorite_genres"]
-
-    # Short words, letters, and syllables for text fields (for CONTAINS operators)
-    random_text_elements = [
-        "e",
-        "a",
-        "o",
-        "x",
-        "z",  # Single letters
-        "car",
-        "star",
-        "red",
-        "blue",
-        "green",  # Short words
-        "cinema",
-        "movie",
-        "light",
-        "shadow",
-        "dream",  # Longer words
+    """Generate constraints for EDIT_USER: fixed username/password + profile fields from map (data.py pools)."""
+    profile_dataset = [
+        {
+            "first_name": choice(PROFILE_NAMES),
+            "last_name": choice(PROFILE_NAMES),
+            "bio": choice(PROFILE_BIOS),
+            "location": choice(PROFILE_LOCATIONS),
+            "website": choice(PROFILE_WEBSITES),
+            "favorite_genres": choice(ALL_GENRES),
+        }
+        for _ in range(12)
     ]
-
-    # Sample data for generating realistic values
-    random_names = ["John", "Emma", "Michael", "Sophia", "James", "Olivia", "William", "Ava", "Benjamin", "Isabella", "Lucas", "Mia", "Henry", "Charlotte", "Alexander"]
-
-    random_locations = ["New York, USA", "London, UK", "Tokyo, Japan", "Paris, France", "Sydney, Australia", "Toronto, Canada", "Berlin, Germany", "Rome, Italy", "Madrid, Spain", "Seoul, South Korea"]
-
-    random_websites = [
-        "https://filmcritics.example.com",
-        "https://moviereviews.example.net",
-        "https://cinephileworld.example.org",
-        "https://filmjournals.example.io",
-        "https://moviefans.example.co",
-        "https://filmmakers.example.site",
-    ]
-
-    random_bios = [
-        "Passionate about independent films and documentaries.",
-        "Film school graduate with a love for classic cinema.",
-        "Movie enthusiast exploring international cinema.",
-        "Film critic specializing in sci-fi and fantasy genres.",
-        "Animation lover and aspiring filmmaker.",
-    ]
-
-    all_genres = ["Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Thriller", "War", "Western"]
-
-    # Generar constraints
-    constraints = []
-
-    # Always add username and password constraints explicitly
-    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<web_agent_id>"})
-    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "password123"})
-
-    # Select random fields to edit
-    selected_fields = sample(editable_fields, k=choice([1, 2, 3]))
-    # Ensure "website" is always included
-    if "website" not in selected_fields:
-        selected_fields.append("website")
-
-    for field in selected_fields:
-        # Get valid operators for this field from the map
-        valid_operators = FIELD_OPERATORS_MAP_EDIT_USER.get(field, [])
-
-        if not valid_operators:
-            continue
-
-        # Convert string operator to ComparisonOperator instance
-        operator_str = choice(valid_operators)
-        operator = ComparisonOperator(operator_str)
-
-        if field == "first_name" or field == "last_name":
-            value = choice(random_names) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(random_text_elements)
-        elif field == "bio":
-            value = choice(random_bios) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(random_text_elements)
-        elif field == "location":
-            value = choice(random_locations) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(random_text_elements)
-        elif field == "website":
-            # Website only uses EQUALS operator
-            value = choice(random_websites)
-        elif field == "favorite_genres":
-            # For favorite_genres, only use EQUALS with a single genre
-            value = choice(all_genres)
-
-        constraints.append({"field": field, "operator": operator, "value": value})
-
-    return constraints
+    editable_fields = list(FIELD_OPERATORS_MAP_EDIT_USER.keys())
+    n = min(choice([1, 2, 3]), len(editable_fields))
+    selected = list(sample(editable_fields, n))
+    if "website" not in selected:
+        selected.append("website")
+    profile_constraints = _generate_constraints(
+        profile_dataset, FIELD_OPERATORS_MAP_EDIT_USER, num_constraints=len(selected), selected_fields=selected
+    )
+    return [
+        create_constraint_dict("username", ComparisonOperator.EQUALS, "<web_agent_id>"),
+        create_constraint_dict("password", ComparisonOperator.EQUALS, "password123"),
+    ] + profile_constraints
