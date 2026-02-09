@@ -73,9 +73,12 @@ def _generate_constraint_value(
         return field_value
 
     if operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
-        if len(field_value) > 2:
-            start = random.randint(0, max(0, len(field_value) - 2))
-            end = random.randint(start + 1, len(field_value))
+        # Ensure substring has at least 2 chars for meaningful constraints (avoid "i", "e", etc.)
+        min_len = 2
+        if len(field_value) >= min_len:
+            max_start = max(0, len(field_value) - min_len)
+            start = random.randint(0, max_start)
+            end = random.randint(start + min_len, len(field_value))
             return field_value[start:end]
         return field_value
 
@@ -107,11 +110,18 @@ def _generate_constraint_value(
         if isinstance(field_value, (int, float)):
             delta = random.uniform(0.5, 2.0) if isinstance(field_value, float) else random.randint(1, 5)
             if operator == ComparisonOperator.GREATER_THAN:
-                return field_value - delta
-            if operator == ComparisonOperator.LESS_THAN:
-                return field_value + delta
-            if operator in (ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL):
-                return field_value
+                raw = field_value - delta
+            elif operator == ComparisonOperator.LESS_THAN:
+                raw = field_value + delta
+            else:
+                raw = field_value
+            # Rating is 0-5 stars in autocinema: clamp so constraint is meaningful
+            if field == "rating":
+                raw = max(0.0, min(5.0, float(raw)))
+            # Round floats to 1 decimal for readable constraints (avoid 6.180065492855112)
+            if isinstance(raw, float):
+                raw = round(raw, 1)
+            return raw
         return field_value
 
     if operator == ComparisonOperator.IN_LIST and isinstance(field_value, list):
@@ -245,24 +255,87 @@ async def generate_search_film_constraints(task_url: str | None = None, dataset:
         return parse_constraints_str("query equals The Matrix")
 
 
+# Core film fields for view/share/trailer/watchlist/delete use cases (DB first, semantic constraints)
+FILM_CORE_FIELDS = ["name", "director", "year", "rating", "duration", "genres"]
+
+
 async def generate_film_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
     """
-    Generates constraints for film-related use cases using dynamic generation.
+    Generates constraints for generic film-related use cases using dynamic generation.
     Returns the constraints as structured data.
     """
-    # Fetch data if dataset is not provided or is empty
-    if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
-
-    films = dataset.get("films", []) if dataset else []
+    films = await _get_films_data(task_url, dataset)
     if not films:
         return []
-
-    # Use FIELD_OPERATORS_MAP_FILM for dynamic constraint generation
     num_constraints = random.randint(1, 3)
     return _generate_constraints(
         films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints
+    )
+
+
+async def generate_film_detail_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
+    """Generate constraints for FILM_DETAIL: film fields from DB (name, director, year, rating, duration, genres)."""
+    films = await _get_films_data(task_url, dataset)
+    if not films:
+        return []
+    num_constraints = random.randint(1, 3)
+    return _generate_constraints(
+        films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS
+    )
+
+
+async def generate_add_to_watchlist_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
+    """Generate constraints for ADD_TO_WATCHLIST: film fields from DB (name, director, year, rating, duration, genres)."""
+    films = await _get_films_data(task_url, dataset)
+    if not films:
+        return []
+    num_constraints = random.randint(1, 3)
+    return _generate_constraints(
+        films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS
+    )
+
+
+async def generate_remove_from_watchlist_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
+    """Generate constraints for REMOVE_FROM_WATCHLIST: film fields from DB (name, director, year, rating, duration, genres)."""
+    films = await _get_films_data(task_url, dataset)
+    if not films:
+        return []
+    num_constraints = random.randint(1, 3)
+    return _generate_constraints(
+        films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS
+    )
+
+
+async def generate_share_film_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
+    """Generate constraints for SHARE_MOVIE: film fields from DB (name, director, year, rating, duration, genres)."""
+    films = await _get_films_data(task_url, dataset)
+    if not films:
+        return []
+    num_constraints = random.randint(1, 3)
+    return _generate_constraints(
+        films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS
+    )
+
+
+async def generate_watch_trailer_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
+    """Generate constraints for WATCH_TRAILER: film fields from DB (name, director, year, rating, duration, genres)."""
+    films = await _get_films_data(task_url, dataset)
+    if not films:
+        return []
+    num_constraints = random.randint(1, 3)
+    return _generate_constraints(
+        films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS
+    )
+
+
+async def generate_delete_film_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
+    """Generate constraints for DELETE_FILM: film fields from DB (name, director, year, rating, duration, genres)."""
+    films = await _get_films_data(task_url, dataset)
+    if not films:
+        return []
+    num_constraints = random.randint(1, 3)
+    return _generate_constraints(
+        films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS
     )
 
 

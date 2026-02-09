@@ -116,7 +116,7 @@ CFG = BenchmarkConfig(
     # Evaluator mode
     evaluator_mode="concurrent",  # ← Agente genera lista completa de acciones
     # Tasks
-    prompts_per_use_case=4,
+    prompts_per_use_case=1,
     # use_cases=None means all use-cases
     use_cases=USE_CASES,
     # Execution
