@@ -127,6 +127,8 @@ class SimpleTaskGenerator:
 
             # Generate constraints specific to this seed's dataset
             if hasattr(use_case, "generate_constraints_async"):
+                if dynamic:
+                    seed = await resolve_v2_seed_from_url(task_url)
                 dataset = await self._load_dataset(seed) or {}
 
                 try:

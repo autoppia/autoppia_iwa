@@ -66,7 +66,7 @@ async def generate_search_film_constraints(task_url: str | None = None, dataset:
         films = await fetch_data(seed_value=seed)
         dataset = {"films": films}
 
-    films = dataset.get("films", []) if dataset else []
+    films = dataset.get("films", []) or dataset.get("movies") if dataset else []
     if not films:
         return None
 
@@ -95,7 +95,7 @@ async def generate_film_constraints(task_url: str | None = None, dataset: dict[s
         films = await fetch_data(seed_value=seed)
         dataset = {"films": films}
 
-    films = dataset.get("films", []) if dataset else []
+    films = dataset.get("films", []) or dataset.get("movies") if dataset else []
     if not films:
         return None
 
@@ -206,7 +206,7 @@ async def generate_film_filter_constraints(task_url: str | None = None, dataset:
         films = await fetch_data(seed_value=seed)
         dataset = {"films": films}
 
-    films = dataset.get("films", []) if dataset else []
+    films = dataset.get("films", []) or dataset.get("movies") if dataset else []
     if not films:
         return []
 
@@ -526,7 +526,7 @@ async def generate_add_comment_constraints(task_url: str | None = None, dataset:
         films = await fetch_data(seed_value=seed)
         dataset = {"films": films}
 
-    films = dataset.get("films", []) if dataset else []
+    films = dataset.get("films", []) or dataset.get("movies") if dataset else []
     if not films:
         return []
 
@@ -620,7 +620,7 @@ async def generate_edit_film_constraints(task_url: str | None = None, dataset: d
         films = await fetch_data(seed_value=seed)
         dataset = {"films": films}
 
-    films = dataset.get("films", []) if dataset else []
+    films = dataset.get("films", []) or dataset.get("movies") if dataset else []
     if not films:
         return []
 
