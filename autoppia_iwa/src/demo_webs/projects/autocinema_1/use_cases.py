@@ -25,15 +25,20 @@ from .events import (
 from .generation_functions import (
     generate_add_comment_constraints,
     generate_add_film_constraints,
+    generate_add_to_watchlist_constraints,
     generate_contact_constraints,
+    generate_delete_film_constraints,
     generate_edit_film_constraints,
     generate_edit_profile_constraints,
-    generate_film_constraints,
+    generate_film_detail_constraints,
     generate_film_filter_constraints,
     generate_login_constraints,
     generate_logout_constraints,
     generate_registration_constraints,
+    generate_remove_from_watchlist_constraints,
     generate_search_film_constraints,
+    generate_share_film_constraints,
+    generate_watch_trailer_constraints,
 )
 from .replace_functions import replace_film_placeholders
 
@@ -222,7 +227,7 @@ FILM_DETAIL_USE_CASE = UseCase(
     event=FilmDetailEvent,
     event_source_code=FilmDetailEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
-    constraints_generator=generate_film_constraints,
+    constraints_generator=generate_film_detail_constraints,
     examples=[
         {
             "prompt": "Navigate to The Matrix movie page",
@@ -292,7 +297,7 @@ ADD_TO_WATCHLIST_USE_CASE = UseCase(
     event=AddToWatchlistEvent,
     event_source_code=AddToWatchlistEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
-    constraints_generator=generate_film_constraints,
+    constraints_generator=generate_add_to_watchlist_constraints,
     examples=[
         {
             "prompt": "Add to wishlist The Matrix movie",
@@ -340,7 +345,7 @@ REMOVE_FROM_WATCHLIST_USE_CASE = UseCase(
     event=RemoveFromWatchlistEvent,
     event_source_code=RemoveFromWatchlistEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # populated dynamically
-    constraints_generator=generate_film_constraints,
+    constraints_generator=generate_remove_from_watchlist_constraints,
     examples=[
         {
             "prompt": "Remove the film '<movie>' from the watchlist",
@@ -387,7 +392,7 @@ SHARE_FILM_USE_CASE = UseCase(
     event=ShareFilmEvent,
     event_source_code=ShareFilmEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
-    constraints_generator=generate_film_constraints,
+    constraints_generator=generate_share_film_constraints,
     examples=[
         {
             "prompt": "Share The Matrix movie",
@@ -457,7 +462,7 @@ WATCH_TRAILER_USE_CASE = UseCase(
     event=WatchTrailer,
     event_source_code=WatchTrailer.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
-    constraints_generator=generate_film_constraints,
+    constraints_generator=generate_watch_trailer_constraints,
     examples=[
         {
             "prompt": "Watch the trailer for The Matrix movie",
@@ -684,7 +689,7 @@ DELETE_FILM_USE_CASE = UseCase(
     event=DeleteFilmEvent,
     event_source_code=DeleteFilmEvent.get_source_code_of_class(),
     additional_prompt_info=DELETE_FILM_ADDITIONAL_PROMPT_INFO,
-    constraints_generator=generate_film_constraints,
+    constraints_generator=generate_delete_film_constraints,
     examples=[
         {
             "prompt": "Remove The Matrix, a film released after 2014, from the database",
