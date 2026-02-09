@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from random import choice
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
 
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
@@ -47,23 +47,16 @@ async def _ensure_entity_dataset(
     method: str | None = None,
 ) -> dict[str, list[dict[str, Any]]]:
     """
-    Extract entity data from the pre-loaded dataset, or fetch from server if not available.
+    Extract entity data from the cache dataset, or fetch from server if not available.
 
-    Dynamically fetches only the requested entity_type using the provided method.
-    Returns a dictionary with entity_type as the key.
     """
-    # If dataset is provided and contains the requested entity, return it in the expected format
-    if dataset and entity_type in dataset:
-        return {entity_type: dataset[entity_type]}
 
     # Otherwise, fetch the specific entity type dynamically using the provided parameters
-    seed = get_seed_from_url(task_url) if task_url else None
-    # Normalize empty strings to None for method
-    normalized_method = method if method and method.strip() else None
+    seed = await resolve_v2_seed_from_url(task_url) if task_url else None
 
     fetched_dataset = await fetch_data(
         entity_type=entity_type,
-        method=normalized_method if normalized_method else "select",
+        method=method if method else "select",
         seed_value=seed,
     )
 

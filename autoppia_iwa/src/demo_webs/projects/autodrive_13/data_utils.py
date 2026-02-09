@@ -42,8 +42,7 @@ async def fetch_data(
         entity_type=entity_type,
         seed_value=seed_value if seed_value is not None else 0,
         limit=count,
-        method=method if method else "select",
-        filter_key=filter_key if filter_key else None,
+        method="shuffle",
     )
     return items or []
 

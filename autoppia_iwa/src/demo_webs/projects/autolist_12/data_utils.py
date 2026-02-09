@@ -30,6 +30,6 @@ async def fetch_data(seed_value: int | None = None, count: int = 50) -> list[dic
         entity_type="tasks",
         seed_value=seed_value if seed_value is not None else 0,
         limit=count,
-        method="distribute",
+        method="shuffle",
     )
     return items if items else []

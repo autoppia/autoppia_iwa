@@ -38,7 +38,7 @@ async def _ensure_dataset(
     entity_type: str,
 ) -> list[dict[str, Any]] | list[str]:
     """
-    Extract entity data from the pre-loaded dataset, or fetch from server if not available.
+    Extract entity data from the cache dataset, or fetch from server if not available.
 
     Args:
         task_url: URL to extract seed from
@@ -49,28 +49,11 @@ async def _ensure_dataset(
         For "experts": list[dict[str, Any]] of expert data
         For "skills": list[str] of skill names
     """
-    from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+    from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
 
     from .data_utils import fetch_data
 
-    # If dataset is provided and contains the requested entity, return it
-    if dataset and entity_type in dataset:
-        entity_data = dataset[entity_type]
-
-        # For skills, ensure we return list[str]
-        if entity_type == "skills":
-            if entity_data and isinstance(entity_data[0], str):
-                return entity_data
-            elif entity_data and isinstance(entity_data[0], dict):
-                # Extract "name" field from each dict
-                return [skill.get("name") or str(skill) for skill in entity_data if skill]
-            return []
-
-        # For experts, return list[dict]
-        return entity_data if isinstance(entity_data, list) else []
-
-    # Otherwise, fetch the specific entity type dynamically
-    seed = get_seed_from_url(task_url) if task_url else None
+    seed = await resolve_v2_seed_from_url(task_url) if task_url else None
     fetched_data = await fetch_data(entity_type=entity_type, seed_value=seed)
 
     if not fetched_data:

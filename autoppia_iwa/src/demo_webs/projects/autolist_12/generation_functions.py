@@ -4,7 +4,7 @@ from datetime import date, datetime, timedelta
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
 from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_dict
 
 from .data import (
@@ -27,7 +27,7 @@ async def _ensure_task_dataset(task_url: str | None = None, dataset: dict[str, l
     """Extract tasks data from the pre-loaded dataset, or fetch from server if not available."""
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url) if task_url else None
+        seed = resolve_v2_seed_from_url(task_url) if task_url else None
         tasks = await fetch_data(seed_value=seed)
         dataset = {"tasks": tasks}
 

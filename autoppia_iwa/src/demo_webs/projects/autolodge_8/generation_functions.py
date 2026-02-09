@@ -5,7 +5,7 @@ from typing import Any
 from loguru import logger
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
 
 from ..operators import EQUALS, GREATER_EQUAL, LESS_EQUAL
 from ..shared_utils import create_constraint_dict, parse_datetime
@@ -28,12 +28,9 @@ from .data_utils import fetch_data
 
 
 async def _ensure_hotel_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    """Extract hotels data from the pre-loaded dataset, or fetch from server if not available."""
-    # Fetch data if dataset is not provided or is empty
-    if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url) if task_url else None
-        hotels = await fetch_data(seed_value=seed)
-        dataset = {"hotels": hotels}
+    seed = await resolve_v2_seed_from_url(task_url) if task_url else None
+    hotels = await fetch_data(seed_value=seed)
+    dataset = {"hotels": hotels}
 
     if dataset and "hotels" in dataset:
         return dataset["hotels"]

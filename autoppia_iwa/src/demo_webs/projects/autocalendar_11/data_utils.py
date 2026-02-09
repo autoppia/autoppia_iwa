@@ -45,7 +45,7 @@ async def fetch_data(seed_value: int | None = None, count: int = 50) -> list[dic
         entity_type="events",
         seed_value=seed_value if seed_value is not None else 1,
         limit=count,
-        method="select",
+        method="shuffle",
     )
     if not items:
         return []

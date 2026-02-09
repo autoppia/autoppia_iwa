@@ -4,7 +4,7 @@ from datetime import date, datetime, time, timedelta
 from random import choice
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
 
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
@@ -53,25 +53,19 @@ async def _ensure_entity_dataset(
     filter_key: str | None = None,
 ) -> dict[str, list[dict[str, Any]]]:
     """
-    Extract entity data from the pre-loaded dataset, or fetch from server if not available.
+    Extract entity data from the cache dataset, or fetch from server if not available.
 
     Dynamically fetches only the requested entity_type using the provided method and filter_key.
     Returns a dictionary with entity_type as the key.
     """
-    # If dataset is provided and contains the requested entity, return it in the expected format
-    if dataset and entity_type in dataset:
-        return {entity_type: dataset[entity_type]}
 
     # Otherwise, fetch the specific entity type dynamically using the provided parameters
-    seed = get_seed_from_url(task_url) if task_url else None
-    # Normalize empty strings to None for method and filter_key
-    normalized_method = method if method and method.strip() else None
-    normalized_filter_key = filter_key if filter_key and filter_key.strip() else None
+    seed = resolve_v2_seed_from_url(task_url) if task_url else None
 
     fetched_dataset = await fetch_data(
         entity_type=entity_type,
-        method=normalized_method if normalized_method else "select",
-        filter_key=normalized_filter_key,
+        method=method,
+        filter_key=filter_key,
         seed_value=seed,
     )
 
@@ -80,8 +74,8 @@ async def _ensure_entity_dataset(
 
 
 async def _get_appointments_data(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict]:
-    """Extract appointments data from the pre-loaded dataset, or fetch from server if not available."""
-    dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="appointments")
+    """Extract appointments data from the cache dataset, or fetch from server if not available."""
+    dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="appointments", method="distribute", filter_key="specialty")
     appointments = dataset_dict.get("appointments", [])
     if appointments:
         return transform_appointments_to_modified(appointments)
@@ -89,8 +83,8 @@ async def _get_appointments_data(task_url: str | None = None, dataset: dict[str,
 
 
 async def _get_doctors_data(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict]:
-    """Extract doctors data from the pre-loaded dataset, or fetch from server if not available."""
-    dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="doctors")
+    """Extract doctors data from the cache dataset, or fetch from server if not available."""
+    dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="doctors", method="distribute", filter_key="specialty")
     doctors = dataset_dict.get("doctors", [])
     if doctors:
         return transform_doctors_to_modified(doctors)
@@ -98,8 +92,8 @@ async def _get_doctors_data(task_url: str | None = None, dataset: dict[str, list
 
 
 async def _get_prescriptions_data(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict]:
-    """Extract prescriptions data from the pre-loaded dataset, or fetch from server if not available."""
-    dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="prescriptions")
+    """Extract prescriptions data from the cache dataset, or fetch from server if not available."""
+    dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="prescriptions", method="distribute", filter_key="category")
     prescriptions = dataset_dict.get("prescriptions", [])
     if prescriptions:
         return transform_prescriptions_to_modified(prescriptions)
@@ -107,8 +101,8 @@ async def _get_prescriptions_data(task_url: str | None = None, dataset: dict[str
 
 
 async def _get_medical_records_data(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict]:
-    """Extract medical records data from the pre-loaded dataset, or fetch from server if not available."""
-    dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="medical-records")
+    """Extract medical records data from the cache dataset, or fetch from server if not available."""
+    dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="medical-records", method="distribute", filter_key="type")
     medical_records = dataset_dict.get("medical-records", [])
     if medical_records:
         return transform_medical_records_to_modified(medical_records)

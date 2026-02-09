@@ -2,7 +2,7 @@ import random
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
 
 from ..shared_utils import create_constraint_dict
 from .data import (
@@ -42,7 +42,7 @@ async def _ensure_restaurant_dataset(
     """Extract restaurant data from the pre-loaded dataset, or fetch from server if not available."""
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url) if task_url else None
+        seed = await resolve_v2_seed_from_url(task_url) if task_url else None
         restaurants = await fetch_data(entity_type="restaurants", method="distribute", filter_key="cuisine", seed_value=seed)
         dataset = {"restaurants": restaurants}
 

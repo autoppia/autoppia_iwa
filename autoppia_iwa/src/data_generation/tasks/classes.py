@@ -150,7 +150,7 @@ class Task(BaseModel):
 
 class TaskGenerationConfig(BaseModel):
     # Task quantity controls
-    prompts_per_use_case: int  = 1  # Number of task variations to generate per use case (<=0/None => auto)
+    prompts_per_use_case: int = 1  # Number of task variations to generate per use case (<=0/None => auto)
     # Specific use cases to focus on. If None, generates for all available use cases.
     use_cases: list[str] | None = None
     dynamic: bool = False

@@ -49,24 +49,15 @@ async def _ensure_crm_dataset(
     Dynamically fetches only the requested entity_type using the provided method and filter_key.
     Returns a dictionary with entity_type as the key.
     """
-    from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+    from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
 
     from .data_utils import fetch_data
 
-    # If dataset is provided and contains the requested entity, return it in the expected format
-    if dataset and entity_type in dataset:
-        return {entity_type: dataset[entity_type]}
-
-    # Otherwise, fetch the specific entity type dynamically using the provided parameters
-    seed = get_seed_from_url(task_url) if task_url else None
-    # Normalize empty strings to None for method and filter_key
-    normalized_method = method if method and method.strip() else None
-    normalized_filter_key = filter_key if filter_key and filter_key.strip() else None
-
+    seed = await resolve_v2_seed_from_url(task_url) if task_url else None
     fetched_dataset = await fetch_data(
         entity_type=entity_type,
-        method=normalized_method,
-        filter_key=normalized_filter_key,
+        method=method,
+        filter_key=filter_key,
         seed_value=seed,
     )
 
