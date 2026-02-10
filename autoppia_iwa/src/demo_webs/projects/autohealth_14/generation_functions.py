@@ -20,6 +20,7 @@ from .data import (
     FIELD_OPERATORS_MAP_REQUEST_QUICK_APPOINTMENT,
     FIELD_OPERATORS_MAP_VIEW_DOCTOR_PROFILE,
     FIELD_OPERATORS_MAP_VIEW_DOCTOR_EDUCATION,
+    FIELD_OPERATORS_MAP_VIEW_DOCTOR_AVAILABILITY,
     FIELD_OPERATORS_MAP_OPEN_APPOINTMENT_FORM,
     FIELD_OPERATORS_MAP_OPEN_CONTACT_DOCTOR_FORM,
     FIELD_OPERATORS_MAP_SEARCH_MEDICAL_ANALYSIS,
@@ -104,6 +105,49 @@ def _generate_constraint_value(
     Generate a constraint value for a given operator, field, and dataset.
     Handles various data types and operators robustly.
     """
+    if field == "rating" and field_value is not None:
+        try:
+            rating = float(field_value)
+            rating = max(0.0, min(5.0, rating))
+            rating = round(rating, 1)
+        except (TypeError, ValueError):
+            rating = None
+        if rating is not None:
+            if operator == ComparisonOperator.EQUALS:
+                return rating
+            if operator == ComparisonOperator.NOT_EQUALS:
+                valid = [
+                    v.get(field) for v in dataset if v.get(field) is not None
+                ]
+                if valid:
+                    normalized_valid: list[float] = []
+                    for value in valid:
+                        try:
+                            value_f = float(value)
+                            value_f = max(0.0, min(5.0, value_f))
+                            value_f = round(value_f, 1)
+                            if value_f != rating:
+                                normalized_valid.append(value_f)
+                        except (TypeError, ValueError):
+                            continue
+                    if normalized_valid:
+                        return random.choice(normalized_valid)
+                delta = 0.5 if rating <= 4.5 else -0.5
+                return round(max(0.0, min(5.0, rating + delta)), 1)
+            if operator in {
+                ComparisonOperator.GREATER_THAN,
+                ComparisonOperator.LESS_THAN,
+                ComparisonOperator.GREATER_EQUAL,
+                ComparisonOperator.LESS_EQUAL,
+            }:
+                if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+                    return rating
+                delta = random.choice([0.1, 0.2, 0.3, 0.4, 0.5])
+                if operator == ComparisonOperator.GREATER_THAN:
+                    return round(max(0.0, rating - delta), 1)
+                if operator == ComparisonOperator.LESS_THAN:
+                    return round(min(5.0, rating + delta), 1)
+
     if isinstance(field_value, datetime | date):
         delta_days = random.randint(1, 5)
         if operator == ComparisonOperator.GREATER_THAN:
@@ -413,6 +457,18 @@ async def generate_view_doctor_education_constraints(task_url: str | None = None
     return constraints_list
 
 
+async def generate_view_doctor_availability_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for VIEW_DOCTOR_AVAILABILITY: doctor_name, speciality, rating, consultation_fee, language from doctors (DB first)."""
+    doctors_data = await _get_doctors_data(task_url, dataset)
+    field_operators = FIELD_OPERATORS_MAP_VIEW_DOCTOR_AVAILABILITY
+    field_map = {"language": "primary_language"}
+    core_fields = ["doctor_name", "speciality", "rating", "consultation_fee", "language"]
+    constraints_list = _generate_constraints(
+        doctors_data, field_operators, selected_fields=core_fields, field_map=field_map
+    )
+    return constraints_list
+
+
 async def generate_open_contact_doctor_form_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Generate constraints for OPEN_CONTACT_DOCTOR_FORM: doctor_name, speciality, rating, consultation_fee, language from doctors (DB first)."""
     doctors_data = await _get_doctors_data(task_url, dataset)
@@ -514,5 +570,3 @@ async def generate_filter_doctor_reviews_constraints(task_url: str | None = None
         doctors_data, field_operators, selected_fields=core_fields, field_map=field_map, num_constraints=random.randint(0, 1)
     )
     return constraints_list
-
-

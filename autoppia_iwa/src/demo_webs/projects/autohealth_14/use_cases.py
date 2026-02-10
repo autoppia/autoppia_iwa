@@ -15,6 +15,7 @@ from .events import (
     SearchDoctorsEvent,
     ViewDoctorProfileEvent,
     ViewDoctorEducationEvent,
+    ViewDoctorAvailabilityEvent,
     ViewMedicalAnalysisEvent,
     ViewPrescriptionEvent,
 )
@@ -31,6 +32,7 @@ from .generation_functions import (
     generate_search_doctors_constraints,
     generate_view_doctor_profile_constraints,
     generate_view_doctor_education_constraints,
+    generate_view_doctor_availability_constraints,
     generate_open_appointment_form_constraints,
     generate_open_contact_doctor_form_constraints,
     generate_view_medical_analysis_constraints,
@@ -322,6 +324,28 @@ VIEW_DOCTOR_EDUCATION_USE_CASE = UseCase(
         },
     ],
 )
+
+VIEW_DOCTOR_AVAILABILITY_USE_CASE = UseCase(
+    name="VIEW_DOCTOR_AVAILABILITY",
+    description="The user viewed a doctor's Availability tab on the doctor profile page.",
+    event=ViewDoctorAvailabilityEvent,
+    event_source_code=ViewDoctorAvailabilityEvent.get_source_code_of_class(),
+    constraints_generator=generate_view_doctor_availability_constraints,
+    examples=[
+        {
+            "prompt": "View doctor availability where doctor_name equals 'Dr. Alice Thompson' and speciality equals 'Cardiology'",
+            "prompt_for_task_generation": "View doctor availability where doctor_name equals 'Dr. Alice Thompson' and speciality equals 'Cardiology'",
+        },
+        {
+            "prompt": "View doctor availability where doctor_name contains 'Patel' and rating greater than 4.5 and language equals 'English'",
+            "prompt_for_task_generation": "View doctor availability where doctor_name contains 'Patel' and rating greater than 4.5 and language equals 'English'",
+        },
+        {
+            "prompt": "View doctor availability where speciality equals 'Dermatology' and consultation_fee less than 200",
+            "prompt_for_task_generation": "View doctor availability where speciality equals 'Dermatology' and consultation_fee less than 200",
+        },
+    ],
+)
 OPEN_CONTACT_DOCTOR_FORM_USE_CASE = UseCase(
     name="OPEN_CONTACT_DOCTOR_FORM",
     description="The user opened the contact doctor form (clicked Contact Doctor button on a doctor profile).",
@@ -474,6 +498,7 @@ ALL_USE_CASES = [
     VIEW_PRESCRIPTION_USE_CASE,
     VIEW_DOCTOR_PROFILE_USE_CASE,
     VIEW_DOCTOR_EDUCATION_USE_CASE,
+    VIEW_DOCTOR_AVAILABILITY_USE_CASE,
     FILTER_DOCTOR_REVIEWS_USE_CASE,
     OPEN_CONTACT_DOCTOR_FORM_USE_CASE,
     CONTACT_DOCTOR_USE_CASE,

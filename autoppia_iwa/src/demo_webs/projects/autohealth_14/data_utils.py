@@ -137,6 +137,13 @@ def transform_doctors_to_modified(doctors: list[dict]) -> list[dict]:
                 new_data["pricing"] = "150-250"
             else:
                 new_data["pricing"] = "250+"
+        if "rating" in new_data and new_data.get("rating") is not None:
+            try:
+                rating = float(new_data["rating"])
+                rating = max(0.0, min(5.0, rating))
+                new_data["rating"] = round(rating, 1)
+            except (TypeError, ValueError):
+                pass
         langs = new_data.get("languages") or []
         new_data["primary_language"] = langs[0] if langs else None
         modified.append(new_data)

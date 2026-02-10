@@ -554,6 +554,63 @@ class ViewDoctorEducationEvent(Event, BaseEventValidator):
         )
 
 
+class ViewDoctorAvailabilityEvent(Event, BaseEventValidator):
+    """Fired when user opens the Availability tab on a doctor profile page."""
+    event_name: str = "VIEW_DOCTOR_AVAILABILITY"
+    doctor_name: str | None = None
+    speciality: str | None = None
+    rating: float | None = None
+    consultation_fee: float | None = None
+    languages: list[str] | None = None
+
+    class ValidationCriteria(BaseModel):
+        doctor_name: str | CriterionValue | None = None
+        speciality: str | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
+        consultation_fee: float | CriterionValue | None = None
+        language: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        lang_ok = True
+        if criteria.language is not None:
+            if self.languages:
+                lang_ok = any(
+                    self._validate_field(lang, criteria.language) for lang in self.languages
+                )
+            else:
+                lang_ok = False
+        return all(
+            [
+                self._validate_field(self.doctor_name, criteria.doctor_name),
+                self._validate_field(self.speciality, criteria.speciality),
+                self._validate_field(self.rating, criteria.rating),
+                self._validate_field(self.consultation_fee, criteria.consultation_fee),
+                lang_ok,
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "ViewDoctorAvailabilityEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        data = data.get("data") if isinstance(data, dict) else {}
+        data = data or {}
+        doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            doctor_name=data.get("doctorName") or doctor.get("name"),
+            speciality=data.get("specialty") or doctor.get("specialty"),
+            rating=data.get("rating") if data.get("rating") is not None else doctor.get("rating"),
+            consultation_fee=data.get("consultationFee") if data.get("consultationFee") is not None else doctor.get("consultationFee"),
+            languages=data.get("languages") if data.get("languages") is not None else doctor.get("languages"),
+        )
+
+
 class SearchDoctorsEvent(Event, BaseEventValidator):
     """Fired when user clicks Search on the Doctors page (applies name, speciality, language filters)."""
     event_name: str = "SEARCH_DOCTORS"
@@ -823,6 +880,7 @@ EVENTS = [
     ViewMedicalAnalysisEvent,
     ViewDoctorProfileEvent,
     ViewDoctorEducationEvent,
+    ViewDoctorAvailabilityEvent,
     OpenAppointmentFormEvent,
     OpenContactDoctorFormEvent,
     ContactDoctorEvent,
@@ -842,6 +900,7 @@ BACKEND_EVENT_TYPES = {
     "VIEW_MEDICAL_ANALYSIS": ViewMedicalAnalysisEvent,
     "VIEW_DOCTOR_PROFILE": ViewDoctorProfileEvent,
     "VIEW_DOCTOR_EDUCATION": ViewDoctorEducationEvent,
+    "VIEW_DOCTOR_AVAILABILITY": ViewDoctorAvailabilityEvent,
     "OPEN_APPOINTMENT_FORM": OpenAppointmentFormEvent,
     "OPEN_CONTACT_DOCTOR_FORM": OpenContactDoctorFormEvent,
     "CONTACT_DOCTOR": ContactDoctorEvent,

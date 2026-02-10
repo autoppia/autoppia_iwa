@@ -270,6 +270,14 @@ FIELD_OPERATORS_MAP_VIEW_DOCTOR_EDUCATION = {
     "language": STRING_OPERATORS,
 }
 
+FIELD_OPERATORS_MAP_VIEW_DOCTOR_AVAILABILITY = {
+    "doctor_name": STRING_OPERATORS,
+    "speciality": STRING_OPERATORS,
+    "rating": LOGICAL_OPERATORS,
+    "consultation_fee": LOGICAL_OPERATORS,
+    "language": STRING_OPERATORS,
+}
+
 # Map keys = constraint field names; must match event attributes we validate (or dataset keys via field_map).
 # E.g. doctor_name/speciality/rating/consultation_fee stored in event; "language" checked against event.languages. (UK spelling.)
 FIELD_OPERATORS_MAP_OPEN_CONTACT_DOCTOR_FORM = {
