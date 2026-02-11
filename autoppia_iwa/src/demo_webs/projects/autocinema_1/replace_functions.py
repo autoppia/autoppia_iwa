@@ -1,4 +1,43 @@
+<<<<<<< HEAD
 from autoppia_iwa.src.demo_webs.projects.autocinema_1.data_utils import fetch_data
+=======
+from autoppia_iwa.src.demo_webs.projects.autocinema_1.data_utils import fetch_movies_data
+
+
+def login_replace_func(text: str, constraints: list[dict] | None = None, **kwargs) -> str:
+    if not isinstance(text, str):
+        return text
+
+    replacements = {"<username>": "user<web_agent_id>", "<password>": "password123"}
+
+    # Basic replacements
+    for placeholder, value in replacements.items():
+        text = text.replace(placeholder, value)
+
+    # Generic replacements from constraints (for EDIT_USER profiles, etc.)
+    if constraints:
+        for c in constraints:
+            field = c.get("field")
+            value = c.get("value")
+            if field and value is not None:
+                placeholder = f"<{field}>"
+                if placeholder in text:
+                    text = text.replace(placeholder, str(value))
+
+    return text
+
+
+def register_replace_func(text: str, **kwargs) -> str:
+    if not isinstance(text, str):
+        return text
+
+    replacements = {"<username>": "newuser<web_agent_id>", "<email>": "newuser<web_agent_id>@gmail.com", "<password>": "password123"}
+
+    for placeholder, value in replacements.items():
+        text = text.replace(placeholder, value)
+
+    return text
+>>>>>>> 6b69c456 (feat(autocinema): enforce strict constraint copying and update validation prompts)
 
 
 def _film_name_from_constraints(constraints: list[dict] | None) -> str | None:
