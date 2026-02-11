@@ -130,12 +130,15 @@ async def run_prompt_test():
     try:
         logger.info(f"Starting task execution with agent {agent.name}...")
         timing.start()
-        prepared_task = task.prepare_for_agent(agent.id)
-        solution = await agent.solve_task(prepared_task)
+        # Send task WITH placeholders - agent should return actions with placeholders
+        solution = await agent.solve_task(task)
         timing.end()
         execution_time = timing.get_total_time()
 
         task_solution = TaskSolution(task_id=task.id, actions=solution.actions or [], web_agent_id=agent.id)
+        # Replace credential placeholders in actions BEFORE evaluation
+        task_solution.replace_credentials(agent.id)
+        # Normalize any embedded agent IDs inside actions if needed
         task_solution.actions = task_solution.replace_web_agent_id()
 
         logger.info(f"Task completed in {execution_time:.2f} seconds")

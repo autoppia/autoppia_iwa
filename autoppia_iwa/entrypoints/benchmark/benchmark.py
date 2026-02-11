@@ -20,7 +20,7 @@ from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStat
 from autoppia_iwa.src.evaluation.concurrent_evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.evaluation.stateful_evaluator import AsyncStatefulEvaluator
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer
-from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution
+from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution, sanitize_snapshot_html
 
 visualizer = SubnetVisualizer()
 
@@ -142,7 +142,7 @@ class Benchmark:
             # Usar total_actions_executed como límite (igual que la subnet)
             while total_actions_executed < max_steps and not bool(step_result.score.success):
                 snapshot = step_result.snapshot
-                html = snapshot.html or ""
+                html = sanitize_snapshot_html(snapshot.html or "", agent.id)
                 current_url = snapshot.url or task.url
 
                 try:
@@ -260,12 +260,11 @@ class Benchmark:
 
                 start_ts = time.time()
 
-                prepared_task = task.prepare_for_agent(agent.id)
-
                 # ✅ Usar act() en lugar de solve_task()
                 # En modo concurrent, llamamos UNA vez con snapshot inicial vacío
+                # Send task WITH placeholders - agent should return actions with placeholders
                 actions = await agent.act(
-                    task=prepared_task,
+                    task=task,  # Send task with placeholders, NOT replaced
                     snapshot_html="",  # Vacío en modo concurrent (el agente no necesita ver el HTML)
                     url=task.url,
                     step_index=0,  # Siempre 0 en modo concurrent
@@ -280,6 +279,8 @@ class Benchmark:
                     actions=actions,
                     web_agent_id=agent.id,
                 )
+                # Replace credential placeholders in actions BEFORE evaluation
+                task_solution.replace_credentials(agent.id)
                 # Normalize any embedded agent IDs inside actions if needed
                 task_solution.actions = task_solution.replace_web_agent_id()
 
