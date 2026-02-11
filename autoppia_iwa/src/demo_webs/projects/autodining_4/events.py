@@ -866,13 +866,13 @@ class ContactEvent(Event, BaseEventValidator):
 
     email: str
     message: str
-    name: str
+    username: str
     subject: str
 
     class ValidationCriteria(BaseModel):
         email: str | CriterionValue | None = None
         message: str | CriterionValue | None = None
-        name: str | CriterionValue | None = None
+        username: str | CriterionValue | None = None
         subject: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
@@ -882,9 +882,25 @@ class ContactEvent(Event, BaseEventValidator):
             [
                 self._validate_field(self.email, criteria.email),
                 self._validate_field(self.message, criteria.message),
-                self._validate_field(self.name, criteria.name),
+                self._validate_field(self.username, criteria.username),
                 self._validate_field(self.subject, criteria.subject),
             ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "ContactEvent":
+        base_event = Event.parse(backend_event)
+        event_data = backend_event.data
+        form_data = event_data.get("data", {})
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            message=form_data.get("message", ""),
+            username=form_data.get("name", ""),
+            email=form_data.get("email", ""),
+            subject=form_data.get("subject", ""),
         )
 
 

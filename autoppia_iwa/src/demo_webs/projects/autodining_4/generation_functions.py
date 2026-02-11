@@ -61,7 +61,10 @@ async def _get_restaurant_queries() -> list[str]:
         return _BASE_RESTAURANT_QUERIES
 
 
-def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
+def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | list[str]) -> Any:
+    # Extract restaurant list if dataset is a dict, otherwise use dataset as-is
+    dataset = dataset["restaurants"] if isinstance(dataset, dict) and "restaurants" in dataset else dataset
+
     if operator == ComparisonOperator.EQUALS:
         return field_value
     if field == "restaurant_name":

@@ -46,10 +46,18 @@ from .generation_functions import (
 ###############################################################################
 
 DATE_DROPDOWN_OPENED_INFO = """
-CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Indicate interaction with a date selection UI element (e.g., "Open date picker", "Focus on the date field").
-2. The event captures the date displayed/selected when the interaction occurs.
-3. The prompt should lead to the DATE_DROPDOWN_OPENED event.
+CRITICAL REQUIREMENTS: EVERY prompt you generate MUST:
+1. Explicitly instruct the user to open or interact with the date selector dropdown (e.g., "Open the date selector", "Click on the date field").
+2. Clearly describe an action that triggers the date selection interface.
+3. Ensure the action leads directly to the DATE_DROPDOWN_OPENED event.
+4. Do not include date comparison conditions or date selection instructions unless explicitly required by constraints.
+5. Do not include unrelated actions such as confirming, submitting, or selecting other fields.
+
+Examples:
+- CORRECT: "Open the date selector and select the date equals '2026-02-23T19:00:00+00:00'."
+- INCORRECT: "Select the date '2026-02-23T19:00:00+00:00'." (does not explicitly open the date selector)
+- INCORRECT: "Confirm the booking date." (wrong action)
+- INCORRECT: "Open the date selector." (missing required date selection when constraints specify a date)
 """
 
 DATE_DROPDOWN_OPENED_USE_CASE = UseCase(
@@ -61,12 +69,28 @@ DATE_DROPDOWN_OPENED_USE_CASE = UseCase(
     constraints_generator=generate_date_dropdown_opened_constraints,
     examples=[
         {
-            "prompt": "Open the date selector for my booking.",
-            "prompt_for_task_generation": "Open the date selector for my booking.",
+            "prompt": "Open the date selector and select the date '2026-02-23T19:00:00+00:00'.",
+            "prompt_for_task_generation": "Open the date selector and select the date '<date>'.",
         },
         {
-            "prompt": "Click on the calendar icon to select a date after June 15th.",
-            "prompt_for_task_generation": "Click on the calendar icon to select a date after <date>.",
+            "prompt": "Open the date selector and select a date not equal to '2026-02-28T19:00:00+00:00'.",
+            "prompt_for_task_generation": "Open the date selector and select a date not equal to '<date>'.",
+        },
+        {
+            "prompt": "Open the date selector and select a date greater than '2026-01-23T12:00:00+00:00'.",
+            "prompt_for_task_generation": "Open the date selector and select a date greater than '<date>'.",
+        },
+        {
+            "prompt": "Open the date selector and select a date less than '2026-02-21T18:00:00+00:00'.",
+            "prompt_for_task_generation": "Open the date selector and select a date less than '<date>'.",
+        },
+        {
+            "prompt": "Open the date selector and select a date greater equals '2026-02-20T21:00:00+00:00'.",
+            "prompt_for_task_generation": "Open the date selector and select a date greater equal '<date>'.",
+        },
+        {
+            "prompt": "Open the date selector and select a date less equals '2026-02-24T13:00:00+00:00'.",
+            "prompt_for_task_generation": "Open the date selector and select a date less equal '<date>'.",
         },
     ],
 )
@@ -76,11 +100,19 @@ DATE_DROPDOWN_OPENED_USE_CASE = UseCase(
 ###############################################################################
 
 TIME_DROPDOWN_OPENED_INFO = """
-CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Indicate interaction with a time selection UI element.
-2. The event captures the time displayed/selected upon interaction.
-3. The prompt should lead to the TIME_DROPDOWN_OPENED event.
+CRITICAL REQUIREMENTS: EVERY prompt you generate MUST:
+1. Explicitly indicate interaction with a time selection UI element (e.g., "Open the time selector", "Click on the time field").
+2. The event captures the time displayed or selected at the moment the interaction occurs.
+3. The prompt must clearly lead to the TIME_DROPDOWN_OPENED event.
+4. Do not include unrelated actions such as confirming, submitting, or interacting with other fields.
+
+Examples:
+- CORRECT: "Open the time dropdown and select the time equals '2:30 PM'."
+- INCORRECT: "Select the time '2:30 PM'." (does not explicitly open the time dropdown)
+- INCORRECT: "Confirm the booking time." (wrong action)
+- INCORRECT: "Open the time dropdown." (missing required time selection when constraints specify a time)
 """
+
 
 TIME_DROPDOWN_OPENED_USE_CASE = UseCase(
     name="TIME_DROPDOWN_OPENED",
@@ -91,9 +123,29 @@ TIME_DROPDOWN_OPENED_USE_CASE = UseCase(
     constraints_generator=generate_time_dropdown_opened_constraints,
     examples=[
         {
-            "prompt": "Click on the time field to choose a reservation time.",
-            "prompt_for_task_generation": "Click on the time field to choose a reservation time.",
-        }
+            "prompt": "Open the time dropdown and select the time equals '2:30 PM'.",
+            "prompt_for_task_generation": "Open the time dropdown and select the time equals '2:30 PM'.",
+        },
+        {
+            "prompt": "Open the time dropdown and select a time not equals '2:30 PM'.",
+            "prompt_for_task_generation": "Open the time dropdown and select a time not equals '2:30 PM'.",
+        },
+        {
+            "prompt": "Open the time dropdown and select a time greater than '1:00 PM'.",
+            "prompt_for_task_generation": "Open the time dropdown and select a time greater than '1:00 PM'.",
+        },
+        {
+            "prompt": "Open the time dropdown and select a time less than '5:00 PM'.",
+            "prompt_for_task_generation": "Open the time dropdown and select a time less than '5:00 PM'.",
+        },
+        {
+            "prompt": "Open the time dropdown and select a time greater equal '3:00 PM'.",
+            "prompt_for_task_generation": "Open the time dropdown and select a time greater equal '3:00 PM'.",
+        },
+        {
+            "prompt": "Open the time dropdown and select a time less equals '6:00 PM'.",
+            "prompt_for_task_generation": "Open the time dropdown and select a time less equal '6:00 PM'.",
+        },
     ],
 )
 
@@ -102,10 +154,17 @@ TIME_DROPDOWN_OPENED_USE_CASE = UseCase(
 ###############################################################################
 
 PEOPLE_DROPDOWN_OPENED_INFO = """
-CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Indicate interaction with a 'number of people' or 'guests' selection UI element.
-2. The event captures the count displayed/selected upon interaction.
-3. The prompt should lead to the PEOPLE_DROPDOWN_OPENED event.
+CRITICAL REQUIREMENTS: EVERY prompt you generate MUST:
+1. Clearly describe interaction with the guest selection UI element (e.g., "Open the guest selector dropdown", "Click on the guest field").
+2. Ensure the event captures the number of guests selected at the moment of interaction.
+3. The prompt should explicitly trigger the GUEST_SELECTOR_DROPDOWN_OPENED event.
+4. Avoid including unrelated actions such as confirming, submitting, or interacting with other fields.
+
+Examples:
+- CORRECT: "Open the guest selector dropdown and select people_count equals 4."
+- INCORRECT: "Select 4 guests." (does not explicitly open the guest selector dropdown)
+- INCORRECT: "Confirm the number of guests." (wrong action)
+- INCORRECT: "Open the guest selector dropdown." (missing required people_count selection when constraints specify a value)
 """
 
 PEOPLE_DROPDOWN_OPENED_USE_CASE = UseCase(
@@ -117,12 +176,28 @@ PEOPLE_DROPDOWN_OPENED_USE_CASE = UseCase(
     constraints_generator=generate_people_dropdown_opened_constraints,
     examples=[
         {
-            "prompt": "Open the guest number selection for my table.",
-            "prompt_for_task_generation": "Open the guest number selection for my table.",
+            "prompt": "Open the guest selector dropdown and select people_count equals 4.",
+            "prompt_for_task_generation": "Open the guest selector dropdown and select people_count equals <count>.",
         },
         {
-            "prompt": "Select the party size dropdown for a group larger than 6 people.",
-            "prompt_for_task_generation": "Select the party size dropdown for a group larger than <count> people.",
+            "prompt": "Open the guest selector dropdown and select people_count not equal to 5.",
+            "prompt_for_task_generation": "Open the guest selector dropdown and select people_count not equal to <count>.",
+        },
+        {
+            "prompt": "Open the guest selector dropdown and select people_count greater than 6.",
+            "prompt_for_task_generation": "Open the guest selector dropdown and select people_count greater than <count>.",
+        },
+        {
+            "prompt": "Open the guest selector dropdown and select people_count less than 3.",
+            "prompt_for_task_generation": "Open the guest selector dropdown and select people_count less than <count>.",
+        },
+        {
+            "prompt": "Open the guest selector dropdown and select people_count greater than or equal to 2.",
+            "prompt_for_task_generation": "Open the guest selector dropdown and select people_count greater than or equal to <count>.",
+        },
+        {
+            "prompt": "Open the guest selector dropdown and select people_count less than or equal to 8.",
+            "prompt_for_task_generation": "Open the guest selector dropdown and select people_count less than or equal to <count>.",
         },
     ],
 )
@@ -326,12 +401,28 @@ COUNTRY_SELECTED_USE_CASE = UseCase(
     additional_prompt_info=COUNTRY_SELECTED_INFO,
     examples=[
         {
-            "prompt": "Select 'India' as the country for my phone number while reserving a table at Zen Sushi.",
-            "prompt_for_task_generation": "Select '<country_name>' as the country for my phone number while reserving a table at <restaurant_name>.",
+            "prompt": "Select a country where country_name equals 'India'.",
+            "prompt_for_task_generation": "Select a country where country_name equals '<country_name>'.",
         },
         {
-            "prompt": "Choose a country other than United States for my reservation at Copper Kitchen.",
-            "prompt_for_task_generation": "Choose a country other than <country_name> for my reservation at <restaurant_name>.",
+            "prompt": "Select a country where country_name not equals 'United States'.",
+            "prompt_for_task_generation": "Select a country where country_name not equals '<country_name>'.",
+        },
+        {
+            "prompt": "Select a country where country_code equals 'IN'.",
+            "prompt_for_task_generation": "Select a country where country_code equals '<country_code>'.",
+        },
+        {
+            "prompt": "Select a country where country_code not equals 'US' and restaurant_name equals 'The Royal Dine'.",
+            "prompt_for_task_generation": "Select a country where country_code not equals '<country_code>' and restaurant_name equals '<restaurant_name>'.",
+        },
+        {
+            "prompt": "Select a country where country_name equals 'Australia' and people_count equals 2 and selected_date equals '2025-05-16' and selected_time equals '1:30 PM'.",
+            "prompt_for_task_generation": "Select a country where country_name equals '<country_name>' and people_count equals <people_count> and selected_date equals '<selected_date>' and selected_time equals '<selected_time>'.",
+        },
+        {
+            "prompt": "Select a country where country_name equals 'Canada' and restaurant_name contains 'Palace' and rating greater than or equal to 4.",
+            "prompt_for_task_generation": "Select a country where country_name equals '<country_name>' and restaurant_name contains '<restaurant_name>' and rating greater than or equal to <rating>.",
         },
     ],
 )
@@ -419,10 +510,17 @@ RESERVATION_COMPLETE_USE_CASE = UseCase(
 
 SCROLL_VIEW_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Explicitly mention **scrolling or navigating** a generic list or page section.
-2. Specify the direction of scroll ("right", "left") if applicable.
-3. May mention the number of items now visible if that's a direct consequence of the scroll action being described.
-4. Lead to the SCROLL_VIEW event.
+1. Explicitly describe scrolling or navigating (use phrases like "Scroll", "Browse more", etc.).
+2. Include the carousel section title if it is specified in the constraints.
+3. Specify the scroll direction (left/right) if it is included in the constraints.
+4. Avoid mentioning product selection actions or any interactions other than scrolling.
+5. Do not include multiple conditions for the same field (e.g., specifying the direction twice is not allowed).
+
+
+For example:
+- CORRECT: "Scroll in the direction 'right' where section_title equals 'Featured Products'"
+- INCORRECT: "View details for product in section" (wrong action)
+- INCORRECT: "Show me section items" (no scroll action)
 """
 
 SCROLL_VIEW_USE_CASE = UseCase(
@@ -434,16 +532,20 @@ SCROLL_VIEW_USE_CASE = UseCase(
     constraints_generator=generate_scroll_view_constraints,
     examples=[
         {
-            "prompt": "Scroll right to see more available time slots.",
-            "prompt_for_task_generation": "Scroll <direction> to see more <section_title>.",
+            "prompt": "Scroll in the direction 'right' where section_title equals 'Featured Products'.",
+            "prompt_for_task_generation": "Scroll in the <direction> where section_title equals <Featured Products>.",
         },
         {
-            "prompt": "Scroll left in the page section where the section_title does NOT contain 'Introducing OpenDinning Icons'",
-            "prompt_for_task_generation": "Scroll left in the page section where the <section_title> does NOT contain  <section_title> ",
+            "prompt": "Scroll in the direction 'left' where section_title not equal to 'Featured Products'.",
+            "prompt_for_task_generation": "Scroll in the <direction> where section_title not equal to <Featured Products>.",
         },
         {
-            "prompt": "Scroll to the right in the list where the section title does NOT contain 'Award-winning'",
-            "prompt_for_task_generation": "Scroll to the <direction> in the list where the section title does NOT contain <section_title>.",
+            "prompt": "Scroll in the direction 'right' where section_title contains 'Top Sellers'.",
+            "prompt_for_task_generation": "Scroll in the <direction> where section_title contains <Top Sellers>.",
+        },
+        {
+            "prompt": "Scroll in the direction 'left' where section_title does not contain 'Electronics'.",
+            "prompt_for_task_generation": "Scroll in the <direction> where section_title does not contain <Electronics>.",
         },
     ],
 )
