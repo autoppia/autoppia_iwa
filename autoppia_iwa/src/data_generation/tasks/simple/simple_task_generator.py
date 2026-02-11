@@ -1,4 +1,5 @@
 import asyncio
+import copy
 import importlib
 import inspect
 import json
@@ -118,6 +119,7 @@ class SimpleTaskGenerator:
 
         # Generate each prompt independently
         for _ in range(number_of_prompts):
+            use_case.constraints = None
             # Build task URL with unique seed for each prompt
             task_url = self._build_task_url_with_seed(dynamic=dynamic)
             seed = get_seed_from_url(task_url) if dynamic else 1
@@ -191,9 +193,10 @@ class SimpleTaskGenerator:
                         web_project_id=self.web_project.id,
                         url=task_url,
                         prompt=replaced_prompt,
-                        use_case=use_case,
+                        use_case=copy.deepcopy(use_case),
                     )
                 )
+                use_case.constraints = None
             except Exception as ex:
                 logger.error(f"Could not assemble Task for prompt '{prompt_text}': {ex!s}")
 

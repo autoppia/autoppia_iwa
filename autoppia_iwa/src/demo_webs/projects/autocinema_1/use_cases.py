@@ -319,8 +319,8 @@ ADD_TO_WATCHLIST_USE_CASE = UseCase(
             "prompt_for_task_generation": "Add to wishlist a <genre> film less than <duration> minutes long",
         },
         {
-            "prompt": "Add to wishlist a film from the 90s with Al Pacino",
-            "prompt_for_task_generation": "Add to wishlist a film from the <decade>s with <actor>",
+            "prompt": "Add to wishlist a film from the 1999 with Al Pacino",
+            "prompt_for_task_generation": "Add to wishlist a film from the <year> with <actor>",
         },
         {
             "prompt": "Add to wishlist a horror movie not directed by Wes Craven",
@@ -365,8 +365,9 @@ def _get_share_film_info(movies_data: list[dict]) -> str:
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above - not just some of them
 2. Include ONLY the constraints mentioned above - do not add any other criteria
-3. Be phrased as a request to **view details** of a movie (use phrases like "Share details for..." etc.).
-4. Only use the movies name defined below.
+3. Include ALL fields given in constraints along with their operators and field values.
+4. Be phrased as a request to **view details** of a movie (use phrases like "Share details for..." etc.).
+5. Only use the movies name defined below.
 
 MOVIES NAMES:
 {movie_names}
@@ -413,8 +414,8 @@ SHARE_FILM_USE_CASE = UseCase(
             "prompt_for_task_generation": "Share <genre> film less than <duration> minutes long",
         },
         {
-            "prompt": "Share film details from the 90s with Al Pacino",
-            "prompt_for_task_generation": "Share film details from the <decade>s with <actor>",
+            "prompt": "Share film details from the 1999 with Al Pacino",
+            "prompt_for_task_generation": "Share film details from the <year> with <actor>",
         },
         {
             "prompt": "Share horror movie not directed by Wes Craven",
@@ -916,7 +917,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 3. Be phrased as a request to add a comment to a movie (use phrases like "Add a comment...", "Write a review...", "Post a comment...", "Leave feedback...").
 4. If the constraints include the 'content' field (e.g., content contains or content not_contains), the prompt MUST refer specifically to the comment **content or message**, using expressions like "a comment whose content...", "a review whose message...", etc., and NOT just a vague instruction".
 For example, if the constraints are "movie_name contains 'Inception' AND content not_contains 'boring'":
-- CORRECT: "Add a comment to a movie that contains 'Inception' with a review that does NOT contain the word 'boring'."
+- CORRECT: "Add a comment to a movie that contains 'Inception' with a content that does NOT contain the word 'boring'."
 - INCORRECT: "Write a comment about any movie" (missing specific constraints)
 - INCORRECT: "Post a review that includes extra unnecessary details" (adding constraints not specified)
 
