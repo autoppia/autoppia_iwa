@@ -1,6 +1,6 @@
 import random
 
-from .data_utils import fetch_products_data
+from .data_utils import fetch_data
 
 
 async def replace_products_placeholders(
@@ -16,7 +16,7 @@ async def replace_products_placeholders(
     if not isinstance(text, str):
         return text
 
-    products_data = dataset if dataset is not None else await fetch_products_data(seed_value=seed_value)
+    products_data = dataset if dataset is not None else await fetch_data(seed_value=seed_value)
     if not products_data:
         return text
 

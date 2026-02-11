@@ -11,6 +11,7 @@ from loguru import logger
 from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
 
 
+<<<<<<< HEAD
 def _get_initial_data_dir() -> Path | None:
     """Resolve path to webs_server initial_data for web_14_autohealth."""
     p = Path(__file__).resolve()
@@ -63,13 +64,33 @@ def _load_initial_data_fallback(entity_type: str, count: int = 50) -> list[dict]
 
 
 async def fetch_health_data(
+=======
+async def fetch_data(
+>>>>>>> origin/main
     entity_type: str,
     method: str | None = None,
     filter_key: str | None = None,
     seed_value: int | None = None,
     count: int = 50,
 ) -> list[dict]:
-    """Fetch dataset rows for the given entity type."""
+    """
+    Fetch dataset rows for the given entity type.
+
+    This is the unified function replacing:
+    - fetch_health_data()
+    - get_data()
+    - get_all_data()
+
+    Args:
+        entity_type: Type of entity to fetch (appointments, doctors, prescriptions, etc.)
+        method: Selection method (select, etc.)
+        filter_key: Key to filter on
+        seed_value: Seed value for deterministic selection
+        count: Number of items to fetch
+
+    Returns:
+        list[dict] of data for the requested entity type
+    """
     from .main import FRONTEND_PORT_INDEX, health_project
 
     project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{health_project.id}"
@@ -182,6 +203,7 @@ def transform_medical_records_to_modified(medical_records: list[dict]) -> list[d
             new_data["doctor_name"] = new_data.pop("doctorName")
         modified.append(new_data)
     return modified
+<<<<<<< HEAD
 
 
 async def get_data(
@@ -214,3 +236,5 @@ async def get_all_data(seed_value: int | None = None, count: int = 50, _retried:
         logger.info("All entities empty for seed={}, retrying with seed=1", seed_value)
         return await get_all_data(seed_value=1, count=count, _retried=True)
     return result
+=======
+>>>>>>> origin/main

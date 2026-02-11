@@ -5,13 +5,29 @@ Shared dataset helpers for autoconnect_9.
 from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
 
 
-async def fetch_connect_data(
+async def fetch_data(
     entity_type: str,
     method: str | None = None,
     seed_value: int | None = None,
     count: int = 50,
 ) -> list[dict]:
-    """Fetch data for the requested entity type."""
+    """
+    Fetch data for the requested entity type.
+
+    This is the unified function replacing:
+    - fetch_connect_data()
+    - get_data()
+    - get_all_data()
+
+    Args:
+        entity_type: Type of entity to fetch (users, posts, recommendations, jobs)
+        method: Selection method (select, etc.)
+        seed_value: Seed value for deterministic selection
+        count: Number of items to fetch
+
+    Returns:
+        list[dict] of data for the requested entity type
+    """
     from .main import FRONTEND_PORT_INDEX, connect_project
 
     project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{connect_project.id}"
@@ -25,21 +41,3 @@ async def fetch_connect_data(
         method=method if method else "select",
     )
     return items or []
-
-
-async def get_data(entity_type: str | None = None, method: str | None = None, seed_value: int | None = None, count: int = 50) -> list[dict]:
-    """Main data loader function for autoconnect_9."""
-    if not entity_type:
-        # When called without an entity_type (e.g., preload), return empty to avoid errors.
-        return []
-    return await fetch_connect_data(entity_type=entity_type, method=method, seed_value=seed_value, count=count)
-
-
-async def get_all_data(seed_value: int | None = None, count: int = 50) -> dict[str, list[dict]]:
-    """Load complete dataset for this project."""
-    return {
-        "users": await get_data(entity_type="users", method="select", seed_value=seed_value, count=count),
-        "posts": await get_data(entity_type="posts", method="select", seed_value=seed_value, count=count),
-        "recommendations": await get_data(entity_type="recommendations", method="select", seed_value=seed_value, count=count),
-        "jobs": await get_data(entity_type="jobs", method="select", seed_value=seed_value, count=count),
-    }

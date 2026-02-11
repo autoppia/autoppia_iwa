@@ -10,6 +10,7 @@ Main pipeline that orchestrates:
 """
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlparse
@@ -866,6 +867,195 @@ class WebVerificationPipeline:
             json.dump(results_dict, f, indent=2, ensure_ascii=False)
 
         logger.info(f"Results saved to: {output_file}")
+
+        # Also save a focused report with misgenerated/suspicious tasks to make manual review easy
+        misgenerated_report = self._build_misgenerated_tasks_report()
+        misgenerated_file = output_dir / f"misgenerated_tasks_{self.web_project.id}.json"
+        with open(misgenerated_file, "w", encoding="utf-8") as f:
+            json.dump(self._serialize_results(misgenerated_report), f, indent=2, ensure_ascii=False)
+        logger.info(f"Misgenerated tasks report saved to: {misgenerated_file}")
+
+    def _build_misgenerated_tasks_report(self) -> dict[str, Any]:
+        """
+        Build a compact report containing only tasks that look misgenerated.
+
+        Definition of "misgenerated" in this report:
+        - LLM review returned valid=false, OR
+        - A lightweight heuristic flags the prompt as suspicious (missing literal constraint values).
+
+        This helps catch both reviewer negatives and potential reviewer false-positives.
+        """
+        report: dict[str, Any] = {
+            "project_id": self.web_project.id,
+            "project_name": self.web_project.name,
+            "tasks_per_use_case": self.config.tasks_per_use_case,
+            "use_cases": {},
+            "summary": {
+                "use_cases_with_issues": 0,
+                "failed_llm_review_tasks": 0,
+                "suspicious_tasks": 0,
+                "total_flagged_tasks": 0,
+            },
+        }
+
+        for use_case_name, use_case_data in self.results.get("use_cases", {}).items():
+            tasks: list[dict[str, Any]] = use_case_data.get("tasks", []) or []
+            reviews: list[dict[str, Any]] = use_case_data.get("llm_reviews", []) or []
+
+            # Include use cases where task generation failed (no tasks) for manual inspection.
+            if not tasks:
+                report["use_cases"][use_case_name] = {
+                    "use_case_description": use_case_data.get("use_case_description", ""),
+                    "flagged_tasks": [],
+                    "generation_error": use_case_data.get("error") or "No tasks generated",
+                }
+                report["summary"]["use_cases_with_issues"] += 1
+                continue
+
+            # Map reviews by task_id for stability
+            reviews_by_task_id: dict[str, dict[str, Any]] = {
+                str(r.get("task_id")): r for r in reviews if isinstance(r, dict) and r.get("task_id") is not None
+            }
+
+            flagged_tasks: list[dict[str, Any]] = []
+            for task in tasks:
+                task_id = str(task.get("task_id", ""))
+                prompt = task.get("prompt", "") or ""
+                constraints = task.get("constraints", None)
+                constraints_str = task.get("constraints_str", "") or ""
+                seed = task.get("seed", None)
+
+                review = reviews_by_task_id.get(task_id)
+                llm_valid = review.get("valid", None) if review else None
+                overridden = bool(review.get("overridden_by_heuristic", False)) if review else False
+
+                suspicious_reasons = self._flag_suspicious_prompt_against_constraints(prompt, constraints)
+
+                should_flag = (llm_valid is False) or bool(suspicious_reasons) or overridden
+                if not should_flag:
+                    continue
+
+                flagged_tasks.append(
+                    {
+                        "task_id": task_id,
+                        "seed": seed,
+                        "prompt": prompt,
+                        "constraints_str": constraints_str,
+                        "constraints": constraints,
+                        "llm_review": review,
+                        "suspicious_reasons": suspicious_reasons,
+                        "overridden_by_heuristic": overridden,
+                    }
+                )
+
+                if llm_valid is False:
+                    report["summary"]["failed_llm_review_tasks"] += 1
+                if suspicious_reasons:
+                    report["summary"]["suspicious_tasks"] += 1
+
+            if flagged_tasks:
+                report["use_cases"][use_case_name] = {
+                    "use_case_description": use_case_data.get("use_case_description", ""),
+                    "flagged_tasks": flagged_tasks,
+                }
+                report["summary"]["use_cases_with_issues"] += 1
+                report["summary"]["total_flagged_tasks"] += len(flagged_tasks)
+
+        return report
+
+    def _flag_suspicious_prompt_against_constraints(self, prompt: str, constraints: Any) -> list[str]:
+        """
+        Lightweight, deterministic heuristic to flag likely bad generations.
+
+        It does NOT try to validate semantic operator correctness (that's what the LLM reviewer does).
+        It only checks whether literal constraint values are present in the prompt text.
+
+        Returns:
+            List of human-readable reasons. Empty list means "not suspicious".
+        """
+        if not constraints or not isinstance(prompt, str) or not prompt.strip():
+            return []
+
+        if not isinstance(constraints, list):
+            return []
+
+        prompt_norm = self._normalize_text_for_match(prompt)
+        reasons: list[str] = []
+
+        for constraint in constraints:
+            if not isinstance(constraint, dict):
+                continue
+
+            field = str(constraint.get("field", "") or "")
+            operator = str(constraint.get("operator", "") or "")
+            value = constraint.get("value", None)
+
+            # Values should almost always appear in the prompt (including for negative operators)
+            missing = self._missing_constraint_values(prompt_norm, value, operator=operator)
+            if missing:
+                reasons.append(f"Missing value(s) for constraint '{field} {operator}': {', '.join(missing)}")
+
+        return reasons
+
+    def _missing_constraint_values(self, prompt_norm: str, value: Any, operator: str) -> list[str]:
+        """
+        Return a list of stringified atomic values that do not appear in the prompt.
+
+        For list-valued constraints (e.g. in_list), require at least one list item to appear.
+        """
+        # Normalize operator string (Enum already serialized earlier)
+        op = (operator or "").strip().lower()
+
+        if value is None:
+            return []
+
+        # For list values, treat as "at least one must appear"
+        if isinstance(value, list):
+            atoms = [self._stringify_atom(v) for v in value if v is not None]
+            atoms = [a for a in atoms if a]
+            if not atoms:
+                return []
+
+            present_any = any(self._normalize_text_for_match(a) in prompt_norm for a in atoms)
+            if present_any:
+                return []
+            # If none of them appear, flag the whole list (shortened to first few)
+            return atoms[:5]
+
+        atom = self._stringify_atom(value)
+        if not atom:
+            return []
+
+        atom_norm = self._normalize_text_for_match(atom)
+        if atom_norm and atom_norm not in prompt_norm:
+            # For numeric operators, the number should still appear literally
+            return [atom]
+
+        # Special case: sometimes equals with float "4.5" may appear as "4,5" in some locales; try a loose match
+        if op in {"equals", "greater_than", "less_than", "greater_equal", "less_equal"}:
+            if re.fullmatch(r"-?\\d+\\.\\d+", atom.strip()):
+                alt = atom.replace(".", ",")
+                if self._normalize_text_for_match(alt) in prompt_norm:
+                    return []
+
+        return []
+
+    @staticmethod
+    def _stringify_atom(v: Any) -> str:
+        if isinstance(v, (int, float, bool)):
+            return str(v)
+        if isinstance(v, str):
+            return v
+        return str(v)
+
+    @staticmethod
+    def _normalize_text_for_match(text: str) -> str:
+        # Lowercase, strip quotes/punct, collapse whitespace
+        lowered = text.lower()
+        lowered = re.sub(r"[\"'`]", "", lowered)
+        lowered = re.sub(r"[^a-z0-9<>@._\-\s]", " ", lowered)
+        lowered = re.sub(r"\s+", " ", lowered).strip()
+        return lowered
 
     def _serialize_constraints(self, constraints: list[dict]) -> list[dict]:
         """

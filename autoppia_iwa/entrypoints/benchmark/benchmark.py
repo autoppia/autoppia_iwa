@@ -1,5 +1,6 @@
 import asyncio
 import base64
+import contextlib
 import json
 import time
 from collections import defaultdict
@@ -67,11 +68,8 @@ class Benchmark:
         if len(agent_ids) != len(set(agent_ids)):
             raise ValueError("Agent IDs must be unique.")
 
-        logger.info(
-            f"Configuration validated: {len(self.config.projects)} projects, {len(self.config.agents)} agents, "
-            f"{self.config.runs} runs, evaluator_mode={self.config.evaluator_mode}"
-        )
-        
+        logger.info(f"Configuration validated: {len(self.config.projects)} projects, {len(self.config.agents)} agents, {self.config.runs} runs, evaluator_mode={self.config.evaluator_mode}")
+
         if self.config.evaluator_mode == "stateful":
             logger.info(f"Stateful mode: max {self.config.max_steps_per_task} steps per task")
 
@@ -91,7 +89,7 @@ class Benchmark:
             verbose_logging=False,
             debug_mode=False,
         )
-        
+
         logger.debug(f"Creating ConcurrentEvaluator for project {project.id}")
         return ConcurrentEvaluator(web_project=project, config=evaluator_config)
 
@@ -103,22 +101,22 @@ class Benchmark:
     ) -> EvaluationResult:
         """
         Evalúa un agente usando AsyncStatefulEvaluator en modo iterativo.
-        
+
         ✅ El agente debe implementar IWebAgent con método act().
         Típicamente es un ApifiedWebCUA (agente HTTP) corriendo en un servidor.
-        
+
         El agente debe estar corriendo en un servidor HTTP y responder en:
         POST /act con: {task, snapshot_html, url, step_index}
         Responde: {actions: [...]}
         """
         # Verificar que el agente tenga método act()
-        if not hasattr(agent, 'act') or not callable(getattr(agent, 'act', None)):
+        if not hasattr(agent, "act") or not callable(getattr(agent, "act", None)):
             raise ValueError(
                 f"❌ El agente '{agent.name}' no implementa IWebAgent correctamente.\n"
                 f"Debe tener el método act() que recibe el estado del browser.\n"
                 f"Usa: ApifiedWebCUA(base_url='http://localhost:PORT')"
             )
-        
+
         evaluator = AsyncStatefulEvaluator(
             task=task,
             web_agent_id=agent.id,
@@ -135,7 +133,7 @@ class Benchmark:
         try:
             step_index = 0  # Número de LLAMADAS al agente
             total_actions_executed = 0  # Número de ACCIONES ejecutadas
-            
+
             step_result = await evaluator.reset()
             final_score = step_result.score.raw_score
             tests_passed = step_result.score.tests_passed
@@ -165,12 +163,9 @@ class Benchmark:
                     break
 
                 # Calcular límite con total_actions_executed (como en subnet)
-                actions_to_execute = actions[:min(len(actions), max_steps - total_actions_executed)]
-                
-                logger.debug(
-                    f"[stateful_eval] agent {agent.name} returned {len(actions)} actions, "
-                    f"executing {len(actions_to_execute)}"
-                )
+                actions_to_execute = actions[: min(len(actions), max_steps - total_actions_executed)]
+
+                logger.debug(f"[stateful_eval] agent {agent.name} returned {len(actions)} actions, executing {len(actions_to_execute)}")
 
                 # Ejecutar TODAS las acciones en batch
                 for action in actions_to_execute:
@@ -179,11 +174,11 @@ class Benchmark:
                     tests_passed = step_result.score.tests_passed
                     total_tests = step_result.score.total_tests
                     total_actions_executed += 1
-                    
+
                     # Guardar el resultado de la acción
                     if step_result.action_result:
                         execution_history.append(step_result.action_result)
-                    
+
                     # Si completó la tarea, terminar
                     if step_result.score.success:
                         logger.info(f"[stateful_eval] agent {agent.name} completed task!")
@@ -192,20 +187,18 @@ class Benchmark:
                 # Si completó, salir del loop principal
                 if step_result.score.success:
                     break
-                
+
                 step_index += 1
 
         except Exception as exc:
             logger.error(f"[stateful_eval] agent {agent.name} evaluation error: {exc}")
             final_score = 0.0
         finally:
-            try:
+            with contextlib.suppress(Exception):
                 await evaluator.close()
-            except Exception:
-                pass
 
         elapsed = time.time() - start_ts
-        
+
         # Construir EvaluationResult compatible con el resto del benchmark
         return EvaluationResult(
             final_score=max(0.0, min(final_score, 1.0)),
@@ -252,10 +245,10 @@ class Benchmark:
     ) -> TaskSolution | None:
         """
         Resolve a single Task with a single Agent usando act().
-        
+
         ✅ TODOS los agentes usan act() ahora (tanto concurrent como stateful).
         En modo concurrent, llamamos act() UNA vez con el estado inicial.
-        
+
         Optionally uses a cached solution when configured.
         Resets the project backend DB for isolation per attempt.
         """
@@ -268,7 +261,7 @@ class Benchmark:
                 start_ts = time.time()
 
                 prepared_task = task.prepare_for_agent(agent.id)
-                
+
                 # ✅ Usar act() en lugar de solve_task()
                 # En modo concurrent, llamamos UNA vez con snapshot inicial vacío
                 actions = await agent.act(
@@ -318,39 +311,32 @@ class Benchmark:
         Stores GIF recordings if evaluation returns them and recording is enabled.
         Supports both concurrent and stateful evaluation modes.
         """
-        # Filter out None solutions defensively
-        valid_solutions = [s for s in solutions if s is not None]
-        if not valid_solutions:
-            logger.warning(f"No valid solutions to evaluate for task {task.id} (run {run_index})")
-            return []
-
         # Evaluate according to the configured mode
         if self.config.evaluator_mode == "concurrent":
+            # Filter out None solutions defensively (only needed for concurrent mode)
+            valid_solutions = [s for s in solutions if s is not None]
+            if not valid_solutions:
+                logger.warning(f"No valid solutions to evaluate for task {task.id} (run {run_index})")
+                return []
             # MODO CONCURRENT: evaluar todas las soluciones completas
             evaluator = self._create_evaluator(project)
             logger.debug(f"Evaluating task {task.id} with {len(valid_solutions)} solutions (CONCURRENT mode)")
             results = await evaluator.evaluate_task_solutions(task, valid_solutions)
-            
+
         elif self.config.evaluator_mode == "stateful":
             # MODO STATEFUL: evaluar cada agente iterativamente
-            logger.info(f"Evaluating task {task.id} with {len(valid_solutions)} agents (STATEFUL mode)")
+            # In stateful mode, we don't use pre-generated solutions
+            # Instead, we call agents directly and let the evaluator call them iteratively
+            logger.info(f"Evaluating task {task.id} with {len(self.config.agents)} agents (STATEFUL mode)")
             results = []
-            
-            for task_solution in valid_solutions:
-                # Encontrar el agente correspondiente
-                agent = next((a for a in self.config.agents if a.id == task_solution.web_agent_id), None)
-                if not agent:
-                    logger.warning(f"Agent {task_solution.web_agent_id} not found for task {task.id}")
-                    continue
-                
+
+            # Iterate over agents directly (not solutions)
+            for agent in self.config.agents:
                 logger.info(f"Evaluating task {task.id} with agent {agent.name} (stateful, max {self.config.max_steps_per_task} steps)")
-                
+
                 # Usar AsyncStatefulEvaluator para evaluación iterativa
-                result = await self._evaluate_with_stateful_evaluator(
-                    task=task,
-                    agent=agent,
-                    max_steps=self.config.max_steps_per_task
-                )
+                # The evaluator will call agent.act() iteratively with step_index 0, 1, 2, ...
+                result = await self._evaluate_with_stateful_evaluator(task=task, agent=agent, max_steps=self.config.max_steps_per_task)
                 results.append(result)
         else:
             raise ValueError(f"Invalid evaluator_mode: {self.config.evaluator_mode}")
@@ -361,7 +347,7 @@ class Benchmark:
                 if getattr(res, "gif_recording", None):
                     agent_name = next((a.name for a in self.config.agents if a.id == res.web_agent_id), "unknown")
                     self._persist_gif_recording(res.gif_recording, agent_name, task.id, run_index, self.config.recordings_dir)
-        
+
         return results
 
     async def _evaluate_solutions_for_task_with_visualization(
@@ -467,8 +453,14 @@ class Benchmark:
         per_agent_results_for_run: dict[str, dict] = {}
 
         for task in tasks:
-            # Solve with all agents
-            task_solutions = await asyncio.gather(*[self._solve_task_with_agent(project, agent, task, run_index) for agent in self.config.agents])
+            # Solve with all agents (skip in stateful mode - evaluator will call agents directly)
+            if self.config.evaluator_mode == "stateful":
+                # In stateful mode, don't pre-generate solutions
+                # The evaluator will call agents directly and iteratively
+                task_solutions = [None] * len(self.config.agents)
+            else:
+                # In concurrent mode, generate solutions first
+                task_solutions = await asyncio.gather(*[self._solve_task_with_agent(project, agent, task, run_index) for agent in self.config.agents])
 
             # Evaluate solutions with visualization
             evaluations = await self._evaluate_solutions_for_task_with_visualization(project, task, task_solutions, VALIDATOR_ID, run_index)

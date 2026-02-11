@@ -1,4 +1,4 @@
-from .data_utils import fetch_books_data
+from .data_utils import fetch_data
 
 
 def login_replace_func(text: str) -> str:
@@ -33,7 +33,7 @@ async def replace_book_placeholders(
     if not isinstance(text, str):
         return text
 
-    books_data = dataset if dataset is not None else await fetch_books_data(seed_value=seed_value)
+    books_data = dataset if dataset is not None else await fetch_data(seed_value=seed_value)
     if not books_data:
         return text
 

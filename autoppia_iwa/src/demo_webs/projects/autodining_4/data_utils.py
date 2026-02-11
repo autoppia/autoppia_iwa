@@ -21,19 +21,33 @@ def _transform_all(records: list[dict], mapping: dict) -> list[dict]:
     return [_apply_mapping(record, mapping) for record in records]
 
 
-async def fetch_restaurant_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
-    """Fetch restaurant data from the backend with a small in-memory cache."""
-    from .main import FRONTEND_PORT_INDEX, dining_project
+async def fetch_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
+    """
+    Fetch restaurant data from the backend with a small in-memory cache.
+
+    This is the unified function replacing:
+    - fetch_restaurant_data()
+    - get_data()
+    - get_all_data()
+
+    Args:
+        seed_value: Seed value for deterministic selection
+        count: Number of items to fetch
+
+    Returns:
+        list[dict] of normalized restaurants
+    """
+    from .main import FRONTEND_PORT_INDEX, autodining_project
 
     cache_key = (seed_value, count)
     if cache_key in _RESTAURANT_DATA_CACHE:
         return _RESTAURANT_DATA_CACHE[cache_key]
 
-    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{dining_project.id}"
+    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{autodining_project.id}"
 
     try:
         items = await load_dataset_data(
-            backend_url=dining_project.backend_url,
+            backend_url=autodining_project.backend_url,
             project_key=project_key,
             entity_type="restaurants",
             seed_value=seed_value if seed_value is not None else 0,
@@ -56,14 +70,3 @@ async def fetch_restaurant_data(seed_value: int | None = None, count: int = 50) 
     except Exception as exc:  # pragma: no cover - best effort
         logger.error(f"Failed to fetch restaurant data from API: {exc}")
     return []
-
-
-async def get_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
-    """Main data loader function for autodining_4."""
-    return await fetch_restaurant_data(seed_value=seed_value, count=count)
-
-
-async def get_all_data(seed_value: int | None = None, count: int = 50) -> dict[str, list[dict]]:
-    """Load complete dataset for this project."""
-    restaurants = await get_data(seed_value=seed_value, count=count)
-    return {"restaurants": restaurants}

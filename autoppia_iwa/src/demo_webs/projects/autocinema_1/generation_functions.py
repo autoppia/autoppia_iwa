@@ -6,7 +6,7 @@ from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
-from .data_utils import get_all_data
+from .data_utils import fetch_data
 
 
 def generate_registration_constraints(dataset: list[dict]):
@@ -63,7 +63,8 @@ async def generate_search_film_constraints(task_url: str | None = None, dataset:
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        films = await fetch_data(seed_value=seed)
+        dataset = {"films": films}
 
     films = dataset.get("films", []) if dataset else []
     if not films:
@@ -91,7 +92,8 @@ async def generate_film_constraints(task_url: str | None = None, dataset: dict[s
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        films = await fetch_data(seed_value=seed)
+        dataset = {"films": films}
 
     films = dataset.get("films", []) if dataset else []
     if not films:
@@ -201,7 +203,8 @@ async def generate_film_filter_constraints(task_url: str | None = None, dataset:
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        films = await fetch_data(seed_value=seed)
+        dataset = {"films": films}
 
     films = dataset.get("films", []) if dataset else []
     if not films:
@@ -520,7 +523,8 @@ async def generate_add_comment_constraints(task_url: str | None = None, dataset:
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        films = await fetch_data(seed_value=seed)
+        dataset = {"films": films}
 
     films = dataset.get("films", []) if dataset else []
     if not films:
@@ -613,7 +617,8 @@ async def generate_edit_film_constraints(task_url: str | None = None, dataset: d
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        films = await fetch_data(seed_value=seed)
+        dataset = {"films": films}
 
     films = dataset.get("films", []) if dataset else []
     if not films:

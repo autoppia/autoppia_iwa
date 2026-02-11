@@ -56,14 +56,24 @@ SOTA_AGENTS = [
     # CLAUDE_CUA_AGENT,
 ]
 
+<<<<<<< HEAD
 # Active agents to run. Simple agent (Flask /solve_task) on port 7000.
 AGENTS = [
     ApifiedWebAgent(host="localhost", port=7000, id="simple", name="SimpleAgent", timeout=120),
+=======
+# Active agents to run.
+AGENTS = [
+    ApifiedWebAgent(base_url="http://localhost:5000", id="1", name="LocalAgent"),
+>>>>>>> origin/main
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
+<<<<<<< HEAD
     "autohealth"
+=======
+    "autohealth",
+>>>>>>> origin/main
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 USE_CASES = [
@@ -118,7 +128,7 @@ CFG = BenchmarkConfig(
     # Tasks
     prompts_per_use_case=4,
     # use_cases=None means all use-cases
-    use_cases=USE_CASES,
+    use_cases=None,
     # Execution
     runs=1,  # single run is enough for this fixed agent
     max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
@@ -180,11 +190,8 @@ def main():
             logger.error("No agents configured in AGENTS.")
             return
 
-        logger.info(
-            f"Configuration: {len(CFG.projects)} projects, {len(CFG.agents)} agents, "
-            f"{CFG.runs} runs, evaluator_mode={CFG.evaluator_mode}"
-        )
-        
+        logger.info(f"Configuration: {len(CFG.projects)} projects, {len(CFG.agents)} agents, {CFG.runs} runs, evaluator_mode={CFG.evaluator_mode}")
+
         if CFG.evaluator_mode == "stateful":
             logger.info(f"Stateful mode enabled: max {CFG.max_steps_per_task} steps per task")
 

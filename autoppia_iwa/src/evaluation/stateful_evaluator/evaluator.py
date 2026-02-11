@@ -9,9 +9,10 @@ This module provides:
 """
 
 import asyncio
+import contextlib
 import os
 from dataclasses import dataclass
-from typing import Any, List, Optional
+from typing import Any
 
 from loguru import logger
 from playwright.async_api import async_playwright
@@ -41,14 +42,14 @@ class ScoreDetails:
 class BrowserSnapshot:
     html: str
     url: str
-    screenshot: Optional[bytes] = None
+    screenshot: bytes | None = None
 
 
 @dataclass
 class StepResult:
     score: ScoreDetails
     snapshot: BrowserSnapshot
-    action_result: Optional[ActionExecutionResult] = None
+    action_result: ActionExecutionResult | None = None
 
 
 @dataclass
@@ -72,7 +73,7 @@ class AsyncStatefulEvaluator(AsyncWebCUASession):
         web_agent_id: str = "autoppia-rl-env",
         should_record_gif: bool = False,
         capture_screenshot: bool = False,
-        config: Optional[EvaluatorConfig] = None,
+        config: EvaluatorConfig | None = None,
     ) -> None:
         self.task = task
         self.web_agent_id = web_agent_id
@@ -84,10 +85,10 @@ class AsyncStatefulEvaluator(AsyncWebCUASession):
         self._browser = None
         self._context = None
         self._page = None
-        self._backend: Optional[BackendDemoWebService] = None
-        self._project: Optional[WebProject] = None
-        self._executor: Optional[PlaywrightBrowserExecutor] = None
-        self._history: List[ActionExecutionResult] = []
+        self._backend: BackendDemoWebService | None = None
+        self._project: WebProject | None = None
+        self._executor: PlaywrightBrowserExecutor | None = None
+        self._history: list[ActionExecutionResult] = []
 
     async def reset(self) -> StepResult:
         logger.info("[AsyncStatefulEvaluator] reset start")
@@ -110,7 +111,7 @@ class AsyncStatefulEvaluator(AsyncWebCUASession):
         snapshot = await self._snapshot_async()
         return StepResult(score=score, snapshot=snapshot, action_result=res)
 
-    async def step(self, action: Optional[BaseAction]) -> StepResult:
+    async def step(self, action: BaseAction | None) -> StepResult:
         logger.info(
             "[AsyncStatefulEvaluator] step action={} i={}",
             type(action).__name__ if action is not None else "NOOP",
@@ -128,7 +129,7 @@ class AsyncStatefulEvaluator(AsyncWebCUASession):
         return await asyncio.wait_for(awaitable, timeout_s)
 
     async def _init_async(self) -> None:
-        project: Optional[WebProject] = None
+        project: WebProject | None = None
         try:
             if getattr(self.task, "web_project_id", None):
                 pid = str(self.task.web_project_id)
@@ -163,16 +164,14 @@ class AsyncStatefulEvaluator(AsyncWebCUASession):
                 "X-Validator-Id": validator_id,
             },
         )
-        try:
+        with contextlib.suppress(Exception):
             self._context.set_default_timeout(self.config.page_default_timeout_ms)
-        except Exception:
-            pass
         self._page = await self._context.new_page()
 
         self._executor = PlaywrightBrowserExecutor(specs, self._page, self._backend)
 
-    async def _step_async(self, action: Optional[BaseAction]) -> StepResult:
-        action_result: Optional[ActionExecutionResult] = None
+    async def _step_async(self, action: BaseAction | None) -> StepResult:
+        action_result: ActionExecutionResult | None = None
         if action is not None:
             if not self._executor:
                 raise RuntimeError("AsyncStatefulEvaluator: not initialized. Call reset() first.")
@@ -188,7 +187,7 @@ class AsyncStatefulEvaluator(AsyncWebCUASession):
                     ),
                     timeout=self.config.action_timeout_s,
                 )
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 logger.warning("[AsyncStatefulEvaluator] execute timeout")
                 action_result = ActionExecutionResult(
                     successfully_executed=False,
@@ -263,7 +262,7 @@ class AsyncStatefulEvaluator(AsyncWebCUASession):
         return self._page
 
     @property
-    def history(self) -> List[ActionExecutionResult]:
+    def history(self) -> list[ActionExecutionResult]:
         return list(self._history)
 
 
@@ -278,7 +277,7 @@ class StatefulEvaluator(SyncWebCUASession):
         web_agent_id: str = "autoppia-rl-env",
         should_record_gif: bool = False,
         capture_screenshot: bool = False,
-        config: Optional[EvaluatorConfig] = None,
+        config: EvaluatorConfig | None = None,
     ) -> None:
         self._async = AsyncStatefulEvaluator(
             task=task,
@@ -287,9 +286,9 @@ class StatefulEvaluator(SyncWebCUASession):
             capture_screenshot=capture_screenshot,
             config=config,
         )
-        self._loop: Optional[asyncio.AbstractEventLoop] = None
+        self._loop: asyncio.AbstractEventLoop | None = None
 
-    def __enter__(self) -> "StatefulEvaluator":
+    def __enter__(self) -> StatefulEvaluator:
         return self
 
     def __exit__(self, exc_type, exc, tb) -> None:
@@ -312,7 +311,7 @@ class StatefulEvaluator(SyncWebCUASession):
         logger.info("[StatefulEvaluator] reset start")
         return self._run(self._async.reset())
 
-    def step(self, action: Optional[BaseAction]) -> StepResult:
+    def step(self, action: BaseAction | None) -> StepResult:
         self._ensure_loop()
         logger.info(
             "[StatefulEvaluator] step action={} i={}",
@@ -337,10 +336,8 @@ class StatefulEvaluator(SyncWebCUASession):
         try:
             self._run(self._async.close())
         finally:
-            try:
+            with contextlib.suppress(Exception):
                 self._loop.close()
-            except Exception:
-                pass
             self._loop = None
 
     @property
@@ -348,15 +345,15 @@ class StatefulEvaluator(SyncWebCUASession):
         return self._async.page
 
     @property
-    def history(self) -> List[ActionExecutionResult]:
+    def history(self) -> list[ActionExecutionResult]:
         return self._async.history
 
 
 __all__ = [
     "AsyncStatefulEvaluator",
-    "StatefulEvaluator",
-    "ScoreDetails",
     "BrowserSnapshot",
-    "StepResult",
     "EvaluatorConfig",
+    "ScoreDetails",
+    "StatefulEvaluator",
+    "StepResult",
 ]

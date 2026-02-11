@@ -12,10 +12,11 @@ Luego, en run_stateful.py configura:
     ]
 """
 
+from typing import Any
+
+import uvicorn
 from fastapi import FastAPI
 from pydantic import BaseModel
-from typing import List, Dict, Any
-import uvicorn
 
 app = FastAPI()
 
@@ -36,10 +37,10 @@ async def health():
 
 
 @app.post("/act")
-async def act(request: ActRequest) -> Dict[str, List[Dict[str, Any]]]:
+async def act(request: ActRequest) -> dict[str, list[dict[str, Any]]]:
     """
     Endpoint /act que recibe el estado del browser y devuelve acciones.
-    
+
     Este es un ejemplo simple que siempre devuelve una acción de navegación.
     En un agente real, aquí iría tu lógica de decisión basada en:
     - request.prompt: La tarea a realizar
@@ -47,14 +48,14 @@ async def act(request: ActRequest) -> Dict[str, List[Dict[str, Any]]]:
     - request.url: La URL actual
     - request.step_index: El número de iteración
     """
-    
-    print(f"\n{'='*80}")
+
+    print(f"\n{'=' * 80}")
     print(f"[ACT] Step {request.step_index}")
     print(f"  Task: {request.prompt}")
     print(f"  URL: {request.url}")
     print(f"  HTML length: {len(request.snapshot_html)} chars")
-    print(f"{'='*80}\n")
-    
+    print(f"{'=' * 80}\n")
+
     # Ejemplo simple: devolver una acción de navegación
     # En un agente real, analizarías el HTML y decidirías qué hacer
     actions = [
@@ -63,7 +64,7 @@ async def act(request: ActRequest) -> Dict[str, List[Dict[str, Any]]]:
             "url": request.url,
         }
     ]
-    
+
     # Puedes devolver múltiples acciones (se ejecutan en batch)
     # actions = [
     #     {"type": "ClickAction", "selector": "#login"},
@@ -71,23 +72,23 @@ async def act(request: ActRequest) -> Dict[str, List[Dict[str, Any]]]:
     #     {"type": "TypeAction", "selector": "#password", "text": "pass"},
     #     {"type": "ClickAction", "selector": "#submit"},
     # ]
-    
+
     return {"actions": actions}
 
 
 if __name__ == "__main__":
-    print("="*80)
+    print("=" * 80)
     print("🚀 Iniciando agente HTTP de ejemplo")
-    print("="*80)
+    print("=" * 80)
     print("El agente estará disponible en: http://localhost:5000")
     print("Endpoints:")
     print("  - GET  /health  → Health check")
     print("  - POST /act     → Recibe estado y devuelve acciones")
-    print("="*80)
+    print("=" * 80)
     print("\nPara usar este agente en el benchmark, configura en run_stateful.py:")
-    print('  AGENTS = [')
+    print("  AGENTS = [")
     print('      ApifiedWebCUA(base_url="http://localhost:5000", id="1", name="ExampleAgent"),')
-    print('  ]')
-    print("="*80)
-    
+    print("  ]")
+    print("=" * 80)
+
     uvicorn.run(app, host="0.0.0.0", port=5000, log_level="info")

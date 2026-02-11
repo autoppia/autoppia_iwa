@@ -19,7 +19,7 @@ from .data import (
     FIELD_OPERATORS_MAP_SELECT_DATE,
     FIELD_OPERATORS_MAP_SELECT_TIME,
 )
-from .data_utils import get_all_data
+from .data_utils import fetch_data
 
 
 async def _ensure_drive_dataset(
@@ -29,16 +29,32 @@ async def _ensure_drive_dataset(
     entity_type: str,
     method: str | None = None,
     filter_key: str | None = None,
-) -> list[dict[str, Any]]:
-    """Extract entity data from the pre-loaded dataset, or fetch from server if not available."""
-    # Fetch data if dataset is not provided or is empty
-    if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+) -> dict[str, list[dict[str, Any]]]:
+    """
+    Extract entity data from the pre-loaded dataset, or fetch from server if not available.
 
+    Dynamically fetches only the requested entity_type using the provided method and filter_key.
+    Returns a dictionary with entity_type as the key.
+    """
+    # If dataset is provided and contains the requested entity, return it in the expected format
     if dataset and entity_type in dataset:
-        return dataset[entity_type]
-    return []
+        return {entity_type: dataset[entity_type]}
+
+    # Otherwise, fetch the specific entity type dynamically using the provided parameters
+    seed = get_seed_from_url(task_url) if task_url else None
+    # Normalize empty strings to None for method and filter_key
+    normalized_method = method if method and method.strip() else None
+    normalized_filter_key = filter_key if filter_key and filter_key.strip() else None
+
+    fetched_dataset = await fetch_data(
+        entity_type=entity_type,
+        method=normalized_method if normalized_method else "select",
+        filter_key=normalized_filter_key,
+        seed_value=seed,
+    )
+
+    # Return as dictionary with entity_type as key
+    return {entity_type: fetched_dataset}
 
 
 def _generate_constraint_value(
@@ -255,7 +271,8 @@ def _generate_constraints(
 async def generate_enter_location_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     field_map = {"location": "label"}
     field_operators = FIELD_OPERATORS_MAP_ENTER_LOCATION
-    dataset = await _ensure_drive_dataset(task_url, dataset, entity_type="places")
+    dataset_dict = await _ensure_drive_dataset(task_url, dataset, entity_type="places")
+    dataset = dataset_dict.get("places", [])
     constraints_list = _generate_constraints(dataset, field_operators, field_map=field_map)
     return constraints_list
 
@@ -263,13 +280,15 @@ async def generate_enter_location_constraints(task_url: str | None = None, datas
 async def generate_enter_destination_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     field_map = {"destination": "label"}
     field_operators = FIELD_OPERATORS_MAP_ENTER_DESTINATION
-    dataset = await _ensure_drive_dataset(task_url, dataset, entity_type="places")
+    dataset_dict = await _ensure_drive_dataset(task_url, dataset, entity_type="places")
+    dataset = dataset_dict.get("places", [])
     constraints_list = _generate_constraints(dataset, field_operators, field_map=field_map)
     return constraints_list
 
 
 async def generate_see_prices_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    dataset = await _ensure_drive_dataset(task_url, dataset, entity_type="places")
+    dataset_dict = await _ensure_drive_dataset(task_url, dataset, entity_type="places")
+    dataset = dataset_dict.get("places", [])
     field_mapping = {
         "location": {"field": "label", "dataset": dataset},
         "destination": {"field": "label", "dataset": dataset},
@@ -409,7 +428,8 @@ def _create_scheduled_constraint(field, ops):
 
 async def generate_search_ride_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     field_ops = FIELD_OPERATORS_MAP_SEARCH_RIDE
-    dataset = await _ensure_drive_dataset(task_url, dataset, entity_type="places")
+    dataset_dict = await _ensure_drive_dataset(task_url, dataset, entity_type="places")
+    dataset = dataset_dict.get("places", [])
 
     field_map = {
         "location": {"field": "label", "dataset": dataset},
@@ -433,8 +453,10 @@ async def generate_select_car_constraints(task_url: str | None = None, dataset: 
     if isinstance(dataset, dict):
         places_data = dataset.get("places")
         rides_data = dataset.get("rides")
-    places_data = await _ensure_drive_dataset(task_url, places_data, entity_type="places")
-    rides_data = await _ensure_drive_dataset(task_url, rides_data, entity_type="rides")
+    places_data_dict = await _ensure_drive_dataset(task_url, places_data, entity_type="places")
+    places_data = places_data_dict.get("places", [])
+    rides_data_dict = await _ensure_drive_dataset(task_url, rides_data, entity_type="rides")
+    rides_data = rides_data_dict.get("rides", [])
     field_map = {
         "location": "label",
         "destination": "label",

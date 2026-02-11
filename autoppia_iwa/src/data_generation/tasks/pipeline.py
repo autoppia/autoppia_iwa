@@ -73,12 +73,6 @@ class TaskGenerationPipeline:
             tasks_with_tests = await self.global_test_pipeline.add_tests_to_tasks(tasks)
             all_tasks.extend(tasks_with_tests)
 
-            # Apply final task limit if configured
-            if self.task_config.final_task_limit and len(all_tasks) > self.task_config.final_task_limit:
-                random.shuffle(all_tasks)
-                all_tasks = all_tasks[: self.task_config.final_task_limit]
-                _log_task_generation(f"Applied final task limit: {len(all_tasks)} tasks", context="LIMIT")
-
             # Log completion
             total_time = (datetime.now() - start_time).total_seconds()
             _log_task_generation(f"Task generation completed in {total_time:.2f} seconds. Generated {len(all_tasks)} tasks.")
