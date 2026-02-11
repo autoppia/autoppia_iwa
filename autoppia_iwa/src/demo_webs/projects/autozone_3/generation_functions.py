@@ -67,6 +67,7 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
                     except (ValueError, TypeError):
                         source_value = None  # Invalid source value for int field
         elif field == "query":
+            source_value = product_data_source.get("title")
             all_terms_list = []
             for p in all_products_data:
                 all_terms_list.extend(str(p.get("title", "")).split())
@@ -216,7 +217,8 @@ async def generate_search_query_constraints(task_url: str | None = None, dataset
     op = random.choice(query_operators)
     # Pass a mock product_data_source even if not directly used, as generate_constraint_value expects it
     data_items = await _ensure_products_dataset(task_url, dataset)
-    constraint_value = generate_constraint_value("query", op, {}, all_products_data=data_items)
+    product = random.choice(data_items)
+    constraint_value = generate_constraint_value("query", op, product, all_products_data=data_items)
     if constraint_value is not None:
         constraints_list.append(create_constraint_dict("query", op, constraint_value))
 
@@ -338,6 +340,8 @@ def generate_carousel_scroll_constraints() -> list[dict[str, Any]]:
 
     direction_operators = [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]
     title_operators = [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]
+    if "direction" not in selected_fields:
+        selected_fields.append("direction")
 
     for field in selected_fields:
         if field == "direction":
