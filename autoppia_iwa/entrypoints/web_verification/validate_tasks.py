@@ -6,7 +6,7 @@ from autoppia_iwa.config.config import PROJECT_BASE_DIR
 VERIFICATION_DIR = PROJECT_BASE_DIR.parent / "verification_results"
 
 PROJECT_IDS = [
-    "autohealth",
+    "autocinema",
 ]
 
 async def validate_operator_with_llm(prompt, constraint, llm_service):
@@ -17,16 +17,19 @@ async def validate_operator_with_llm(prompt, constraint, llm_service):
     system_prompt = (
         "You are a validation expert. Your task is to verify if a natural language prompt "
         "accurately represents a specific constraint, especially the semantic meaning of the operator.\n\n"
+        "KEY PRINCIPLE: FOCUS ON SEMANTIC MEANING, NOT EXACT WORDING.\n"
+        "Auxiliary verbs (is, was, should be) and formatting are IRRELEVANT.\n\n"
         "Common operators and their meanings:\n"
-        "- equals: refers to an exact match (e.g., 'name is X', 'set name to X')\n"
-        "- not_equals: excludes the value (e.g., 'name is NOT X', 'other than X')\n"
-        "- contains: value is part of the field (e.g., 'name includes X', 'name has X')\n"
-        "- not_contains: value is NOT part of the field (e.g., 'not containing X', 'excluding X')\n"
-        "- greater_than/less_than: numeric comparisons\n\n"
+        "- equals: refers to an exact match (e.g., 'name is X', 'set name to X', 'using name X')\n"
+        "- not_equals: excludes the value (e.g., 'name is NOT X', 'name NOT X', 'other than X', 'different from X')\n"
+        "- contains: value is part of the field (e.g., 'name includes X', 'name has X', 'containing X')\n"
+        "- not_contains: value is NOT part of the field (e.g., 'not containing X', 'excluding X', 'without X')\n"
+        "- greater_than/less_than: numeric comparisons (e.g., 'above', 'under', 'more than')\n"
+        "- greater_equal/less_equal: (e.g., 'at least', 'at most', 'minimum', 'maximum')\n\n"
         "Respond strictly in JSON format:\n"
         "{\n"
         "  \"valid\": boolean,\n"
-        "  \"reason\": \"A short explanation of why the operator is correctly or incorrectly represented\"\n"
+        "  \"reason\": \"A short explanation of why the operator is correctly or incorrectly represented. Be lenient with natural language phrasing if the meaning is clear.\"\n"
         "}"
     )
     
