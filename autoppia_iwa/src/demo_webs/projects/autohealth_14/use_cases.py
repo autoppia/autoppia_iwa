@@ -163,7 +163,7 @@ SEARCH_PRESCRIPTION_USE_CASE = UseCase(
     event=SearchPrescriptionEvent,
     event_source_code=SearchPrescriptionEvent.get_source_code_of_class(),
     constraints_generator=generate_search_prescription_constraints,
-    additional_prompt_info="Use format: 'Search prescriptions where field operator value'. Always mention each constraint field explicitly (medicine_name, doctor_name).",
+    additional_prompt_info="Use format: 'Search prescriptions where field operator value'. Always mention each constraint field explicitly (medicine_name, doctor_name). WARNING: Do not correct typos in values.",
     examples=[
         {
             "prompt": "Search prescriptions where medicine_name equals 'Atorvastatin'",
@@ -386,6 +386,8 @@ Correct:
 "Contact a doctor where doctor_name equals 'Dr. Alice Thompson' and speciality equals 'Cardiology' and rating equals '4.8'."
 Incorrect:
 "Retrieve doctor 'Dr. Alice Thompson' and speciality equals 'Cardiology'."
+
+4. CRITICAL: Copy the constraint values EXACTLY as provided. Do NOT correct typos or remove numbers. (e.g., if constraint is 'Rodriguez 78', write 'Rodriguez 78', NOT 'Rodriguez').
 """.strip()
 CONTACT_DOCTOR_USE_CASE = UseCase(
     name="CONTACT_DOCTOR",
@@ -487,9 +489,10 @@ FILTER_DOCTOR_REVIEWS_USE_CASE = UseCase(
     ],
 )
 ALL_USE_CASES = [
-<<<<<<< HEAD
     OPEN_APPOINTMENT_FORM_USE_CASE,
+    BOOK_APPOINTMENT_USE_CASE,
     APPOINTMENT_BOOKED_SUCCESSFULLY_USE_CASE,
+    CANCEL_BOOK_APPOINTMENT_USE_CASE,
     REQUEST_QUICK_APPOINTMENT_USE_CASE,
     SEARCH_APPOINTMENT_USE_CASE,
     SEARCH_DOCTORS_USE_CASE,
@@ -497,24 +500,15 @@ ALL_USE_CASES = [
     SEARCH_MEDICAL_ANALYSIS_USE_CASE,
     VIEW_MEDICAL_ANALYSIS_USE_CASE,
     VIEW_PRESCRIPTION_USE_CASE,
-    VIEW_DOCTOR_PROFILE_USE_CASE,
-    VIEW_DOCTOR_EDUCATION_USE_CASE,
-    VIEW_DOCTOR_AVAILABILITY_USE_CASE,
-    FILTER_DOCTOR_REVIEWS_USE_CASE,
-    OPEN_CONTACT_DOCTOR_FORM_USE_CASE,
-    CONTACT_DOCTOR_USE_CASE,
-    REFILL_PRESCRIPTION_USE_CASE,
-    DOCTOR_CONTACTED_SUCCESSFULLY_USE_CASE,
-=======
-    BOOK_APPOINTMENT_USE_CASE,
-    APPOINTMENT_BOOKED_SUCCESSFULLY_USE_CASE,
-    CANCEL_BOOK_APPOINTMENT_USE_CASE,
-    VIEW_PRESCRIPTION_USE_CASE,
     FILTER_BY_SPECIALITY_USE_CASE,
     REFILL_PRESCRIPTION_USE_CASE,
     VIEW_HEALTH_METRICS_USE_CASE,
     FILTER_BY_CATEGORY_USE_CASE,
     VIEW_DOCTOR_PROFILE_USE_CASE,
+    VIEW_DOCTOR_EDUCATION_USE_CASE,
+    VIEW_DOCTOR_AVAILABILITY_USE_CASE,
+    FILTER_DOCTOR_REVIEWS_USE_CASE,
+    OPEN_CONTACT_DOCTOR_FORM_USE_CASE,
     CONTACT_DOCTOR_USE_CASE,
     DOCTOR_CONTACTED_SUCCESSFULLY_USE_CASE,
     CANCEL_CONTACT_DOCTOR_USE_CASE,
@@ -522,5 +516,4 @@ ALL_USE_CASES = [
     FILTER_REVIEWS_USE_CASE,
     SORT_REVIEWS_USE_CASE,
     CANCEL_VIEW_REVIEWS_USE_CASE,
->>>>>>> origin/main
 ]

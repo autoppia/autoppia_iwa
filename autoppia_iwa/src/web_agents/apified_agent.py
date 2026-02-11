@@ -1,10 +1,6 @@
 import asyncio
 import ipaddress
-<<<<<<< HEAD
 from typing import Any, Dict, List, Optional
-=======
-from typing import Any
->>>>>>> origin/main
 from urllib.parse import urlparse, urlunparse
 
 import aiohttp
@@ -61,43 +57,6 @@ class ApifiedWebAgent(IWebAgent):
             # Subsequent calls: return empty list (all actions already returned)
             return []
 
-    async def act(
-        self,
-        *,
-        task: Task,
-        snapshot_html: str,
-        url: str,
-        step_index: int,
-        history: Optional[List[Dict[str, Any]]] = None,
-    ) -> List[BaseAction]:
-        """
-        Used by the benchmark. In concurrent mode (single call, step_index 0) calls
-        the remote /solve_task and returns the action list; otherwise returns [].
-        """
-        if step_index != 0:
-            return []
-        timeout = aiohttp.ClientTimeout(total=self.timeout)
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            try:
-                payload = task.clean_task()
-                payload["url"] = self._force_localhost(payload.get("url") or url)
-                async with session.post(f"{self.base_url}/solve_task", json=payload) as response:
-                    response.raise_for_status()
-                    response_json = await response.json()
-            except Exception:
-                return []
-            actions_data = response_json.get("actions", [])
-            for action in actions_data:
-                if isinstance(action, dict) and action.get("type") in {"NavigateAction", "navigate"}:
-                    action["url"] = self._rewrite_to_remote(action.get("url"))
-            result: List[BaseAction] = []
-            for a in actions_data:
-                if not isinstance(a, dict):
-                    continue
-                built = self._create_action(a)
-                if built is not None:
-                    result.append(built)
-            return result
 
     def _create_action(self, raw: dict) -> Optional[BaseAction]:
         """Build one BaseAction from dict; rewrite NavigateAction URL."""

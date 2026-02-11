@@ -289,15 +289,9 @@ class SimpleTaskGenerator:
         For multi-entity projects, fetches all entity types and combines them.
         """
         try:
-<<<<<<< HEAD
-            # Find project directory using glob (parents[3] = src; demo_webs/projects is under src)
-            projects_base = Path(__file__).resolve().parents[3] / "demo_webs" / "projects"
-            matching_dirs = list(projects_base.glob(f"{self.web_project.id}_*"))
-=======
             # Use the same method as _get_project_module_name to find the project directory
             # This ensures consistency and handles the path correctly
             project_dir = self._get_project_module_name()
->>>>>>> origin/main
 
             if not project_dir:
                 logger.debug(f"No project directory found for {self.web_project.id}")

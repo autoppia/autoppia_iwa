@@ -56,24 +56,14 @@ SOTA_AGENTS = [
     # CLAUDE_CUA_AGENT,
 ]
 
-<<<<<<< HEAD
 # Active agents to run. Simple agent (Flask /solve_task) on port 7000.
 AGENTS = [
     ApifiedWebAgent(host="localhost", port=7000, id="simple", name="SimpleAgent", timeout=120),
-=======
-# Active agents to run.
-AGENTS = [
-    ApifiedWebAgent(base_url="http://localhost:5000", id="1", name="LocalAgent"),
->>>>>>> origin/main
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
-<<<<<<< HEAD
-    "autohealth"
-=======
     "autohealth",
->>>>>>> origin/main
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 USE_CASES = [

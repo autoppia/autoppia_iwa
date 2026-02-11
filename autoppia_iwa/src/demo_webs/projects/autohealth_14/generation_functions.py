@@ -45,14 +45,6 @@ from .data_utils import (
 )
 
 
-<<<<<<< HEAD
-async def _ensure_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> dict:
-    """Fetch full dataset if not provided or empty. Single source of truth for data loading."""
-    if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url) if task_url else None
-        return await get_all_data(seed_value=seed) or {}
-    return dataset
-=======
 async def _ensure_entity_dataset(
     task_url: str | None,
     dataset: dict[str, list[dict[str, Any]]] | None,
@@ -86,66 +78,41 @@ async def _ensure_entity_dataset(
 
     # Return as dictionary with entity_type as key
     return {entity_type: fetched_dataset}
->>>>>>> origin/main
 
 
 async def _get_appointments_data(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict]:
     """Extract appointments data from the pre-loaded dataset, or fetch from server if not available."""
-<<<<<<< HEAD
-    data = await _ensure_dataset(task_url, dataset)
-    if data and "appointments" in data:
-        return transform_appointments_to_modified(data["appointments"])
-=======
     dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="appointments")
     appointments = dataset_dict.get("appointments", [])
     if appointments:
         return transform_appointments_to_modified(appointments)
->>>>>>> origin/main
     return []
 
 
 async def _get_doctors_data(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict]:
     """Extract doctors data from the pre-loaded dataset, or fetch from server if not available."""
-<<<<<<< HEAD
-    data = await _ensure_dataset(task_url, dataset)
-    if data and "doctors" in data:
-        return transform_doctors_to_modified(data["doctors"])
-=======
     dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="doctors")
     doctors = dataset_dict.get("doctors", [])
     if doctors:
         return transform_doctors_to_modified(doctors)
->>>>>>> origin/main
     return []
 
 
 async def _get_prescriptions_data(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict]:
     """Extract prescriptions data from the pre-loaded dataset, or fetch from server if not available."""
-<<<<<<< HEAD
-    data = await _ensure_dataset(task_url, dataset)
-    if data and "prescriptions" in data:
-        return transform_prescriptions_to_modified(data["prescriptions"])
-=======
     dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="prescriptions")
     prescriptions = dataset_dict.get("prescriptions", [])
     if prescriptions:
         return transform_prescriptions_to_modified(prescriptions)
->>>>>>> origin/main
     return []
 
 
 async def _get_medical_records_data(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict]:
     """Extract medical records data from the pre-loaded dataset, or fetch from server if not available."""
-<<<<<<< HEAD
-    data = await _ensure_dataset(task_url, dataset)
-    if data and "medical-records" in data:
-        return transform_medical_records_to_modified(data["medical-records"])
-=======
     dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="medical-records")
     medical_records = dataset_dict.get("medical-records", [])
     if medical_records:
         return transform_medical_records_to_modified(medical_records)
->>>>>>> origin/main
     return []
 
 
