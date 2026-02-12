@@ -11,10 +11,4 @@ autodining_project = WebProject(
     backend_url="${AUTOPPIA_BACKEND_URL:-http://localhost:8090}/",
     events=EVENTS,
     use_cases=ALL_USE_CASES,
-    relevant_data={
-        "summary": "Restaurant reservation marketplace with dynamic menus and booking flow.",
-        "owner": "autoppia-core",
-        "contact": "deck@autoppia.com",
-        "seed_notes": "Use ?seed=<id> to vary restaurant data, menus, and booking availability.",
-    },
 )
