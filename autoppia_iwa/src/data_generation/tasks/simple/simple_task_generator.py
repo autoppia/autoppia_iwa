@@ -485,6 +485,10 @@ class SimpleTaskGenerator:
 
         messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": llm_prompt}]
 
+        # Print temperature being used for task generation
+        task_gen_temp = self.llm_service.config.temperature if hasattr(self.llm_service, "config") else "unknown"
+        print(f"🌡️  Task Generation: Calling LLM with temperature={task_gen_temp}")
+
         for attempt in range(self.max_retries):
             try:
                 resp_text = await self.llm_service.async_predict(messages=messages, json_format=True)
@@ -526,6 +530,10 @@ class SimpleTaskGenerator:
 
         system_prompt = "You are a helpful assistant that generates user tasks as a list of strings."
         messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": llm_prompt}]
+
+        # Print temperature being used for task generation
+        task_gen_temp = self.llm_service.config.temperature if hasattr(self.llm_service, "config") else "unknown"
+        print(f"🌡️  Task Generation: Calling LLM with temperature={task_gen_temp}")
 
         for attempt in range(max_retries):
             try:

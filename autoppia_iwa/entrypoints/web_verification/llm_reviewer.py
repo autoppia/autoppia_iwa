@@ -18,6 +18,7 @@ class LLMReviewer:
         self,
         llm_service: ILLM,
         timeout_seconds: float = 30.0,
+        temperature: float = 0.0,
     ):
         """
         Initialize LLM Reviewer
@@ -25,8 +26,10 @@ class LLMReviewer:
         Args:
             llm_service: LLM service instance
             timeout_seconds: Timeout for LLM requests
+            temperature: Temperature for LLM calls (default 0.0 for deterministic QA validation)
         """
         self.llm_service = llm_service
+        self.temperature = temperature
         self.timeout_seconds = timeout_seconds
 
     async def review_task_and_constraints(self, task: Task) -> dict[str, Any]:
@@ -76,14 +79,15 @@ class LLMReviewer:
                 "skipped": True,  # Indicate that review was skipped
             }
 
-        # Build the review prompt
         system_prompt = (
             "You are a QA validator that checks whether a task prompt correctly represents a set of constraints.\n\n"
             "Your ONLY responsibility is to verify, for EACH constraint, whether the task prompt correctly represents:\n\n"
             "1. FIELD\n"
             "    - The field associated with each constraint must be represented in the prompt.\n"
             "    - The field may be expressed explicitly (e.g., 'year') or implicitly via natural language that clearly refers to the field (e.g., 'not released in 2022' → 'year').\n"
-            "    - Fields should NOT be inferred or substituted ambiguously. Only clear semantic references are valid.\n\n"
+            "    - Fields should NOT be inferred or substituted ambiguously. Only clear semantic references are valid.\n"
+            "    - For numeric or date fields, natural language expressions like 'after 1866', 'from 1866 or later', or 'up to 13.99' are acceptable if they clearly convey the same operator and value.\n"
+            "    - For string/list fields, plural/singular forms or minor synonyms are allowed if they unambiguously represent the same value.\n"
             "2. OPERATOR\n"
             "   - The operator must be represented SEMANTICALLY.\n"
             "   - Natural language variations for each OPERATOR are allowed. So please double check them before making prediction.\n"
@@ -129,22 +133,22 @@ class LLMReviewer:
             "  The prompt states that the field is none of the exact listed values.\n\n"
             "Internal reasoning instructions:\n"
             "- For each task prompt, evaluate ALL constraints carefully before producing the output.\n"
+            "- First, read the entire task prompt carefully to understand how all constraints are represented collectively.\n"
+            "- Then, for each constraint, check if the FIELD, OPERATOR, and VALUE are represented somewhere in the prompt, allowing for natural language variations, semantic expressions, and formatting differences.\n"
+            "- Do not reject a constraint simply because it does not appear verbatim in the same order as listed; focus on whether the meaning is fully captured in the prompt.\n"
             "- Perform the following steps **internally** and do NOT include them in the output:\n"
-            "1. For each constraint, check the FIELD is explicitly or implicitly via natural language that clearly refers to the field mentioned in the prompt.\n"
+            "1. For each constraint, check the FIELD is explicitly or implicitly mentioned via natural language that clearly refers to the field in the prompt.\n"
+            "   - Accept variations in field formatting, such as underscores, spaces, hyphens, or camelCase, as long as the semantic meaning matches the constraint.\n"
             "2. Verify the OPERATOR is explicitly or semantically represented (natural language variations are allowed for all OPERATORS).\n"
-            "3. Verify the VALUE exactly matches the constraint (ignore quotation marks or formatting differences).\n"
+            "3. Verify the VALUE exactly matches the constraint (ignore quotation marks, formatting differences, or minor natural language phrasing).\n"
             "- Constraints may appear in a single sentence or across multiple sentences; ensure none are skipped.\n"
             "- Consider each constraint independently, but also check for combined expressions in the prompt.\n"
             "- Only after evaluating all constraints, produce the final JSON with the keys: valid, score, issues, reasoning.\n"
+            "- Ignore any extra information in the prompt unrelated to the listed constraints (style, verbosity, punctuation).\n"
             "Evaluation rules:\n"
             "- If ALL constraints satisfy FIELD, OPERATOR, and VALUE → valid=true, score=1.0\n"
             "- If ANY constraint fails → valid=false, score=0.0\n"
             "- No intermediate or partial scores are allowed.\n\n"
-            "Ignore completely:\n"
-            "- Quotation marks\n"
-            "- Formatting or punctuation\n"
-            "- Extra or unrelated information in the prompt\n"
-            "- Writing style or verbosity\n\n"
             "Respond ONLY in the following JSON format:\n"
             "{\n"
             '  "valid": boolean,\n'
@@ -176,9 +180,12 @@ class LLMReviewer:
         logger.debug(f"  System: {system_prompt[:200]}...")
         logger.debug(f"  User: {user_prompt[:500]}...")
 
+        # Print temperature being used for LLM reviewer
+        print(f"🌡️  LLM Reviewer: Calling LLM with temperature={self.temperature}")
+
         try:
             raw_response = await asyncio.wait_for(
-                self.llm_service.async_predict(messages=messages, json_format=True, return_raw=False),
+                self.llm_service.async_predict(messages=messages, json_format=True, return_raw=False, temperature=self.temperature),
                 timeout=self.timeout_seconds,
             )
 
@@ -392,7 +399,7 @@ class LLMReviewer:
         elif any(x in field_type.lower() for x in ["int", "float"]):
             # Check if it's a year/rating/count field
             if any(x in field_name.lower() for x in ["year", "rating", "price", "count", "duration", "quantity", "hour", "minute", "reviews", "bookings", "page"]):
-                return "[equals, not_equals, greater_than, less_than, greater_equal, less_equal, in_list, not_in_list]"
+                return "[equals, not_equals, greater_than, less_than, greater_equal, less_equal]"
             return "[equals, not_equals, greater_than, less_than, greater_equal, less_equal]"
 
         # Boolean fields

@@ -25,7 +25,7 @@ class OpenAIService(ILLM):
         self.sync_client = OpenAI(api_key=api_key)
         self.async_client = AsyncOpenAI(api_key=api_key)
 
-    def _prepare_payload(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None) -> dict:
+    def _prepare_payload(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None, temperature: float | None = None) -> dict:
         """
         Prepares the payload for OpenAI API requests.
         """
@@ -33,7 +33,7 @@ class OpenAIService(ILLM):
             "model": self.config.model,
             "messages": messages,
             "max_tokens": self.config.max_tokens,
-            "temperature": self.config.temperature,
+            "temperature": temperature if temperature is not None else self.config.temperature,
         }
         if json_format and schema:
             payload["response_format"] = {"type": "json_object"}
@@ -42,12 +42,12 @@ class OpenAIService(ILLM):
             payload["messages"] = messages
         return payload
 
-    def predict(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None, return_raw: bool = False) -> str:
+    def predict(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None, return_raw: bool = False, temperature: float | None = None) -> str:
         """
         Synchronous prediction using OpenAI's API.
         """
         try:
-            payload = self._prepare_payload(messages, json_format, schema)
+            payload = self._prepare_payload(messages, json_format, schema, temperature)
             response = self.sync_client.chat.completions.create(**payload)
             if return_raw:
                 return response
@@ -55,12 +55,12 @@ class OpenAIService(ILLM):
         except Exception as e:
             raise RuntimeError(f"OpenAI Sync Error: {e}") from e
 
-    async def async_predict(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None, return_raw: bool = False) -> str:
+    async def async_predict(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None, return_raw: bool = False, temperature: float | None = None) -> str:
         """
         Asynchronous prediction using OpenAI's API.
         """
         try:
-            payload = self._prepare_payload(messages, json_format, schema)
+            payload = self._prepare_payload(messages, json_format, schema, temperature)
             response = await self.async_client.chat.completions.create(**payload)
             if return_raw:
                 return response
@@ -83,13 +83,13 @@ class LocalLLMService(ILLM):
         self.config = config
         self.endpoint_url = endpoint_url
 
-    def _prepare_payload(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None) -> dict:
+    def _prepare_payload(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None, temperature: float | None = None) -> dict:
         """
         Prepares the payload for local LLM API requests.
         """
         payload = {
             "messages": messages,
-            "temperature": self.config.temperature,
+            "temperature": temperature if temperature is not None else self.config.temperature,
             "max_tokens": self.config.max_tokens,
         }
         if json_format:
@@ -98,7 +98,7 @@ class LocalLLMService(ILLM):
             payload["schema"] = schema
         return payload
 
-    def predict(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None, return_raw: bool = False) -> str:
+    def predict(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None, return_raw: bool = False, temperature: float | None = None) -> str:
         """
         Synchronous prediction using the local LLM endpoint.
         """
@@ -106,14 +106,14 @@ class LocalLLMService(ILLM):
             raise RuntimeError("httpx is required for LocalLLMService but is not installed.")
         try:
             with httpx.Client(timeout=180.0) as client:
-                payload = self._prepare_payload(messages, json_format, schema)
+                payload = self._prepare_payload(messages, json_format, schema, temperature)
                 response = client.post(self.endpoint_url, json=payload)
                 response.raise_for_status()
                 return response.json().get("output", "")
         except httpx.HTTPError as e:
             raise RuntimeError(f"Local LLM Sync Error: {e}") from e
 
-    async def async_predict(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None, return_raw: bool = False) -> str:
+    async def async_predict(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None, return_raw: bool = False, temperature: float | None = None) -> str:
         """
         Asynchronous prediction using the local LLM endpoint.
         """
@@ -121,7 +121,7 @@ class LocalLLMService(ILLM):
             raise RuntimeError("httpx is required for LocalLLMService but is not installed.")
         try:
             async with httpx.AsyncClient(timeout=120.0) as client:
-                payload = self._prepare_payload(messages, json_format, schema)
+                payload = self._prepare_payload(messages, json_format, schema, temperature)
                 response = await client.post(self.endpoint_url, json=payload)
                 response.raise_for_status()
                 return response.json().get("output", "")
@@ -146,12 +146,12 @@ class ChutesLLMService(ILLM):
         self.api_key = api_key
         self.use_bearer = use_bearer
 
-    def _prepare_payload(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None) -> dict:
+    def _prepare_payload(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None, temperature: float | None = None) -> dict:
         payload = {
             "model": self.config.model,
             "messages": list(messages),  # no mutar original
             "max_tokens": self.config.max_tokens,
-            "temperature": self.config.temperature,
+            "temperature": temperature if temperature is not None else self.config.temperature,
         }
         system_prompt = None
         for msg in list(messages):
@@ -187,7 +187,7 @@ class ChutesLLMService(ILLM):
         else:
             return {"X-API-Key": self.api_key, "Content-Type": "application/json"}
 
-    def predict(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None, return_raw: bool = False) -> str:
+    def predict(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None, return_raw: bool = False, temperature: float | None = None) -> str:
         """
         Synchronous prediction using Chutes API.
         """
@@ -196,7 +196,7 @@ class ChutesLLMService(ILLM):
         url = f"{self.base_url}/chat/completions"
         try:
             with httpx.Client(timeout=180.0) as client:
-                payload = self._prepare_payload(messages, json_format, schema)
+                payload = self._prepare_payload(messages, json_format, schema, temperature)
                 response = client.post(url, headers=self._headers(), json=payload)
                 response.raise_for_status()
                 data = response.json()
@@ -208,7 +208,7 @@ class ChutesLLMService(ILLM):
         except httpx.HTTPError as e:
             raise RuntimeError(f"Chutes LLM Sync Error: {e}") from e
 
-    async def async_predict(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None, return_raw: bool = False) -> str:
+    async def async_predict(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None, return_raw: bool = False, temperature: float | None = None) -> str:
         """
         Asynchronous prediction using Chutes API.
         """
@@ -217,7 +217,7 @@ class ChutesLLMService(ILLM):
         url = f"{self.base_url}/chat/completions"
         try:
             async with httpx.AsyncClient(timeout=120.0) as client:
-                payload = self._prepare_payload(messages, json_format, schema)
+                payload = self._prepare_payload(messages, json_format, schema, temperature)
                 response = await client.post(url, headers=self._headers(), json=payload)
                 response.raise_for_status()
                 data = response.json()

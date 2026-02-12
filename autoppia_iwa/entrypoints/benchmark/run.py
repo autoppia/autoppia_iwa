@@ -63,7 +63,7 @@ AGENTS = [
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
-    "autocinema",
+    "autocrm",
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 USE_CASES = [
@@ -116,7 +116,7 @@ CFG = BenchmarkConfig(
     # Evaluator mode
     evaluator_mode="concurrent",  # ← Agente genera lista completa de acciones
     # Tasks
-    prompts_per_use_case=1,
+    prompts_per_use_case=3,
     # use_cases=None means all use-cases
     use_cases=None,
     # Execution

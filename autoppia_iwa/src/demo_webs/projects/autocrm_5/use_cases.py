@@ -13,7 +13,6 @@ from .events import (
     DeleteMatter,
     DocumentDeleted,
     DocumentRenamedEvent,
-    DocumentUploaded,
     FilterClientsEvent,
     FilterMatterStatus,
     HelpViewedEvent,
@@ -38,7 +37,6 @@ from .generation_functions import (
     generate_delete_log_constraints,
     generate_document_deleted_constraints,
     generate_document_renamed_constraints,
-    generate_document_uploaded_constraints,
     generate_filter_clients_constraints,
     generate_filter_matter_status_constraints,
     generate_log_edited_constraints,
@@ -82,12 +80,12 @@ VIEW_MATTER_USE_CASE = UseCase(
             "prompt_for_task_generation": "View those matters for which the status is 'Active'",
         },
         {
-            "prompt": "View matter details for any of the following statuses: 'Active', 'On Hold'",
-            "prompt_for_task_generation": "View matter details for any of the following statuses: 'Active', 'On Hold'",
+            "prompt": "View matter details for matters with status 'Active'",
+            "prompt_for_task_generation": "View matter details for matters with status 'Active'",
         },
         {
-            "prompt": "View matter details excluding matters with status 'Archived' or 'On Hold'",
-            "prompt_for_task_generation": "View matter details excluding matters with status 'Archived' or 'On Hold'",
+            "prompt": "View matter details excluding matters with status 'Archived'",
+            "prompt_for_task_generation": "View matter details excluding matters with status 'Archived'",
         },
     ],
 )
@@ -124,10 +122,10 @@ ADD_NEW_MATTER_EXTRA_INFO = """
 Critical Requirements:
 1. Do not specify more than one constraint for the same field — name, status, or client — in a single request.
 
-✔️ CORRECT: Create a matter with the name 'New Matter', with client 'John Doe', and status that is NOT in the list ['Archived'].
-✔️ CORRECT: Create a matter with the name that is NOT 'Acquisition Deal', with client 'John Doe', and status that is NOT in the list ['Archived'].
-✔️ CORRECT: Create a matter with the name that is NOT 'Acquisition Deal', status that is NOT in the list ['Archived'], and client that does NOT contain 'Client'.
-❌ INCORRECT: Create a matter with the name 'New Matter' that is NOT 'Acquisition Deal', with client 'John Doe', and status that is NOT in the list ['Archived'], and where the client does NOT contain 'Confidential Client'. (Multiple constraints for the same fields)
+✔️ CORRECT: Create a matter with the name 'New Matter', with client 'John Doe', and status that is NOT equal to 'Archived'.
+✔️ CORRECT: Create a matter with the name that is NOT 'Acquisition Deal', with client 'John Doe', and status that is NOT equal to 'Archived'.
+✔️ CORRECT: Create a matter with the name that is NOT 'Acquisition Deal', status that is NOT equal to 'Archived', and client that does NOT contain 'Client'.
+❌ INCORRECT: Create a matter with the name 'New Matter' that is NOT 'Acquisition Deal', with client 'John Doe', and status that is NOT equal to 'Archived', and where the client does NOT contain 'Confidential Client'. (Multiple constraints for the same fields)
 """.strip()
 
 ADD_NEW_MATTER_USE_CASE = UseCase(
@@ -152,7 +150,12 @@ ADD_NEW_MATTER_USE_CASE = UseCase(
         },
     ],
 )
-
+ARCHIVE_MATTER_ADDITIONAL_PROMPT_INFO = """
+Critical requirements:
+1. The request must start with one of the following: "Archive the matter...".
+2. Do not mention a single constraint more than once in the request.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
+""".strip()
 
 ARCHIVE_MATTER_USE_CASE = UseCase(
     name="ARCHIVE_MATTER",
@@ -160,14 +163,15 @@ ARCHIVE_MATTER_USE_CASE = UseCase(
     event=ArchiveMatter,
     event_source_code=ArchiveMatter.get_source_code_of_class(),
     constraints_generator=generate_view_matter_constraints,
+    additional_prompt_info=ARCHIVE_MATTER_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Archive the matter whose status is set to 'Active'",
             "prompt_for_task_generation": "Archive the matter whose status is set to 'Active'",
         },
         {
-            "prompt": "Archive the matter where status is set to either 'Active' or 'On Hold'",
-            "prompt_for_task_generation": "Archive the matter where status is set to either 'Active' or 'On Hold'",
+            "prompt": "Archive the matter where status is set to 'Active'",
+            "prompt_for_task_generation": "Archive the matter where status is set to 'Active'",
         },
         {
             "prompt": "Archive the 'Estate Planning' matter if it was not updated 'Today'",
@@ -183,6 +187,12 @@ ARCHIVE_MATTER_USE_CASE = UseCase(
         },
     ],
 )
+DELETE_MATTER_ADDITIONAL_PROMPT_INFO = """
+Critical requirements:
+1. The request must start with one of the following: "Delete the matter...".
+2. Do not mention a single constraint more than once in the request.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
+""".strip()
 
 DELETE_MATTER_USE_CASE = UseCase(
     name="DELETE_MATTER",
@@ -190,14 +200,15 @@ DELETE_MATTER_USE_CASE = UseCase(
     event=DeleteMatter,
     event_source_code=DeleteMatter.get_source_code_of_class(),
     constraints_generator=generate_view_matter_constraints,
+    additional_prompt_info=DELETE_MATTER_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Delete the matter whose status is set to 'Active'",
             "prompt_for_task_generation": "Delete the matter whose status is set to 'Active'",
         },
         {
-            "prompt": "Delete the matter where status is set to 'Active' and 'On Hold'",
-            "prompt_for_task_generation": "Delete the matter where status is set to 'Active' and 'On Hold'",
+            "prompt": "Delete the matter where status is set to 'Active'",
+            "prompt_for_task_generation": "Delete the matter where status is set to 'Active'",
         },
         {
             "prompt": "Delete the 'Estate Planning' matter if it was not updated 'Today'",
@@ -237,8 +248,8 @@ FILTER_MATTER_STATUS_USE_CASE = UseCase(
             "prompt_for_task_generation": "Filter matters to exclude status 'Archived' or as similar.",
         },
         {
-            "prompt": "Show matters that are either 'Active' or 'On Hold' or as similar.",
-            "prompt_for_task_generation": "Show matters that are either 'Active' or 'On Hold' or as similar.",
+            "prompt": "Show matters that have status 'Active' or as similar.",
+            "prompt_for_task_generation": "Show matters that have status 'Active' or as similar.",
         },
     ],
 )
@@ -248,14 +259,14 @@ FILTER_MATTER_STATUS_USE_CASE = UseCase(
 ###############################################################################
 SORT_MATTER_BY_CREATED_AT_USE_CASE = UseCase(
     name="SORT_MATTER_BY_CREATED_AT",
-    description="The user sorts matters by created date.",
+    description="The user sorts matters by created date in ascending and descending order direction.",
     event=SortMatterByCreatedAt,
     event_source_code=SortMatterByCreatedAt.get_source_code_of_class(),
     constraints_generator=generate_sort_matter_constraints,
     examples=[
         {
-            "prompt": "Sort matters by newest first.",
-            "prompt_for_task_generation": "Sort matters by newest first.",
+            "prompt": "Sort matters by latest first.",
+            "prompt_for_task_generation": "Sort matters by latest first.",
         },
         {
             "prompt": "Sort matters so the oldest ones appear on top.",
@@ -375,31 +386,6 @@ DOCUMENT_DELETED_USE_CASE = UseCase(
     ],
 )
 
-###############################################################################
-# DOCUMENT_UPLOADED_USE_CASE
-###############################################################################
-DOCUMENT_UPLOADED_USE_CASE = UseCase(
-    name="DOCUMENT_UPLOADED",
-    description="The user uploads a new document.",
-    event=DocumentUploaded,
-    event_source_code=DocumentUploaded.get_source_code_of_class(),
-    constraints_generator=generate_document_uploaded_constraints,
-    examples=[
-        {
-            "prompt": "Upload a document named 'Retainer-Agreement.pdf'.",
-            "prompt_for_task_generation": "Upload a document named 'Retainer-Agreement.pdf'.",
-        },
-        {
-            "prompt": "Upload a file 'Patent-Application.pdf' with version 'v1'.",
-            "prompt_for_task_generation": "Upload a file 'Patent-Application.pdf' with version 'v1'.",
-        },
-        {
-            "prompt": "Upload a document whose size is around '100 KB' and status 'Draft'.",
-            "prompt_for_task_generation": "Upload a document whose size is around '100 KB' and status 'Draft'.",
-        },
-    ],
-)
-
 DOCUMENT_RENAMED_USE_CASE = UseCase(
     name="DOCUMENT_RENAMED",
     description="The user renames an existing document.",
@@ -417,17 +403,12 @@ DOCUMENT_RENAMED_USE_CASE = UseCase(
         },
     ],
 )
-
-NEW_CALENDER_EVENT_EXTRA_INFO = """
-Critical Requirements:
-1. Do not specify more than one constraint for the same field — label, time, date, or event_type — in a single request.
-
-✔️ CORRECT: Add a new calendar event on '2025-05-13' at '9:00am' called 'Team Sync' with an event type 'Filing'.
-✔️ CORRECT: Schedule an event with label that CONTAINS 'Review' at time '2:30pm' and type that is NOT 'Other'.
-✔️ CORRECT: Create a calendar event on a date that is GREATER THAN '2025-05-10' with time that is LESS THAN '3:00pm' and event type 'Internal'.
-❌ INCORRECT: Add a new calendar event on '2025-05-12' at '4:00pm' called 'Project Update' with an event type that CONTAINS 'Internal' and is NOT equal to 'Marketing Campaign Review', scheduled for a date that is GREATER THAN or EQUAL to '2025-05-10' and a time that is GREATER THAN or EQUAL to '3:00pm'. (Multiple constraints for the same fields)
+NEW_CALENDAR_EVENT_EXTRA_INFO = """
+Critical requirements:
+1. The request must start with one of the following: "Add a new calendar event...".
+2. Include ALL mentioned constraints in the prompt.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
 """.strip()
-
 
 ###############################################################################
 # NEW_CALENDAR_EVENT_ADDED_USE_CASE
@@ -438,7 +419,7 @@ NEW_CALENDAR_EVENT_ADDED_USE_CASE = UseCase(
     event=NewCalendarEventAdded,
     event_source_code=NewCalendarEventAdded.get_source_code_of_class(),
     constraints_generator=generate_new_calendar_event_constraints,
-    additional_prompt_info=NEW_CALENDER_EVENT_EXTRA_INFO,
+    additional_prompt_info=NEW_CALENDAR_EVENT_EXTRA_INFO,
     examples=[
         {
             "prompt": "Add a new calendar event on 2025-05-13 at 9:00am called 'Team Sync' with a Filing type.",
@@ -481,9 +462,10 @@ VIEW_PENDING_EVENTS_USE_CASE = UseCase(
 )
 
 ADD_NEW_LOG_EXTRA_INFO = """
-Critical Requirements:
-!. Must mention all the constraints in the prompt accurately.
-2. Do not specify more than one constraint for the same field — matter, description, or hours — in a single request.
+Critical requirements:
+1. The request must start with one of the following: "Add log...".
+2. Do not mention a single constraint more than once in the request.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
 """.strip()
 
 ###############################################################################
@@ -498,31 +480,33 @@ NEW_LOG_ADDED_USE_CASE = UseCase(
     additional_prompt_info=ADD_NEW_LOG_EXTRA_INFO,
     examples=[
         {
-            "prompt": "Add a time log with matter 'Trademark Filing', description 'Prepare documents', and hours '2.5'.",
-            "prompt_for_task_generation": "Add a time log with matter 'Trademark Filing', description 'Prepare documents', and hours '2.5'.",
+            "prompt": "Add log with matter 'Trademark Filing', description 'Prepare documents', and hours '2.5'.",
+            "prompt_for_task_generation": "Add log with matter 'Trademark Filing', description 'Prepare documents', and hours '2.5'.",
         },
         {
-            "prompt": "Add a time log with matter 'M&A Advice', description 'Negotiation call', and hours '3'.",
-            "prompt_for_task_generation": "Add a time log with matter 'M&A Advice', description 'Negotiation call', and hours '3'.",
+            "prompt": "Add log with matter 'M&A Advice', description 'Negotiation call', and hours '3'.",
+            "prompt_for_task_generation": "Add log with matter 'M&A Advice', description 'Negotiation call', and hours '3'.",
         },
         {
-            "prompt": "Create a new time log with matter 'Startup Incorporation', description 'Setup docs', and hours greater than '3'.",
-            "prompt_for_task_generation": "Create a new time log with matter 'Startup Incorporation', description 'Setup docs', and hours greater than '3'.",
+            "prompt": "Add log with matter 'Startup Incorporation', description 'Setup docs', and hours greater than '3'.",
+            "prompt_for_task_generation": "Add log with matter 'Startup Incorporation', description 'Setup docs', and hours greater than '3'.",
         },
         {
-            "prompt": "Add a time log with matter 'Tax Advisory', description 'Tax analysis', and hours not equal to '2.5'.",
-            "prompt_for_task_generation": "Add a time log with matter 'Tax Advisory', description 'Tax analysis', and hours not equal to '2.5'.",
+            "prompt": "Add log with matter 'Tax Advisory', description 'Tax analysis', and hours not equal to '2.5'.",
+            "prompt_for_task_generation": "Add log with matter 'Tax Advisory', description 'Tax analysis', and hours not equal to '2.5'.",
         },
         {
-            "prompt": "Create a time log with matter 'Trademark Renewal', description 'Online filing', and hours less than '1'.",
-            "prompt_for_task_generation": "Create a time log with matter 'Trademark Renewal', description 'Online filing', and hours less than '1'.",
+            "prompt": "Add log with matter 'Trademark Renewal', description 'Online filing', and hours less than '1'.",
+            "prompt_for_task_generation": "Add log with matter 'Trademark Renewal', description 'Online filing', and hours less than '1'.",
         },
     ],
 )
 
 LOG_EDITED_EXTRA_INFO = """
-Critical Requirements:
-1. Use at most one constraint per field: matter, description, hours, client, or status.
+Critical requirements:
+1. The request must start with one of the following: "Edit log...".
+2. Do not mention a single constraint more than once in the request.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
 """.strip()
 
 ###############################################################################
@@ -554,15 +538,15 @@ LOG_EDITED_USE_CASE = UseCase(
 
 LOG_DELETE_EXTRA_INFO = """
 Critical Requirements:
-1. Use at most one constraint per field: `matter`, `description`, or `hours`.
+1. Use at most one constraint per field: `matter`, `description`, `hours`, `client`, or `status`.
 2. Mirror the constraint operator and the value exactly in the generated prompt. Do not paraphrase operators (e.g. use the specified negation).
 
 Example constraint (Python dict):
-constraint: {'matter': {'operator': 'not_equals', 'value': 'Court Filing'}, 'hours': {'operator': 'not_equals', 'value': 2.3}, 'client': {'operator': 'not_contains', 'value': 'CoreConnect'}, 'status': {'operator': 'in_list', 'value': ['Billed', 'Billable']}}
+constraint: {'matter': {'operator': 'not_equals', 'value': 'Court Filing'}, 'hours': {'operator': 'not_equals', 'value': 2.3}, 'client': {'operator': 'not_contains', 'value': 'CoreConnect'}, 'status': {'operator': 'equals', 'value': 'Billed'}}
 
 Prompts:
-✔️ CORRECT: Delete the time log where matter is NOT equal to 'Court Filing', hours is NOT equal to 2.3, client does NOT CONTAIN 'CoreConnect', and status is in the list ['Billed', 'Billable'].
-❌ INCORRECT: Delete the time log for 'Court Filing' that recorded hours NOT EQUAL to 2.3, where the client does NOT CONTAIN 'CoreConnect' and the status is in the list ['Billed', 'Billable'].
+✔️ CORRECT: Delete the time log where matter is NOT equal to 'Court Filing', hours is NOT equal to 2.3, client does NOT CONTAIN 'CoreConnect', and status is equal to 'Billed'.
+❌ INCORRECT: Delete the time log for 'Court Filing' that recorded hours NOT EQUAL to 2.3, where the client does NOT CONTAIN 'CoreConnect' and the status is equal to 'Billed'.
 
 Explanation: The incorrect prompt does not reflect the specified operator for `matter` (`not_equals`) — it uses a positive equality instead of the required negation. Use the exact operators and value formats shown in the constraint.
 """.strip()
@@ -636,10 +620,10 @@ Critical Requirements:
 1. Do not specify more than one constraint for the same field — 'name' — in a single request.
 
 Examples:
-- CORRECT: "Change my user name to 'Muhammad Ali'"
-- INCORRECT: "Change my user name to 'Muhammad Ali' that does NOT contain 'Doe'"
-- CORRECT: "Change my user name to 'Emily Rose'"
-- CORRECT: "Change my user name that does NOT contain 'Evans'"
+- CORRECT: "Change user name to 'Muhammad Ali'"
+- INCORRECT: "Change user name to name that does NOT contain 'Doe'"
+- CORRECT: "Change user name to 'Emily Rose'"
+- CORRECT: "Change user name to name that does NOT contain 'Evans'"
 - INCORRECT: "Change my user name to 'Emily Rose' that does NOT contain 'Evans'"
 """.strip()
 
@@ -655,12 +639,24 @@ CHANGE_USER_NAME_USE_CASE = UseCase(
     additional_prompt_info=CHANGE_USER_NAME_EXTRA_INFO,
     examples=[
         {
-            "prompt": "Change my user name to 'Muhammad Ali'.",
-            "prompt_for_task_generation": "Change my user name to 'Muhammad Ali'.",
+            "prompt": "Change user name to 'Muhammad Ali'.",
+            "prompt_for_task_generation": "Change user name to 'Muhammad Ali'.",
         },
         {
-            "prompt": "Update my display name to 'Aisha Khan'.",
-            "prompt_for_task_generation": "Update my display name to 'Aisha Khan'.",
+            "prompt": "Change user name to name that contains 'Ali'.",
+            "prompt_for_task_generation": "Change user name to name that contains 'Ali'.",
+        },
+        {
+            "prompt": "Change user name to name that not contains 'Joy'.",
+            "prompt_for_task_generation": "Change user name to name that not contains 'Joy'.",
+        },
+        {
+            "prompt": "Change user name to name that not equals 'Ali'.",
+            "prompt_for_task_generation": "Change user name to name that not equals 'Ali'..",
+        },
+        {
+            "prompt": "Update display name to 'Aisha Khan'.",
+            "prompt_for_task_generation": "Update display name to 'Aisha Khan'.",
         },
         {
             "prompt": "Set my user name to something that is not 'Guest User'.",
@@ -739,31 +735,30 @@ HELP_VIEWED_USE_CASE = UseCase(
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
-    # ADD_NEW_MATTER_USE_CASE,
+    ADD_NEW_MATTER_USE_CASE,
     VIEW_MATTER_USE_CASE,
-    # DELETE_MATTER_USE_CASE,
-    # ARCHIVE_MATTER_USE_CASE,
-    # VIEW_CLIENT_DETAILS_USE_CASE,
-    # SEARCH_CLIENT_USE_CASE,
-    # DOCUMENT_DELETED_USE_CASE,
-    # NEW_CALENDAR_EVENT_ADDED_USE_CASE,
-    # NEW_LOG_ADDED_USE_CASE,
-    # LOG_DELETE_USE_CASE,
-    # CHANGE_USER_NAME_USE_CASE,
+    DELETE_MATTER_USE_CASE,
+    ARCHIVE_MATTER_USE_CASE,
+    VIEW_CLIENT_DETAILS_USE_CASE,
+    SEARCH_CLIENT_USE_CASE,
+    DOCUMENT_DELETED_USE_CASE,
+    NEW_CALENDAR_EVENT_ADDED_USE_CASE,
+    NEW_LOG_ADDED_USE_CASE,
+    LOG_DELETE_USE_CASE,
+    CHANGE_USER_NAME_USE_CASE,
     ###############################################################################
     # NEWLY ADDED USE CASES
     ###############################################################################
-    # SEARCH_MATTER_USE_CASE,
-    # ADD_CLIENT_USE_CASE,
-    # DELETE_CLIENT_USE_CASE,
-    # FILTER_CLIENTS_USE_CASE,
-    # FILTER_MATTER_STATUS_USE_CASE,
-    # SORT_MATTER_BY_CREATED_AT_USE_CASE,
-    # UPDATE_MATTER_USE_CASE,
-    # VIEW_PENDING_EVENTS_USE_CASE,
-    # DOCUMENT_UPLOADED_USE_CASE,
-    # DOCUMENT_RENAMED_USE_CASE,
-    # LOG_EDITED_USE_CASE,
-    # BILLING_SEARCH_USE_CASE,
-    # HELP_VIEWED_USE_CASE,
+    SEARCH_MATTER_USE_CASE,
+    ADD_CLIENT_USE_CASE,
+    DELETE_CLIENT_USE_CASE,
+    FILTER_CLIENTS_USE_CASE,
+    FILTER_MATTER_STATUS_USE_CASE,
+    SORT_MATTER_BY_CREATED_AT_USE_CASE,
+    UPDATE_MATTER_USE_CASE,
+    VIEW_PENDING_EVENTS_USE_CASE,
+    DOCUMENT_RENAMED_USE_CASE,
+    LOG_EDITED_USE_CASE,
+    BILLING_SEARCH_USE_CASE,
+    HELP_VIEWED_USE_CASE,
 ]

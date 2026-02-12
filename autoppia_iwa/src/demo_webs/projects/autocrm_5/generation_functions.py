@@ -394,11 +394,6 @@ async def generate_document_deleted_constraints(task_url: str | None = None, dat
     return constraints_list
 
 
-async def generate_document_uploaded_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    # Payload matches deleted documents; reuse the same generator for consistency
-    return await generate_document_deleted_constraints(task_url=task_url, dataset=dataset)
-
-
 async def generate_document_renamed_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints: list[dict[str, Any]] = []
     docs_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="files")
