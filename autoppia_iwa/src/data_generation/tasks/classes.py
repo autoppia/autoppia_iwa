@@ -120,46 +120,6 @@ class Task(BaseModel):
         # Remove any None values to make the output cleaner
         return {k: v for k, v in cleaned.items() if v is not None}
 
-    def replace_credentials(self, web_agent_id: str) -> "Task":
-        """
-        ⚠️ DEPRECATED: DO NOT USE THIS METHOD.
-
-        This method should NOT be used. Agents must ALWAYS receive tasks with placeholders.
-        Credentials should be replaced in ACTIONS (not in the task prompt) using TaskSolution.replace_credentials()
-        AFTER receiving actions from the agent but BEFORE evaluating them.
-
-        This method is kept for backward compatibility only and will be removed in the future.
-        """
-        import warnings
-
-        warnings.warn(
-            "Task.replace_credentials() is deprecated. "
-            "Do NOT replace credentials in the task. "
-            "Agents must receive tasks with placeholders. "
-            "Use TaskSolution.replace_credentials() to replace placeholders in actions AFTER receiving them.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        # Create a deep copy of the current task
-        import copy
-
-        task_copy = copy.deepcopy(self)
-
-        # Update prompt in the copy
-        if isinstance(task_copy.prompt, str):
-            # Replace <username> with 'user{web_agent_id}'
-            task_copy.prompt = task_copy.prompt.replace("<username>", f"user{web_agent_id}")
-            task_copy.prompt = task_copy.prompt.replace("<password>", "Passw0rd!")
-            # Replace <password> with 'Passw0rd!'
-            task_copy.prompt = task_copy.prompt.replace("<signup_password>", "Passw0rd!")
-            task_copy.prompt = task_copy.prompt.replace("<signup_username>", "newuser{web_agent_id}")
-            task_copy.prompt = task_copy.prompt.replace("<signup_email>", "newuser{web_agent_id}@gmail.com")
-
-            # Also replace <web_agent_id> for backward compatibility
-            task_copy.prompt = task_copy.prompt.replace("<web_agent_id>", web_agent_id)
-
-        return task_copy
-
 
 class TaskGenerationConfig(BaseModel):
     # Task quantity controls

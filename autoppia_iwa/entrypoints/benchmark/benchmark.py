@@ -167,7 +167,7 @@ class Benchmark:
 
                 logger.debug(f"[stateful_eval] agent {agent.name} returned {len(actions)} actions, executing {len(actions_to_execute)}")
 
-                # Ejecutar TODAS las acciones en batch
+                # Ejecutar TODAS las acciones en batch (el evaluator reemplaza placeholders internamente)
                 for action in actions_to_execute:
                     step_result = await evaluator.step(action)
                     final_score = step_result.score.raw_score
