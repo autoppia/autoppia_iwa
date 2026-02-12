@@ -38,14 +38,17 @@ python -m autoppia_iwa.entrypoints.benchmark.run
 entrypoints/benchmark/
 ├── __init__.py
 ├── config.py              # BenchmarkConfig (central configuration)
-├── task_generation.py     # Task loading/generation utilities
 ├── benchmark.py           # Main orchestrator (Benchmark class)
-├── run.py                 # Entry point (configure & execute here)
-└── utils/
-    ├── logging.py         # Structured logging utilities
-    ├── results.py         # Result serialization & plotting
-    └── tasks.py           # Task generation helpers
+├── run.py                 # Single entry point: configure mode (concurrent/stateful) and run
+├── utils/
+│   ├── logging.py         # Structured logging utilities
+│   ├── metrics.py         # Timing and metrics
+│   ├── results.py         # Result serialization & plotting
+│   └── task_generation.py # Task loading/generation utilities
+└── README.md              # This file
 ```
+
+**Single entrypoint:** Use only `run.py`. Switch between **concurrent** and **stateful** by choosing the corresponding `CFG` block and the right agent type (see [Evaluator mode: Concurrent vs Stateful](#-evaluator-mode-concurrent-vs-stateful) below).
 
 ---
 
@@ -82,8 +85,8 @@ For each project in PROJECT_IDS:
   2. Agent Execution
      For each agent in AGENTS:
        For each task:
-         ├─ Send Task to agent (POST /solve_task)
-         └─ Receive TaskSolution (list of actions)
+         ├─ Call agent (POST /act; in concurrent mode once with step_index=0)
+         └─ Receive actions and build TaskSolution
 
   3. Evaluation
      For each solution:
@@ -114,15 +117,11 @@ from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_project
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
-# 1) Agents to evaluate
+# 1) Agents to evaluate (all expose POST /act)
+from autoppia_iwa.src.web_agents.cua import ApifiedWebCUA
+
 AGENTS = [
-    ApifiedWebAgent(
-        id="1",
-        name="MyAgent",
-        host="127.0.0.1",
-        port=7000,
-        timeout=120
-    ),
+    ApifiedWebCUA(base_url="http://localhost:5000", id="1", name="MyAgent", timeout=120),
 ]
 
 # 2) Projects to test
@@ -172,6 +171,49 @@ CFG = BenchmarkConfig(
 | **Features**               |           |         |                                             |
 | `dynamic`                  | bool      | `False` | Enable seed-based web variations            |
 | `dynamic_phase_config`     | object    | `None`  | Dynamic HTML mutation config                |
+
+| **Evaluator mode**        |           |         |                                             |
+| `evaluator_mode`          | str       | `"concurrent"` | `"concurrent"` or `"stateful"` (see below) |
+| `max_steps_per_task`      | int       | `50`    | Max steps per task (stateful only)          |
+
+### **Evaluator mode: Concurrent vs Stateful**
+
+There is **one entrypoint**, `run.py`. All agents expose **POST /act**; you choose how the benchmark calls it.
+
+| Aspect | Concurrent | Stateful |
+|--------|------------|----------|
+| **Agent API** | `POST /act` (same for all) | `POST /act` |
+| **Calls** | Once per task: `step_index=0`, agent returns full action list | Repeated: each call gets current `snapshot_html`, agent returns next action(s) |
+| **Typical use** | Agent plans full sequence in one go | Agent decides step-by-step (same as subnet miners) |
+
+**How to switch in `run.py`:** Use the first `CFG` block for concurrent, or the commented stateful block for stateful. In both cases use `ApifiedWebCUA` with your agent’s base URL (agent must expose `POST /act`).
+
+**`/act` endpoint (POST) — used for both modes:**
+
+Request body:
+```json
+{
+  "task_id": "uuid",
+  "prompt": "Login with username X and password Y",
+  "url": "http://localhost:8000/login",
+  "snapshot_html": "<html>...</html>",
+  "step_index": 0,
+  "web_project_id": "autobooks"
+}
+```
+
+Response:
+```json
+{
+  "actions": [
+    {"type": "ClickAction", "selector": "#login"},
+    {"type": "TypeAction", "selector": "#username", "text": "user1"},
+    {"type": "TypeAction", "selector": "#password", "text": "Passw0rd!"}
+  ]
+}
+```
+
+Return an empty `actions` array when the task is done. Supported action types include `NavigateAction`, `ClickAction`, `TypeAction`, `ScrollAction`, etc. (see Available Actions below).
 
 ### **Paths (Auto-configured)**
 

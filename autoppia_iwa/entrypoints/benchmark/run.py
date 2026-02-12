@@ -1,8 +1,10 @@
 """
-Code-first entrypoint: configure projects, agents, runs, and options here.
+Single entrypoint for the IWA benchmark. Configure mode, projects, and agents here.
 
-Run with:
+Run:
   python -m autoppia_iwa.entrypoints.benchmark.run
+
+See README.md for evaluator modes (concurrent vs stateful) and agent requirements.
 """
 
 import asyncio
@@ -13,158 +15,64 @@ from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
 from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.cua import ApifiedWebCUA
 
-# from autoppia_iwa.src.execution.dynamic import DynamicPhaseConfig
+# =============================================================================
+# 1) AGENTS
+# =============================================================================
+# Standard: all agents expose POST /act. Use ApifiedWebCUA for both modes.
+# - Concurrent: benchmark calls /act once (step_index=0); agent returns full action list.
+# - Stateful:   benchmark calls /act repeatedly with browser snapshot each step.
+# Legacy: if your agent only exposes POST /solve_task, use ApifiedWebAgent instead.
 
-# =========================
-# 💡 Code configuration
-# =========================
-
-# Define external HTTP SOTA agents (examples). Uncomment to enable.
-# Ensure unique `id` per agent.
-
-# BROWSER_USE_AGENT = ApifiedWebAgent(
-#     id="browser_use",
-#     name="BrowserUse",
-#     host="browser-use-agent-sota.autoppia.com",
-#     port=80,
-#     timeout=120,
-# )
-
-# OPENAI_CUA_AGENT = ApifiedWebAgent(
-#     id="openai_cua",
-#     name="OpenAI CUA",
-#     host="openai-cua-agent-sota.autoppia.com",
-#     port=80,
-#     timeout=120,
-# )
-
-# CLAUDE_CUA_AGENT = ApifiedWebAgent(
-#     id="claude_cua",
-#     name="Claude CUA",
-#     host="anthropic-cua-agent-sota.autoppia.com",
-#     port=80,
-#     timeout=120,
-# )
-
-# Group SOTA agent examples (commented). Uncomment to use, or set
-# `AGENTS = SOTA_AGENTS` below after uncommenting individual agents.
-SOTA_AGENTS = [
-    # BROWSER_USE_AGENT,
-    # OPENAI_CUA_AGENT,
-    # CLAUDE_CUA_AGENT,
-]
-
-# Active agents to run. Simple agent (Flask /solve_task) on port 7000.
 AGENTS = [
-    ApifiedWebAgent(host="localhost", port=7000, id="simple", name="SimpleAgent", timeout=120),
-    # ApifiedWebAgent(base_url="http://localhost:5000", id="1", name="LocalAgent"),
-    # ApifiedWebAgent(id="1", name="Anthropic-CUA", host="127.0.0.1", port=5000, timeout=398)
-    # ApifiedWebCUA(base_url="http://localhost:5000", id="1", name="BrowserUse-OpenAI"),
+    ApifiedWebCUA(base_url="http://localhost:5000", id="1", name="LocalAgent", timeout=120),
 ]
 
-# 2) Projects to evaluate (by id from demo_web_projects)
-PROJECT_IDS = [
-    "autocrm",
-]
+# =============================================================================
+# 2) PROJECTS & USE CASES
+# =============================================================================
+
+PROJECT_IDS = ["autocinema"]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
-USE_CASES = [
-    # "BOOK_DETAIL"
-    # "VIEW_USER_PROFILE",
-    # "FILM_DETAIL",
-    # "EDIT_USER_BOOK"
-    # "RESERVE_HOTEL"
-    # "VIEW_FULL_MENU"
-    # "RESERVATION_COMPLETE"
-    # "ORDER_COMPLETED",
-    # "HIRE_CONSULTANT"
-    # "VIEW_HOTEL"
-    # "SEARCH_HOTEL"
-    # "VIEW_HOTEL"
-    # "INCREASE_NUMBER_OF_GUESTS"
-    # "RESERVE_HOTEL"
-    # "COLLAPSE_MENU"
-    # "CHECKOUT_STARTED"
-    # "ORDER_COMPLETED"
-    # "NEW_LOG_ADDED"
-    # "VIEW_MATTER_DETAILS"
-    # "SEARCH_CLIENT"
-    # "DOCUMENT_DELETED"
-    # "SEARCH_EMAIL"
-    # "PLACE_ORDER"
-    # "DROPOFF_PREFERENCE"
-    # "ADD_TO_CART_MENU_ITEM"
-    # "DELETE_REVIEW"
-    # "ITEM_INCREMENTED"
-    # "VIEW_USER_PROFILE"
-    # "BOOK_A_CONSULTATION"
-    # "HIRE_CONSULTANT"
-    # "SEARCH_LOCATION"
-    # "SEARCH_DESTINATION"
-    # "SEARCH"
-    # "SELECT_CAR"
-    # "RESERVE_RIDE"
-]
+USE_CASES = ["FILM_DETAIL"]  # or None for all use cases
 
-# =====================================================
-# CONFIGURACIÓN: Elige el modo de evaluación aquí
-# =====================================================
+# =============================================================================
+# 3) EVALUATOR MODE: choose one block (concurrent or stateful)
+# =============================================================================
+# Both use POST /act. Concurrent: call /act once (step_index=0), agent returns all actions.
+# Stateful: call /act repeatedly with snapshot_html each step.
 
-# OPCIÓN 1: Modo CONCURRENT (tradicional)
-# El agente genera TODAS las acciones de una vez y se evalúan
+# --- CONCURRENT (default): agent generates full action sequence in one go ---
 CFG = BenchmarkConfig(
     projects=PROJECTS,
     agents=AGENTS,
-    # Evaluator mode
-    evaluator_mode="concurrent",  # ← Agente genera lista completa de acciones
-    # Tasks
-    # use_cases=None means all use-cases
-    use_cases=None,
-    prompts_per_use_case=2,
-    use_cached_tasks=True,  # Use cached tasks if available
-    # Execution
-    runs=1,  # single run is enough for this fixed agent
-    max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
-    record_gif=False,  # if your evaluator returns GIFs
-    # Dynamic mode: disabled for this simple fixed-task test to avoid seed constraints.
+    evaluator_mode="concurrent",
+    use_cases=USE_CASES,
+    prompts_per_use_case=1,
+    use_cached_tasks=False,
+    runs=1,
+    max_parallel_agent_calls=1,
+    record_gif=False,
     dynamic=True,
-    # TODO REVISAR PORQUE SOLO DEBEIRA HABER UNO
-    # dynamic_phase_config=DynamicPhaseConfig(
-    #     enable_d1_structure=True,
-    #     enable_d3_attributes=True,
-    #     enable_d4_overlays=True,
-    # ),
-    # Persistence
     save_results_json=True,
 )
 
-# OPCIÓN 2: Modo STATEFUL (iterativo)
-# El agente decide paso a paso viendo el estado del browser
-# Similar a como funciona la subnet con miners remotos
-# Para usar este modo, descomenta las líneas siguientes y comenta CFG anterior:
-
+# --- STATEFUL: agent decides step-by-step (must use ApifiedWebCUA in AGENTS) ---
+# Uncomment this block and comment the CFG block above to run in stateful mode.
 # CFG = BenchmarkConfig(
 #     projects=PROJECTS,
 #     agents=AGENTS,
-#     # Evaluator mode
-#     evaluator_mode="stateful",  # ← Modo iterativo: agente decide paso a paso
-#     max_steps_per_task=50,  # ← Límite de pasos por tarea
-#     # Tasks
-#     use_cached_tasks=True,
-#     prompts_per_use_case=1,
-#     num_use_cases=0,
+#     evaluator_mode="stateful",
+#     max_steps_per_task=50,
 #     use_cases=USE_CASES,
-#     # Execution
+#     prompts_per_use_case=1,
+#     use_cached_tasks=True,
 #     runs=1,
 #     max_parallel_agent_calls=1,
-#     use_cached_solutions=False,  # ⚠️ No compatible con modo stateful
-#     record_gif=True,  # Recomendado para ver la navegación adaptativa
-#     # Dynamic mode
+#     record_gif=True,
 #     dynamic=False,
-#     # Persistence
 #     save_results_json=True,
-#     plot_results=False,
 # )
 
 
