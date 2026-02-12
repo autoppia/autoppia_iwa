@@ -27,15 +27,11 @@ async def replace_film_placeholders(
     if not isinstance(text, str):
         return text
 
-<<<<<<< HEAD
-    movies_data = dataset if dataset is not None else await fetch_data(seed_value=seed_value)
-=======
     if dataset is not None:
         # Task generator passes full project dict {"films": [...], "users": [...]}; use films list
         movies_data = dataset.get("films", []) if isinstance(dataset, dict) else dataset
     else:
-        movies_data = await fetch_movies_data(seed_value=seed_value)
->>>>>>> b56bc1c4 (refactor: Enhance autocinema constraint generation)
+        movies_data = await fetch_data(seed_value=seed_value)
     if not movies_data:
         return text
 

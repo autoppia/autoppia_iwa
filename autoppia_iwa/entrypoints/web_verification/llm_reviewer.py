@@ -228,7 +228,6 @@ class LLMReviewer:
             "✓ If ALL constraints correctly represented → valid=true, score=1.0\n"
             "✓ If ANY constraint missing or misrepresented → valid=false, score=0.0\n"
             "✓ NO intermediate scores - strictly binary (1.0 or 0.0)"
-
         )
 
         user_prompt = (
