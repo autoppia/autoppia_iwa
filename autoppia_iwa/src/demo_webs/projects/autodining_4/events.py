@@ -35,22 +35,22 @@ class DateDropdownOpenedEvent(Event, BaseEventValidator):
     """Event triggered when the date dropdown is opened."""
 
     event_name: str = "DATE_DROPDOWN_OPENED"
-    selected_date: datetime | None = None
+    date: datetime | None = None
 
     class ValidationCriteria(BaseModel):
-        selected_date: datetime | CriterionValue | None = None
+        date: datetime | CriterionValue | None = None
 
         class Config:
             title = "Date Dropdown Opened Validation"
             description = "Validates that the date dropdown was opened with a specific date."
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria or not criteria.selected_date:
+        if not criteria or not criteria.date:
             return True
 
-        # Normalize selected_date to datetime if CriterionValue
-        if isinstance(criteria.selected_date, CriterionValue):
-            raw_value = criteria.selected_date.value
+        # Normalize date to datetime if CriterionValue
+        if isinstance(criteria.date, CriterionValue):
+            raw_value = criteria.date.value
             if isinstance(raw_value, str):
                 criteria_dt = isoparse(raw_value).date()
             elif isinstance(raw_value, datetime):
@@ -59,25 +59,25 @@ class DateDropdownOpenedEvent(Event, BaseEventValidator):
                 criteria_dt = raw_value
             else:
                 return False
-        elif isinstance(criteria.selected_date, datetime):
-            criteria_dt = criteria.selected_date.date()
-        elif isinstance(criteria.selected_date, date):
-            criteria_dt = criteria.selected_date
+        elif isinstance(criteria.date, datetime):
+            criteria_dt = criteria.date.date()
+        elif isinstance(criteria.date, date):
+            criteria_dt = criteria.date
         else:
             return False
 
             # --- Normalize event date ---
         event_date = None
-        if isinstance(self.selected_date, datetime):
-            event_date = self.selected_date.date()
-        elif isinstance(self.selected_date, date):
-            event_date = self.selected_date
+        if isinstance(self.date, datetime):
+            event_date = self.date.date()
+        elif isinstance(self.date, date):
+            event_date = self.date
 
         if event_date is None:
             return False
 
         # --- Operador -------------------------------------------------------------
-        op = getattr(criteria.selected_date, "operator", ComparisonOperator.EQUALS)
+        op = getattr(criteria.date, "operator", ComparisonOperator.EQUALS)
 
         if op == ComparisonOperator.EQUALS:
             return event_date == criteria_dt
@@ -106,7 +106,7 @@ class DateDropdownOpenedEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            selected_date=parsed_date,
+            date=parsed_date,
         )
 
 
@@ -114,10 +114,10 @@ class TimeDropdownOpenedEvent(Event, BaseEventValidator):
     """Event triggered when the time dropdown is opened."""
 
     event_name: str = "TIME_DROPDOWN_OPENED"
-    selected_time: str
+    time: str
 
     class ValidationCriteria(BaseModel):
-        selected_time: str | CriterionValue | None = None
+        time: str | CriterionValue | None = None
 
         class Config:
             title = "Time Dropdown Opened Validation"
@@ -126,7 +126,7 @@ class TimeDropdownOpenedEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return self._validate_field(self.selected_time, criteria.selected_time)
+        return self._validate_field(self.time, criteria.time)
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "TimeDropdownOpenedEvent":
@@ -137,7 +137,7 @@ class TimeDropdownOpenedEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            selected_time=data.get("time", ""),
+            time=data.get("time", ""),
         )
 
 
@@ -145,10 +145,10 @@ class PeopleDropdownOpenedEvent(Event, BaseEventValidator):
     """Event triggered when the people dropdown is opened."""
 
     event_name: str = "PEOPLE_DROPDOWN_OPENED"
-    people_count: int
+    people: int
 
     class ValidationCriteria(BaseModel):
-        people_count: int | CriterionValue | None = None
+        people: int | CriterionValue | None = None
 
         class Config:
             title = "People Dropdown Opened Validation"
@@ -157,7 +157,7 @@ class PeopleDropdownOpenedEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return self._validate_field(self.people_count, criteria.people_count)
+        return self._validate_field(self.people, criteria.people)
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "PeopleDropdownOpenedEvent":
@@ -168,7 +168,7 @@ class PeopleDropdownOpenedEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            people_count=int(data.get("people", 0)),
+            people=int(data.get("people", 0)),
         )
 
 
@@ -208,7 +208,7 @@ class ViewRestaurantEvent(Event, BaseEventValidator):
 
     event_name: str = "VIEW_RESTAURANT"
     restaurant_id: str
-    restaurant_name: str
+    name: str
     desc: str
     rating: int
     reviews: int
@@ -217,7 +217,7 @@ class ViewRestaurantEvent(Event, BaseEventValidator):
 
     class ValidationCriteria(BaseModel):
         restaurant_id: str | CriterionValue | None = None
-        restaurant_name: str | CriterionValue | None = None
+        name: str | CriterionValue | None = None
         desc: str | CriterionValue | None = None
         rating: int | CriterionValue | None = None
         reviews: int | CriterionValue | None = None
@@ -234,7 +234,7 @@ class ViewRestaurantEvent(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.restaurant_id, criteria.restaurant_id),
-                self._validate_field(self.restaurant_name, criteria.restaurant_name),
+                self._validate_field(self.name, criteria.name),
                 self._validate_field(self.desc, criteria.desc),
                 self._validate_field(self.rating, criteria.rating),
                 self._validate_field(self.bookings, criteria.bookings),
@@ -252,7 +252,7 @@ class ViewRestaurantEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             restaurant_id=data.get("restaurantId", ""),
-            restaurant_name=data.get("restaurantName", ""),
+            name=data.get("restaurantName", ""),
             desc=data.get("desc", ""),
             rating=data.get("rating", 0),
             cuisine=data.get("cuisine", ""),
@@ -266,7 +266,7 @@ class ViewFullMenuEvent(Event, BaseEventValidator):
 
     event_name: str = "VIEW_FULL_MENU"
     restaurant_id: str
-    restaurant_name: str
+    name: str
     desc: str
     rating: int
     reviews: int
@@ -274,16 +274,16 @@ class ViewFullMenuEvent(Event, BaseEventValidator):
     cuisine: str
     action: str
     time: str  # e.g. "1:00 PM"
-    selected_date: date  # e.g. "2024-07-18"
+    date: date  # e.g. "2024-07-18"
     people: int
     menu: list[MenuCategory]
 
     class ValidationCriteria(BaseModel):
         restaurant_id: str | CriterionValue | None = None
-        restaurant_name: str | CriterionValue | None = None
+        name: str | CriterionValue | None = None
         action: str | CriterionValue | None = None
         time: str | CriterionValue | None = None
-        selected_date: date | CriterionValue | None = None
+        date: date | CriterionValue | None = None
         people: int | CriterionValue | None = None
         desc: str | CriterionValue | None = None
         rating: int | CriterionValue | None = None
@@ -301,10 +301,10 @@ class ViewFullMenuEvent(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.restaurant_id, criteria.restaurant_id),
-                self._validate_field(self.restaurant_name, criteria.restaurant_name),
+                self._validate_field(self.name, criteria.name),
                 self._validate_field(self.action, criteria.action),
                 self._validate_field(self.time, criteria.time),
-                self._validate_field(self.selected_date, criteria.selected_date),
+                self._validate_field(self.date, criteria.date),
                 self._validate_field(self.people, criteria.people),
                 self._validate_field(self.desc, criteria.desc),
                 self._validate_field(self.rating, criteria.rating),
@@ -333,10 +333,10 @@ class ViewFullMenuEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             restaurant_id=data.get("restaurantId", ""),
-            restaurant_name=data.get("restaurantName", ""),
+            name=data.get("restaurantName", ""),
             action=data.get("action", ""),
             time=data.get("time", ""),
-            selected_date=parsed_date,
+            date=parsed_date,
             desc=data.get("desc", ""),
             rating=data.get("rating", 0),
             cuisine=data.get("cuisine", ""),
@@ -352,7 +352,7 @@ class CollapseMenuEvent(Event, BaseEventValidator):
 
     event_name: str = "COLLAPSE_MENU"
     restaurant_id: str
-    restaurant_name: str
+    name: str
     desc: str
     rating: int
     reviews: int
@@ -360,14 +360,14 @@ class CollapseMenuEvent(Event, BaseEventValidator):
     cuisine: str
     action: str
     time: str
-    selected_date: date  # e.g. "2024-07-18"
+    date: date  # e.g. "2024-07-18"
     people: int
     menu: list[MenuCategory]
 
     class ValidationCriteria(BaseModel):
         action: str | CriterionValue | None = None
         restaurant_id: str | CriterionValue | None = None
-        restaurant_name: str | CriterionValue | None = None
+        name: str | CriterionValue | None = None
         desc: str | CriterionValue | None = None
         rating: int | CriterionValue | None = None
         reviews: int | CriterionValue | None = None
@@ -385,7 +385,7 @@ class CollapseMenuEvent(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.restaurant_id, criteria.restaurant_id),
-                self._validate_field(self.restaurant_name, criteria.restaurant_name),
+                self._validate_field(self.name, criteria.name),
                 self._validate_field(self.action, criteria.action),
                 self._validate_field(self.desc, criteria.desc),
                 self._validate_field(self.rating, criteria.rating),
@@ -415,10 +415,10 @@ class CollapseMenuEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             restaurant_id=data.get("restaurantId", ""),
-            restaurant_name=data.get("restaurantName", ""),
+            name=data.get("restaurantName", ""),
             action=data.get("action", ""),
             time=data.get("time", ""),
-            selected_date=parsed_date,
+            date=parsed_date,
             desc=data.get("desc", ""),
             rating=data.get("rating", 0),
             cuisine=data.get("cuisine", ""),
@@ -433,31 +433,31 @@ class BookRestaurantEvent(Event, BaseEventValidator):
     """Event triggered when a restaurant booking is attempted or made (prior to completion details)."""
 
     event_name: str = "BOOK_RESTAURANT"
-    restaurant_name: str
+    name: str
     desc: str
     rating: int
     reviews: int
     bookings: int
     cuisine: str
     time: str  # e.g. "1:30 PM"
-    selected_date: date  # e.g. Date(2025, 5, 16)
+    date: date  # e.g. Date(2025, 5, 16)
     people: int
 
     # --------------------------- ValidationCriteria ---------------------------
 
     class ValidationCriteria(BaseModel):
-        restaurant_name: str | CriterionValue | None = None
+        name: str | CriterionValue | None = None
         desc: str | CriterionValue | None = None
         rating: int | CriterionValue | None = None
         reviews: int | CriterionValue | None = None
         bookings: int | CriterionValue | None = None
         cuisine: str | CriterionValue | None = None
-        selected_time: str | CriterionValue | None = None
-        selected_date: date | CriterionValue | None = None
-        people_count: int | CriterionValue | None = None
+        time: str | CriterionValue | None = None
+        date: date | CriterionValue | None = None
+        people: int | CriterionValue | None = None
 
         # ── coerción de datetime ISO-8601 (con hora) a date ──
-        @field_validator("selected_date", mode="before")
+        @field_validator("date", mode="before")
         @classmethod
         def coerce_datetime_to_date(cls, v):
             if isinstance(v, str) and "T" in v:
@@ -485,31 +485,31 @@ class BookRestaurantEvent(Event, BaseEventValidator):
             ComparisonOperator.LESS_EQUAL: lambda s, c: s <= c,
         }
 
-        # --- selected_date --
-        if isinstance(criteria.selected_date, CriterionValue):
-            op = criteria.selected_date.operator
-            comp_date = criteria.selected_date.value
+        # --- date --
+        if isinstance(criteria.date, CriterionValue):
+            op = criteria.date.operator
+            comp_date = criteria.date.value
             if isinstance(comp_date, str):
                 comp_date = datetime.fromisoformat(comp_date).date() if "T" in comp_date else date.fromisoformat(comp_date)
 
             try:
-                selected_date_valid = comp_table[op](self.selected_date, comp_date)
+                date_valid = comp_table[op](self.date, comp_date)
             except KeyError:
-                logger.error("Unknown comparison operator for selected_date: %s", op)
-                selected_date_valid = False
+                logger.error("Unknown comparison operator for date: %s", op)
+                date_valid = False
         else:
-            selected_date_valid = criteria.selected_date is None or self._validate_field(self.selected_date, criteria.selected_date)
+            date_valid = criteria.date is None or self._validate_field(self.date, criteria.date)
         result = all(
             [
-                self._validate_field(self.restaurant_name, criteria.restaurant_name),
+                self._validate_field(self.name, criteria.name),
                 self._validate_field(self.desc, criteria.desc),
                 self._validate_field(self.rating, criteria.rating),
                 self._validate_field(self.reviews, criteria.reviews),
                 self._validate_field(self.bookings, criteria.bookings),
                 self._validate_field(self.cuisine, criteria.cuisine),
-                self._validate_field(self.time, criteria.selected_time),
-                selected_date_valid,
-                self._validate_field(self.people, criteria.people_count),
+                self._validate_field(self.time, criteria.time),
+                date_valid,
+                self._validate_field(self.people, criteria.people),
             ]
         )
 
@@ -538,9 +538,9 @@ class BookRestaurantEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            restaurant_name=data.get("restaurantName", ""),
+            name=data.get("restaurantName", ""),
             time=data.get("time", ""),
-            selected_date=parsed_date,
+            date=parsed_date,
             people=int(data.get("people", 0)),
             desc=data.get("desc", ""),
             rating=data.get("rating", 0),
@@ -554,9 +554,9 @@ class CountrySelectedEvent(Event, BaseEventValidator):
     """Event triggered when a country is selected in a form."""
 
     event_name: str = "COUNTRY_SELECTED"
-    restaurant_name: str
-    country_code: str  # e.g., "IN"
-    country_name: str  # e.g., "India"
+    name: str
+    code: str  # e.g., "IN"
+    country: str  # e.g., "India"
     desc: str
     rating: int
     reviews: int
@@ -564,9 +564,9 @@ class CountrySelectedEvent(Event, BaseEventValidator):
     cuisine: str
 
     class ValidationCriteria(BaseModel):
-        country_code: str | CriterionValue | None = None
-        country_name: str | CriterionValue | None = None
-        restaurant_name: str | CriterionValue | None = None
+        code: str | CriterionValue | None = None
+        country: str | CriterionValue | None = None
+        name: str | CriterionValue | None = None
         desc: str | CriterionValue | None = None
         rating: int | CriterionValue | None = None
         reviews: int | CriterionValue | None = None
@@ -582,9 +582,9 @@ class CountrySelectedEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.restaurant_name, criteria.restaurant_name),
-                self._validate_field(self.country_code, criteria.country_code),
-                self._validate_field(self.country_name, criteria.country_name),
+                self._validate_field(self.name, criteria.name),
+                self._validate_field(self.code, criteria.code),
+                self._validate_field(self.country, criteria.country),
                 self._validate_field(self.desc, criteria.desc),
                 self._validate_field(self.reviews, criteria.reviews),
                 self._validate_field(self.bookings, criteria.bookings),
@@ -601,9 +601,9 @@ class CountrySelectedEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            country_code=data.get("countryCode", ""),
-            country_name=data.get("countryName", ""),
-            restaurant_name=data.get("restaurantName", ""),
+            code=data.get("countryCode", ""),
+            country=data.get("countryName", ""),
+            name=data.get("restaurantName", ""),
             desc=data.get("desc", ""),
             rating=data.get("rating", 0),
             cuisine=data.get("cuisine", ""),
@@ -617,7 +617,7 @@ class OccasionSelectedEvent(Event, BaseEventValidator):
 
     event_name: str = "OCCASION_SELECTED"
     occasion: str  # e.g., "birthday"
-    restaurant_name: str
+    name: str
     desc: str | CriterionValue | None = None
     rating: int | CriterionValue | None = None
     reviews: int | CriterionValue | None = None
@@ -626,7 +626,7 @@ class OccasionSelectedEvent(Event, BaseEventValidator):
 
     class ValidationCriteria(BaseModel):
         occasion: str | CriterionValue | None = None
-        restaurant_name: str | CriterionValue | None = None
+        name: str | CriterionValue | None = None
         desc: str | CriterionValue | None = None
         rating: int | CriterionValue | None = None
         reviews: int | CriterionValue | None = None
@@ -653,7 +653,7 @@ class OccasionSelectedEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             occasion=data.get("occasion", ""),
             desc=data.get("desc", ""),
-            restaurant_name=data.get("restaurantName", ""),
+            name=data.get("restaurantName", ""),
             rating=data.get("rating", 0),
             cuisine=data.get("cuisine", ""),
             reviews=data.get("reviews", 0),
@@ -665,24 +665,24 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
     """Event triggered when a restaurant reservation is completed."""
 
     event_name: str = "RESERVATION_COMPLETE"
-    reservation_date_str: str  # e.g., "Jul 18"
-    reservation_time: str  # e.g., "1:30 PM"
-    people_count: int
-    country_code: str
-    country_name: str
-    phone_number: str
+    reservation: str  # e.g., "Jul 18"
+    time: str  # e.g., "1:30 PM"
+    people: int
+    code: str
+    country: str
+    phone: str
     occasion: str
-    special_request: str | None = None
+    request: str | None = None
 
     class ValidationCriteria(BaseModel):
-        reservation_date_str: str | CriterionValue | None = None
-        reservation_time: str | CriterionValue | None = None
-        people_count: int | CriterionValue | None = None
+        reservation: str | CriterionValue | None = None
+        time: str | CriterionValue | None = None
+        people: int | CriterionValue | None = None
         occasion: str | CriterionValue | None = None
-        phone_number: str | CriterionValue | None = None
-        country_name: str | CriterionValue | None = None
-        country_code: str | CriterionValue | None = None
-        special_request: str | None = None
+        phone: str | CriterionValue | None = None
+        country: str | CriterionValue | None = None
+        code: str | CriterionValue | None = None
+        request: str | None = None
 
         class Config:
             title = "Reservation Complete Validation"
@@ -693,13 +693,13 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.reservation_date_str, criteria.reservation_date_str),
-                self._validate_field(self.reservation_time, criteria.reservation_time),
-                self._validate_field(self.people_count, criteria.people_count),
+                self._validate_field(self.reservation, criteria.reservation),
+                self._validate_field(self.time, criteria.time),
+                self._validate_field(self.people, criteria.people),
                 self._validate_field(self.occasion, criteria.occasion),
-                self._validate_field(self.special_request, criteria.special_request),
-                self._validate_field(self.country_name, criteria.country_name),
-                self._validate_field(self.country_code, criteria.country_code),
+                self._validate_field(self.request, criteria.request),
+                self._validate_field(self.country, criteria.country),
+                self._validate_field(self.code, criteria.code),
             ]
         )
 
@@ -716,14 +716,14 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            reservation_date_str=parsed_date,
-            reservation_time=data.get("time", ""),
-            people_count=int(data.get("people", "")),
-            country_code=data.get("countryCode", ""),
-            country_name=data.get("countryName", ""),
-            phone_number=data.get("phoneNumber", ""),
+            reservation=parsed_date,
+            time=data.get("time", ""),
+            people=int(data.get("people", "")),
+            code=data.get("countryCode", ""),
+            country=data.get("countryName", ""),
+            phone=data.get("phoneNumber", ""),
             occasion=data.get("occasion", ""),
-            special_request=data.get("specialRequest"),
+            request=data.get("specialRequest"),
         )
 
 
@@ -732,11 +732,11 @@ class ScrollViewEvent(Event, BaseEventValidator):
 
     event_name: str = "SCROLL_VIEW"
     direction: str  # "right" or "left", etc.
-    section_title: str
+    section: str
 
     class ValidationCriteria(BaseModel):
         direction: str | CriterionValue | None = None
-        section_title: str | CriterionValue | None = None
+        section: str | CriterionValue | None = None
 
         class Config:
             title = "Scroll View Validation"
@@ -748,7 +748,7 @@ class ScrollViewEvent(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.direction, criteria.direction),
-                self._validate_field(self.section_title, criteria.section_title),
+                self._validate_field(self.section, criteria.section),
             ]
         )
 
@@ -762,7 +762,7 @@ class ScrollViewEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             direction=data.get("direction", "").lower(),
-            section_title=data.get("sectionTitle", ""),
+            section=data.get("sectionTitle", ""),
         )
 
 

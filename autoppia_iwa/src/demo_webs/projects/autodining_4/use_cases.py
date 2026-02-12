@@ -161,10 +161,10 @@ CRITICAL REQUIREMENTS: EVERY prompt you generate MUST:
 4. Avoid including unrelated actions such as confirming, submitting, or interacting with other fields.
 
 Examples:
-- CORRECT: "Open the guest selector dropdown and select people_count equals 4."
+- CORRECT: "Open the guest selector dropdown and select people equals 4."
 - INCORRECT: "Select 4 guests." (does not explicitly open the guest selector dropdown)
 - INCORRECT: "Confirm the number of guests." (wrong action)
-- INCORRECT: "Open the guest selector dropdown." (missing required people_count selection when constraints specify a value)
+- INCORRECT: "Open the guest selector dropdown." (missing required people selection when constraints specify a value)
 """
 
 PEOPLE_DROPDOWN_OPENED_USE_CASE = UseCase(
@@ -176,28 +176,28 @@ PEOPLE_DROPDOWN_OPENED_USE_CASE = UseCase(
     constraints_generator=generate_people_dropdown_opened_constraints,
     examples=[
         {
-            "prompt": "Open the guest selector dropdown and select people_count equals 4.",
-            "prompt_for_task_generation": "Open the guest selector dropdown and select people_count equals <count>.",
+            "prompt": "Open the guest selector dropdown and select people equals 4.",
+            "prompt_for_task_generation": "Open the guest selector dropdown and select people equals <count>.",
         },
         {
-            "prompt": "Open the guest selector dropdown and select people_count not equal to 5.",
-            "prompt_for_task_generation": "Open the guest selector dropdown and select people_count not equal to <count>.",
+            "prompt": "Open the guest selector dropdown and select people not equal to 5.",
+            "prompt_for_task_generation": "Open the guest selector dropdown and select people not equal to <count>.",
         },
         {
-            "prompt": "Open the guest selector dropdown and select people_count greater than 6.",
-            "prompt_for_task_generation": "Open the guest selector dropdown and select people_count greater than <count>.",
+            "prompt": "Open the guest selector dropdown and select people greater than 6.",
+            "prompt_for_task_generation": "Open the guest selector dropdown and select people greater than <count>.",
         },
         {
-            "prompt": "Open the guest selector dropdown and select people_count less than 3.",
-            "prompt_for_task_generation": "Open the guest selector dropdown and select people_count less than <count>.",
+            "prompt": "Open the guest selector dropdown and select people less than 3.",
+            "prompt_for_task_generation": "Open the guest selector dropdown and select people less than <count>.",
         },
         {
-            "prompt": "Open the guest selector dropdown and select people_count greater than or equal to 2.",
-            "prompt_for_task_generation": "Open the guest selector dropdown and select people_count greater than or equal to <count>.",
+            "prompt": "Open the guest selector dropdown and select people greater than or equal to 2.",
+            "prompt_for_task_generation": "Open the guest selector dropdown and select people greater than or equal to <count>.",
         },
         {
-            "prompt": "Open the guest selector dropdown and select people_count less than or equal to 8.",
-            "prompt_for_task_generation": "Open the guest selector dropdown and select people_count less than or equal to <count>.",
+            "prompt": "Open the guest selector dropdown and select people less than or equal to 8.",
+            "prompt_for_task_generation": "Open the guest selector dropdown and select people less than or equal to <count>.",
         },
     ],
 )
@@ -264,7 +264,7 @@ VIEW_RESTAURANT_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Show me details for 'The Royal Dine'",
-            "prompt_for_task_generation": "Show me details for '<restaurant_name>'",
+            "prompt_for_task_generation": "Show me details for '<name>'",
         },
         {
             "prompt": "View restaurant page for ID 'royal-dine'",
@@ -302,11 +302,11 @@ VIEW_FULL_MENU_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Show the full menu for 'The Royal Dine' for 2 people for dinner on July 18.",
-            "prompt_for_task_generation": "Show the full menu for '<restaurant_name>' for <people_count> people for <meal_time> on <date_description>.",
+            "prompt_for_task_generation": "Show the full menu for '<name>' for <people> people for <meal_time> on <date_description>.",
         },
         {
             "prompt": "Display the complete menu for lunch at 'Sushi Palace'",
-            "prompt_for_task_generation": "Display the complete menu for <meal_time> at '<restaurant_name>'",
+            "prompt_for_task_generation": "Display the complete menu for <meal_time> at '<name>'",
             "reasoning": "Requests menu for specific meal time.",
         },
         {
@@ -337,7 +337,7 @@ COLLAPSE_MENU_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Hide the menu for 'The Royal Dine'.",
-            "prompt_for_task_generation": "Hide the menu for '<restaurant_name>'.",
+            "prompt_for_task_generation": "Hide the menu for '<name>'.",
         }
     ],
 )
@@ -365,15 +365,15 @@ BOOK_RESTAURANT_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "I'd like to book a table at the restaurant which name 'The Royal Dine' for 2 people on 2025-05-16 at 1:30 PM.",
-            "prompt_for_task_generation": "I'd like to book a table at the restaurant which name'<restaurant_name>' for <people_count> people on <selected_date> at <selected_time>.",
+            "prompt_for_task_generation": "I'd like to book a table at the restaurant which name'<name>' for <people> people on <date> at <time>.",
         },
         {
             "prompt": "Book a table for 3 people on 2024-07-18 for dinner at the restaurant which name 'Sushi Palace' at time '1:30 PM'.",
-            "prompt_for_task_generation": "Book a table for <people_count> people on <selected_date> for <selected_time> at the restaurant which name '<restaurant_name>'.",
+            "prompt_for_task_generation": "Book a table for <people> people on <date> for <time> at the restaurant which name '<name>'.",
         },
         {
             "prompt": "Book a table for 7 or more people on '2025-08-06' at a time that is NOT '12:30 PM' with a rating of 5 or less.",
-            "prompt_for_task_generation": "Book a table for <people_count> or more people on <selected_date> at a time that is NOT <selected_time> with a rating of <rating> or less.",
+            "prompt_for_task_generation": "Book a table for <people> or more people on <date> at a time that is NOT <time> with a rating of <rating> or less.",
         },
     ],
 )
@@ -401,28 +401,28 @@ COUNTRY_SELECTED_USE_CASE = UseCase(
     additional_prompt_info=COUNTRY_SELECTED_INFO,
     examples=[
         {
-            "prompt": "Select a country where country_name equals 'India'.",
-            "prompt_for_task_generation": "Select a country where country_name equals '<country_name>'.",
+            "prompt": "Select a country where country equals 'India'.",
+            "prompt_for_task_generation": "Select a country where country equals '<country>'.",
         },
         {
-            "prompt": "Select a country where country_name not equals 'United States'.",
-            "prompt_for_task_generation": "Select a country where country_name not equals '<country_name>'.",
+            "prompt": "Select a country where country not equals 'United States'.",
+            "prompt_for_task_generation": "Select a country where country not equals '<country>'.",
         },
         {
-            "prompt": "Select a country where country_code equals 'IN'.",
-            "prompt_for_task_generation": "Select a country where country_code equals '<country_code>'.",
+            "prompt": "Select a country where code equals 'IN'.",
+            "prompt_for_task_generation": "Select a country where code equals '<code>'.",
         },
         {
-            "prompt": "Select a country where country_code not equals 'US' and restaurant_name equals 'The Royal Dine'.",
-            "prompt_for_task_generation": "Select a country where country_code not equals '<country_code>' and restaurant_name equals '<restaurant_name>'.",
+            "prompt": "Select a country where code not equals 'US' and name equals 'The Royal Dine'.",
+            "prompt_for_task_generation": "Select a country where code not equals '<code>' and name equals '<name>'.",
         },
         {
-            "prompt": "Select a country where country_name equals 'Australia' and people_count equals 2 and selected_date equals '2025-05-16' and selected_time equals '1:30 PM'.",
-            "prompt_for_task_generation": "Select a country where country_name equals '<country_name>' and people_count equals <people_count> and selected_date equals '<selected_date>' and selected_time equals '<selected_time>'.",
+            "prompt": "Select a country where country equals 'Australia' and people equals 2 and date equals '2025-05-16' and time equals '1:30 PM'.",
+            "prompt_for_task_generation": "Select a country where country equals '<country>' and people equals <people> and date equals '<date>' and time equals '<time>'.",
         },
         {
-            "prompt": "Select a country where country_name equals 'Canada' and restaurant_name contains 'Palace' and rating greater than or equal to 4.",
-            "prompt_for_task_generation": "Select a country where country_name equals '<country_name>' and restaurant_name contains '<restaurant_name>' and rating greater than or equal to <rating>.",
+            "prompt": "Select a country where country equals 'Canada' and name contains 'Palace' and rating greater than or equal to 4.",
+            "prompt_for_task_generation": "Select a country where country equals '<country>' and name contains '<name>' and rating greater than or equal to <rating>.",
         },
     ],
 )
@@ -448,15 +448,15 @@ OCCASION_SELECTED_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "This reservation is for a 'birthday'.",
-            "prompt_for_task_generation": "This reservation is for a '<occasion_type>'.",
+            "prompt_for_task_generation": "This reservation is for a '<occasion>'.",
         },
         {
             "prompt": "Mark this booking as a special occasion (not anniversary)",
-            "prompt_for_task_generation": "Mark this booking as a special occasion (not <occasion_type>)",
+            "prompt_for_task_generation": "Mark this booking as a special occasion (not <occasion>)",
         },
         {
             "prompt": "Select 'business dinner' as the occasion type",
-            "prompt_for_task_generation": "Select '<occasion_type>' as the occasion type",
+            "prompt_for_task_generation": "Select '<occasion>' as the occasion type",
         },
     ],
 )
@@ -483,23 +483,23 @@ RESERVATION_COMPLETE_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Complete my reservation for 'The Royal Dine' on July 18th at 1:30 PM for 2 people. My phone is 123, it's for a birthday, and special request is 'a quiet table'.",
-            "prompt_for_task_generation": "Complete my reservation for '<restaurant_name>' on <date> at <time> for <people_count>. My email is <email>, phone is <phone_number>, it's for a <occasion>, and special request is '<special_request>'.",
+            "prompt_for_task_generation": "Complete my reservation for '<name>' on <date> at <time> for <people>. My email is <email>, phone is <phone>, it's for a <occasion>, and special request is '<request>'.",
         },
         {
             "prompt": "Please finalize my reservation at 'Ocean Breeze' for July 20th, 8:00 PM, 4 people. You can reach me at my number is 9876543210. It's for an anniversary. We'd like a table with a sea view.",
-            "prompt_for_task_generation": "Please finalize my reservation at '<restaurant_name>' for <date>, <time>, <people_count>. You can reach me at my number is <phone_number>. It's for an <occasion>. We'd like a table with a <special_request>.",
+            "prompt_for_task_generation": "Please finalize my reservation at '<name>' for <date>, <time>, <people>. You can reach me at my number is <phone>. It's for an <occasion>. We'd like a table with a <request>.",
         },
         {
             "prompt": "Finish booking at 'Mountain Top Grill' for 6 people at 6:15 PM on August 5. My email is sam.kim@domain.org and phone is 111-222-3333. Please note it's for a corporate event. Requesting projector setup.",
-            "prompt_for_task_generation": "Finish booking at '<restaurant_name>' for <people_count> at <time> on <date>. My phone is <phone_number>. Please note it's for a <occasion>. Requesting <special_request>.",
+            "prompt_for_task_generation": "Finish booking at '<name>' for <people> at <time> on <date>. My phone is <phone>. Please note it's for a <occasion>. Requesting <request>.",
         },
         {
             "prompt": "Confirm my dinner booking at 'Bella Roma' for September 9th at 9 PM for 3. Call me at +44-1234-567890. We're celebrating a graduation. Please arrange for a dessert surprise.",
-            "prompt_for_task_generation": "Confirm my dinner booking at '<restaurant_name>' for <date> at <time> for <people_count>. Call me at <phone_number>. We're celebrating a <occasion>. Please arrange <special_request>.",
+            "prompt_for_task_generation": "Confirm my dinner booking at '<name>' for <date> at <time> for <people>. Call me at <phone>. We're celebrating a <occasion>. Please arrange <request>.",
         },
         {
             "prompt": "Book my table at 'City Lights Bistro' on October 2nd, 5 PM, party of 5. Phone: 555-0099. It's a reunion. No loud music please.",
-            "prompt_for_task_generation": "Book my table at '<restaurant_name>' on <date>, <time>, party of <people_count>. phone: <phone_number>. It's a <occasion>. <special_request>.",
+            "prompt_for_task_generation": "Book my table at '<name>' on <date>, <time>, party of <people>. phone: <phone>. It's a <occasion>. <request>.",
         },
     ],
 )
@@ -518,7 +518,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 
 
 For example:
-- CORRECT: "Scroll in the direction 'right' where section_title equals 'Featured Products'"
+- CORRECT: "Scroll in the direction 'right' where section equals 'Featured Products'"
 - INCORRECT: "View details for product in section" (wrong action)
 - INCORRECT: "Show me section items" (no scroll action)
 """
@@ -532,20 +532,20 @@ SCROLL_VIEW_USE_CASE = UseCase(
     constraints_generator=generate_scroll_view_constraints,
     examples=[
         {
-            "prompt": "Scroll in the direction 'right' where section_title equals 'Featured Products'.",
-            "prompt_for_task_generation": "Scroll in the <direction> where section_title equals <Featured Products>.",
+            "prompt": "Scroll in the direction 'right' where section equals 'Featured Products'.",
+            "prompt_for_task_generation": "Scroll in the <direction> where section equals <Featured Products>.",
         },
         {
-            "prompt": "Scroll in the direction 'left' where section_title not equal to 'Featured Products'.",
-            "prompt_for_task_generation": "Scroll in the <direction> where section_title not equal to <Featured Products>.",
+            "prompt": "Scroll in the direction 'left' where section not equal to 'Featured Products'.",
+            "prompt_for_task_generation": "Scroll in the <direction> where section not equal to <Featured Products>.",
         },
         {
-            "prompt": "Scroll in the direction 'right' where section_title contains 'Top Sellers'.",
-            "prompt_for_task_generation": "Scroll in the <direction> where section_title contains <Top Sellers>.",
+            "prompt": "Scroll in the direction 'right' where section contains 'Top Sellers'.",
+            "prompt_for_task_generation": "Scroll in the <direction> where section contains <Top Sellers>.",
         },
         {
-            "prompt": "Scroll in the direction 'left' where section_title does not contain 'Electronics'.",
-            "prompt_for_task_generation": "Scroll in the <direction> where section_title does not contain <Electronics>.",
+            "prompt": "Scroll in the direction 'left' where section does not contain 'Electronics'.",
+            "prompt_for_task_generation": "Scroll in the <direction> where section does not contain <Electronics>.",
         },
     ],
 )
