@@ -412,7 +412,6 @@ class Benchmark:
             dynamic=self.config.dynamic,
         )
         pipeline = TaskGenerationPipeline(web_project=project, config=config)
-        print("[CONSTRAINTS_FLOW] Paso 2: llamando pipeline.generate()")
         tasks = await pipeline.generate()
 
         if tasks:

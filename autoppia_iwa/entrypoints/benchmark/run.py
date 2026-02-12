@@ -190,8 +190,6 @@ def main():
             logger.info(f"Stateful mode enabled: max {CFG.max_steps_per_task} steps per task")
 
         # Create and run benchmark
-        print("[CONSTRAINTS_FLOW] Inicio benchmark")
-        print("CORREMOS EL BENCHMARK")
         benchmark = Benchmark(CFG)
         asyncio.run(benchmark.run())
 

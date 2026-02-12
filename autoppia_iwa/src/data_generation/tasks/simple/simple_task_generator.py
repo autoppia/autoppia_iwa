@@ -87,7 +87,6 @@ class SimpleTaskGenerator:
         for use_case in web_use_cases:
             _log_task_generation(f"Generating tasks for use case: {use_case.name}", context="USE_CASE")
             try:
-                print("GENERAMOS TASKS PARA EL USE CASE: ", use_case.name)
                 tasks_for_use_case = await self.generate_tasks_for_use_case(use_case, prompts_per_use_case, dynamic=dynamic)
                 all_tasks.extend(tasks_for_use_case)
                 _log_task_generation(
@@ -121,18 +120,10 @@ class SimpleTaskGenerator:
         # Generate each prompt independently
         for _ in range(number_of_prompts):
             # Build task URL with unique seed for each prompt
-            print("GENERAMOS TASK URL PARA EL USE CASE: ", use_case.name)
             task_url = self._build_task_url_with_seed(dynamic=dynamic)
-            print("TASK URL: ", task_url)
             seed = get_seed_from_url(task_url) if dynamic else 1
-            print("GENERAMOS SEED: ", seed)
-
-            print("URLCOMPLETA: ", task_url + "?seed=" + str(seed))
-
             # Load dataset for this specific seed
-            print("GENERAMOS DATASET PARA EL USE CASE: ", use_case.name)
             dataset: dict[str, list[dict]] = {}
-            print("DATASET: ", dataset)
 
             # IMPORTANT: Create a deep copy of use_case for this task to preserve constraints
             # Each task needs its own copy so constraints aren't overwritten by subsequent iterations

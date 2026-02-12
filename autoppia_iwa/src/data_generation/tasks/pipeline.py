@@ -63,7 +63,6 @@ class TaskGenerationPipeline:
 
         try:
             # Generate tasks
-            print("[CONSTRAINTS_FLOW] Paso 3: TaskGenerationPipeline -> task_generator.generate()")
             tasks = await self.task_generator.generate(prompts_per_use_case=self.task_config.prompts_per_use_case, use_cases=self.task_config.use_cases, dynamic=self.task_config.dynamic)
 
             _log_task_generation(f"Generated {len(tasks)} tasks")
