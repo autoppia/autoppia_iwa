@@ -70,6 +70,8 @@ class Task(BaseModel):
         Serialize a Task object to a dictionary.
         """
         serialized = self.model_dump()
+        # Include original_prompt (PrivateAttr is not included in model_dump)
+        serialized["original_prompt"] = self.original_prompt
         # For sub-tests:
         serialized["tests"] = [test.model_dump() for test in self.tests]
         if self.use_case:
@@ -79,34 +81,25 @@ class Task(BaseModel):
     @classmethod
     def deserialize(cls, data: dict) -> "Task":
         """
-        Optionally custom method, but normally you can do Task(**data).
+        Deserialize a dictionary to a Task object.
         """
-        # # Create a copy to avoid modifying the input data
-        # task_data = data.copy()
+        from autoppia_iwa.src.data_generation.tests.classes import BaseTaskTest
 
-        # # Handle tests - convert to appropriate test objects
-        # if "tests" in task_data:
-        #     task_data["tests"] = [BaseTaskTest.deserialize(test) for test in task_data["tests"]]
-
-        # # Handle milestones recursively
-        # if task_data.get("milestones"):
-        #     task_data["milestones"] = [cls.deserialize(milestone) for milestone in task_data["milestones"]]
-
-        # # Handle BrowserSpecification
-        # if "specifications" in task_data:
-        #     task_data["specifications"] = BrowserSpecification.model_validate(task_data["specifications"])
-
-        # # Handle potential naming incompatibilities
-        # if "test_cases" in task_data and "tests" not in task_data:
-        #     task_data["tests"] = task_data.pop("test_cases")
-
-        # if "description" in task_data and not task_data.get("prompt"):
-        #     task_data["prompt"] = task_data.pop("description")
-
+        # Handle use_case deserialization
         if data.get("use_case"):
             data["use_case"] = UseCase.deserialize(data["use_case"])
+
+        # Handle tests deserialization - convert dicts back to test objects
+        if data.get("tests"):
+            data["tests"] = [BaseTaskTest.deserialize(test) for test in data["tests"]]
+
+        # Create task
         task = cls(**data)
-        object.__setattr__(task, "_original_prompt", data.get("prompt", ""))
+
+        # Restore original_prompt
+        original_prompt = data.get("original_prompt", data.get("prompt", ""))
+        object.__setattr__(task, "_original_prompt", original_prompt)
+
         return task
 
     def clean_task(self) -> dict:
@@ -127,15 +120,25 @@ class Task(BaseModel):
         # Remove any None values to make the output cleaner
         return {k: v for k, v in cleaned.items() if v is not None}
 
-    def prepare_for_agent(self, web_agent_id: str) -> "Task":
+    def replace_credentials(self, web_agent_id: str) -> "Task":
         """
-        Creates and returns a copy of the task with web_agent_id replacements applied.
-        The original task remains unmodified.
-        Args:
-            web_agent_id: The web agent ID to replace placeholders with
-        Returns:
-            A new Task instance with replacements applied
+        ⚠️ DEPRECATED: DO NOT USE THIS METHOD.
+        
+        This method should NOT be used. Agents must ALWAYS receive tasks with placeholders.
+        Credentials should be replaced in ACTIONS (not in the task prompt) using TaskSolution.replace_credentials()
+        AFTER receiving actions from the agent but BEFORE evaluating them.
+        
+        This method is kept for backward compatibility only and will be removed in the future.
         """
+        import warnings
+        warnings.warn(
+            "Task.replace_credentials() is deprecated. "
+            "Do NOT replace credentials in the task. "
+            "Agents must receive tasks with placeholders. "
+            "Use TaskSolution.replace_credentials() to replace placeholders in actions AFTER receiving them.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         # Create a deep copy of the current task
         import copy
 
@@ -143,6 +146,15 @@ class Task(BaseModel):
 
         # Update prompt in the copy
         if isinstance(task_copy.prompt, str):
+            # Replace <username> with 'user{web_agent_id}'
+            task_copy.prompt = task_copy.prompt.replace("<username>", f"user{web_agent_id}")
+            task_copy.prompt = task_copy.prompt.replace("<password>", "Passw0rd!")
+            # Replace <password> with 'Passw0rd!'
+            task_copy.prompt = task_copy.prompt.replace("<signup_password>", "Passw0rd!")
+            task_copy.prompt = task_copy.prompt.replace("<signup_username>", "newuser{web_agent_id}")
+            task_copy.prompt = task_copy.prompt.replace("<signup_email>", "newuser{web_agent_id}@gmail.com")
+
+            # Also replace <web_agent_id> for backward compatibility
             task_copy.prompt = task_copy.prompt.replace("<web_agent_id>", web_agent_id)
 
         return task_copy
@@ -150,7 +162,7 @@ class Task(BaseModel):
 
 class TaskGenerationConfig(BaseModel):
     # Task quantity controls
-    prompts_per_use_case: int  = 1  # Number of task variations to generate per use case (<=0/None => auto)
+    prompts_per_use_case: int = 1  # Number of task variations to generate per use case (<=0/None => auto)
     # Specific use cases to focus on. If None, generates for all available use cases.
     use_cases: list[str] | None = None
     dynamic: bool = False

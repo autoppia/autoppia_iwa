@@ -1,4 +1,5 @@
 import asyncio
+import copy
 import importlib
 import inspect
 import json
@@ -133,27 +134,29 @@ class SimpleTaskGenerator:
             dataset: dict[str, list[dict]] = {}
             print("DATASET: ", dataset)
 
-            
-            # Generate constraints specific to this seed's dataset
-            if hasattr(use_case, "generate_constraints_async"):
+            # IMPORTANT: Create a deep copy of use_case for this task to preserve constraints
+            # Each task needs its own copy so constraints aren't overwritten by subsequent iterations
+            use_case_copy = copy.deepcopy(use_case)
+            # Generate constraints specific to this seed's dataset      
+            if hasattr(use_case_copy, "generate_constraints_async"):
                 dataset = await self._load_dataset(seed) or {}
 
                 try:
-                    constraints_info = await use_case.generate_constraints_async(task_url=task_url, dataset=dataset)
+                    constraints_info = await use_case_copy.generate_constraints_async(task_url=task_url, dataset=dataset)
                 except Exception as e:
-                    logger.error(f"Constraint generation failed for '{use_case.name}': {e}")
+                    logger.error(f"Constraint generation failed for '{use_case_copy.name}': {e}")
                     continue  # Skip this iteration
             else:
                 constraints_info = "**IMPORTANT:** Do **NOT** invent, assume, or include any constraints. No constraints are provided for this use case."
 
             # Build the LLM prompt (always generate 1 prompt per call)
-            if not use_case.additional_prompt_info:
-                use_case.additional_prompt_info = f"GENERATE PROMPT LIKE: {use_case.get_example_prompts_str()}"
+            if not use_case_copy.additional_prompt_info:
+                use_case_copy.additional_prompt_info = f"GENERATE PROMPT LIKE: {use_case_copy.get_example_prompts_str()}"
 
             llm_prompt = GLOBAL_TASK_GENERATION_PROMPT.format(
-                use_case_name=use_case.name,
-                use_case_description=use_case.description,
-                additional_prompt_info=use_case.additional_prompt_info,
+                use_case_name=use_case_copy.name,
+                use_case_description=use_case_copy.description,
+                additional_prompt_info=use_case_copy.additional_prompt_info,
                 constraints_info=constraints_info,
             )
 
@@ -163,7 +166,7 @@ class SimpleTaskGenerator:
             # Process only the first prompt from the LLM response for this iteration
             # This ensures we generate exactly number_of_prompts tasks total
             if not prompt_list:
-                logger.warning(f"No prompts returned from LLM for use case '{use_case.name}'")
+                logger.warning(f"No prompts returned from LLM for use case '{use_case_copy.name}'")
                 continue
 
             # Take only the first prompt for this iteration
@@ -172,8 +175,8 @@ class SimpleTaskGenerator:
             try:
                 # Build replace kwargs with this seed's data
                 replace_kwargs: dict[str, Any] = {}
-                if use_case.replace_func:
-                    sig = inspect.signature(use_case.replace_func)
+                if use_case_copy.replace_func:
+                    sig = inspect.signature(use_case_copy.replace_func)
                     if "seed_value" in sig.parameters:
                         replace_kwargs["seed_value"] = seed
                     if "dataset" in sig.parameters:
@@ -186,19 +189,18 @@ class SimpleTaskGenerator:
                             replace_kwargs["dataset"] = dataset
 
                 # Apply replacements (async or sync)
-                if hasattr(use_case, "apply_replacements_async"):
-                    replaced_prompt = await use_case.apply_replacements_async(prompt_text, **replace_kwargs)
+                if hasattr(use_case_copy, "apply_replacements_async"):
+                    replaced_prompt = await use_case_copy.apply_replacements_async(prompt_text, **replace_kwargs)
                 else:
-                    replaced_prompt = use_case.apply_replacements(prompt_text, **replace_kwargs)
+                    replaced_prompt = use_case_copy.apply_replacements(prompt_text, **replace_kwargs)
 
-                # Create and append task - ensure constraints are preserved by using the use_case object
-                # which has constraints set by generate_constraints_async
+                # Create and append task - use the COPY which has constraints preserved
                 tasks.append(
                     Task(
                         web_project_id=self.web_project.id,
                         url=task_url,
                         prompt=replaced_prompt,
-                        use_case=use_case,
+                        use_case=use_case_copy,  # Use the copy with preserved constraints
                     )
                 )
             except Exception as ex:

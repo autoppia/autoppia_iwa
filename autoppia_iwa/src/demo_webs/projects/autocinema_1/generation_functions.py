@@ -17,7 +17,7 @@ def generate_registration_constraints(dataset: list[dict]):
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "username equals newuser<web_agent_id> AND email equals newuser<web_agent_id>@gmail.com AND password equals password123"
+    constraints_str = "username equals <signup_username> AND email equals <signup_email> AND password equals <signup_password>"
 
     return parse_constraints_str(constraints_str)
 
@@ -30,7 +30,7 @@ def generate_login_constraints(dataset: list[dict]):
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "username equals <web_agent_id> AND password equals password123"
+    constraints_str = "username equals <username> AND password equals <password>"
 
     return parse_constraints_str(constraints_str)
 
@@ -43,7 +43,7 @@ def generate_logout_constraints(dataset: list[dict]):
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "username equals <web_agent_id> AND password equals password123"
+    constraints_str = "username equals <username> AND password equals <password>"
     return parse_constraints_str(constraints_str)
 
 
@@ -66,7 +66,7 @@ async def generate_search_film_constraints(task_url: str | None = None, dataset:
         films = await fetch_data(seed_value=seed)
         dataset = {"films": films}
 
-    films = dataset.get("films", []) if dataset else []
+    films = dataset.get("movies", []) or dataset.get("films", []) if dataset else []
     if not films:
         return None
 
@@ -95,7 +95,7 @@ async def generate_film_constraints(task_url: str | None = None, dataset: dict[s
         films = await fetch_data(seed_value=seed)
         dataset = {"films": films}
 
-    films = dataset.get("films", []) if dataset else []
+    films = dataset.get("movies", []) or dataset.get("films", []) if dataset else []
     if not films:
         return None
 
@@ -204,9 +204,10 @@ async def generate_film_filter_constraints(task_url: str | None = None, dataset:
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url) if task_url else None
         films = await fetch_data(seed_value=seed)
-        dataset = {"films": films}
+        dataset = {"movies": films}
 
-    films = dataset.get("films", []) if dataset else []
+    # Support both "movies" and "films" keys for compatibility
+    films = dataset.get("movies", []) or dataset.get("films", []) if dataset else []
     if not films:
         return []
 
@@ -526,7 +527,7 @@ async def generate_add_comment_constraints(task_url: str | None = None, dataset:
         films = await fetch_data(seed_value=seed)
         dataset = {"films": films}
 
-    films = dataset.get("films", []) if dataset else []
+    films = dataset.get("movies", []) or dataset.get("films", []) if dataset else []
     if not films:
         return []
 
@@ -880,8 +881,8 @@ def generate_edit_profile_constraints(dataset: list[dict]):
     constraints = []
 
     # Always add username and password constraints explicitly
-    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<web_agent_id>"})
-    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "password123"})
+    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<username>"})
+    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<password>"})
 
     # Select random fields to edit
     selected_fields = sample(editable_fields, k=choice([1, 2, 3]))

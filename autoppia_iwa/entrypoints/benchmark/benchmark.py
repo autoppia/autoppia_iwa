@@ -20,7 +20,7 @@ from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStat
 from autoppia_iwa.src.evaluation.concurrent_evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.evaluation.stateful_evaluator import AsyncStatefulEvaluator
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer
-from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution
+from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution, sanitize_snapshot_html
 
 visualizer = SubnetVisualizer()
 
@@ -142,7 +142,7 @@ class Benchmark:
             # Usar total_actions_executed como límite (igual que la subnet)
             while total_actions_executed < max_steps and not bool(step_result.score.success):
                 snapshot = step_result.snapshot
-                html = snapshot.html or ""
+                html = sanitize_snapshot_html(snapshot.html or "", agent.id)
                 current_url = snapshot.url or task.url
 
                 try:
@@ -260,12 +260,11 @@ class Benchmark:
 
                 start_ts = time.time()
 
-                prepared_task = task.prepare_for_agent(agent.id)
-
                 # ✅ Usar act() en lugar de solve_task()
                 # En modo concurrent, llamamos UNA vez con snapshot inicial vacío
+                # Send task WITH placeholders - agent should return actions with placeholders
                 actions = await agent.act(
-                    task=prepared_task,
+                    task=task,  # Send task with placeholders, NOT replaced
                     snapshot_html="",  # Vacío en modo concurrent (el agente no necesita ver el HTML)
                     url=task.url,
                     step_index=0,  # Siempre 0 en modo concurrent
@@ -280,6 +279,8 @@ class Benchmark:
                     actions=actions,
                     web_agent_id=agent.id,
                 )
+                # Replace credential placeholders in actions BEFORE evaluation
+                task_solution.replace_credentials(agent.id)
                 # Normalize any embedded agent IDs inside actions if needed
                 task_solution.actions = task_solution.replace_web_agent_id()
 
@@ -387,10 +388,24 @@ class Benchmark:
     # Per-project execution
     # ---------------------------------------------------------------------
     async def _generate_tasks_for_project(self, project: WebProject) -> list[Task]:
-        print("[CONSTRAINTS_FLOW] Paso 2: _generate_tasks_for_project", project.id)
+        from autoppia_iwa.config.config import PROJECT_BASE_DIR
+        from autoppia_iwa.entrypoints.benchmark.utils.task_generation import load_tasks_from_json, save_tasks_to_json
         from autoppia_iwa.src.data_generation.tasks.classes import TaskGenerationConfig
         from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
 
+        # Check if we should use cached tasks
+        use_cached = getattr(self.config, "use_cached_tasks", False)
+        cache_dir = str(PROJECT_BASE_DIR.parent / "benchmark-output" / "cache" / "tasks")
+
+        if use_cached:
+            cached_tasks = await load_tasks_from_json(project, cache_dir)
+            if cached_tasks:
+                logger.info(f"Using {len(cached_tasks)} cached tasks for '{project.name}'")
+                return cached_tasks
+            else:
+                logger.info(f"No cached tasks found for '{project.name}', generating new tasks...")
+
+        # Generate new tasks
         config = TaskGenerationConfig(
             prompts_per_use_case=self.config.prompts_per_use_case,
             use_cases=self.config.use_cases,
@@ -422,6 +437,9 @@ class Benchmark:
                     visualizer.show_task_with_tests(task)
             except Exception as e:
                 logger.warning(f"Task visualization failed: {e}")
+
+            # Save to cache
+            await save_tasks_to_json(tasks, project, cache_dir)
 
         return tasks
 

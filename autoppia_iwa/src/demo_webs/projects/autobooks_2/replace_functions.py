@@ -1,28 +1,9 @@
 from .data_utils import fetch_data
 
 
-def login_replace_func(text: str) -> str:
-    if not isinstance(text, str):
-        return text
-
-    replacements = {"<username>": "user<web_agent_id>", "<password>": "password123"}
-
-    for placeholder, value in replacements.items():
-        text = text.replace(placeholder, value)
-
-    return text
 
 
-def register_replace_func(text: str) -> str:
-    if not isinstance(text, str):
-        return text
 
-    replacements = {"<username>": "newuser<web_agent_id>", "<email>": "newuser<web_agent_id>@gmail.com", "<password>": "password123"}
-
-    for placeholder, value in replacements.items():
-        text = text.replace(placeholder, value)
-
-    return text
 
 
 async def replace_book_placeholders(
@@ -93,5 +74,6 @@ async def replace_book_placeholders(
                 replacement = authors[i % len(authors)] if authors else ""
                 text = text.replace("<author>", replacement, 1)
 
-    text = login_replace_func(text=text)
+    # Do NOT call login_replace_func here - credentials should remain as placeholders
+    # They will be replaced during evaluation via Task.replace_credentials()
     return text

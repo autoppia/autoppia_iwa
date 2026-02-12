@@ -37,7 +37,7 @@ from .generation_functions import (
     generate_registration_constraints,
     generate_search_book_constraints,
 )
-from .replace_functions import login_replace_func, register_replace_func, replace_book_placeholders
+from .replace_functions import replace_book_placeholders
 
 
 async def _get_books_data_for_prompts(seed_value: int | None = None, count: int = 50) -> list[dict]:
@@ -90,7 +90,7 @@ REGISTRATION_USE_CASE = UseCase(
     description="The user fills out the registration form and successfully creates a new account.",
     event=RegistrationEvent,
     event_source_code=RegistrationEvent.get_source_code_of_class(),
-    replace_func=register_replace_func,
+    # replace_func not needed - credentials remain as placeholders until evaluation
     constraints_generator=generate_registration_constraints,
     additional_prompt_info=REGISTRATION_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -112,27 +112,14 @@ REGISTRATION_USE_CASE = UseCase(
 ###############################################################################
 # LOGIN_USE_CASE
 ###############################################################################
-LOGIN_ADDITIONAL_PROMPT_INFO = """
-CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Be sure to add instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
-2. Start the prompt with one of following phrases to indicate the login step.:
-    Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
-3. KEEP THE CONSTRAINTS VALUE IN PROMPT SAME AS THEY ARE IN CONSTRAINTS.
-    Example:
-    constraint: 'username' equals '<web_agent_id>' AND 'password' equals 'password123'
-    Then prompt should be like:
-    prompt: "authenticate with username '<web_agent_id>' and password 'password123'."
 
-ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
-"""
 LOGIN_USE_CASE = UseCase(
     name="LOGIN_BOOK",
     description="The user fills out the login form and logs in successfully.",
     event=LoginEvent,
     event_source_code=LoginEvent.get_source_code_of_class(),
-    replace_func=login_replace_func,
+    # replace_func not needed - credentials remain as placeholders until evaluation
     constraints_generator=generate_login_constraints,
-    # additional_prompt_info=LOGIN_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Login for the following username:<username> and password:<password>",
@@ -156,21 +143,14 @@ LOGIN_USE_CASE = UseCase(
 ###############################################################################
 # LOGOUT_USE_CASE
 ###############################################################################
-LOGOUT_ADDITIONAL_PROMPT_INFO = """
-CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Be sure to add instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
-Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 
-ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
-"""
 LOGOUT_USE_CASE = UseCase(
     name="LOGOUT_BOOK",
     description="The user logs out of the platform after logging in.",
     event=LogoutEvent,
     event_source_code=LogoutEvent.get_source_code_of_class(),
-    replace_func=login_replace_func,
+    # replace_func not needed - credentials remain as placeholders until evaluation
     constraints_generator=generate_logout_constraints,
-    # additional_prompt_info=LOGOUT_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Login for the following username:<username> and password:<password>, then logout",
@@ -686,35 +666,35 @@ ADD_BOOK_USE_CASE = UseCase(
     event=AddBookEvent,
     event_source_code=AddBookEvent.get_source_code_of_class(),
     constraints_generator=generate_add_book_constraints,
-    replace_func=login_replace_func,
+    # replace_func not needed - credentials remain as placeholders until evaluation
     additional_prompt_info=ADD_BOOK_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "First, authenticate with username '<username>' and password 'PASSWORD'. Then, add the book 'A Guide to the Good Life' authored by 'William B. Irvine'",
+            "prompt": "First, authenticate with username '<username>' and password '<password>'. Then, add the book 'A Guide to the Good Life' authored by 'William B. Irvine'",
             "prompt_for_task_generation": "First, authenticate with username '<username>' and password '<password>'. Then, add the book '<book>' authored by '<author>'",
         },
         {
-            "prompt": "Initiate session using '<username>' as the username and 'PASSWORD' as the secret. Then, add the book 'AI Superpowers' released in 2018",
+            "prompt": "Initiate session using '<username>' as the username and '<password>' as the secret. Then, add the book 'AI Superpowers' released in 2018",
             "prompt_for_task_generation": "Initiate session using '<username>' as the username and '<password>' as the secret. Then, add the book '<book>' released in <year>",
         },
         {
-            "prompt": "After successful login with '<username>' and 'PASSWORD', add the book 'Sapiens: A Brief History of Humankind' with genres History and Anthropology",
+            "prompt": "After successful login with '<username>' and '<password>', add the book 'Sapiens: A Brief History of Humankind' with genres History and Anthropology",
             "prompt_for_task_generation": "After successful login with '<username>' and '<password>', add the book '<book>' with genres <genre> and <genre>",
         },
         {
-            "prompt": "Once logged in as '<username>' with the password 'PASSWORD', add the book 'The Midnight Library' with a page_count under 320 pages",
+            "prompt": "Once logged in as '<username>' with the password '<password>', add the book 'The Midnight Library' with a page_count under 320 pages",
             "prompt_for_task_generation": "Once logged in as '<username>' with the password '<password>', add the book '<book>' with a page_count under <page_count> pages",
         },
         {
-            "prompt": "Having authenticated with '<username>' and 'PASSWORD', add the book 'The Art of Learning' with rating not 4.8.",
+            "prompt": "Having authenticated with '<username>' and '<password>', add the book 'The Art of Learning' with rating not 4.8.",
             "prompt_for_task_generation": "Having authenticated with '<username>' and '<password>', add the book '<book>' with rating not equal to <rating>",
         },
         {
-            "prompt": "Upon logging in with username '<username>' and the secret 'PASSWORD', add the book 'The Practicing Mind' from one of these authors: 'Thomas M. Sterner', 'James Clear', or 'Ryan Holiday'",
+            "prompt": "Upon logging in with username '<username>' and the secret '<password>', add the book 'The Practicing Mind' from one of these authors: 'Thomas M. Sterner', 'James Clear', or 'Ryan Holiday'",
             "prompt_for_task_generation": "Upon logging in with username '<username>' and the secret '<password>', add a book '<book>' from one of these authors: '<author>', '<author>', or '<author>'",
         },
         {
-            "prompt": "With credentials '<username>' and 'PASSWORD' successfully entered, add the book 'Deep Work' with running time at least 450 pages authored by 'Cal Newport'",
+            "prompt": "With credentials '<username>' and '<password>' successfully entered, add the book 'Deep Work' with running time at least 450 pages authored by 'Cal Newport'",
             "prompt_for_task_generation": "With credentials '<username>' and '<password>' successfully entered, add the book '<book>' with running time at least <page_count> pages authored by '<author>'",
         },
     ],
@@ -797,7 +777,6 @@ DELETE_BOOK_USE_CASE = UseCase(
     event=DeleteBookEvent,
     event_source_code=DeleteBookEvent.get_source_code_of_class(),
     additional_prompt_info=DELETE_BOOK_ADDITIONAL_PROMPT_INFO,
-    replace_func=login_replace_func,
     constraints_generator=generate_delete_book_constraints,
     examples=[
         {
@@ -921,7 +900,6 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
     description="The user edits their profile, modifying one or more attributes such as first name, last name, bio, location, website, or favorite genres. Username and email cannot be edited.",
     event=EditUserEvent,
     event_source_code=EditUserEvent.get_source_code_of_class(),
-    replace_func=login_replace_func,
     constraints_generator=generate_edit_profile_constraints,
     additional_prompt_info=EDIT_PROFILE_ADDITIONAL_PROMPT_INFO,
     examples=[

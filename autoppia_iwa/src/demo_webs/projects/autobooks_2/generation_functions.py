@@ -17,7 +17,7 @@ def generate_registration_constraints():
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "username equals newuser<web_agent_id> AND email equals newuser<web_agent_id>@gmail.com AND password equals PASSWORD"
+    constraints_str = "username equals <signup_username> AND email equals <signup_email> AND password equals <signup_password>"
 
     return parse_constraints_str(constraints_str)
 
@@ -31,7 +31,7 @@ def generate_login_constraints():
 
     # Generar restricciones frescas basadas en los datos de películas
 
-    constraints_str = "username equals <web_agent_id> AND password equals PASSWORD"
+    constraints_str = "username equals <username> AND password equals <password>"
 
     return parse_constraints_str(constraints_str)
 
@@ -44,7 +44,7 @@ def generate_logout_constraints():
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "username equals <web_agent_id> AND password equals PASSWORD"
+    constraints_str = "username equals <username> AND password equals <password>"
     return parse_constraints_str(constraints_str)
 
 
@@ -692,7 +692,7 @@ async def generate_add_book_constraints(task_url: str | None = None, dataset: di
 
     # Always add username and password constraints explicitly
     constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<username>"})
-    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "PASSWORD"})
+    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<password>"})
 
     # Seleccionar 1, 2, 3 o 4 campos para editar
     selected_fields = sample(editable_fields, k=choice([1, 2, 3, 4]))
