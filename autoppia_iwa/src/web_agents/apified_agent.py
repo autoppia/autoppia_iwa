@@ -1,6 +1,6 @@
 import asyncio
 import ipaddress
-from typing import Any, Dict, List, Optional
+from typing import Any
 from urllib.parse import urlparse, urlunparse
 
 import aiohttp
@@ -57,8 +57,7 @@ class ApifiedWebAgent(IWebAgent):
             # Subsequent calls: return empty list (all actions already returned)
             return []
 
-
-    def _create_action(self, raw: dict) -> Optional[BaseAction]:
+    def _create_action(self, raw: dict) -> BaseAction | None:
         """Build one BaseAction from dict; rewrite NavigateAction URL."""
         try:
             action = BaseAction.create_action(raw)
@@ -91,7 +90,7 @@ class ApifiedWebAgent(IWebAgent):
 
             web_agent_id = response_json.get("web_agent_id", "unknown")
             recording_str = response_json.get("recording", "")
-            rebuilt_actions: List[BaseAction] = []
+            rebuilt_actions: list[BaseAction] = []
             for a in actions_data:
                 if isinstance(a, dict):
                     built = self._create_action(a)

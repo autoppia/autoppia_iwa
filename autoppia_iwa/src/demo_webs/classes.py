@@ -90,7 +90,7 @@ class UseCase(BaseModel):
                     to pass to the generator. Each constraint generator receives the full dataset
                     and extracts the relevant entity list it needs.
         """
-        print("[CONSTRAINTS_FLOW] Paso 5: generate_constraints_async use_case=%s" % self.name)
+        print(f"[CONSTRAINTS_FLOW] Paso 5: generate_constraints_async use_case={self.name}")
         if self.constraints_generator:
             # Inspect the generator function signature to see what parameters it accepts
             sig = inspect.signature(self.constraints_generator)
@@ -117,7 +117,7 @@ class UseCase(BaseModel):
                 kwargs["dataset"] = dataset
 
             # Call generator with appropriate parameters
-            print("[CONSTRAINTS_FLOW] Paso 5: llamando constraints_generator=%s con kwargs keys=%s" % (getattr(self.constraints_generator, "__name__", ""), list(kwargs.keys())))
+            print("[CONSTRAINTS_FLOW] Paso 5: llamando constraints_generator={} con kwargs keys={}".format(getattr(self.constraints_generator, "__name__", ""), list(kwargs.keys())))
             if kwargs:
                 result = self.constraints_generator(**kwargs)
             elif first_param_is_dataset:

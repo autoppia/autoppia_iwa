@@ -6,6 +6,7 @@ from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue
 
 class OpenAppointmentFormEvent(Event, BaseEventValidator):
     """Fired when user clicks Book Appointment and opens the appointment booking form/modal."""
+
     event_name: str = "OPEN_APPOINTMENT_FORM"
     date: str | None = None
     doctor_name: str | None = None
@@ -131,6 +132,7 @@ class AppointmentBookedSuccessfullyEvent(Event, BaseEventValidator):
 
 class RequestQuickAppointmentEvent(Event, BaseEventValidator):
     """Fired when user submits the homepage quick appointment form (hero); shows 'We will contact you' popup."""
+
     event_name: str = "REQUEST_QUICK_APPOINTMENT"
     patient_name: str | None = None
     patient_email: str | None = None
@@ -174,6 +176,7 @@ class RequestQuickAppointmentEvent(Event, BaseEventValidator):
 
 class SearchAppointmentEvent(Event, BaseEventValidator):
     """Fired when user clicks Search on the Appointments page (applies doctor/speciality/date filters)."""
+
     event_name: str = "SEARCH_APPOINTMENT"
     filter_type: str | None = None
     doctor_name: str | None = None
@@ -219,6 +222,7 @@ class SearchAppointmentEvent(Event, BaseEventValidator):
 
 class SearchPrescriptionEvent(Event, BaseEventValidator):
     """Fired when user clicks Search on the Prescriptions page (applies medicine/doctor filters)."""
+
     event_name: str = "SEARCH_PRESCRIPTION"
     medicine_name: str | None = None
     doctor_name: str | None = None
@@ -341,6 +345,7 @@ class RefillRequestEvent(Event, BaseEventValidator):
 
 class SearchMedicalAnalysisEvent(Event, BaseEventValidator):
     """Fired when user clicks Search on the Medical Records page (applies title/doctor filters)."""
+
     event_name: str = "SEARCH_MEDICAL_ANALYSIS"
     record_title: str | None = None
     doctor_name: str | None = None
@@ -385,6 +390,7 @@ class SearchMedicalAnalysisEvent(Event, BaseEventValidator):
 
 class ViewMedicalAnalysisEvent(Event, BaseEventValidator):
     """Fired when user clicks View Analysis on a medical analysis card."""
+
     event_name: str = "VIEW_MEDICAL_ANALYSIS"
     record_title: str | None = None
     record_type: str | None = None
@@ -447,12 +453,7 @@ class ViewDoctorProfileEvent(Event, BaseEventValidator):
             return True
         lang_ok = True
         if criteria.language is not None:
-            if self.languages:
-                lang_ok = any(
-                    self._validate_field(lang, criteria.language) for lang in self.languages
-                )
-            else:
-                lang_ok = False
+            lang_ok = any(self._validate_field(lang, criteria.language) for lang in self.languages) if self.languages else False
         return all(
             [
                 self._validate_field(self.doctor_name, criteria.doctor_name),
@@ -486,6 +487,7 @@ class ViewDoctorProfileEvent(Event, BaseEventValidator):
 
 class ViewDoctorEducationEvent(Event, BaseEventValidator):
     """Evento que la web dispara cuando se abre la pestaña Education (lo que Playwright provoca al ejecutar acciones)."""
+
     # Tipo de evento: en el paso 5 del evaluation flow se filtran los backend_events por este event_name (igual al del test de la Task).
     event_name: str = "VIEW_DOCTOR_EDUCATION"
     # Datos del evento: lo que la web envió al backend cuando disparó este evento (evidencia de lo que hizo el agente en Playwright).
@@ -511,13 +513,7 @@ class ViewDoctorEducationEvent(Event, BaseEventValidator):
         # Criterio idioma: por defecto OK; si el test pide idioma, hay que comprobarlo.
         lang_ok = True
         if criteria.language is not None:
-            if self.languages:
-                # Al menos un idioma del evento debe cumplir lo que pide el test (equals, contains, etc.).
-                lang_ok = any(
-                    self._validate_field(lang, criteria.language) for lang in self.languages
-                )
-            else:
-                lang_ok = False
+            lang_ok = any(self._validate_field(lang, criteria.language) for lang in self.languages) if self.languages else False
         # Todas las condiciones del test deben cumplirse: valor del evento vs valor que pide el test, campo a campo.
         return all(
             [
@@ -556,6 +552,7 @@ class ViewDoctorEducationEvent(Event, BaseEventValidator):
 
 class ViewDoctorAvailabilityEvent(Event, BaseEventValidator):
     """Fired when user opens the Availability tab on a doctor profile page."""
+
     event_name: str = "VIEW_DOCTOR_AVAILABILITY"
     doctor_name: str | None = None
     speciality: str | None = None
@@ -575,12 +572,7 @@ class ViewDoctorAvailabilityEvent(Event, BaseEventValidator):
             return True
         lang_ok = True
         if criteria.language is not None:
-            if self.languages:
-                lang_ok = any(
-                    self._validate_field(lang, criteria.language) for lang in self.languages
-                )
-            else:
-                lang_ok = False
+            lang_ok = any(self._validate_field(lang, criteria.language) for lang in self.languages) if self.languages else False
         return all(
             [
                 self._validate_field(self.doctor_name, criteria.doctor_name),
@@ -613,6 +605,7 @@ class ViewDoctorAvailabilityEvent(Event, BaseEventValidator):
 
 class SearchDoctorsEvent(Event, BaseEventValidator):
     """Fired when user clicks Search on the Doctors page (applies name, speciality, language filters)."""
+
     event_name: str = "SEARCH_DOCTORS"
     doctor_name: str | None = None
     speciality: str | None = None
@@ -654,6 +647,7 @@ class SearchDoctorsEvent(Event, BaseEventValidator):
 
 class OpenContactDoctorFormEvent(Event, BaseEventValidator):
     """Fired when user clicks Contact Doctor and opens the contact form modal."""
+
     event_name: str = "OPEN_CONTACT_DOCTOR_FORM"
     doctor_name: str | None = None
     rating: float | None = None
@@ -673,9 +667,7 @@ class OpenContactDoctorFormEvent(Event, BaseEventValidator):
             return True
         lang_ok = True
         if criteria.language is not None:
-            lang_ok = bool(
-                self.languages and any(self._validate_field(lang, criteria.language) for lang in self.languages)
-            )
+            lang_ok = bool(self.languages and any(self._validate_field(lang, criteria.language) for lang in self.languages))
         return all(
             [
                 self._validate_field(self.doctor_name, criteria.doctor_name),
@@ -707,6 +699,7 @@ class OpenContactDoctorFormEvent(Event, BaseEventValidator):
 
 class ContactDoctorEvent(Event, BaseEventValidator):
     """Payload has doctor; event stores same fields as map so validation checks what we store."""
+
     event_name: str = "CONTACT_DOCTOR"
     doctor_name: str | None = None
     speciality: str | None = None
@@ -726,9 +719,7 @@ class ContactDoctorEvent(Event, BaseEventValidator):
             return True
         lang_ok = True
         if criteria.language is not None:
-            lang_ok = bool(
-                self.languages and any(self._validate_field(lang, criteria.language) for lang in self.languages)
-            )
+            lang_ok = bool(self.languages and any(self._validate_field(lang, criteria.language) for lang in self.languages))
         return all(
             [
                 self._validate_field(self.doctor_name, criteria.doctor_name),
@@ -826,6 +817,7 @@ class DoctorContactedSuccessfullyEvent(Event, BaseEventValidator):
 
 class FilterDoctorReviewsEvent(Event, BaseEventValidator):
     """Fired when user filters or sorts doctor reviews (by star rating and/or sort order)."""
+
     event_name: str = "FILTER_DOCTOR_REVIEWS"
     doctor_name: str | None = None
     filter_rating: int | None = None

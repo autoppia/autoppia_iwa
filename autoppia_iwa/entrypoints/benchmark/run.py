@@ -66,7 +66,7 @@ AGENTS = [
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
-    "autobooks",  # Web 1 autocinema
+    "autohealth",  # Web 1 autocinema
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 USE_CASES = [
@@ -119,15 +119,10 @@ CFG = BenchmarkConfig(
     # Evaluator mode
     evaluator_mode="concurrent",  # ← Agente genera lista completa de acciones
     # Tasks
-<<<<<<< HEAD
-    prompts_per_use_case=4,
     # use_cases=None means all use-cases
     use_cases=None,
-=======
-    prompts_per_use_case=1,
-    use_cases=USE_CASES,  # Use case for autocinema
+    prompts_per_use_case=2,
     use_cached_tasks=True,  # Use cached tasks if available
->>>>>>> origin/main
     # Execution
     runs=1,  # single run is enough for this fixed agent
     max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents

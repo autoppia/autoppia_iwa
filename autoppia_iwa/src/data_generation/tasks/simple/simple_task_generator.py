@@ -137,7 +137,7 @@ class SimpleTaskGenerator:
             # IMPORTANT: Create a deep copy of use_case for this task to preserve constraints
             # Each task needs its own copy so constraints aren't overwritten by subsequent iterations
             use_case_copy = copy.deepcopy(use_case)
-            # Generate constraints specific to this seed's dataset      
+            # Generate constraints specific to this seed's dataset
             if hasattr(use_case_copy, "generate_constraints_async"):
                 dataset = await self._load_dataset(seed) or {}
 

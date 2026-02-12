@@ -1,11 +1,6 @@
 from .data_utils import fetch_data
 
 
-
-
-
-
-
 async def replace_book_placeholders(
     text: str,
     seed_value: int | None = None,

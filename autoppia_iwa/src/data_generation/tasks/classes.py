@@ -123,21 +123,22 @@ class Task(BaseModel):
     def replace_credentials(self, web_agent_id: str) -> "Task":
         """
         ⚠️ DEPRECATED: DO NOT USE THIS METHOD.
-        
+
         This method should NOT be used. Agents must ALWAYS receive tasks with placeholders.
         Credentials should be replaced in ACTIONS (not in the task prompt) using TaskSolution.replace_credentials()
         AFTER receiving actions from the agent but BEFORE evaluating them.
-        
+
         This method is kept for backward compatibility only and will be removed in the future.
         """
         import warnings
+
         warnings.warn(
             "Task.replace_credentials() is deprecated. "
             "Do NOT replace credentials in the task. "
             "Agents must receive tasks with placeholders. "
             "Use TaskSolution.replace_credentials() to replace placeholders in actions AFTER receiving them.",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         # Create a deep copy of the current task
         import copy

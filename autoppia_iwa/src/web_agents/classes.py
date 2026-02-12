@@ -16,7 +16,7 @@ def replace_credentials_in_action(action: BaseAction, web_agent_id: str) -> None
     """
     Replace credential placeholders in a single action with actual values.
     This should be called AFTER receiving actions from the agent but BEFORE evaluating them.
-    
+
     Replaces:
     - <username> → user{web_agent_id}
     - <password> → Passw0rd!
@@ -26,7 +26,7 @@ def replace_credentials_in_action(action: BaseAction, web_agent_id: str) -> None
     """
     # Common fields in actions that may contain credential placeholders
     credential_fields = ["text", "value", "url", "email", "username", "password"]
-    
+
     # Check common fields first (more efficient)
     for field_name in credential_fields:
         if hasattr(action, field_name):
@@ -40,10 +40,10 @@ def replace_credentials_in_action(action: BaseAction, web_agent_id: str) -> None
                 new_value = new_value.replace("<signup_password>", "Passw0rd!")
                 # Also replace <web_agent_id> for backward compatibility
                 new_value = new_value.replace("<web_agent_id>", web_agent_id)
-                
+
                 if new_value != value:
                     setattr(action, field_name, new_value)
-    
+
     # Also check selector.value if it exists (for actions with selectors)
     if hasattr(action, "selector") and action.selector and hasattr(action.selector, "value"):
         selector_value = action.selector.value
@@ -54,7 +54,7 @@ def replace_credentials_in_action(action: BaseAction, web_agent_id: str) -> None
             new_selector_value = new_selector_value.replace("<signup_email>", f"newuser{web_agent_id}@gmail.com")
             new_selector_value = new_selector_value.replace("<signup_password>", "Passw0rd!")
             new_selector_value = new_selector_value.replace("<web_agent_id>", web_agent_id)
-            
+
             if new_selector_value != selector_value:
                 action.selector.value = new_selector_value
 
@@ -179,13 +179,13 @@ class TaskSolution(BaseModel):
     def replace_credentials(self, web_agent_id: str) -> list[BaseAction]:
         """
         Replace credential placeholders in ALL actions with actual values.
-        
+
         ✅ THIS IS THE CORRECT METHOD TO USE.
         This should be called AFTER receiving actions from the agent but BEFORE evaluating them.
-        
+
         The agent receives the task WITH placeholders and returns actions WITH placeholders.
         This method replaces placeholders in all actions before evaluation.
-        
+
         Replaces in all action fields (text, value, url, email, username, password, selector.value):
         - <username> → user{web_agent_id}
         - <password> → Passw0rd!
@@ -193,10 +193,10 @@ class TaskSolution(BaseModel):
         - <signup_email> → newuser{web_agent_id}@gmail.com
         - <signup_password> → Passw0rd!
         - <web_agent_id> → web_agent_id (for backward compatibility)
-        
+
         Args:
             web_agent_id: The web agent ID to use for credential replacement
-            
+
         Returns:
             The list of actions with credentials replaced (modifies actions in place)
         """
