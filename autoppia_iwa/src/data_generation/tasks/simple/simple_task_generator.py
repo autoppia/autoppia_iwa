@@ -122,14 +122,12 @@ class SimpleTaskGenerator:
             # Build task URL with unique seed for each prompt
             task_url = self._build_task_url_with_seed(dynamic=dynamic)
             seed = get_seed_from_url(task_url) if dynamic else 1
-
             # Load dataset for this specific seed
             dataset: dict[str, list[dict]] = {}
 
             # IMPORTANT: Create a deep copy of use_case for this task to preserve constraints
             # Each task needs its own copy so constraints aren't overwritten by subsequent iterations
             use_case_copy = copy.deepcopy(use_case)
-
             # Generate constraints specific to this seed's dataset
             if hasattr(use_case_copy, "generate_constraints_async"):
                 dataset = await self._load_dataset(seed) or {}

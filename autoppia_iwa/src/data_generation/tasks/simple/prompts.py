@@ -22,6 +22,7 @@ SYNTHETIC PROMPT GENERATION PROTOCOL
 3. CONSTRAINT VALUE FORMATTING
    - All **specific values** used in constraints (e.g., names, strings) MUST be enclosed in **single quotes ('')**
    - Example: "director is NOT 'Robert Zemeckis'", not just "director is not Robert Zemeckis"
+   - CRITICAL: Copy the values EXACTLY as they appear in the constraint. DO NOT correct typos, remove numbers, or modify the string in any way. If the constraint says 'upofen', you MUST write 'upofen', NOT 'uprofen'.
 
 4. INTERPRETING CONTAINS VS. EQUALS:
    - If the constraint includes the word **'contains'**, it means the specified word or phrase is **part of** the complete value (i.e., the full value can contain more than just the given word).
@@ -30,7 +31,7 @@ SYNTHETIC PROMPT GENERATION PROTOCOL
      - Example: "genre equals 'Romance'" → only matches books with genre equals 'Romance'
 
 ## CONSTRAINT REPRESENTATION EXAMPLE
-If constraints are "director not_equals Robert Zemeckis AND year greater_than 2010":
+If constraints are "director not equals Robert Zemeckis AND year greater than 2010":
 ✅ CORRECT:
 - "Show me details about a movie NOT directed by 'Robert Zemeckis' that was released AFTER 2010"
 - "Retrieve information for a film where the director is NOT 'Robert Zemeckis' and the release year EXCEEDS 2010"
@@ -39,7 +40,7 @@ If constraints are "director not_equals Robert Zemeckis AND year greater_than 20
 - "Show a movie directed by Christopher Nolan" (missing constraints)
 - "Show a movie after 2010 with a high rating" (added unauthorized criteria)
 
-If constraints are "director contains 'd Cop' AND duration less_equal 178":
+If constraints are "director contains 'd Cop' AND duration less than or equal to 178":
 ✅ CORRECT:
 - "Give me information about a movie directed by a director whose name CONTAINS 'd Cop' with a duration of 178 minutes or less"
 

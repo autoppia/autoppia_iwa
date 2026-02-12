@@ -415,6 +415,22 @@ class Benchmark:
         tasks = await pipeline.generate()
 
         if tasks:
+            # Save tasks to cache (same path/format as before: data/outputs/benchmark/cache/tasks/)
+            try:
+                cache_dir = self.config.base_dir / "data" / "outputs" / "benchmark" / "cache" / "tasks"
+                cache_dir.mkdir(parents=True, exist_ok=True)
+                path = cache_dir / f"autoppia_{project.id}_tasks.json"
+                payload = {
+                    "project_id": project.id,
+                    "project_name": project.name,
+                    "timestamp": datetime.now().isoformat(),
+                    "tasks": [t.serialize() for t in tasks],
+                }
+                path.write_text(json.dumps(payload, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
+                logger.info(f"Tasks cache saved: {path}")
+            except Exception as e:
+                logger.warning(f"Failed to save tasks cache: {e}")
+
             try:
                 for task in tasks:
                     visualizer.show_task_with_tests(task)
