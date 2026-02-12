@@ -70,5 +70,5 @@ async def replace_book_placeholders(
                 text = text.replace("<author>", replacement, 1)
 
     # Do NOT call login_replace_func here - credentials should remain as placeholders
-    # They will be replaced during evaluation via Task.replace_credentials()
+    # They will be replaced during evaluation via TaskSolution.replace_credentials()
     return text
