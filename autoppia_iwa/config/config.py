@@ -33,13 +33,13 @@ load_dotenv(_PROJECT_ROOT / ".env", override=True)
 # LLM CONFIGURATION
 # ============================
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "local")  # Can be "local", "openai", or "chutes"
-LLM_THRESHOLD = 100
+LLM_THRESHOLD = int(os.getenv("LLM_THRESHOLD", 100))
 LLM_CONTEXT_WINDOW = int(os.getenv("LLM_CONTEXT_WINDOW", 10000))
 
 # OpenAI Configuration
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-OPENAI_MAX_TOKENS = int(os.getenv("LLM_CONTEXT_WINDOW", 2000))
+OPENAI_MAX_TOKENS = int(os.getenv("OPENAI_MAX_TOKENS", 2000))
 OPENAI_TEMPERATURE = float(os.getenv("OPENAI_TEMPERATURE", 0.8))
 
 # Chutes Configuration

@@ -7,14 +7,31 @@ from typing import Any
 from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
 
 
-async def fetch_drive_data(
+async def fetch_data(
     entity_type: str,
     method: str | None = None,
     filter_key: str | None = None,
     seed_value: int | None = None,
     count: int = 50,
 ) -> list[dict]:
-    """Fetch dataset rows for the given entity type."""
+    """
+    Fetch dataset rows for the given entity type.
+
+    This is the unified function replacing:
+    - fetch_drive_data()
+    - get_data()
+    - get_all_data()
+
+    Args:
+        entity_type: Type of entity to fetch (places, rides, etc.)
+        method: Selection method (select, etc.)
+        filter_key: Key to filter on
+        seed_value: Seed value for deterministic selection
+        count: Number of items to fetch
+
+    Returns:
+        list[dict] of data for the requested entity type
+    """
     from .main import FRONTEND_PORT_INDEX, drive_project
 
     project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{drive_project.id}"
@@ -25,8 +42,7 @@ async def fetch_drive_data(
         entity_type=entity_type,
         seed_value=seed_value if seed_value is not None else 0,
         limit=count,
-        method=method if method else "select",
-        filter_key=filter_key if filter_key else None,
+        method="shuffle",
     )
     return items or []
 
@@ -42,28 +58,3 @@ def extract_drive_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]
         if isinstance(value, list):
             return value
     return None
-
-
-async def get_data(
-    entity_type: str,
-    method: str | None = None,
-    filter_key: str | None = None,
-    seed_value: int | None = None,
-    count: int = 50,
-) -> list[dict]:
-    """Main data loader function for autodrive_13."""
-    return await fetch_drive_data(
-        entity_type=entity_type,
-        method=method,
-        filter_key=filter_key,
-        seed_value=seed_value,
-        count=count,
-    )
-
-
-async def get_all_data(seed_value: int | None = None, count: int = 50) -> dict[str, list[dict]]:
-    """Load complete dataset for this project."""
-    return {
-        "places": await get_data(entity_type="places", method="select", seed_value=seed_value, count=count),
-        "rides": await get_data(entity_type="rides", method="select", seed_value=seed_value, count=count),
-    }

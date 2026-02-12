@@ -24,9 +24,11 @@ class RemoteAgentClient:
     async def solve_task(self, task: Task) -> TaskSolution:
         """Send the task to the miner and convert the response into a TaskSolution."""
 
-        prepared_task = task.prepare_for_agent(self.web_agent_name)
-        solution = await self._agent.solve_task(prepared_task)
+        # Send task WITH placeholders - agent should return actions with placeholders
+        solution = await self._agent.solve_task(task)
         if not getattr(solution, "web_agent_id", None):
             solution.web_agent_id = self.web_agent_name
+        # Replace credential placeholders in actions BEFORE returning
+        solution.replace_credentials(self.web_agent_name)
         logger.info("Received %s actions for task %s from %s", len(solution.actions), task.id, self.web_agent_name)
         return solution

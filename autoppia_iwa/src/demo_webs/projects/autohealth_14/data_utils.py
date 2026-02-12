@@ -62,14 +62,31 @@ def _load_initial_data_fallback(entity_type: str, count: int = 50) -> list[dict]
         return []
 
 
-async def fetch_health_data(
+async def fetch_data(
     entity_type: str,
     method: str | None = None,
     filter_key: str | None = None,
     seed_value: int | None = None,
     count: int = 50,
 ) -> list[dict]:
-    """Fetch dataset rows for the given entity type."""
+    """
+    Fetch dataset rows for the given entity type.
+
+    This is the unified function replacing:
+    - fetch_health_data()
+    - get_data()
+    - get_all_data()
+
+    Args:
+        entity_type: Type of entity to fetch (appointments, doctors, prescriptions, etc.)
+        method: Selection method (select, etc.)
+        filter_key: Key to filter on
+        seed_value: Seed value for deterministic selection
+        count: Number of items to fetch
+
+    Returns:
+        list[dict] of data for the requested entity type
+    """
     from .main import FRONTEND_PORT_INDEX, health_project
 
     project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{health_project.id}"
@@ -137,6 +154,13 @@ def transform_doctors_to_modified(doctors: list[dict]) -> list[dict]:
                 new_data["pricing"] = "150-250"
             else:
                 new_data["pricing"] = "250+"
+        if "rating" in new_data and new_data.get("rating") is not None:
+            try:
+                rating = float(new_data["rating"])
+                rating = max(0.0, min(5.0, rating))
+                new_data["rating"] = round(rating, 1)
+            except (TypeError, ValueError):
+                pass
         langs = new_data.get("languages") or []
         new_data["primary_language"] = langs[0] if langs else None
         modified.append(new_data)
@@ -175,35 +199,3 @@ def transform_medical_records_to_modified(medical_records: list[dict]) -> list[d
             new_data["doctor_name"] = new_data.pop("doctorName")
         modified.append(new_data)
     return modified
-
-
-async def get_data(
-    entity_type: str,
-    method: str | None = None,
-    filter_key: str | None = None,
-    seed_value: int | None = None,
-    count: int = 50,
-) -> list[dict]:
-    """Main data loader function for autohealth_14."""
-    return await fetch_health_data(
-        entity_type=entity_type,
-        method=method,
-        filter_key=filter_key,
-        seed_value=seed_value,
-        count=count,
-    )
-
-
-async def get_all_data(seed_value: int | None = None, count: int = 50, _retried: bool = False) -> dict[str, list[dict]]:
-    """Load complete dataset for this project. Uses initial_data fallback when backend returns empty."""
-    result = {
-        "appointments": await get_data(entity_type="appointments", method="select", seed_value=seed_value, count=count),
-        "doctors": await get_data(entity_type="doctors", method="select", seed_value=seed_value, count=count),
-        "prescriptions": await get_data(entity_type="prescriptions", method="select", seed_value=seed_value, count=count),
-        "medical-records": await get_data(entity_type="medical-records", method="select", seed_value=seed_value, count=count),
-    }
-    total = sum(len(v) for v in result.values() if isinstance(v, list))
-    if total == 0 and not _retried:
-        logger.info("All entities empty for seed={}, retrying with seed=1", seed_value)
-        return await get_all_data(seed_value=1, count=count, _retried=True)
-    return result

@@ -1,4 +1,5 @@
 import asyncio
+import copy
 import importlib
 import inspect
 import json
@@ -86,7 +87,6 @@ class SimpleTaskGenerator:
         for use_case in web_use_cases:
             _log_task_generation(f"Generating tasks for use case: {use_case.name}", context="USE_CASE")
             try:
-                print("GENERAMOS TASKS PARA EL USE CASE: ", use_case.name)
                 tasks_for_use_case = await self.generate_tasks_for_use_case(use_case, prompts_per_use_case, dynamic=dynamic)
                 all_tasks.extend(tasks_for_use_case)
                 _log_task_generation(
@@ -119,41 +119,38 @@ class SimpleTaskGenerator:
 
         # Generate each prompt independently
         for _ in range(number_of_prompts):
+            use_case.constraints = None
             # Build task URL with unique seed for each prompt
-            print("GENERAMOS TASK URL PARA EL USE CASE: ", use_case.name)
             task_url = self._build_task_url_with_seed(dynamic=dynamic)
-            print("TASK URL: ", task_url)
             seed = get_seed_from_url(task_url) if dynamic else 1
-            print("GENERAMOS SEED: ", seed)
-
-            print("URLCOMPLETA: ", task_url + "?seed=" + str(seed))
-
             # Load dataset for this specific seed
-            print("GENERAMOS DATASET PARA EL USE CASE: ", use_case.name)
             dataset: dict[str, list[dict]] = {}
-            print("DATASET: ", dataset)
 
-            
+            # IMPORTANT: Create a deep copy of use_case for this task to preserve constraints
+            # Each task needs its own copy so constraints aren't overwritten by subsequent iterations
+            use_case_copy = copy.deepcopy(use_case)
             # Generate constraints specific to this seed's dataset
             if hasattr(use_case, "generate_constraints_async"):
+                if dynamic and seed != 1:
+                    seed = await resolve_v2_seed_from_url(task_url)
                 dataset = await self._load_dataset(seed) or {}
 
                 try:
-                    constraints_info = await use_case.generate_constraints_async(task_url=task_url, dataset=dataset)
+                    constraints_info = await use_case_copy.generate_constraints_async(task_url=task_url, dataset=dataset)
                 except Exception as e:
-                    logger.error(f"Constraint generation failed for '{use_case.name}': {e}")
+                    logger.error(f"Constraint generation failed for '{use_case_copy.name}': {e}")
                     continue  # Skip this iteration
             else:
                 constraints_info = "**IMPORTANT:** Do **NOT** invent, assume, or include any constraints. No constraints are provided for this use case."
 
             # Build the LLM prompt (always generate 1 prompt per call)
-            if not use_case.additional_prompt_info:
-                use_case.additional_prompt_info = f"GENERATE PROMPT LIKE: {use_case.get_example_prompts_str()}"
+            if not use_case_copy.additional_prompt_info:
+                use_case_copy.additional_prompt_info = f"GENERATE PROMPT LIKE: {use_case_copy.get_example_prompts_str()}"
 
             llm_prompt = GLOBAL_TASK_GENERATION_PROMPT.format(
-                use_case_name=use_case.name,
-                use_case_description=use_case.description,
-                additional_prompt_info=use_case.additional_prompt_info,
+                use_case_name=use_case_copy.name,
+                use_case_description=use_case_copy.description,
+                additional_prompt_info=use_case_copy.additional_prompt_info,
                 constraints_info=constraints_info,
             )
 
@@ -163,7 +160,7 @@ class SimpleTaskGenerator:
             # Process only the first prompt from the LLM response for this iteration
             # This ensures we generate exactly number_of_prompts tasks total
             if not prompt_list:
-                logger.warning(f"No prompts returned from LLM for use case '{use_case.name}'")
+                logger.warning(f"No prompts returned from LLM for use case '{use_case_copy.name}'")
                 continue
 
             # Take only the first prompt for this iteration
@@ -172,29 +169,35 @@ class SimpleTaskGenerator:
             try:
                 # Build replace kwargs with this seed's data
                 replace_kwargs: dict[str, Any] = {}
-                if use_case.replace_func:
-                    sig = inspect.signature(use_case.replace_func)
+                if use_case_copy.replace_func:
+                    sig = inspect.signature(use_case_copy.replace_func)
                     if "seed_value" in sig.parameters:
                         replace_kwargs["seed_value"] = seed
                     if "dataset" in sig.parameters:
-                        replace_kwargs["dataset"] = dataset
+                        # Only extract if dataset is a dict, otherwise pass through as-is
+                        if isinstance(dataset, dict) and dataset:
+                            # Extract first list value from dict (most projects use {"entity_type": [...]})
+                            entity_list = next((v for v in dataset.values() if isinstance(v, list)), None)
+                            replace_kwargs["dataset"] = entity_list
+                        else:
+                            replace_kwargs["dataset"] = dataset
 
                 # Apply replacements (async or sync)
-                if hasattr(use_case, "apply_replacements_async"):
-                    replaced_prompt = await use_case.apply_replacements_async(prompt_text, **replace_kwargs)
+                if hasattr(use_case_copy, "apply_replacements_async"):
+                    replaced_prompt = await use_case_copy.apply_replacements_async(prompt_text, **replace_kwargs)
                 else:
-                    replaced_prompt = use_case.apply_replacements(prompt_text, **replace_kwargs)
+                    replaced_prompt = use_case_copy.apply_replacements(prompt_text, **replace_kwargs)
 
-                # Create and append task - ensure constraints are preserved by using the use_case object
-                # which has constraints set by generate_constraints_async
+                # Create and append task - use the COPY which has constraints preserved
                 tasks.append(
                     Task(
                         web_project_id=self.web_project.id,
                         url=task_url,
                         prompt=replaced_prompt,
-                        use_case=use_case,
+                        use_case=use_case_copy,  # Use the copy with preserved constraints
                     )
                 )
+                use_case.constraints = None
             except Exception as ex:
                 logger.error(f"Could not assemble Task for prompt '{prompt_text}': {ex!s}")
 
@@ -278,40 +281,108 @@ class SimpleTaskGenerator:
         """
         Load complete dataset for the current project with given seed.
 
-        Each project has its own `get_all_data` function in its `data_utils.py` module
-        that returns a dictionary with all relevant entities for that project. This pattern
-        allows each project to auto-manage its data loading and maintain separation of concerns.
+        Uses the project's `fetch_data` function in its `data_utils.py` module.
+        For single-entity projects, wraps the result in a dictionary with entity type as key.
+        For multi-entity projects, fetches all entity types and combines them.
         """
         try:
-            # Find project directory using glob (parents[3] = src; demo_webs/projects is under src)
-            projects_base = Path(__file__).resolve().parents[3] / "demo_webs" / "projects"
-            matching_dirs = list(projects_base.glob(f"{self.web_project.id}_*"))
+            # Use the same method as _get_project_module_name to find the project directory
+            # This ensures consistency and handles the path correctly
+            project_dir = self._get_project_module_name()
 
-            if not matching_dirs:
+            if not project_dir:
                 logger.debug(f"No project directory found for {self.web_project.id}")
                 return None
 
-            project_dir = matching_dirs[0].name
-
-            # Import and call get_all_data
+            # Import the module
             module = importlib.import_module(f"autoppia_iwa.src.demo_webs.projects.{project_dir}.data_utils")
-            get_all_data = getattr(module, "get_all_data", None)
+            fetch_data = getattr(module, "fetch_data", None)
 
-            if not get_all_data:
+            if not fetch_data:
+                logger.debug(f"No fetch_data function found in {project_dir}/data_utils.py")
                 return None
 
-            result = get_all_data(seed_value=seed)
-            dataset = await result if inspect.isawaitable(result) else result
+            # Inspect function signature to determine if entity_type is required
+            sig = inspect.signature(fetch_data)
+            has_entity_type_param = "entity_type" in sig.parameters
 
-            if dataset:
-                total_items = sum(len(v) for v in dataset.values() if isinstance(v, list))
-                _log_task_generation(f"Loaded dataset for {self.web_project.id} with seed={seed} ({total_items} items across {len(dataset)} entities)", context="OPTIMIZATION")
+            if has_entity_type_param:
+                # Multi-entity project (e.g., autocrm_5)
+                # Get entity types from project metadata or known list
+                entity_types = self._get_entity_types_for_project(project_dir)
+                if not entity_types:
+                    logger.debug(f"Could not determine entity types for {project_dir}")
+                    return None
 
-            return dataset
+                dataset = {}
+                for entity_type in entity_types:
+                    try:
+                        result = fetch_data(entity_type=entity_type, seed_value=seed, count=50)
+                        items = await result if inspect.isawaitable(result) else result
+                        if items:
+                            dataset[entity_type] = items
+                    except Exception as e:
+                        logger.debug(f"Error fetching {entity_type} for {project_dir}: {e}")
+                        continue
+
+                if dataset:
+                    total_items = sum(len(v) for v in dataset.values() if isinstance(v, list))
+                    _log_task_generation(f"Loaded dataset for {self.web_project.id} with seed={seed} ({total_items} items across {len(dataset)} entities)", context="OPTIMIZATION")
+                return dataset if dataset else None
+            else:
+                # Single-entity project (e.g., autocinema_1, autobooks_2)
+                result = fetch_data(seed_value=seed, count=50)
+                items = await result if inspect.isawaitable(result) else result
+
+                if not items:
+                    return None
+
+                # Determine entity type for this project
+                entity_type = self._get_entity_type_for_project(project_dir)
+                if not entity_type:
+                    logger.debug(f"Could not determine entity type for {project_dir}")
+                    return None
+
+                dataset = {entity_type: items}
+                total_items = len(items)
+                _log_task_generation(f"Loaded dataset for {self.web_project.id} with seed={seed} ({total_items} items across 1 entity)", context="OPTIMIZATION")
+                return dataset
 
         except Exception as e:
             logger.debug(f"Could not load dataset for {self.web_project.id}: {e}")
             return None
+
+    def _get_entity_type_for_project(self, project_dir: str) -> str | None:
+        """Get the primary entity type for a single-entity project."""
+        # Map project directories to their entity types
+        entity_type_map = {
+            "autocinema_1": "movies",
+            "autobooks_2": "books",
+            "autozone_3": "products",
+            "autodining_4": "restaurants",
+            "automail_6": "emails",
+            "autodelivery_7": "restaurants",
+            "autolodge_8": "hotels",
+            "autoconnect_9": "users",  # Primary entity, but has multiple
+            "autowork_10": "jobs",  # Primary entity, but has multiple
+            "autocalendar_11": "events",
+            "autolist_12": "tasks",
+            "autodrive_13": "places",  # Primary entity, but has multiple
+            "autohealth_14": "appointments",  # Primary entity, but has multiple
+        }
+        return entity_type_map.get(project_dir)
+
+    def _get_entity_types_for_project(self, project_dir: str) -> list[str] | None:
+        """Get all entity types for a multi-entity project."""
+        # Map project directories to their entity types
+        entity_types_map = {
+            "autocrm_5": ["matters", "clients", "logs", "events", "files"],
+            "autoconnect_9": ["users", "posts", "jobs", "recommendations"],
+            "autowork_10": ["jobs", "experts", "hires", "skills"],
+            "autodrive_13": ["places", "rides"],
+            "autohealth_14": ["appointments", "doctors", "prescriptions", "medical-records"],
+        }
+        return entity_types_map.get(project_dir)
 
     def _get_project_module_name(self) -> str | None:
         """Auto-detect project module name from filesystem.
@@ -319,7 +390,6 @@ class SimpleTaskGenerator:
         Finds the directory in src/demo_webs/projects/ that starts with project.id.
         Example: "autocinema" → finds "autocinema_1"
         """
-        from pathlib import Path
 
         project_id = self.web_project.id
         projects_dir = Path(__file__).resolve().parents[3] / "demo_webs" / "projects"
@@ -416,6 +486,10 @@ class SimpleTaskGenerator:
 
         messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": llm_prompt}]
 
+        # Print temperature being used for task generation
+        task_gen_temp = self.llm_service.config.temperature if hasattr(self.llm_service, "config") else "unknown"
+        print(f"🌡️  Task Generation: Calling LLM with temperature={task_gen_temp}")
+
         for attempt in range(self.max_retries):
             try:
                 resp_text = await self.llm_service.async_predict(messages=messages, json_format=True)
@@ -457,6 +531,10 @@ class SimpleTaskGenerator:
 
         system_prompt = "You are a helpful assistant that generates user tasks as a list of strings."
         messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": llm_prompt}]
+
+        # Print temperature being used for task generation
+        task_gen_temp = self.llm_service.config.temperature if hasattr(self.llm_service, "config") else "unknown"
+        print(f"🌡️  Task Generation: Calling LLM with temperature={task_gen_temp}")
 
         for attempt in range(max_retries):
             try:

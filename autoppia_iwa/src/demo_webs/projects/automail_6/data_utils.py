@@ -17,8 +17,22 @@ def _transform_all(records: list[dict], mapping: dict) -> list[dict]:
     return [_apply_mapping(record, mapping) for record in records]
 
 
-async def fetch_emails_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
-    """Fetch and normalize emails data from the backend."""
+async def fetch_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
+    """
+    Fetch and normalize emails data from the backend.
+
+    This is the unified function replacing:
+    - fetch_emails_data()
+    - get_data()
+    - get_all_data()
+
+    Args:
+        seed_value: Seed value for deterministic selection
+        count: Number of items to fetch
+
+    Returns:
+        list[dict] of normalized emails
+    """
     from .data import transform_emails_list
     from .main import FRONTEND_PORT_INDEX, automail_project
 
@@ -38,14 +52,3 @@ async def fetch_emails_data(seed_value: int | None = None, count: int = 50) -> l
         return []
     modified_emails = transform_emails_list(items)
     return _transform_all(modified_emails, field_mapping)
-
-
-async def get_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
-    """Main data loader function for automail_6."""
-    return await fetch_emails_data(seed_value=seed_value, count=count)
-
-
-async def get_all_data(seed_value: int | None = None, count: int = 50) -> dict[str, list[dict]]:
-    """Load complete dataset for this project."""
-    emails = await get_data(seed_value=seed_value, count=count)
-    return {"emails": emails}

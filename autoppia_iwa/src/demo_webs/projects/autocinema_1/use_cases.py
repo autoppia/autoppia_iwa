@@ -42,7 +42,6 @@ from .generation_functions import (
 )
 from .replace_functions import login_replace_func, register_replace_func, replace_film_placeholders
 
-
 STRICT_COPY_INSTRUCTION = "CRITICAL: Copy values EXACTLY as provided in the constraints. Do NOT correct typos, do NOT remove numbers, do NOT truncate or summarize strings, and do NOT 'clean up' names or titles (e.g., if constraint is 'Sofia 4', write 'Sofia 4', NOT 'Sofia'; if it is 'ng', write 'ng', NOT 'an')."
 
 
@@ -204,7 +203,7 @@ LOGOUT_USE_CASE = UseCase(
 
 def _get_film_detail_info(movies_data: list[dict]) -> str:
     """Generate film detail info dynamically from API data."""
-    movie_names = _generate_movie_names_list(movies_data)
+    _generate_movie_names_list(movies_data)
     return f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above (field, operator, and value).

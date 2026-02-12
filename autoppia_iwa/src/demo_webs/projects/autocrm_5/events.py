@@ -376,12 +376,6 @@ class DocumentDeleted(Event, BaseEventValidator):
         )
 
 
-class DocumentUploaded(DocumentDeleted):
-    """Event triggered when a document is uploaded"""
-
-    event_name: str = "DOCUMENT_UPLOADED"
-
-
 class DocumentRenamedEvent(Event, BaseEventValidator):
     """Event triggered when a document is renamed."""
 
@@ -1047,7 +1041,6 @@ EVENTS = [
     ArchiveMatter,
     ViewClientDetails,
     SearchClient,
-    DocumentUploaded,
     DocumentDeleted,
     DocumentRenamedEvent,
     NewCalendarEventAdded,
@@ -1067,7 +1060,6 @@ BACKEND_EVENT_TYPES = {
     "VIEW_CLIENT_DETAILS": ViewClientDetails,
     "SEARCH_CLIENT": SearchClient,
     "DOCUMENT_DELETED": DocumentDeleted,
-    "DOCUMENT_UPLOADED": DocumentUploaded,
     "DOCUMENT_RENAMED": DocumentRenamedEvent,
     "NEW_CALENDAR_EVENT_ADDED": NewCalendarEventAdded,
     "NEW_LOG_ADDED": NewLogAdded,

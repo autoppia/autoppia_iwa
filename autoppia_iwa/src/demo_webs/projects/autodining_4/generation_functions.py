@@ -4,7 +4,7 @@ from random import choice
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
 
 from ..shared_utils import create_constraint_dict, generate_mock_date_strings, generate_mock_dates
 from .data import (
@@ -38,7 +38,7 @@ from .data import (
     SCROLL_DIRECTIONS,
     SCROLL_SECTIONS_TITLES,
 )
-from .data_utils import get_data
+from .data_utils import fetch_data
 
 MOCK_DATES = generate_mock_dates()
 MOCK_DATE_STRINGS = generate_mock_date_strings(MOCK_DATES)
@@ -53,7 +53,7 @@ MOCK_SPECIAL_REQUESTS = ["window seat", "allergies: nuts", "quiet table"]
 async def _get_restaurant_queries() -> list[str]:
     """Get restaurant queries including names from API data."""
     try:
-        restaurant_data = await get_data(count=50)  # Get a reasonable sample
+        restaurant_data = await fetch_data(count=50)  # Get a reasonable sample
         restaurant_names = [r.get("name", "") for r in restaurant_data if r.get("name")]
         return _BASE_RESTAURANT_QUERIES + restaurant_names
     except Exception:
@@ -61,10 +61,13 @@ async def _get_restaurant_queries() -> list[str]:
         return _BASE_RESTAURANT_QUERIES
 
 
-def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
+def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | list[str]) -> Any:
+    # Extract restaurant list if dataset is a dict, otherwise use dataset as-is
+    dataset = dataset["restaurants"] if isinstance(dataset, dict) and "restaurants" in dataset else dataset
+
     if operator == ComparisonOperator.EQUALS:
         return field_value
-    if field == "restaurant_name":
+    if field == "name" or field == "restaurant_name":
         field = "name"
     if field == "rating":
         return random.choice([2, 3])
@@ -72,22 +75,22 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         if field == "direction":
             valid = [v for v in SCROLL_DIRECTIONS if v != field_value]
             return random.choice(valid) if valid else None
-        elif field == "section_title":
+        elif field == "section":
             valid = [v for v in SCROLL_SECTIONS_TITLES if v != field_value]
             return random.choice(valid) if valid else None
-        elif field == "selected_time":
+        elif field == "time":
             valid = [v for v in RESTAURANT_TIMES if v != field_value]
             return random.choice(valid) if valid else None
-        elif field == "people_count":
+        elif field == "people":
             valid = [v for v in RESTAURANT_PEOPLE_COUNTS if v != field_value]
             return random.choice(valid) if valid else None
-        elif field == "occasion_type":
+        elif field == "occasion":
             valid = [v for v in RESTAURANT_OCCASIONS if v != field_value]
             return random.choice(valid) if valid else None
-        elif field == "country_name":
+        elif field == "country":
             valid = [v["name"] for v in RESTAURANT_COUNTRIES if v != field_value]
             return random.choice(valid) if valid else None
-        elif field == "country_code":
+        elif field == "code":
             valid = [v["code"] for v in RESTAURANT_COUNTRIES if v != field_value]
             return random.choice(valid) if valid else None
         elif field == "username":
@@ -110,7 +113,7 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         if field == "direction":
             valid = [v for v in SCROLL_DIRECTIONS if v != field_value]
             return random.choice(valid) if valid else None
-        elif field == "section_title":
+        elif field == "section":
             valid = [v for v in SCROLL_SECTIONS_TITLES if v != field_value]
             return random.choice(valid) if valid else None
         if len(field_value) > 2:
@@ -123,7 +126,7 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         if field == "direction":
             valid = [v for v in SCROLL_DIRECTIONS if v != field_value]
             return random.choice(valid) if valid else None
-        elif field == "section_title":
+        elif field == "section":
             valid = [v for v in SCROLL_SECTIONS_TITLES if v != field_value]
             return random.choice(valid) if valid else None
         elif field == "username":
@@ -186,33 +189,33 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
 
 
 async def _generate_value_for_field(field_name: str) -> Any:
-    if field_name == "selected_date":
+    if field_name == "date" or field_name == "selected_date":
         return random.choice(MOCK_DATES) if MOCK_DATES else datetime.datetime.now(datetime.UTC)
-    elif field_name == "selected_time" or field_name == "time" or field_name == "reservation_time":
+    elif field_name == "time" or field_name == "selected_time" or field_name == "reservation_time":
         return random.choice(RESTAURANT_TIMES)
     elif field_name == "people" or field_name == "people_count":
         return random.choice(RESTAURANT_PEOPLE_COUNTS)
     elif field_name == "query":
         possible_queries = await _get_restaurant_queries()
         return random.choice(possible_queries) if possible_queries else "pizza"
-    elif field_name == "restaurant_name" or field_name == "name":
-        restaurant_data = await get_data()
+    elif field_name == "name" or field_name == "restaurant_name":
+        restaurant_data = await fetch_data()
         if restaurant_data:
             return random.choice(restaurant_data).get("name", "Default Restaurant")
         return "Default Restaurant"
     elif field_name == "action":
         return random.choice(MOCK_RESTAURANT_ACTIONS)
-    elif field_name == "country_code":
+    elif field_name == "code" or field_name == "country_code":
         return random.choice(RESTAURANT_COUNTRIES)["code"] if RESTAURANT_COUNTRIES else "US"
-    elif field_name == "country_name":
+    elif field_name == "country" or field_name == "country_name":
         return random.choice(RESTAURANT_COUNTRIES)["name"] if RESTAURANT_COUNTRIES else "United States"
     elif field_name == "occasion" or field_name == "occasion_type":
         return random.choice(RESTAURANT_OCCASIONS)
-    elif field_name == "reservation_date_str":
+    elif field_name == "reservation" or field_name == "reservation_date_str":
         return random.choice(MOCK_DATE_STRINGS)
-    elif field_name == "phone_number":
+    elif field_name == "phone" or field_name == "phone_number":
         return random.choice(MOCK_PHONE_NUMBERS)
-    elif field_name == "special_request":
+    elif field_name == "request" or field_name == "special_request":
         return random.choice(MOCK_SPECIAL_REQUESTS)
     elif field_name == "feature":
         return random.choice(ABOUT_FEATURES)
@@ -224,7 +227,7 @@ async def _generate_value_for_field(field_name: str) -> Any:
         return random.choice(CONTACT_CARD_TYPES)
     elif field_name == "direction":
         return random.choice(SCROLL_DIRECTIONS)
-    elif field_name == "section_title":
+    elif field_name == "section" or field_name == "section_title":
         return random.choice(SCROLL_SECTIONS_TITLES)
     elif field_name == "desc":
         return "Enjoy a delightful experience at"
@@ -247,51 +250,57 @@ async def _generate_value_for_field(field_name: str) -> Any:
 
 # --- Constraint Generators ---
 async def generate_view_restaurant_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url)
-        dataset = await get_data(seed_value=seed)
+    if not dataset:
+        seed = await resolve_v2_seed_from_url(task_url) if task_url else None
+        restaurants = await fetch_data(seed_value=seed)
+    else:
+        restaurants = dataset
     return generate_restaurant_constraints(
         fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"],
         allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT,
         max_constraints=4,
-        dataset=dataset,
+        dataset=restaurants,
     )
 
 
 async def generate_view_full_menu_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url)
-        dataset = await get_data(seed_value=seed)
+    if not dataset:
+        seed = await resolve_v2_seed_from_url(task_url) if task_url else None
+        restaurants = await fetch_data(seed_value=seed)
+    else:
+        restaurants = dataset
     return generate_restaurant_constraints(
         fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"],
         allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT,
         max_constraints=4,
-        dataset=dataset,
+        dataset=restaurants,
     )
 
 
 async def generate_collapse_menu_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url)
-        dataset = await get_data(seed_value=seed)
+    if not dataset:
+        seed = await resolve_v2_seed_from_url(task_url) if task_url else None
+        restaurants = await fetch_data(seed_value=seed)
+    else:
+        restaurants = dataset
     return generate_restaurant_constraints(
         fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"],
         allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT,
         max_constraints=4,
-        dataset=dataset,
+        dataset=restaurants,
     )
 
 
 async def generate_date_dropdown_opened_constraints():
-    return await generate_constraints_for_single_field("selected_date", OPERATORS_ALLOWED_DATE_DROPDOWN_OPENED)
+    return await generate_constraints_for_single_field("date", OPERATORS_ALLOWED_DATE_DROPDOWN_OPENED)
 
 
 async def generate_time_dropdown_opened_constraints():
-    return await generate_constraints_for_single_field("selected_time", OPERATORS_ALLOWED_TIME_DROPDOWN_OPENED)
+    return await generate_constraints_for_single_field("time", OPERATORS_ALLOWED_TIME_DROPDOWN_OPENED)
 
 
 async def generate_people_dropdown_opened_constraints():
-    return await generate_constraints_for_single_field("people_count", OPERATORS_ALLOWED_PEOPLE_DROPDOWN_OPENED)
+    return await generate_constraints_for_single_field("people", OPERATORS_ALLOWED_PEOPLE_DROPDOWN_OPENED)
 
 
 async def generate_search_restaurant_constraints():
@@ -309,43 +318,47 @@ async def generate_constraints_for_single_field(field: str, allowed_operators: d
 
 
 async def generate_book_restaurant_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url)
-        dataset = await get_data(seed_value=seed)
+    if not dataset:
+        seed = await resolve_v2_seed_from_url(task_url) if task_url else None
+        restaurants = await fetch_data(seed_value=seed)
+    else:
+        restaurants = dataset
     restaurant_constraints = generate_restaurant_constraints(
         fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"],
         allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT,
         max_constraints=3,
-        dataset=dataset,
+        dataset=restaurants,
     )
     booking_constraints = await _generate_constraints_for_fields(
-        all_fields=["people_count", "selected_date", "selected_time"],
+        all_fields=["people", "date", "time"],
         allowed_ops=OPERATORS_ALLOWED_BOOK_RESTAURANT,
-        required_fields=["people_count", "selected_date", "selected_time"],
+        required_fields=["people", "date", "time"],
         validate_dates=True,
-        dataset=dataset,
+        dataset=restaurants,
     )
     all_constraints = restaurant_constraints + booking_constraints
     return all_constraints
 
 
 async def generate_country_selected_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url)
-        dataset = await get_data(seed_value=seed)
+    if not dataset:
+        seed = await resolve_v2_seed_from_url(task_url) if task_url else None
+        restaurants = await fetch_data(seed_value=seed)
+    else:
+        restaurants = dataset
     restaurant_constraints = generate_restaurant_constraints(
         fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"],
         allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT,
         max_constraints=3,
-        dataset=dataset,
+        dataset=restaurants,
     )
-    country_field = random.choice(["country_name", "country_code"])
+    country_field = random.choice(["country", "code"])
     booking_contraints = await _generate_constraints_for_fields(
-        all_fields=["people_count", "selected_date", "selected_time"],
+        all_fields=["people", "date", "time"],
         allowed_ops=OPERATORS_ALLOWED_COUNTRY_SELECTED,
         required_fields=[country_field],
         validate_dates=True,
-        dataset=dataset,
+        dataset=restaurants,
     )
     all_constraints = restaurant_constraints + booking_contraints
 
@@ -353,21 +366,23 @@ async def generate_country_selected_constraints(task_url: str | None = None, dat
 
 
 async def generate_occasion_selected_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url)
-        dataset = await get_data(seed_value=seed)
+    if not dataset:
+        seed = await resolve_v2_seed_from_url(task_url) if task_url else None
+        restaurants = await fetch_data(seed_value=seed)
+    else:
+        restaurants = dataset
     restaurant_constraints = generate_restaurant_constraints(
         fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"],
         allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT,
         max_constraints=3,
-        dataset=dataset,
+        dataset=restaurants,
     )
     booking_contraints = await _generate_constraints_for_fields(
-        all_fields=["people_count", "selected_date", "selected_time"],
+        all_fields=["people", "date", "time"],
         allowed_ops=OPERATORS_ALLOWED_COUNTRY_SELECTED,
-        required_fields=["occasion_type"],
+        required_fields=["occasion"],
         validate_dates=True,
-        dataset=dataset,
+        dataset=restaurants,
     )
     all_constraints = restaurant_constraints + booking_contraints
 
@@ -375,22 +390,24 @@ async def generate_occasion_selected_constraints(task_url: str | None = None, da
 
 
 async def generate_reservation_complete_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url)
-        dataset = await get_data(seed_value=seed)
+    if not dataset:
+        seed = await resolve_v2_seed_from_url(task_url) if task_url else None
+        restaurants = await fetch_data(seed_value=seed)
+    else:
+        restaurants = dataset
     restaurant_constraints = generate_restaurant_constraints(
         fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"],
         allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT,
         max_constraints=3,
-        dataset=dataset,
+        dataset=restaurants,
     )
     booking_contraints = await _generate_constraints_for_fields(
-        all_fields=["people_count", "country_code", "phone_number", "occasion_typeselected_date", "selected_time"],
+        all_fields=["people", "code", "phone", "occasion", "date", "time"],
         allowed_ops=OPERATORS_ALLOWED_RESERVATION_COMPLETE,
-        required_fields=["occasion_type"],
+        required_fields=["occasion"],
         validate_dates=True,
         max_optional=3,
-        dataset=dataset,
+        dataset=restaurants,
     )
     all_constraints = restaurant_constraints + booking_contraints
 
@@ -398,7 +415,7 @@ async def generate_reservation_complete_constraints(task_url: str | None = None,
 
 
 async def generate_scroll_view_constraints():
-    return await _generate_constraints_for_fields(all_fields=["section_title", "direction"], allowed_ops=OPERATORS_ALLOWED_SCROLL_VIEW, required_fields=["section_title", "direction"])
+    return await _generate_constraints_for_fields(all_fields=["section", "direction"], allowed_ops=OPERATORS_ALLOWED_SCROLL_VIEW, required_fields=["section", "direction"])
 
 
 async def generate_contact_constraints():
@@ -495,7 +512,7 @@ async def _generate_constraints_for_fields(
     dataset: list[dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     """Generate constraints for fields. If dataset is None, it will be fetched when needed."""
-    if dataset is None or dataset == {}:
+    if not dataset:
         dataset = []
     if required_fields is None:
         required_fields = []
@@ -575,6 +592,7 @@ def generate_restaurant_constraints(
         raise ValueError("fields cannot be empty")
 
     # 1️⃣ Registro “solución”
+    dataset = dataset.get("restaurants", [])
     target = random.choice(dataset)
 
     # 2️⃣ Campos que existen en target y están en `fields`

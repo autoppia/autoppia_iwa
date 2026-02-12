@@ -92,7 +92,6 @@ class UseCase(BaseModel):
                     to pass to the generator. Each constraint generator receives the full dataset
                     and extracts the relevant entity list it needs.
         """
-        print("[CONSTRAINTS_FLOW] Paso 5: generate_constraints_async use_case=%s" % self.name)
         if self.constraints_generator:
             # Inspect the generator function signature to see what parameters it accepts
             sig = inspect.signature(self.constraints_generator)
@@ -119,7 +118,6 @@ class UseCase(BaseModel):
                 kwargs["dataset"] = dataset
 
             # Call generator with appropriate parameters
-            print("[CONSTRAINTS_FLOW] Paso 5: llamando constraints_generator=%s con kwargs keys=%s" % (getattr(self.constraints_generator, "__name__", ""), list(kwargs.keys())))
             if kwargs:
                 result = self.constraints_generator(**kwargs)
             elif first_param_is_dataset:
@@ -133,7 +131,6 @@ class UseCase(BaseModel):
                 self.constraints = await result
             else:
                 self.constraints = result
-            print("[CONSTRAINTS_FLOW] Paso 5: constraints generados -> count=%s" % (len(self.constraints) if self.constraints else 0))
         return self.constraints_to_str() if self.constraints else ""
 
     def constraints_to_str(self) -> str:
@@ -144,16 +141,34 @@ class UseCase(BaseModel):
         if not self.constraints:
             return ""
 
+        # Mapping to natural language for better prompt generation
+        op_map = {
+            "equals": "equals",
+            "not_equals": "not equals",
+            "contains": "contains",
+            "not_contains": "not contains",
+            "greater_than": "greater than",
+            "less_than": "less than",
+            "greater_equal": "greater equal",
+            "less_equal": "less equal",
+            "in_list": "is one of",
+            "not_in_list": "is not one of",
+        }
+
         parts = []
         for idx, constraint in enumerate(self.constraints, start=1):
             field = constraint["field"]
             op = constraint["operator"]
             value = constraint["value"]
 
+            # Use natural language if available, otherwise use raw value
+            op_str = op.value if hasattr(op, "value") else str(op)
+            op_label = op_map.get(op_str, op_str)
+
             # Special formatting for lists
             value_str = f"[{', '.join(map(str, value))}]" if isinstance(value, list) else str(value)
 
-            parts.append(f"{idx}) {field} {op.value} {value_str}")
+            parts.append(f"{idx}) {field} {op_label} {value_str}")
 
         return " AND ".join(parts)
 
@@ -171,10 +186,16 @@ class UseCase(BaseModel):
 
     def serialize(self) -> dict:
         """Serialize a UseCase object to a dictionary."""
+        from autoppia_iwa.src.data_generation.tests.simple.utils import enum_to_raw_recursive
+
         serialized = self.model_dump()
         serialized["event"] = self.event.__name__
         if "event_source_code" in serialized:
             serialized["event_source_code"] = True
+        # Explicitly ensure constraints are included (they're needed for validation)
+        # Convert ComparisonOperator enums to strings for JSON serialization
+        if self.constraints is not None:
+            serialized["constraints"] = enum_to_raw_recursive(self.constraints)
         return serialized
 
     @classmethod

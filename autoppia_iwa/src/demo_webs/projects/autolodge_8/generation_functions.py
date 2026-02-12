@@ -5,7 +5,7 @@ from typing import Any
 from loguru import logger
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
 
 from ..operators import EQUALS, GREATER_EQUAL, LESS_EQUAL
 from ..shared_utils import create_constraint_dict, parse_datetime
@@ -24,18 +24,18 @@ from .data import (
     FIELD_OPERATORS_SUBMIT_REVIEW_MAP,
     FIELD_OPERATORS_VIEW_HOTEL_MAP,
 )
-from .data_utils import get_all_data
+from .data_utils import fetch_data
 
 
 async def _ensure_hotel_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    """Extract hotels data from the pre-loaded dataset, or fetch from server if not available."""
-    # Fetch data if dataset is not provided or is empty
-    if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+    seed = await resolve_v2_seed_from_url(task_url) if task_url else None
+    hotels = await fetch_data(seed_value=seed)
+    dataset = {"hotels": hotels}
 
     if dataset and "hotels" in dataset:
         return dataset["hotels"]
+    if dataset:
+        return dataset
     return []
 
 
@@ -176,6 +176,9 @@ async def generate_search_hotel_constraints(task_url: str | None = None, dataset
     # Ensure if 'datesTo' is selected, 'datesFrom' is also selected
     if "datesTo" in selected_fields and "datesFrom" not in selected_fields:
         selected_fields.append("datesFrom")
+    if not data:
+        logger.warning("No hotel data available for generating search hotel constraints")
+        return []
     sample_hotel = random.choice(data)
     max_guests = sample_hotel.get("maxGuests", 2)
 
@@ -285,6 +288,9 @@ async def __generate_view_hotel_constraints(task_url: str | None = None, dataset
     elif "datesTo" in selected_fields and "datesFrom" not in selected_fields:
         selected_fields.append("datesFrom")
     data = await _ensure_hotel_dataset(task_url, dataset)
+    if not data:
+        logger.warning("No hotel data available for generating view hotel constraints")
+        return [], {}
     hotel = random.choice(data)
     # hotel = random.choice(HOTELS_DATA_MODIFIED)
 
@@ -344,6 +350,9 @@ async def generate_view_hotel_constraints(task_url: str | None = None, dataset: 
 async def _generate_reserve_hotel_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
     data = await _ensure_hotel_dataset(task_url, dataset)
+    if not data:
+        logger.warning("No hotel data available for generating reserve hotel constraints")
+        return [], {}
     view_hotel_constraints, sample_hotel = await __generate_view_hotel_constraints(task_url, dataset=data)
     view_hotel_constraints = [c for c in view_hotel_constraints if c.get("field") != "guests"]
 
@@ -550,6 +559,9 @@ async def generate_confirm_and_pay_constraints(task_url: str | None = None, data
 async def generate_message_host_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
     data = await _ensure_hotel_dataset(task_url, dataset)
+    if not data:
+        logger.warning("No hotel data available for generating message host constraints")
+        return []
     msgs_list = [
         "Is your place available for the selected dates?",
         "Can you tell me more about the amenities?",
@@ -585,6 +597,10 @@ async def generate_message_host_constraints(task_url: str | None = None, dataset
 
 async def generate_share_hotel_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
+    data = await _ensure_hotel_dataset(task_url, dataset)
+    if not data:
+        logger.warning("No hotel data available for generating share hotel constraints")
+        return []
     emails_list = [
         "alice.smith@example.com",
         "john.doe@gmail.com",
@@ -613,15 +629,15 @@ async def generate_share_hotel_constraints(task_url: str | None = None, dataset:
         "charlotte.cox@musicstream.fm",
     ]
 
-    constraint_list_for_view, hotel_dict = await __generate_view_hotel_constraints(task_url, dataset=dataset)
+    constraint_list_for_view, hotel_dict = await __generate_view_hotel_constraints(task_url, dataset=data)
 
     field = "email"
-    dataset = [{"email": email} for email in emails_list]
+    email_dataset = [{"email": email} for email in emails_list]
 
     allowed_ops = FIELD_OPERATORS_SHARE_HOTEL_MAP.get(field, [])
     operator = ComparisonOperator(random.choice(allowed_ops))
     field_value = random.choice(emails_list)
-    value = _generate_constraint_value(operator, field_value, field, dataset)
+    value = _generate_constraint_value(operator, field_value, field, email_dataset)
 
     constraints_list.append(create_constraint_dict(field, operator, value))
     constraints_list.extend(constraint_list_for_view)
@@ -682,8 +698,11 @@ async def generate_apply_filter_constraints(task_url: str | None = None, dataset
 
 async def generate_submit_hotel_review_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     data = await _ensure_hotel_dataset(task_url, dataset)
+    if not data:
+        logger.warning("No hotel data available for generating submit review constraints")
+        return []
     constraint_list_for_view, hotel_dict = await __generate_view_hotel_constraints(task_url, dataset=data)
-    selected_fields = list(random.choice(["name", "comment", "rating"]))
+    selected_fields = [random.choice(["name", "comment", "rating"])]
     constraints_list = []
     for field in selected_fields:
         allowed_ops = FIELD_OPERATORS_SUBMIT_REVIEW_MAP.get(field, [])
@@ -716,6 +735,9 @@ async def generate_submit_hotel_review_constraints(task_url: str | None = None, 
 
 async def generate_payment_method_selected_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     data = await _ensure_hotel_dataset(task_url, dataset)
+    if not data:
+        logger.warning("No hotel data available for generating payment method selected constraints")
+        return []
     sample = random.choice(data)
     constraints = []
     for field in ["method", "hotel_id", "title"]:
@@ -734,6 +756,9 @@ async def generate_payment_method_selected_constraints(task_url: str | None = No
 
 async def generate_book_from_wishlist_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     data = await _ensure_hotel_dataset(task_url, dataset)
+    if not data:
+        logger.warning("No hotel data available for generating book from wishlist constraints")
+        return []
     sample = random.choice(data)
     constraints: list[dict[str, Any]] = []
     for field in ["hotel_id", "title"]:

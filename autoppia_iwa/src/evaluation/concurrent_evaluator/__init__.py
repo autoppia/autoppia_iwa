@@ -6,7 +6,7 @@ y las ejecuta de forma secuencial en el navegador.
 
 Uso:
     from autoppia_iwa.src.evaluation.concurrent_evaluator import ConcurrentEvaluator
-    
+
     evaluator = ConcurrentEvaluator(web_project=project, config=config)
     result = await evaluator.evaluate_single_task_solution(task, task_solution)
 

@@ -194,7 +194,7 @@ CATEGORY_FILTER_USE_CASE = UseCase(
 ADD_TO_CART_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Explicitly mention adding to cart
-2. Include product details (name/ID at minimum)
+2. Include product details that are given in the constraints
 3. May include quantity if specified in constraints
 4. DO NOT include checkout/purchase actions
 
@@ -549,15 +549,15 @@ QUANTITY_CHANGE_USE_CASE = UseCase(
 
 CAROUSEL_SCROLL_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Explicitly mention scrolling/navigating a carousel (use phrases like "Scroll left", "Browse more", etc.)
-2. Include carousel section title if specified in constraints
-3. Must specify direction (left/right) if required
-4. Should not include product selection actions
-5. Dont mention two conditions about same field, like direction ( example "Scroll left in the carousel where the direction is 'RIGHT'") - this is not allowed.
+1. Explicitly describe scrolling or navigating a carousel (use phrases like "Scroll", "Browse more", etc.).
+2. Include the carousel section title if it is specified in the constraints.
+3. Specify the scroll direction (LEFT/RIGHT) if it is included in the constraints.
+4. Avoid mentioning product selection actions or any interactions other than scrolling.
+5. Do not include multiple conditions for the same field (e.g., specifying the direction twice is not allowed).
 
 
 For example:
-- CORRECT: "Scroll right in the 'Featured Products' carousel"
+- CORRECT: "Scroll 'RIGHT' in the 'Featured Products' carousel"
 - INCORRECT: "View details for product in carousel" (wrong action)
 - INCORRECT: "Show me carousel items" (no scroll action)
 - INCORRECT: Scroll left in the carousel where the direction is NOT 'LEFT'    (you cannot specify twice same direction)

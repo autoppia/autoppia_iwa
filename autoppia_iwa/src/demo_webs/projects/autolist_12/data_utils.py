@@ -5,8 +5,22 @@ Shared dataset helpers for autolist_12.
 from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
 
 
-async def fetch_tasks_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
-    """Fetch and return the tasks dataset for autolist."""
+async def fetch_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
+    """
+    Fetch and return the tasks dataset for autolist.
+
+    This is the unified function replacing:
+    - fetch_tasks_data()
+    - get_data()
+    - get_all_data()
+
+    Args:
+        seed_value: Seed value for deterministic selection
+        count: Number of items to fetch
+
+    Returns:
+        list[dict] of tasks
+    """
     from .main import FRONTEND_PORT_INDEX, autolist_project
 
     project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{autolist_project.id}"
@@ -16,17 +30,6 @@ async def fetch_tasks_data(seed_value: int | None = None, count: int = 50) -> li
         entity_type="tasks",
         seed_value=seed_value if seed_value is not None else 0,
         limit=count,
-        method="distribute",
+        method="shuffle",
     )
     return items if items else []
-
-
-async def get_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
-    """Main data loader function for autolist_12."""
-    return await fetch_tasks_data(seed_value=seed_value, count=count)
-
-
-async def get_all_data(seed_value: int | None = None, count: int = 50) -> dict[str, list[dict]]:
-    """Load complete dataset for this project."""
-    tasks = await get_data(seed_value=seed_value, count=count)
-    return {"tasks": tasks}

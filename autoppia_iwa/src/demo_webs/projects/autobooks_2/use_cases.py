@@ -1,6 +1,6 @@
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
-from .data_utils import fetch_books_data
+from .data_utils import fetch_data
 from .events import (
     AddBookEvent,
     AddCommentEvent,
@@ -27,6 +27,7 @@ from .generation_functions import (
     generate_add_book_constraints,
     generate_add_comment_constraints,
     generate_book_constraints,
+    generate_book_details_constraints,
     generate_book_filter_constraints,
     generate_contact_constraints,
     generate_delete_book_constraints,
@@ -37,12 +38,12 @@ from .generation_functions import (
     generate_registration_constraints,
     generate_search_book_constraints,
 )
-from .replace_functions import login_replace_func, register_replace_func, replace_book_placeholders
+from .replace_functions import replace_book_placeholders
 
 
 async def _get_books_data_for_prompts(seed_value: int | None = None, count: int = 50) -> list[dict]:
     """Fetch books data from API for use in prompt generation."""
-    return await fetch_books_data(seed_value=seed_value, count=count)
+    return await fetch_data(seed_value=seed_value, count=count)
 
 
 def _generate_book_names_list(books_data: list[dict]) -> str:
@@ -90,7 +91,7 @@ REGISTRATION_USE_CASE = UseCase(
     description="The user fills out the registration form and successfully creates a new account.",
     event=RegistrationEvent,
     event_source_code=RegistrationEvent.get_source_code_of_class(),
-    replace_func=register_replace_func,
+    # replace_func not needed - credentials remain as placeholders until evaluation
     constraints_generator=generate_registration_constraints,
     additional_prompt_info=REGISTRATION_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -112,27 +113,14 @@ REGISTRATION_USE_CASE = UseCase(
 ###############################################################################
 # LOGIN_USE_CASE
 ###############################################################################
-LOGIN_ADDITIONAL_PROMPT_INFO = """
-CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Be sure to add instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
-2. Start the prompt with one of following phrases to indicate the login step.:
-    Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
-3. KEEP THE CONSTRAINTS VALUE IN PROMPT SAME AS THEY ARE IN CONSTRAINTS.
-    Example:
-    constraint: 'username' equals '<web_agent_id>' AND 'password' equals 'password123'
-    Then prompt should be like:
-    prompt: "authenticate with username '<web_agent_id>' and password 'password123'."
 
-ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
-"""
 LOGIN_USE_CASE = UseCase(
     name="LOGIN_BOOK",
     description="The user fills out the login form and logs in successfully.",
     event=LoginEvent,
     event_source_code=LoginEvent.get_source_code_of_class(),
-    replace_func=login_replace_func,
+    # replace_func not needed - credentials remain as placeholders until evaluation
     constraints_generator=generate_login_constraints,
-    # additional_prompt_info=LOGIN_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Login for the following username:<username> and password:<password>",
@@ -156,21 +144,14 @@ LOGIN_USE_CASE = UseCase(
 ###############################################################################
 # LOGOUT_USE_CASE
 ###############################################################################
-LOGOUT_ADDITIONAL_PROMPT_INFO = """
-CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Be sure to add instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
-Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 
-ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
-"""
 LOGOUT_USE_CASE = UseCase(
     name="LOGOUT_BOOK",
     description="The user logs out of the platform after logging in.",
     event=LogoutEvent,
     event_source_code=LogoutEvent.get_source_code_of_class(),
-    replace_func=login_replace_func,
+    # replace_func not needed - credentials remain as placeholders until evaluation
     constraints_generator=generate_logout_constraints,
-    # additional_prompt_info=LOGOUT_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Login for the following username:<username> and password:<password>, then logout",
@@ -248,7 +229,7 @@ BOOK_DETAIL_USE_CASE = UseCase(
     event=BookDetailEvent,
     event_source_code=BookDetailEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
-    constraints_generator=generate_book_constraints,
+    constraints_generator=generate_book_details_constraints,
     examples=[
         {
             "prompt": "Navigate to 'The Housemaid Is Watching' book page",
@@ -337,7 +318,7 @@ SHARE_BOOK_USE_CASE = UseCase(
     event=ShareBookEvent,
     event_source_code=BookDetailEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
-    constraints_generator=generate_book_constraints,
+    constraints_generator=generate_book_details_constraints,
     examples=[
         {
             "prompt": "Share 'The Housemaid Is Watching' book",
@@ -426,7 +407,7 @@ OPEN_PREVIEW_USE_CASE = UseCase(
     event=OpenPreviewEvent,
     event_source_code=OpenPreviewEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
-    constraints_generator=generate_book_constraints,
+    constraints_generator=generate_book_details_constraints,
     examples=[
         {
             "prompt": "Open preview of 'The Housemaid Is Watching' book",
@@ -515,7 +496,7 @@ ADD_TO_READING_LIST_USE_CASE = UseCase(
     event=AddToReadingListEvent,
     event_source_code=AddToReadingListEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
-    constraints_generator=generate_book_constraints,
+    constraints_generator=generate_book_details_constraints,
     examples=[
         {
             "prompt": "Add to reading list 'The Housemaid Is Watching' book",
@@ -585,7 +566,7 @@ REMOVE_FROM_READING_LIST_USE_CASE = UseCase(
     event=RemoveFromReadingListEvent,
     event_source_code=RemoveFromReadingListEvent.get_source_code_of_class(),
     additional_prompt_info=None,
-    constraints_generator=generate_book_constraints,
+    constraints_generator=generate_book_details_constraints,
     examples=[
         {
             "prompt": "Remove from reading list 'The Housemaid Is Watching' book",
@@ -616,7 +597,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
    - "Find a book..."
    - "Look up a book..."
 2. Avoid ambiguous phrases like "Show details" or "Give me information" that could be confused with other actions
-3. Include ONLY the book title as part of the search
+3. Include ONLY the book title as part of the search with corresponding OPERATOR.
 4. DO NOT include ANY constraints or conditions like author, year, genre, etc.
 5. PAY ATTENTION to the constraints, especially when referring to EQUALS or NOT EQUALS.
 For example:
@@ -668,17 +649,44 @@ SEARCH_BOOK_USE_CASE = UseCase(
 ###############################################################################
 ADD_BOOK_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
 3. Be phrased as a request to add or insert a book (use phrases like "Add...", "Insert...", "Register...", etc.).
-4. Begin with a creative instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
-Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
+4. Begin with a creative instruction to log in using username '<username>' and password '<password>' (this MUST strictly contain the EXACT provided username and EXACT provided password values in the constraints— do NOT replace, modify, infer, suggest alternatives, or use placeholder substitutions).
+
+ABSOLUTE FIELD VALUE RULE:
+- Every field value provided in the constraints MUST be written EXACTLY as given.
+- Do NOT replace values with synonyms, suggestions, examples, placeholders, or inferred alternatives.
+- Do NOT generalize values.
+- Do NOT rewrite or transform field values.
+- The username and password MUST appear exactly as provided.
+- If a field value is given, it must be copied verbatim into the prompt.
+
+Examples include login phrases such as:
+"First, authenticate with..."
+"Initiate session using..."
+"After successful login with..."
+"Once logged in as..."
+etc.
 
 For example, if the constraints are "year equals 2014 AND author equals 'Wes Anderson'":
-- CORRECT: "First, authenticate with username '<username>' and password '<password>'. Then, add a book whose year equals 2014 and that is authored by 'Wes Anderson'."
-If you specify the name of the book then dont specify the author or year, just use the name of the book.
-ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+
+CORRECT:
+"First, authenticate with username '<username>' and password '<password>'. Then, add a book whose year equals 2014 and that is authored by 'Wes Anderson'."
+
+INCORRECT:
+- Using different username/password values.
+- Using placeholders other than the exact provided ones.
+- Rewriting 'Wes Anderson' differently.
+- Changing 2014 to another year.
+- Adding extra filters.
+
+If you specify the name of the book, then do NOT specify the author or year — only use the book name.
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria and EXACT field values.
 """
+
 
 ADD_BOOK_USE_CASE = UseCase(
     name="ADD_BOOK",
@@ -686,35 +694,35 @@ ADD_BOOK_USE_CASE = UseCase(
     event=AddBookEvent,
     event_source_code=AddBookEvent.get_source_code_of_class(),
     constraints_generator=generate_add_book_constraints,
-    replace_func=login_replace_func,
+    # replace_func not needed - credentials remain as placeholders until evaluation
     additional_prompt_info=ADD_BOOK_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "First, authenticate with username '<username>' and password 'PASSWORD'. Then, add the book 'A Guide to the Good Life' authored by 'William B. Irvine'",
+            "prompt": "First, authenticate with username '<username>' and password '<password>'. Then, add the book 'A Guide to the Good Life' authored by 'William B. Irvine'",
             "prompt_for_task_generation": "First, authenticate with username '<username>' and password '<password>'. Then, add the book '<book>' authored by '<author>'",
         },
         {
-            "prompt": "Initiate session using '<username>' as the username and 'PASSWORD' as the secret. Then, add the book 'AI Superpowers' released in 2018",
+            "prompt": "Initiate session using '<username>' as the username and '<password>' as the secret. Then, add the book 'AI Superpowers' released in 2018",
             "prompt_for_task_generation": "Initiate session using '<username>' as the username and '<password>' as the secret. Then, add the book '<book>' released in <year>",
         },
         {
-            "prompt": "After successful login with '<username>' and 'PASSWORD', add the book 'Sapiens: A Brief History of Humankind' with genres History and Anthropology",
+            "prompt": "After successful login with '<username>' and '<password>', add the book 'Sapiens: A Brief History of Humankind' with genres History and Anthropology",
             "prompt_for_task_generation": "After successful login with '<username>' and '<password>', add the book '<book>' with genres <genre> and <genre>",
         },
         {
-            "prompt": "Once logged in as '<username>' with the password 'PASSWORD', add the book 'The Midnight Library' with a page_count under 320 pages",
+            "prompt": "Once logged in as '<username>' with the password '<password>', add the book 'The Midnight Library' with a page_count under 320 pages",
             "prompt_for_task_generation": "Once logged in as '<username>' with the password '<password>', add the book '<book>' with a page_count under <page_count> pages",
         },
         {
-            "prompt": "Having authenticated with '<username>' and 'PASSWORD', add the book 'The Art of Learning' with rating not 4.8.",
+            "prompt": "Having authenticated with '<username>' and '<password>', add the book 'The Art of Learning' with rating not 4.8.",
             "prompt_for_task_generation": "Having authenticated with '<username>' and '<password>', add the book '<book>' with rating not equal to <rating>",
         },
         {
-            "prompt": "Upon logging in with username '<username>' and the secret 'PASSWORD', add the book 'The Practicing Mind' from one of these authors: 'Thomas M. Sterner', 'James Clear', or 'Ryan Holiday'",
+            "prompt": "Upon logging in with username '<username>' and the secret '<password>', add the book 'The Practicing Mind' from one of these authors: 'Thomas M. Sterner', 'James Clear', or 'Ryan Holiday'",
             "prompt_for_task_generation": "Upon logging in with username '<username>' and the secret '<password>', add a book '<book>' from one of these authors: '<author>', '<author>', or '<author>'",
         },
         {
-            "prompt": "With credentials '<username>' and 'PASSWORD' successfully entered, add the book 'Deep Work' with running time at least 450 pages authored by 'Cal Newport'",
+            "prompt": "With credentials '<username>' and '<password>' successfully entered, add the book 'Deep Work' with running time at least 450 pages authored by 'Cal Newport'",
             "prompt_for_task_generation": "With credentials '<username>' and '<password>' successfully entered, add the book '<book>' with running time at least <page_count> pages authored by '<author>'",
         },
     ],
@@ -725,17 +733,41 @@ ADD_BOOK_USE_CASE = UseCase(
 ###############################################################################
 EDIT_BOOK_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above — not just some of them.
-2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
+
+1. Include ALL edit constraints mentioned above — not just some of them.
+2. Include ONLY the edit constraints mentioned above — do not add any other criteria or filters.
 3. Be phrased as a request to edit or modify a book (use phrases like "Edit...", "Modify...", "Update...", "Change...", etc.).
-4. Begin with a creative instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
-Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
+4. Begin with a creative instruction to log in using username '<username>' and password '<password>'.
 
-For example, if the constraints are "year equals 2014 AND author contains 'e'":
-- CORRECT: "Edit a book where the year equals 2014 and the author's name contains the letter 'e'."
-- INCORRECT: "Edit a random book with a high rating" (you added an extra filter).
+STRICT FIELD USAGE RULE:
 
-ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+- The username and password MUST appear exactly as provided in the LOGIN sentence only.
+- Do NOT repeat username or password inside the edit constraint description unless they are explicitly part of the edit constraints.
+- Only include fields that are explicitly defined as edit constraints.
+- Every constraint value MUST be copied EXACTLY as given.
+- Do NOT rewrite, transform, infer, replace, generalize, or suggest alternative values.
+- Do NOT introduce placeholders other than the exact provided values.
+- Do NOT add additional filtering criteria beyond what is specified.
+
+IMPORTANT DISTINCTION:
+
+- Login credentials are for authentication only.
+- Edit constraints define which book should be modified.
+- Do NOT mix authentication fields into the edit filtering unless explicitly instructed.
+
+For example, if the constraints are:
+"year equals 2014 AND author contains 'e'"
+
+CORRECT:
+"First, authenticate with username '<username>' and password '<password>'. Then, edit your book where the year equals 2014 and the author contains 'e'."
+
+INCORRECT:
+- Adding extra filters such as rating or genre.
+- Rewriting constraint values.
+- Repeating username or password inside the edit condition.
+- Editing a random or unspecified book.
+
+ALL prompts must follow this structure exactly, with varied phrasing but identical constraint logic and EXACT field values.
 """
 EDIT_BOOK_USE_CASE = UseCase(
     name="EDIT_BOOK",
@@ -751,8 +783,8 @@ EDIT_BOOK_USE_CASE = UseCase(
             "prompt_for_task_generation": "Sign in with username: <username> and password: <password>. After that, update the author of <your_book> to Jamie Oliver.",
         },
         {
-            "prompt": "First, log into your account (username: <username>, password: <password>). Then, modify the release year of your book to 2023.",
-            "prompt_for_task_generation": "First, log into your account (username: <username>, password: <password>). Then, modify the release year of <your_book> to 2023.",
+            "prompt": "First, log into your account with username: <username>, password: <password>. Then, modify the release year of your book to 2023.",
+            "prompt_for_task_generation": "First, log into your account with username: <username>, password: <password>. Then, modify the release year of <your_book> to 2023.",
         },
         {
             "prompt": "Access your account by entering username: <username> and password: <password>. Once logged in, add 'Baking' to the genres of your book.",
@@ -777,19 +809,42 @@ EDIT_BOOK_USE_CASE = UseCase(
 ###############################################################################
 DELETE_BOOK_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above — not just some of them.
-2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
+
+1. Include ALL deletion constraints mentioned above — not just some of them.
+2. Include ONLY the deletion constraints mentioned above — do not add any other criteria or filters.
 3. Be phrased as a request to delete or remove a book (use phrases like "Remove...", "Delete...", "Erase...", "Discard...").
-4. Do **not** specify book details like name, year, or author. The user is only allowed to delete books they have added. Use terms like 'your book' or 'user-registered book' in the final prompt.
-5. Begin with a creative instruction to log in using username '<username>' and password '<password>  (**strictly** containing both the username and password placeholders)'.
-Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
+4. The user is only allowed to delete books they have added. Use terms like 'your book' or 'user-registered book' in the final prompt.
+5. Begin with a creative instruction to log in using username '<username>' and password '<password>'.
 
-For example, if the constraints are "year greater_than 2014 AND genres contains Sci-Fi":
-- CORRECT: "Delete a book whose year is greater than 2014 and that belongs to the Sci-Fi genre."
-- INCORRECT: "Delete a book from 2015 with a high rating" (you added an extra filter).
+STRICT FIELD USAGE RULE:
 
-ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+- The username and password MUST appear exactly as provided in the LOGIN sentence only.
+- Do NOT repeat username or password inside the delete constraint description unless they are explicitly part of the deletion constraints.
+- Only include fields that are explicitly defined as deletion constraints.
+- If "id" is a deletion constraint, include it exactly as given.
+- Do NOT automatically include username or password as deletion filters unless they are explicitly stated as deletion constraints.
+- Do NOT rewrite, transform, infer, or replace any provided field values.
+- Every constraint value must be copied verbatim.
+
+IMPORTANT DISTINCTION:
+- Login credentials are for authentication only.
+- Deletion constraints describe which book to delete.
+- Do NOT mix authentication fields into deletion filtering unless explicitly instructed.
+
+For example, if the deletion constraint is:
+"id equals '<web_agent_id>'"
+
+CORRECT:
+"First, authenticate with username '<username>' and password '<password>'. Then, delete your book whose id equals '<web_agent_id>'."
+
+INCORRECT:
+- Adding username or password as deletion filters.
+- Repeating login credentials inside the delete description.
+- Adding extra constraints like rating or year.
+
+ALL prompts must follow this structure exactly, with varied phrasing but identical constraint logic and EXACT field values.
 """
+
 
 DELETE_BOOK_USE_CASE = UseCase(
     name="DELETE_BOOK",
@@ -797,48 +852,47 @@ DELETE_BOOK_USE_CASE = UseCase(
     event=DeleteBookEvent,
     event_source_code=DeleteBookEvent.get_source_code_of_class(),
     additional_prompt_info=DELETE_BOOK_ADDITIONAL_PROMPT_INFO,
-    replace_func=login_replace_func,
     constraints_generator=generate_delete_book_constraints,
     examples=[
         {
-            "prompt": "Log in (username: <username>, password: <password>) and remove '<your_book>'.",
-            "prompt_for_task_generation": "Log in (username: <username>, password: <password>) and remove '<your_book>'.",
+            "prompt": "Log in with username: <username>, password: <password> and remove '<your_book>'.",
+            "prompt_for_task_generation": "Log in with username: <username>, password: <password> and remove '<your_book>'.",
         },
         {
             "prompt": "After logging in with username: <username> and password: <password>, erase all records of '<your_book>'.",
             "prompt_for_task_generation": "After logging in with username: <username> and password: <password>, erase all records of '<your_book>'.",
         },
         {
-            "prompt": "Log in (username: <username>, password: <password>) and permanently delete '<your_book>'.",
-            "prompt_for_task_generation": "Log in (username: <username>, password: <password>) and permanently delete '<your_book>'.",
+            "prompt": "Log in with username: <username>, password: <password> and permanently delete '<your_book>'.",
+            "prompt_for_task_generation": "Log in with username: <username>, password: <password> and permanently delete '<your_book>'.",
         },
         {
-            "prompt": "Sign into your account (username: <username>, password: <password>) and discard '<your_book>'.",
-            "prompt_for_task_generation": "Sign into your account (username: <username>, password: <password>) and discard '<your_book>'.",
+            "prompt": "Sign into your account where username: <username>, password: <password> and discard '<your_book>'.",
+            "prompt_for_task_generation": "Sign into your account where username: <username>, password: <password> and discard '<your_book>'.",
         },
         {
             "prompt": "Initiate a session with username: <username> and password: <password>, then remove '<your_book>'.",
             "prompt_for_task_generation": "Initiate a session with username: <username> and password: <password>, then remove '<your_book>'.",
         },
         {
-            "prompt": "Once logged in as <username> (password: <password>), delete '<your_book>'.",
-            "prompt_for_task_generation": "Once logged in as <username> (password: <password>), delete '<your_book>'.",
+            "prompt": "Once logged in as username: <username> and password: <password>, delete '<your_book>'.",
+            "prompt_for_task_generation": "Once logged in as username: <username> and password: <password>, delete '<your_book>'.",
         },
         {
             "prompt": "Begin by signing in with username <username> and password <password>. Then, delete '<your_book>'.",
             "prompt_for_task_generation": "Begin by signing in with username <username> and password <password>. Then, delete '<your_book>'.",
         },
         {
-            "prompt": "First, log into the system (username: <username>, password: <password>), then discard '<your_book>'.",
-            "prompt_for_task_generation": "First, log into the system (username: <username>, password: <password>), then discard '<your_book>'.",
+            "prompt": "First, log into the system with username: <username>, password: <password>, then discard '<your_book>'.",
+            "prompt_for_task_generation": "First, log into the system with username: <username>, password: <password>, then discard '<your_book>'.",
         },
         {
             "prompt": "Authenticate yourself with username <username> and password <password>. Then, remove '<your_book>'.",
             "prompt_for_task_generation": "Authenticate yourself with username <username> and password <password>. Then, remove '<your_book>'.",
         },
         {
-            "prompt": "Using your credentials (username: <username>, password: <password>), sign in and erase all records of '<your_book>'.",
-            "prompt_for_task_generation": "Using your credentials (username: <username>, password: <password>), sign in and erase all records of '<your_book>'.",
+            "prompt": "Using your credentials username: <username>, password: <password>, sign in and erase all records of '<your_book>'.",
+            "prompt_for_task_generation": "Using your credentials username: <username>, password: <password>, sign in and erase all records of '<your_book>'.",
         },
     ],
 )
@@ -921,7 +975,6 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
     description="The user edits their profile, modifying one or more attributes such as first name, last name, bio, location, website, or favorite genres. Username and email cannot be edited.",
     event=EditUserEvent,
     event_source_code=EditUserEvent.get_source_code_of_class(),
-    replace_func=login_replace_func,
     constraints_generator=generate_edit_profile_constraints,
     additional_prompt_info=EDIT_PROFILE_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -1253,15 +1306,44 @@ REMOVE_FROM_CART_BOOK_USE_CASE = UseCase(
 
 PURCHASE_BOOK_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above — not just some of them.
-2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
-3. Be phrased as a request to purchase books (e.g., "Purchase...", "Buy...").
-4. Explicitly mention the purchase/checkout action in the prompt.
-5. If constraints include payment_method or shipping_address, they MUST be referenced directly.
-6. Begin with a creative instruction to log in using username '<username>' and password '<password>' (**strictly** containing both the username and password placeholders).
-Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 
-ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+1. Include ALL purchase constraints mentioned above — not just some of them.
+2. Include ONLY the purchase constraints mentioned above — do not add any other fields, filters, or conditions.
+3. Be phrased clearly as a request to purchase or buy book(s) (use phrases like "Purchase...", "Buy...", "Proceed to checkout...", etc.).
+4. Explicitly mention the purchase or checkout action in the prompt.
+5. If constraints include fields such as payment_method or shipping_address, they MUST be referenced exactly as provided.
+6. Begin with a creative instruction to log in using username '<username>' and password '<password>'.
+
+STRICT FIELD USAGE RULE:
+
+- The username and password MUST appear exactly as provided in the LOGIN sentence only.
+- Do NOT repeat username or password inside the purchase constraint description unless they are explicitly part of the purchase constraints.
+- Only include fields that are explicitly defined as purchase constraints.
+- Every constraint value MUST be copied EXACTLY as given.
+- Do NOT rewrite, transform, infer, generalize, substitute, or suggest alternative values.
+- Do NOT introduce new placeholders.
+- Do NOT add extra filters such as rating, genre, author, etc., unless explicitly specified.
+
+IMPORTANT DISTINCTION:
+
+- Login credentials are for authentication only.
+- Purchase constraints define which book(s) to buy and under what purchase conditions.
+- Do NOT mix authentication fields into purchase filtering unless explicitly instructed.
+
+Example (structure illustration only):
+If the constraints include:
+"title equals 'Dune' AND payment_method equals 'Credit Card'"
+
+CORRECT:
+"First, authenticate with username '<username>' and password '<password>'. Then, purchase the book whose title equals 'Dune' using payment_method equals 'Credit Card'."
+
+INCORRECT:
+- Rewriting 'Credit Card' as 'card payment'.
+- Adding extra filters such as rating.
+- Repeating login credentials inside purchase conditions.
+- Changing any provided constraint value.
+
+ALL prompts must follow this structure exactly, with varied phrasing but identical constraint logic and EXACT field values.
 """
 
 PURCHASE_BOOK_USE_CASE = UseCase(

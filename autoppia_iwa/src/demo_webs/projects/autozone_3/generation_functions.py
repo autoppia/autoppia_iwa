@@ -5,20 +5,21 @@ from typing import Any
 
 from loguru import logger
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
 
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict, parse_price
 from .data import FIELD_OPERATORS_MAP_PRODUCTS
-from .data_utils import get_all_data
+from .data_utils import fetch_data
 
 
 async def _ensure_products_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Extract products data from the pre-loaded dataset, or fetch from server if not available."""
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
-        seed = get_seed_from_url(task_url) if task_url else None
-        dataset = await get_all_data(seed_value=seed)
+        seed = await resolve_v2_seed_from_url(task_url) if task_url else None
+        products = await fetch_data(seed_value=seed)
+        dataset = {"products": products}
 
     if dataset and "products" in dataset:
         return dataset["products"]
@@ -66,6 +67,7 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
                     except (ValueError, TypeError):
                         source_value = None  # Invalid source value for int field
         elif field == "query":
+            source_value = product_data_source.get("title")
             all_terms_list = []
             for p in all_products_data:
                 all_terms_list.extend(str(p.get("title", "")).split())
@@ -215,7 +217,8 @@ async def generate_search_query_constraints(task_url: str | None = None, dataset
     op = random.choice(query_operators)
     # Pass a mock product_data_source even if not directly used, as generate_constraint_value expects it
     data_items = await _ensure_products_dataset(task_url, dataset)
-    constraint_value = generate_constraint_value("query", op, {}, all_products_data=data_items)
+    product = random.choice(data_items)
+    constraint_value = generate_constraint_value("query", op, product, all_products_data=data_items)
     if constraint_value is not None:
         constraints_list.append(create_constraint_dict("query", op, constraint_value))
 
@@ -337,6 +340,8 @@ def generate_carousel_scroll_constraints() -> list[dict[str, Any]]:
 
     direction_operators = [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]
     title_operators = [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]
+    if "direction" not in selected_fields:
+        selected_fields.append("direction")
 
     for field in selected_fields:
         if field == "direction":

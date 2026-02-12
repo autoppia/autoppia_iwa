@@ -22,11 +22,9 @@ from .data import (
     FIELD_OPERATORS_MAP_FILM,
     FIELD_OPERATORS_MAP_FILTER_FILM,
     FIELD_OPERATORS_MAP_SEARCH_FILM,
-    FILM_RANDOM_WORDS,
     PROFILE_BIOS,
     PROFILE_LOCATIONS,
     PROFILE_NAMES,
-    PROFILE_TEXT_ELEMENTS,
     PROFILE_WEBSITES,
 )
 from .data_utils import get_all_data
@@ -64,7 +62,7 @@ def _generate_constraint_value(
         return field_value
 
     if operator == ComparisonOperator.NOT_EQUALS:
-        if isinstance(field_value, (int, float)):
+        if isinstance(field_value, int | float):
             others = [d.get(field) for d in dataset if d.get(field) is not None and d.get(field) != field_value]
             return choice(others) if others else (field_value + 1 if isinstance(field_value, int) else field_value + 0.1)
         if isinstance(field_value, str):
@@ -107,7 +105,7 @@ def _generate_constraint_value(
         return choice(remaining) if remaining else None
 
     if operator in (ComparisonOperator.GREATER_THAN, ComparisonOperator.LESS_THAN, ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL):
-        if isinstance(field_value, (int, float)):
+        if isinstance(field_value, int | float):
             delta = random.uniform(0.5, 2.0) if isinstance(field_value, float) else random.randint(1, 5)
             if operator == ComparisonOperator.GREATER_THAN:
                 raw = field_value - delta
@@ -247,9 +245,7 @@ async def generate_search_film_constraints(task_url: str | None = None, dataset:
             if not films:
                 return parse_constraints_str("query equals The Matrix")
         search_dataset = [{"query": m["name"]} for m in films]
-        constraints_list = _generate_constraints(
-            search_dataset, FIELD_OPERATORS_MAP_SEARCH_FILM, num_constraints=1, selected_fields=["query"]
-        )
+        constraints_list = _generate_constraints(search_dataset, FIELD_OPERATORS_MAP_SEARCH_FILM, num_constraints=1, selected_fields=["query"])
         return constraints_list if constraints_list else parse_constraints_str("query equals The Matrix")
     except Exception:
         return parse_constraints_str("query equals The Matrix")
@@ -268,9 +264,7 @@ async def generate_film_constraints(task_url: str | None = None, dataset: dict[s
     if not films:
         return []
     num_constraints = random.randint(1, 3)
-    return _generate_constraints(
-        films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints
-    )
+    return _generate_constraints(films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints)
 
 
 async def generate_film_detail_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
@@ -279,9 +273,7 @@ async def generate_film_detail_constraints(task_url: str | None = None, dataset:
     if not films:
         return []
     num_constraints = random.randint(1, 3)
-    return _generate_constraints(
-        films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS
-    )
+    return _generate_constraints(films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS)
 
 
 async def generate_add_to_watchlist_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
@@ -290,9 +282,7 @@ async def generate_add_to_watchlist_constraints(task_url: str | None = None, dat
     if not films:
         return []
     num_constraints = random.randint(1, 3)
-    return _generate_constraints(
-        films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS
-    )
+    return _generate_constraints(films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS)
 
 
 async def generate_remove_from_watchlist_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
@@ -301,9 +291,7 @@ async def generate_remove_from_watchlist_constraints(task_url: str | None = None
     if not films:
         return []
     num_constraints = random.randint(1, 3)
-    return _generate_constraints(
-        films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS
-    )
+    return _generate_constraints(films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS)
 
 
 async def generate_share_film_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
@@ -312,9 +300,7 @@ async def generate_share_film_constraints(task_url: str | None = None, dataset: 
     if not films:
         return []
     num_constraints = random.randint(1, 3)
-    return _generate_constraints(
-        films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS
-    )
+    return _generate_constraints(films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS)
 
 
 async def generate_watch_trailer_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
@@ -323,9 +309,7 @@ async def generate_watch_trailer_constraints(task_url: str | None = None, datase
     if not films:
         return []
     num_constraints = random.randint(1, 3)
-    return _generate_constraints(
-        films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS
-    )
+    return _generate_constraints(films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS)
 
 
 async def generate_delete_film_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
@@ -334,9 +318,7 @@ async def generate_delete_film_constraints(task_url: str | None = None, dataset:
     if not films:
         return []
     num_constraints = random.randint(1, 3)
-    return _generate_constraints(
-        films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS
-    )
+    return _generate_constraints(films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS)
 
 
 def generate_contact_constraints() -> list:
@@ -350,9 +332,7 @@ def generate_contact_constraints() -> list:
         }
         for _ in range(15)
     ]
-    return _generate_constraints(
-        contact_dataset, FIELD_OPERATORS_MAP_CONTACT, num_constraints=random.randint(1, 4)
-    )
+    return _generate_constraints(contact_dataset, FIELD_OPERATORS_MAP_CONTACT, num_constraints=random.randint(1, 4))
 
 
 def _build_filter_film_dataset(films: list[dict]) -> list[dict]:
@@ -377,16 +357,10 @@ async def generate_film_filter_constraints(task_url: str | None = None, dataset:
     filter_dataset = _build_filter_film_dataset(films)
     generation_type = choice(["single_genre", "single_year", "genre_and_year"])
     if generation_type == "single_genre":
-        return _generate_constraints(
-            filter_dataset, FIELD_OPERATORS_MAP_FILTER_FILM, num_constraints=1, selected_fields=["genre_name"]
-        )
+        return _generate_constraints(filter_dataset, FIELD_OPERATORS_MAP_FILTER_FILM, num_constraints=1, selected_fields=["genre_name"])
     if generation_type == "single_year":
-        return _generate_constraints(
-            filter_dataset, FIELD_OPERATORS_MAP_FILTER_FILM, num_constraints=1, selected_fields=["year"]
-        )
-    return _generate_constraints(
-        filter_dataset, FIELD_OPERATORS_MAP_FILTER_FILM, num_constraints=2, selected_fields=["genre_name", "year"]
-    )
+        return _generate_constraints(filter_dataset, FIELD_OPERATORS_MAP_FILTER_FILM, num_constraints=1, selected_fields=["year"])
+    return _generate_constraints(filter_dataset, FIELD_OPERATORS_MAP_FILTER_FILM, num_constraints=2, selected_fields=["genre_name", "year"])
 
 
 def generate_constraint_from_solution(movie: dict, field: str, operator: ComparisonOperator, movies_data: list[dict]) -> dict[str, Any] | None:
@@ -423,7 +397,7 @@ async def generate_add_comment_constraints(task_url: str | None = None, dataset:
 
 
 async def generate_edit_film_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
-    """Generate constraints for EDIT_FILM: name from base movie + 1–4 editable fields from map (DB first)."""
+    """Generate constraints for EDIT_FILM: name from base movie + 1-4 editable fields from map (DB first)."""
     try:
         films = await _get_films_data(task_url, dataset)
         if not films:
@@ -436,9 +410,7 @@ async def generate_edit_film_constraints(task_url: str | None = None, dataset: d
         editable_fields = list(FIELD_OPERATORS_MAP_EDIT_FILM.keys())
         n = min(choice([1, 2, 3, 4]), len(editable_fields))
         selected = list(sample(editable_fields, n))
-        extra = _generate_constraints(
-            [base_movie], FIELD_OPERATORS_MAP_EDIT_FILM, num_constraints=n, selected_fields=selected
-        )
+        extra = _generate_constraints([base_movie], FIELD_OPERATORS_MAP_EDIT_FILM, num_constraints=n, selected_fields=selected)
         constraints.extend(extra)
         return constraints
     except Exception:
@@ -446,16 +418,12 @@ async def generate_edit_film_constraints(task_url: str | None = None, dataset: d
 
 
 def generate_add_film_constraints(dataset: list[dict]):
-    """Generate constraints for ADD_FILM: 1–4 fields from map, values from dataset (sync; no task_url)."""
+    """Generate constraints for ADD_FILM: 1-4 fields from map, values from dataset (sync; no task_url)."""
     if not dataset or not isinstance(dataset, dict):
-        return _generate_constraints([], FIELD_OPERATORS_MAP_ADD_FILM, num_constraints=1) or [
-            create_constraint_dict("genres", ComparisonOperator.EQUALS, choice(ALL_GENRES))
-        ]
+        return _generate_constraints([], FIELD_OPERATORS_MAP_ADD_FILM, num_constraints=1) or [create_constraint_dict("genres", ComparisonOperator.EQUALS, choice(ALL_GENRES))]
     films = dataset.get("films", [])
     if not films:
-        return _generate_constraints([], FIELD_OPERATORS_MAP_ADD_FILM, num_constraints=1) or [
-            create_constraint_dict("genres", ComparisonOperator.EQUALS, choice(ALL_GENRES))
-        ]
+        return _generate_constraints([], FIELD_OPERATORS_MAP_ADD_FILM, num_constraints=1) or [create_constraint_dict("genres", ComparisonOperator.EQUALS, choice(ALL_GENRES))]
     n = min(choice([1, 2, 3, 4]), len(FIELD_OPERATORS_MAP_ADD_FILM))
     return _generate_constraints(films, FIELD_OPERATORS_MAP_ADD_FILM, num_constraints=n)
 
@@ -478,10 +446,5 @@ def generate_edit_profile_constraints(dataset: list[dict]):
     selected = list(sample(editable_fields, n))
     if "website" not in selected:
         selected.append("website")
-    profile_constraints = _generate_constraints(
-        profile_dataset, FIELD_OPERATORS_MAP_EDIT_USER, num_constraints=len(selected), selected_fields=selected
-    )
-    return [
-        create_constraint_dict("username", ComparisonOperator.EQUALS, "<web_agent_id>"),
-        create_constraint_dict("password", ComparisonOperator.EQUALS, "password123"),
-    ] + profile_constraints
+    profile_constraints = _generate_constraints(profile_dataset, FIELD_OPERATORS_MAP_EDIT_USER, num_constraints=len(selected), selected_fields=selected)
+    return [create_constraint_dict("username", ComparisonOperator.EQUALS, "<web_agent_id>"), create_constraint_dict("password", ComparisonOperator.EQUALS, "password123"), *profile_constraints]

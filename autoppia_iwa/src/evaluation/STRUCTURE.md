@@ -147,7 +147,7 @@ class IEvaluator(ABC):
     @abstractmethod
     async def evaluate_single_task_solution(self, task: Task, task_solution: TaskSolution) -> EvaluationResult:
         ...
-    
+
     @abstractmethod
     async def evaluate_task_solutions(self, task: Task, task_solutions: list[TaskSolution]) -> list[EvaluationResult]:
         ...

@@ -27,6 +27,7 @@ class BenchmarkConfig:
     use_cases: list[str] | None = None
     prompts_per_use_case: int = 1
     dynamic: bool = False
+    use_cached_tasks: bool = False
 
     # Execution
     runs: int = 1
@@ -37,10 +38,9 @@ class BenchmarkConfig:
     # "concurrent": El agente genera todas las acciones de una vez (modo tradicional)
     # "stateful": El agente decide paso a paso viendo el estado del browser (iterativo)
     evaluator_mode: Literal["concurrent", "stateful"] = "concurrent"
-    
+
     # Solo para modo stateful: límite de pasos por tarea
     max_steps_per_task: int = 50
-    
 
     # Persistence / plotting
     save_results_json: bool = True
@@ -61,11 +61,11 @@ class BenchmarkConfig:
 
         if not self.agents:
             logger.warning("No agents configured - benchmark will not run")
-        
+
         # Validate evaluator mode
         if self.evaluator_mode not in ("concurrent", "stateful"):
             raise ValueError(f"Invalid evaluator_mode: {self.evaluator_mode}. Must be 'concurrent' or 'stateful'.")
-        
+
         if self.evaluator_mode == "stateful" and self.max_steps_per_task <= 0:
             raise ValueError("max_steps_per_task must be > 0 when using stateful mode.")
 
