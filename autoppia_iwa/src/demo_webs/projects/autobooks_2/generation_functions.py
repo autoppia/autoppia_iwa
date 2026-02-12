@@ -14,10 +14,18 @@ def generate_registration_constraints():
     Generates constraints specifically for film-related use cases.
     Returns the constraints as structured data.
     """
+    import random
+    import string
+
     from .utils import parse_constraints_str
 
-    # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "username equals <signup_username> AND email equals <signup_email> AND password equals <signup_password>"
+    # Generate random credentials
+    suffix = "".join(random.choices(string.digits, k=4))
+    username = f"user{suffix}"
+    email = f"{username}@gmail.com"
+    password = f"pass{suffix}"
+
+    constraints_str = f"username equals {username} AND email equals {email} AND password equals {password}"
 
     return parse_constraints_str(constraints_str)
 

@@ -66,14 +66,20 @@ class WebVerificationPipeline:
             else None
         )
 
-        self.llm_reviewer = (
-            LLMReviewer(
-                llm_service=self.llm_service,
-                timeout_seconds=config.llm_timeout_seconds,
-            )
-            if config.llm_review_enabled
-            else None
-        )
+        from .consistence_reviewer import ConsistenceReviewer
+
+        if config.llm_review_enabled:
+            if config.reviewer_type == "new":
+                self.llm_reviewer = ConsistenceReviewer(llm_service=self.llm_service)
+                logger.info("Using NEW ConsistenceReviewer for validation")
+            else:
+                self.llm_reviewer = LLMReviewer(
+                    llm_service=self.llm_service,
+                    timeout_seconds=config.llm_timeout_seconds,
+                )
+                logger.info("Using OLD LLMReviewer for validation")
+        else:
+            self.llm_reviewer = None
 
         self.dynamic_verifier = (
             DynamicVerifier(
@@ -894,7 +900,7 @@ class WebVerificationPipeline:
                 "use_cases_with_issues": 0,
                 "failed_llm_review_tasks": 0,
                 "suspicious_tasks": 0,
-                "total_flagged_tasks": 0,
+                "total_tasks": 0,
             },
         }
 
@@ -906,7 +912,7 @@ class WebVerificationPipeline:
             if not tasks:
                 report["use_cases"][use_case_name] = {
                     "use_case_description": use_case_data.get("use_case_description", ""),
-                    "flagged_tasks": [],
+                    "tasks": [],
                     "generation_error": use_case_data.get("error") or "No tasks generated",
                 }
                 report["summary"]["use_cases_with_issues"] += 1
@@ -935,6 +941,11 @@ class WebVerificationPipeline:
                 if not should_flag:
                     continue
 
+                # Clean review result for report
+                clean_review = {}
+                if review:
+                    clean_review = {k: v for k, v in review.items() if k not in ["reasoning", "task_id"]}
+
                 flagged_tasks.append(
                     {
                         "task_id": task_id,
@@ -942,9 +953,7 @@ class WebVerificationPipeline:
                         "prompt": prompt,
                         "constraints_str": constraints_str,
                         "constraints": constraints,
-                        "llm_review": review,
-                        "suspicious_reasons": suspicious_reasons,
-                        "overridden_by_heuristic": overridden,
+                        "llm_review": clean_review,
                     }
                 )
 
@@ -956,10 +965,10 @@ class WebVerificationPipeline:
             if flagged_tasks:
                 report["use_cases"][use_case_name] = {
                     "use_case_description": use_case_data.get("use_case_description", ""),
-                    "flagged_tasks": flagged_tasks,
+                    "tasks": flagged_tasks,
                 }
                 report["summary"]["use_cases_with_issues"] += 1
-                report["summary"]["total_flagged_tasks"] += len(flagged_tasks)
+                report["summary"]["total_tasks"] += len(flagged_tasks)
 
         return report
 

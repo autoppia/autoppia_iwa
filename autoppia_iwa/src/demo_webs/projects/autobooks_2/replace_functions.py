@@ -1,6 +1,3 @@
-from .data_utils import fetch_books_data
-
-
 def login_replace_func(text: str, **kwargs) -> str:
     if not isinstance(text, str):
         return text
@@ -17,10 +14,23 @@ def register_replace_func(text: str, **kwargs) -> str:
     if not isinstance(text, str):
         return text
 
-    replacements = {"<username>": "newuser<web_agent_id>", "<email>": "newuser<web_agent_id>@gmail.com", "<password>": "password123"}
+    constraints = kwargs.get("constraints")
+    if not constraints:
+        return text
 
-    for placeholder, value in replacements.items():
-        text = text.replace(placeholder, value)
+    username = next((str(c.get("value")) for c in constraints if c.get("field") == "username"), "")
+    email = next((str(c.get("value")) for c in constraints if c.get("field") == "email"), "")
+    password = next((str(c.get("value")) for c in constraints if c.get("field") == "password"), "")
+
+    if username:
+        text = text.replace("<signup_username>", username)
+        text = text.replace("<username>", username)
+    if email:
+        text = text.replace("<signup_email>", email)
+        text = text.replace("<email>", email)
+    if password:
+        text = text.replace("<signup_password>", password)
+        text = text.replace("<password>", password)
 
     return text
 
@@ -38,6 +48,7 @@ async def replace_book_placeholders(
         dataset = dataset.get("books", [])
 
     books_data = dataset if dataset is not None else await fetch_books_data(seed_value=seed_value)
+
     if not books_data:
         return text
 
@@ -97,5 +108,6 @@ async def replace_book_placeholders(
                 replacement = authors[i % len(authors)] if authors else ""
                 text = text.replace("<author>", replacement, 1)
 
-    text = login_replace_func(text=text)
+    # Do NOT call login_replace_func here - credentials should remain as placeholders
+    # They will be replaced during evaluation via Task.replace_credentials()
     return text
