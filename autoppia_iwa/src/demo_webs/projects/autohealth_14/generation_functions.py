@@ -11,20 +11,21 @@ from ..shared_utils import create_constraint_dict
 from .data import (
     FIELD_MAP_CONTACT_DOCTOR_SUCCESSFULLY,
     FIELD_OPERATORS_MAP_APPOINTMENT_BOOKED_SUCCESSFULLY,
-    FIELD_OPERATORS_MAP_BOOK_APPOINTMENT,
-    FIELD_OPERATORS_MAP_CANCEL_APPOINTMENT,
-    FIELD_OPERATORS_MAP_CANCEL_CONTACT_DOCTOR,
-    FIELD_OPERATORS_MAP_CANCEL_VIEW_REVIEWS,
     FIELD_OPERATORS_MAP_CONTACT_DOCTOR,
-    FIELD_OPERATORS_MAP_FILTER_BY_CATEGORY,
-    FIELD_OPERATORS_MAP_FILTER_BY_SPECIALITY,
-    FIELD_OPERATORS_MAP_FILTER_REVIEWS,
+    FIELD_OPERATORS_MAP_FILTER_DOCTOR_REVIEWS,
+    FIELD_OPERATORS_MAP_OPEN_APPOINTMENT_FORM,
+    FIELD_OPERATORS_MAP_OPEN_CONTACT_DOCTOR_FORM,
     FIELD_OPERATORS_MAP_REFILL_PRESCRIPTION,
-    FIELD_OPERATORS_MAP_SORT_REVIEWS,
+    FIELD_OPERATORS_MAP_REQUEST_QUICK_APPOINTMENT,
+    FIELD_OPERATORS_MAP_SEARCH_APPOINTMENT,
+    FIELD_OPERATORS_MAP_SEARCH_DOCTORS,
+    FIELD_OPERATORS_MAP_SEARCH_MEDICAL_ANALYSIS,
+    FIELD_OPERATORS_MAP_SEARCH_PRESCRIPTION,
+    FIELD_OPERATORS_MAP_VIEW_DOCTOR_AVAILABILITY,
+    FIELD_OPERATORS_MAP_VIEW_DOCTOR_EDUCATION,
     FIELD_OPERATORS_MAP_VIEW_DOCTOR_PROFILE,
-    FIELD_OPERATORS_MAP_VIEW_HEALTH_METRICS,
+    FIELD_OPERATORS_MAP_VIEW_MEDICAL_ANALYSIS,
     FIELD_OPERATORS_MAP_VIEW_PRESCRIPTION,
-    FIELD_OPERATORS_MAP_VIEW_REVIEW_CLICKED,
     MODIFIED_EMERGENCY_CONTACT,
     MODIFIED_EMERGENCY_PHONE,
     MODIFIED_INSURANCE_NUMBER,
@@ -109,6 +110,16 @@ async def _get_medical_records_data(task_url: str | None = None, dataset: dict[s
     return []
 
 
+def _get_nested_value(obj: dict, dotted_key: str, default: Any = None) -> Any:
+    """Resolve nested field values using dotted keys (e.g. 'user.name')."""
+    for key in dotted_key.split("."):
+        if isinstance(obj, dict) and key in obj:
+            obj = obj[key]
+        else:
+            return default
+    return obj
+
+
 def _generate_constraint_value(
     operator: ComparisonOperator,
     field_value: Any,
@@ -119,6 +130,47 @@ def _generate_constraint_value(
     Generate a constraint value for a given operator, field, and dataset.
     Handles various data types and operators robustly.
     """
+    if field == "rating" and field_value is not None:
+        try:
+            rating = float(field_value)
+            rating = max(0.0, min(5.0, rating))
+            rating = round(rating, 1)
+        except (TypeError, ValueError):
+            rating = None
+        if rating is not None:
+            if operator == ComparisonOperator.EQUALS:
+                return rating
+            if operator == ComparisonOperator.NOT_EQUALS:
+                valid = [v.get(field) for v in dataset if v.get(field) is not None]
+                if valid:
+                    normalized_valid: list[float] = []
+                    for value in valid:
+                        try:
+                            value_f = float(value)
+                            value_f = max(0.0, min(5.0, value_f))
+                            value_f = round(value_f, 1)
+                            if value_f != rating:
+                                normalized_valid.append(value_f)
+                        except (TypeError, ValueError):
+                            continue
+                    if normalized_valid:
+                        return random.choice(normalized_valid)
+                delta = 0.5 if rating <= 4.5 else -0.5
+                return round(max(0.0, min(5.0, rating + delta)), 1)
+            if operator in {
+                ComparisonOperator.GREATER_THAN,
+                ComparisonOperator.LESS_THAN,
+                ComparisonOperator.GREATER_EQUAL,
+                ComparisonOperator.LESS_EQUAL,
+            }:
+                if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+                    return rating
+                delta = random.choice([0.1, 0.2, 0.3, 0.4, 0.5])
+                if operator == ComparisonOperator.GREATER_THAN:
+                    return round(max(0.0, rating - delta), 1)
+                if operator == ComparisonOperator.LESS_THAN:
+                    return round(min(5.0, rating + delta), 1)
+
     if isinstance(field_value, datetime | date):
         delta_days = random.randint(1, 5)
         if operator == ComparisonOperator.GREATER_THAN:
@@ -207,7 +259,10 @@ def _generate_constraints(
 ) -> list[dict[str, Any]]:
     """
     Generates constraints based on the dataset and field operator mapping.
+    DB first: dataset must contain valid entities; empty dataset returns no constraints.
     """
+    if not dataset:
+        return []
     all_constraints = []
     sample_data = choice(dataset)
     possible_fields = list(field_operators.keys())
@@ -217,9 +272,11 @@ def _generate_constraints(
         selected_fields = []
 
     if num_constraints is None:
-        num_constraints = random.randint(min_constraints, len(possible_fields))
+        num_constraints = random.randint(min_constraints, len(possible_fields)) if possible_fields else 0
 
-    selected_fields.extend(random.sample(possible_fields, num_constraints))
+    if possible_fields and num_constraints > 0:
+        n = min(num_constraints, len(possible_fields))
+        selected_fields.extend(random.sample(possible_fields, n))
 
     if field_map is None:
         field_map = {}
@@ -241,7 +298,7 @@ def _generate_constraints(
                 new_field = f
                 break
         elif isinstance(new_field, str):
-            field_value = sample_data.get(new_field)
+            field_value = _get_nested_value(sample_data, new_field) if "." in new_field else sample_data.get(new_field)
         elif isinstance(new_field, dict):
             custom_dataset = new_field.get("dataset", [])
             new_field = new_field.get("field", "")
@@ -263,12 +320,12 @@ def _generate_constraints(
     return all_constraints
 
 
-async def generate_book_appointment_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_open_appointment_form_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for OPEN_APPOINTMENT_FORM: doctor_name, speciality, date, time from appointments (DB first). num_constraints=0..1 to keep reviewer consistency while allowing lateral field picks."""
     appointments_data = await _get_appointments_data(task_url, dataset)
-    selected_fields = ["doctor_name", "time"]
-    field_operators = FIELD_OPERATORS_MAP_BOOK_APPOINTMENT
-    constraints_list = _generate_constraints(appointments_data, field_operators, selected_fields=selected_fields)
-
+    field_operators = FIELD_OPERATORS_MAP_OPEN_APPOINTMENT_FORM
+    core_fields = ["doctor_name", "speciality", "date", "time"]
+    constraints_list = _generate_constraints(appointments_data, field_operators, selected_fields=core_fields, num_constraints=random.randint(0, 1))
     return constraints_list
 
 
@@ -277,12 +334,12 @@ async def generate_appointment_booked_successfully_constraints(task_url: str | N
     field_operators = FIELD_OPERATORS_MAP_APPOINTMENT_BOOKED_SUCCESSFULLY
     field_map = {
         # "doctor_name": "doctorName",  # will remove field map and change field operator in both iwa and agent and also change dataset into modified appointment
-        # "speciality": "specialty",
+        # "speciality": "speciality",
         "emergency_contact": {"field": "name", "dataset": MODIFIED_EMERGENCY_CONTACT},
         "emergency_phone": {"field": "phone", "dataset": MODIFIED_EMERGENCY_PHONE},
         "insurance_number": {"field": "number", "dataset": MODIFIED_INSURANCE_NUMBER},
         "insurance_provider": {"field": "provider", "dataset": MODIFIED_INSURANCE_PROVIDER},
-        "notes": {"field": "notes", "dataset": MODIFIED_NOTES},
+        "notes": {"field": "note", "dataset": MODIFIED_NOTES},
         "patient_name": {"field": "patient_name", "dataset": MODIFIED_PATIENT_NAMES},
         "patient_email": {"field": "email", "dataset": MODIFIED_PATIENT_EMAILS},
         "patient_phone": {"field": "contact", "dataset": MODIFIED_PATIENT_PHONES},
@@ -293,31 +350,65 @@ async def generate_appointment_booked_successfully_constraints(task_url: str | N
     return constraints_list
 
 
-async def generate_cancel_appointment_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_request_quick_appointment_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for REQUEST_QUICK_APPOINTMENT: speciality from doctors, patient fields from MODIFIED_*."""
+    doctors_data = await _get_doctors_data(task_url, dataset)
+    field_operators = FIELD_OPERATORS_MAP_REQUEST_QUICK_APPOINTMENT
+    field_map = {
+        "speciality": "speciality",
+        "patient_name": {"field": "patient_name", "dataset": MODIFIED_PATIENT_NAMES},
+        "patient_email": {"field": "email", "dataset": MODIFIED_PATIENT_EMAILS},
+        "patient_phone": {"field": "contact", "dataset": MODIFIED_PATIENT_PHONES},
+    }
+    core_fields = ["speciality", "patient_name"]
+    constraints_list = _generate_constraints(doctors_data, field_operators, selected_fields=core_fields, field_map=field_map)
+    return constraints_list
+
+
+async def generate_search_appointment_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for SEARCH_APPOINTMENT: doctor_name, speciality, date from appointments (DB first)."""
     appointments_data = await _get_appointments_data(task_url, dataset)
-    field_operators = FIELD_OPERATORS_MAP_CANCEL_APPOINTMENT
-    selected_fields = ["doctor_name", "time"]
-    constraints_list = _generate_constraints(appointments_data, field_operators, selected_fields=selected_fields)
+    field_operators = FIELD_OPERATORS_MAP_SEARCH_APPOINTMENT
+    core_fields = ["doctor_name", "speciality", "date"]
+    field_map = {"speciality": "speciality"}
+    constraints_list = _generate_constraints(appointments_data, field_operators, selected_fields=core_fields, field_map=field_map)
+    return constraints_list
+
+
+async def generate_search_doctors_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for SEARCH_DOCTORS: doctor_name, speciality, language from doctors page (Search button)."""
+    doctors_data = await _get_doctors_data(task_url, dataset)
+    field_operators = FIELD_OPERATORS_MAP_SEARCH_DOCTORS
+    field_map = {
+        "doctor_name": "name",
+        "speciality": "speciality",
+        "language": "primary_language",
+    }
+    core_fields = ["doctor_name", "speciality", "language"]
+    constraints_list = _generate_constraints(doctors_data, field_operators, selected_fields=core_fields, field_map=field_map)
+    return constraints_list
+
+
+async def generate_search_prescription_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for SEARCH_PRESCRIPTION: medicine_name, doctor_name from prescriptions (DB first)."""
+    prescriptions_data = await _get_prescriptions_data(task_url, dataset)
+    field_operators = FIELD_OPERATORS_MAP_SEARCH_PRESCRIPTION
+    core_fields = ["medicine_name", "doctor_name"]
+    constraints_list = _generate_constraints(prescriptions_data, field_operators, selected_fields=core_fields)
     return constraints_list
 
 
 async def generate_view_prescription_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for VIEW_PRESCRIPTION: medicine_name, doctor_name, start_date, dosage, status, category from prescriptions."""
     prescriptions_data = await _get_prescriptions_data(task_url, dataset)
     field_operators = FIELD_OPERATORS_MAP_VIEW_PRESCRIPTION
-    selected_fields = ["medicine_name"]
-    constraints_list = _generate_constraints(prescriptions_data, field_operators, selected_fields=selected_fields)
-    return constraints_list
-
-
-async def generate_filter_by_speciality_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    prescriptions_data = await _get_prescriptions_data(task_url, dataset)
-    field_operators = FIELD_OPERATORS_MAP_FILTER_BY_SPECIALITY
-    selected_field = []
-    constraints_list = _generate_constraints(prescriptions_data, field_operators, selected_fields=selected_field)
+    core_fields = ["medicine_name", "doctor_name", "start_date"]
+    constraints_list = _generate_constraints(prescriptions_data, field_operators, selected_fields=core_fields)
     return constraints_list
 
 
 async def generate_refill_prescription_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for REFILL_PRESCRIPTION: medicine_name, doctor_name from eligible prescriptions (DB first). num_constraints=0..1 to keep reviewer consistency while allowing lateral field picks."""
     prescriptions_data = await _get_prescriptions_data(task_url, dataset)
     field_operators = FIELD_OPERATORS_MAP_REFILL_PRESCRIPTION
     ELIGIBLE_PRESCRIPTIONS_FOR_REFILL = []
@@ -325,40 +416,78 @@ async def generate_refill_prescription_constraints(task_url: str | None = None, 
         if data.get("refills_remaining") != 0 or data.get("refillsRemaining") != 0:
             new_data = copy.deepcopy(data)
             ELIGIBLE_PRESCRIPTIONS_FOR_REFILL.append(new_data)
-    selected_field = []
-    constraints_list = _generate_constraints(ELIGIBLE_PRESCRIPTIONS_FOR_REFILL, field_operators, selected_fields=selected_field)
+    # Fallback: use full prescriptions if no eligible ones (avoids 0 tasks when subset has no refills)
+    data_source = ELIGIBLE_PRESCRIPTIONS_FOR_REFILL if ELIGIBLE_PRESCRIPTIONS_FOR_REFILL else prescriptions_data
+    core_fields = ["medicine_name", "doctor_name"]
+    constraints_list = _generate_constraints(data_source, field_operators, selected_fields=core_fields, num_constraints=random.randint(0, 1))
     return constraints_list
 
 
-async def generate_view_health_metrics_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_search_medical_analysis_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for SEARCH_MEDICAL_ANALYSIS: record_title, doctor_name from medical records (DB first)."""
     medical_records_data = await _get_medical_records_data(task_url, dataset)
-    field_operators = FIELD_OPERATORS_MAP_VIEW_HEALTH_METRICS
-    selected_field = ["record_title"]
-    constraint_list = _generate_constraints(medical_records_data, field_operators, selected_fields=selected_field)
-    return constraint_list
+    field_operators = FIELD_OPERATORS_MAP_SEARCH_MEDICAL_ANALYSIS
+    core_fields = ["record_title", "doctor_name"]
+    constraints_list = _generate_constraints(medical_records_data, field_operators, selected_fields=core_fields)
+    return constraints_list
 
 
-async def generate_filter_by_category_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_view_medical_analysis_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for VIEW_MEDICAL_ANALYSIS: record_title, doctor_name, record_type from medical records (DB first)."""
     medical_records_data = await _get_medical_records_data(task_url, dataset)
-    field_operator = FIELD_OPERATORS_MAP_FILTER_BY_CATEGORY
-    selected_field = []
-    constraints_list = _generate_constraints(medical_records_data, field_operator, selected_fields=selected_field)
+    field_operators = FIELD_OPERATORS_MAP_VIEW_MEDICAL_ANALYSIS
+    core_fields = ["record_title", "doctor_name", "record_type"]
+    constraints_list = _generate_constraints(medical_records_data, field_operators, selected_fields=core_fields)
     return constraints_list
 
 
 async def generate_view_doctor_profile_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for VIEW_DOCTOR_PROFILE: doctor_name, speciality, rating, consultation_fee, language from doctors (DB first)."""
     doctors_data = await _get_doctors_data(task_url, dataset)
-    field_operator = FIELD_OPERATORS_MAP_VIEW_DOCTOR_PROFILE
-    selected_field = ["doctor_name"]
-    constraints_list = _generate_constraints(doctors_data, field_operator, selected_fields=selected_field)
+    field_operators = FIELD_OPERATORS_MAP_VIEW_DOCTOR_PROFILE
+    field_map = {"language": "primary_language"}
+    core_fields = ["doctor_name", "speciality", "rating", "consultation_fee", "language"]
+    constraints_list = _generate_constraints(doctors_data, field_operators, selected_fields=core_fields, field_map=field_map)
+    return constraints_list
+
+
+async def generate_view_doctor_education_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for VIEW_DOCTOR_EDUCATION: doctor_name, speciality, rating, consultation_fee, language from doctors (DB first)."""
+    doctors_data = await _get_doctors_data(task_url, dataset)
+    field_operators = FIELD_OPERATORS_MAP_VIEW_DOCTOR_EDUCATION
+    field_map = {"language": "primary_language"}
+    core_fields = ["doctor_name", "speciality", "rating", "consultation_fee", "language"]
+    constraints_list = _generate_constraints(doctors_data, field_operators, selected_fields=core_fields, field_map=field_map)
+    return constraints_list
+
+
+async def generate_view_doctor_availability_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for VIEW_DOCTOR_AVAILABILITY: doctor_name, speciality, rating, consultation_fee, language from doctors (DB first)."""
+    doctors_data = await _get_doctors_data(task_url, dataset)
+    field_operators = FIELD_OPERATORS_MAP_VIEW_DOCTOR_AVAILABILITY
+    field_map = {"language": "primary_language"}
+    core_fields = ["doctor_name", "speciality", "rating", "consultation_fee", "language"]
+    constraints_list = _generate_constraints(doctors_data, field_operators, selected_fields=core_fields, field_map=field_map)
+    return constraints_list
+
+
+async def generate_open_contact_doctor_form_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for OPEN_CONTACT_DOCTOR_FORM: doctor_name, speciality, rating, consultation_fee, language from doctors (DB first)."""
+    doctors_data = await _get_doctors_data(task_url, dataset)
+    field_operators = FIELD_OPERATORS_MAP_OPEN_CONTACT_DOCTOR_FORM
+    field_map = {"language": "primary_language"}
+    core_fields = ["doctor_name", "speciality", "rating", "consultation_fee", "language"]
+    constraints_list = _generate_constraints(doctors_data, field_operators, selected_fields=core_fields, field_map=field_map)
     return constraints_list
 
 
 async def generate_contact_doctor_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for CONTACT_DOCTOR: doctor_name, speciality, rating, consultation_fee, language from doctors (DB first)."""
     doctors_data = await _get_doctors_data(task_url, dataset)
-    field_operator = FIELD_OPERATORS_MAP_CONTACT_DOCTOR
-    selected_field = ["doctor_name"]
-    constraints_list = _generate_constraints(doctors_data, field_operator, selected_fields=selected_field)
+    field_operators = FIELD_OPERATORS_MAP_CONTACT_DOCTOR
+    field_map = {"language": "primary_language"}
+    core_fields = ["doctor_name"]
+    constraints_list = _generate_constraints(doctors_data, field_operators, field_map=field_map, selected_fields=core_fields)
     return constraints_list
 
 
@@ -411,7 +540,7 @@ async def generate_doctor_contact_successfully_constraints(task_url: str | None 
     ]
     field_map = {
         # "doctor_name": "name",
-        # "speciality": "specialty",
+        # "speciality": "speciality",
         "patient_name": {"field": "patient_name", "dataset": MODIFIED_PATIENT_NAMES},
         "patient_email": {"field": "email", "dataset": MODIFIED_PATIENT_EMAILS},
         "patient_phone": {"field": "contact", "dataset": MODIFIED_PATIENT_PHONES},
@@ -421,52 +550,19 @@ async def generate_doctor_contact_successfully_constraints(task_url: str | None 
         "urgency": {"field": "urgency", "dataset": [{"urgency": a} for a in ["low", "medium", "high"]]},
         "preferred_contact_method": {"field": "option", "dataset": [{"option": i} for i in ["either", "email", "phone"]]},
     }
-    selected_fields = ["doctor_name", "patient_name", "patient_email", "subject", "message", "appointment_request"]
+    selected_fields = ["doctor_name", "patient_name", "subject"]
     constraints_list = _generate_constraints(doctors_data, field_operator, selected_fields=selected_fields, field_map=field_map)
     return constraints_list
 
 
-async def generate_cancel_contact_doctor_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, str]]:
+async def generate_filter_doctor_reviews_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for FILTER_DOCTOR_REVIEWS: doctor_name, filter_rating, sort_order (DB first). num_constraints=0..1 to keep reviewer consistency while allowing lateral field picks (e.g. speciality)."""
     doctors_data = await _get_doctors_data(task_url, dataset)
-    field_operators = FIELD_OPERATORS_MAP_CANCEL_CONTACT_DOCTOR
-    selected_field = ["doctor_name"]
-    constraints_list = _generate_constraints(doctors_data, field_operators, selected_fields=selected_field)
-    return constraints_list
-
-
-async def generate_view_review_clicked_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, str]]:
-    doctors_data = await _get_doctors_data(task_url, dataset)
-    field_operators = FIELD_OPERATORS_MAP_VIEW_REVIEW_CLICKED
-    selected_field = ["doctor_name"]
-    constraints_list = _generate_constraints(doctors_data, field_operators, selected_fields=selected_field)
-    return constraints_list
-
-
-async def generate_sort_reviews_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, str]]:
-    doctors_data = await _get_doctors_data(task_url, dataset)
-    field_operators = FIELD_OPERATORS_MAP_SORT_REVIEWS
-    field_map = {
-        "sort_order": {"field": "order", "dataset": [{"order": e} for e in ["oldest", "highest", "lowest"]]},
-    }
-    selected_field = ["doctor_name", "sort_order"]
-    constraints_list = _generate_constraints(doctors_data, field_operators, selected_fields=selected_field, field_map=field_map)
-    return constraints_list
-
-
-async def generate_filter_reviews_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, str]]:
-    doctors_data = await _get_doctors_data(task_url, dataset)
-    field_operators = FIELD_OPERATORS_MAP_FILTER_REVIEWS
+    field_operators = FIELD_OPERATORS_MAP_FILTER_DOCTOR_REVIEWS
     field_map = {
         "filter_rating": {"field": "rating", "dataset": [{"rating": r} for r in [1, 2, 3, 4, 5]]},
+        "sort_order": {"field": "sort_order", "dataset": [{"sort_order": o} for o in ["newest", "oldest", "highest", "lowest"]]},
     }
-    selected_field = ["doctor_name", "filter_rating"]
-    constraints_list = _generate_constraints(doctors_data, field_operators, selected_fields=selected_field, field_map=field_map)
-    return constraints_list
-
-
-async def generate_cancel_view_review_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, str]]:
-    doctors_data = await _get_doctors_data(task_url, dataset)
-    field_operator = FIELD_OPERATORS_MAP_CANCEL_VIEW_REVIEWS
-    selected_field = ["doctor_name"]
-    constraints_list = _generate_constraints(doctors_data, field_operator, selected_fields=selected_field)
+    core_fields = ["doctor_name", "filter_rating", "sort_order"]
+    constraints_list = _generate_constraints(doctors_data, field_operators, selected_fields=core_fields, field_map=field_map, num_constraints=random.randint(0, 1))
     return constraints_list

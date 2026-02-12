@@ -16,7 +16,8 @@ from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.data_generation.tasks.simple.simple_task_generator import SimpleTaskGenerator
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.di_container import DIContainer
-from autoppia_iwa.src.evaluation import ConcurrentEvaluator, EvaluatorConfig
+from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
+from autoppia_iwa.src.evaluation.concurrent_evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.execution.actions.actions import BaseAction
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 

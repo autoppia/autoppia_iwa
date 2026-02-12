@@ -3,6 +3,7 @@ LLM Reviewer for validating that generated tests make sense with task prompts
 """
 
 import asyncio
+import re
 from typing import Any
 
 from loguru import logger
@@ -191,6 +192,27 @@ class LLMReviewer:
 
             result = self._parse_llm_response(raw_response)
 
+            # Deterministic sanity check to reduce LLM reviewer false positives/negatives.
+            heuristic = self._heuristic_value_presence_check(task.prompt, constraints)
+            result["heuristic"] = heuristic
+
+            # If the LLM says it's valid but values are missing, treat it as invalid (likely false positive).
+            if result.get("valid", False) and not heuristic.get("pass", True):
+                result["valid"] = False
+                result["score"] = 0.0
+                result.setdefault("issues", [])
+                result["issues"].extend([f"Heuristic: {msg}" for msg in heuristic.get("issues", [])])
+                result["reasoning"] = (result.get("reasoning", "") + "\n\nHeuristic check failed: missing constraint value(s).").strip()
+
+            # If the LLM says it's invalid but all values are present, treat it as valid (likely false negative).
+            elif not result.get("valid", False) and heuristic.get("pass", False):
+                result["valid"] = True
+                result["score"] = 1.0
+                result["overridden_by_heuristic"] = True
+                result.setdefault("issues", [])
+                result["issues"].append("Heuristic override: all constraint values were found in the prompt.")
+                result["reasoning"] = (result.get("reasoning", "") + "\n\nHeuristic override applied: all constraint values present.").strip()
+
             # Verify binary score
             valid = result.get("valid", False)
             score = result.get("score", 0.0)
@@ -232,6 +254,52 @@ class LLMReviewer:
                 "issues": [f"LLM review error: {e!s}"],
                 "reasoning": f"Error during LLM review: {e!s}",
             }
+
+    def _heuristic_value_presence_check(self, prompt: str, constraints: list[dict[str, Any]] | None) -> dict[str, Any]:
+        """
+        Lightweight deterministic check: ensure each constraint VALUE appears in the prompt text.
+
+        This intentionally does NOT try to fully validate operator semantics or field mention.
+        It exists to:
+        - Flag likely false positives when values are missing
+        - Recover from likely false negatives when the LLM reviewer misreads formatting
+        """
+        if not constraints:
+            return {"pass": True, "issues": []}
+        if not isinstance(prompt, str) or not prompt.strip():
+            return {"pass": False, "issues": ["Empty prompt text"]}
+
+        prompt_norm = self._normalize_for_match(prompt)
+        issues: list[str] = []
+
+        for constraint in constraints:
+            if not isinstance(constraint, dict):
+                continue
+            field = str(constraint.get("field", "") or "")
+            value = constraint.get("value", None)
+            if value is None:
+                continue
+
+            if isinstance(value, list):
+                atoms = [self._normalize_for_match(str(v)) for v in value if v is not None and str(v).strip()]
+                atoms = [a for a in atoms if a]
+                if atoms and not any(a in prompt_norm for a in atoms):
+                    issues.append(f"Missing any listed value for field '{field}'")
+                continue
+
+            atom = self._normalize_for_match(str(value))
+            if atom and atom not in prompt_norm:
+                issues.append(f"Missing value '{value}' for field '{field}'")
+
+        return {"pass": len(issues) == 0, "issues": issues}
+
+    @staticmethod
+    def _normalize_for_match(text: str) -> str:
+        lowered = text.lower()
+        lowered = re.sub(r"[\"'`]", "", lowered)
+        lowered = re.sub(r"[^a-z0-9<>@._\-\s]", " ", lowered)
+        lowered = re.sub(r"\s+", " ", lowered).strip()
+        return lowered
 
     def _parse_llm_response(self, raw_response: Any) -> dict[str, Any]:
         """

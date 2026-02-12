@@ -1,60 +1,61 @@
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
+STRICT_COPY_INSTRUCTION = "CRITICAL: Copy values EXACTLY as provided in the constraints. Do NOT correct typos, do NOT remove numbers, do NOT truncate or summarize strings, and do NOT 'clean up' names or titles (e.g., if constraint is 'Sofia 4', write 'Sofia 4', NOT 'Sofia'; if it is 'al signs R', write 'al signs R')."
+
 from .events import (
     AppointmentBookedSuccessfullyEvent,
-    BookAppointmentEvent,
-    CancelBookAppointmentEvent,
-    CancelContactDoctorEvent,
-    CancelViewReviewsEvent,
     ContactDoctorEvent,
     DoctorContactedSuccessfullyEvent,
-    FilterByCategoryEvent,
-    FilterBySpecialityEvent,
-    FilterReviewsEvent,
+    FilterDoctorReviewsEvent,
+    OpenAppointmentFormEvent,
+    OpenContactDoctorFormEvent,
     RefillRequestEvent,
-    SortReviewsEvent,
+    RequestQuickAppointmentEvent,
+    SearchAppointmentEvent,
+    SearchDoctorsEvent,
+    SearchMedicalAnalysisEvent,
+    SearchPrescriptionEvent,
+    ViewDoctorAvailabilityEvent,
+    ViewDoctorEducationEvent,
     ViewDoctorProfileEvent,
-    ViewHealthMetricsEvent,
+    ViewMedicalAnalysisEvent,
     ViewPrescriptionEvent,
-    ViewReviewClickedEvent,
 )
 from .generation_functions import (
     generate_appointment_booked_successfully_constraints,
-    generate_book_appointment_constraints,
-    generate_cancel_appointment_constraints,
-    generate_cancel_contact_doctor_constraints,
-    generate_cancel_view_review_constraints,
     generate_contact_doctor_constraints,
     generate_doctor_contact_successfully_constraints,
-    generate_filter_by_category_constraints,
-    generate_filter_by_speciality_constraints,
-    generate_filter_reviews_constraints,
+    generate_filter_doctor_reviews_constraints,
+    generate_open_appointment_form_constraints,
+    generate_open_contact_doctor_form_constraints,
     generate_refill_prescription_constraints,
-    generate_sort_reviews_constraints,
+    generate_request_quick_appointment_constraints,
+    generate_search_appointment_constraints,
+    generate_search_doctors_constraints,
+    generate_search_medical_analysis_constraints,
+    generate_search_prescription_constraints,
+    generate_view_doctor_availability_constraints,
+    generate_view_doctor_education_constraints,
     generate_view_doctor_profile_constraints,
-    generate_view_health_metrics_constraints,
+    generate_view_medical_analysis_constraints,
     generate_view_prescription_constraints,
-    generate_view_review_clicked_constraints,
 )
 
-BOOK_APPOINTMENT_USE_CASE = UseCase(
-    name="BOOK_APPOINTMENT",
-    description="The user booked an appointment with a doctor for a given date, time, and speciality",
-    event=BookAppointmentEvent,
-    event_source_code=BookAppointmentEvent.get_source_code_of_class(),
-    constraints_generator=generate_book_appointment_constraints,
+OPEN_APPOINTMENT_FORM_USE_CASE = UseCase(
+    name="OPEN_APPOINTMENT_FORM",
+    description="The user opened the appointment booking form (clicked Book Appointment on an appointment row).",
+    event=OpenAppointmentFormEvent,
+    event_source_code=OpenAppointmentFormEvent.get_source_code_of_class(),
+    constraints_generator=generate_open_appointment_form_constraints,
+    additional_prompt_info=f"CRITICAL: Use explicit field names (doctor_name, speciality, date, time). Format: 'Open appointment form where <field> <operator> '<value>''. {STRICT_COPY_INSTRUCTION}",
     examples=[
         {
-            "prompt": "Book an appointment where doctor_name equals 'Dr. Alice Thompson' and date equals '2025-09-20' and time equals '9:00 AM' and speciality equals 'Cardiology'",
-            "prompt_for_task_generation": "Book an appointment where doctor_name equals 'Dr. Alice Thompson' and date equals '2025-09-20' and time equals '9:00 AM' and speciality equals 'Cardiology'",
+            "prompt": "Open appointment form where doctor_name equals 'Dr. Alice Thompson' and date equals '2025-09-20' and time equals '9:00 AM' and speciality equals 'Cardiology'",
+            "prompt_for_task_generation": "Open appointment form where doctor_name equals 'Dr. Alice Thompson' and date equals '2025-09-20' and time equals '9:00 AM' and speciality equals 'Cardiology'",
         },
         {
-            "prompt": "Book an appointment where doctor_name not equals 'Dr. Clara Nguyen' and date not equals '2025-09-21' and time equals '9:00 AM' and speciality equals 'Cardiology'",
-            "prompt_for_task_generation": "Book an appointment where doctor_name not equals 'Dr. Clara Nguyen' and date not equals '2025-09-21' and time equals '9:00 AM' and speciality equals 'Cardiology'",
-        },
-        {
-            "prompt": "Book an appointment where doctor_name contains 'Daniel' and date less than '2025-09-25' and time greater than '10:00 AM' and speciality equals 'Orthopedics'",
-            "prompt_for_task_generation": "Book an appointment where doctor_name contains 'Daniel' and date less than '2025-09-25' and time greater than '10:00 AM' and speciality equals 'Orthopedics'",
+            "prompt": "Open booking form for appointment with Dr. Daniel Roberts at 10:00 AM",
+            "prompt_for_task_generation": "Open appointment form where doctor_name contains 'Daniel' and time equals '10:00 AM'",
         },
     ],
 )
@@ -65,98 +66,86 @@ APPOINTMENT_BOOKED_SUCCESSFULLY_USE_CASE = UseCase(
     event=AppointmentBookedSuccessfullyEvent,
     event_source_code=AppointmentBookedSuccessfullyEvent.get_source_code_of_class(),
     constraints_generator=generate_appointment_booked_successfully_constraints,
+    additional_prompt_info=f"CRITICAL: Use explicit field names (patient_name, doctor_name, date, time, speciality, insurance_provider, insurance_number, patient_email, patient_phone, emergency_contact, emergency_phone, notes, reason_for_visit). Format: 'Book an appointment where <field> <operator> '<value>''. {STRICT_COPY_INSTRUCTION}",
     examples=[
         {
-            "prompt": "Appointment booked successfully where patient_name equals 'John Doe' and doctor_name equals 'Dr. Alice Thompson' and date equals '2025-09-23' and time equals '10:00 AM' and speciality equals 'Cardiology' and reason_for_visit equals 'Chest pain'",
-            "prompt_for_task_generation": "Appointment booked successfully where patient_name equals 'John Doe' and doctor_name equals 'Dr. Alice Thompson' and date equals '2025-09-23' and time equals '10:00 AM' and speciality equals 'Cardiology' and reason_for_visit equals 'Chest pain'",
+            "prompt": "Book an appointment where patient_name equals 'John Doe 4' and doctor_name equals 'Dr. Alice Thompson' and date equals '2025-09-23' and speciality equals 'Cardiology' and reason_for_visit contains 'chest pain s'",
+            "prompt_for_task_generation": "Book an appointment where patient_name equals 'John Doe 4' and doctor_name equals 'Dr. Alice Thompson' and date equals '2025-09-23' and speciality equals 'Cardiology' and reason_for_visit contains 'chest pain s'",
         },
         {
-            "prompt": "Appointment booked successfully where patient_name not equals 'Sarah Lee' and insurance_provider equals 'BlueCross' and insurance_number contains 'BCX123' and doctor_name equals 'Dr. Daniel Roberts' and date greater than '2025-09-20'",
-            "prompt_for_task_generation": "Appointment booked successfully where patient_name not equals 'Sarah Lee' and insurance_provider equals 'BlueCross' and insurance_number contains 'BCX123' and doctor_name equals 'Dr. Daniel Roberts' and date greater than '2025-09-20'",
-        },
-        {
-            "prompt": "Appointment booked successfully where patient_email contains '@gmail.com' and patient_phone starts with '+1' and emergency_contact equals 'Jane Doe' and emergency_phone equals '555-1234' and notes contains 'Bring previous reports'",
-            "prompt_for_task_generation": "Appointment booked successfully where patient_email contains '@gmail.com' and patient_phone starts with '+1' and emergency_contact equals 'Jane Doe' and emergency_phone equals '555-1234' and notes contains 'Bring previous reports'",
-        },
-        {
-            "prompt": "Appointment booked successfully where doctor_name contains 'Nguyen' and speciality equals 'Dermatology' and date less than '2025-10-01' and reason_for_visit equals 'Skin rash' and patient_name equals 'Emma Wilson'",
-            "prompt_for_task_generation": "Appointment booked successfully where doctor_name contains 'Nguyen' and speciality equals 'Dermatology' and date less than '2025-10-01' and reason_for_visit equals 'Skin rash' and patient_name equals 'Emma Wilson'",
-        },
-        {
-            "prompt": "Appointment booked successfully where insurance_provider not equals 'Aetna' and insurance_number not contains 'XYZ' and patient_phone equals '444-5678' and patient_email equals 'michael.smith@example.com' and notes contains 'First-time consultation'",
-            "prompt_for_task_generation": "Appointment booked successfully where insurance_provider not equals 'Aetna' and insurance_number not contains 'XYZ' and patient_phone equals '444-5678' and patient_email equals 'michael.smith@example.com' and notes contains 'First-time consultation'",
-        },
-        {
-            "prompt": "Appointment booked successfully where emergency_contact equals 'Robert King' and emergency_phone equals '222-9999' and doctor_name equals 'Dr. Clara Nguyen' and date equals '2025-09-29' and time equals '2:30 PM' and speciality equals 'Orthopedics'",
-            "prompt_for_task_generation": "Appointment booked successfully where emergency_contact equals 'Robert King' and emergency_phone equals '222-9999' and doctor_name equals 'Dr. Clara Nguyen' and date equals '2025-09-29' and time equals '2:30 PM' and speciality equals 'Orthopedics'",
+            "prompt": "Book an appointment where patient_email equals 'jane.d@example.com 2' and patient_phone equals '+1-555-0199' and insurance_provider equals 'HealthCare plus' and notes contains 'Bring history'",
+            "prompt_for_task_generation": "Book an appointment where patient_email equals 'jane.d@example.com 2' and patient_phone equals '+1-555-0199' and insurance_provider equals 'HealthCare plus' and notes contains 'Bring history'",
         },
     ],
 )
 
-CANCEL_BOOK_APPOINTMENT_USE_CASE = UseCase(
-    name="CANCEL_BOOK_APPOINTMENT",
-    description="The user canceled a previously booked appointment with a doctor for a given date, time, and speciality.",
-    event=CancelBookAppointmentEvent,
-    event_source_code=CancelBookAppointmentEvent.get_source_code_of_class(),
-    constraints_generator=generate_cancel_appointment_constraints,
+REQUEST_QUICK_APPOINTMENT_USE_CASE = UseCase(
+    name="REQUEST_QUICK_APPOINTMENT",
+    description="The user submitted the homepage quick appointment form (hero); a popup confirms 'We will contact you as soon as possible'.",
+    event=RequestQuickAppointmentEvent,
+    event_source_code=RequestQuickAppointmentEvent.get_source_code_of_class(),
+    constraints_generator=generate_request_quick_appointment_constraints,
     examples=[
         {
-            "prompt": "Cancel an appointment where doctor_name equals 'Dr. Alice Thompson' and date equals '2025-09-20' and time equals '9:00 AM' and speciality equals 'Cardiology'",
-            "prompt_for_task_generation": "Cancel an appointment where doctor_name equals 'Dr. Alice Thompson' and date equals '2025-09-20' and time equals '9:00 AM' and speciality equals 'Cardiology'",
+            "prompt": "Request quick appointment where patient_name equals 'John Smith' and speciality equals 'Cardiology'",
+            "prompt_for_task_generation": "Request quick appointment where patient_name equals 'John Smith' and speciality equals 'Cardiology'",
         },
         {
-            "prompt": "Cancel an appointment where doctor_name not equals 'Dr. Clara Nguyen' and date not equals '2025-09-21' and time equals '10:30 AM' and speciality equals 'Dermatology'",
-            "prompt_for_task_generation": "Cancel an appointment where doctor_name not equals 'Dr. Clara Nguyen' and date not equals '2025-09-21' and time equals '10:30 AM' and speciality equals 'Dermatology'",
-        },
-        {
-            "prompt": "Cancel an appointment where doctor_name contains 'Daniel' and date less than '2025-09-25' and time greater than '11:00 AM' and speciality equals 'Orthopedics'",
-            "prompt_for_task_generation": "Cancel an appointment where doctor_name contains 'Daniel' and date less than '2025-09-25' and time greater than '11:00 AM' and speciality equals 'Orthopedics'",
-        },
-        {
-            "prompt": "Cancel an appointment where speciality equals 'Neurology' and doctor_name equals 'Dr. Robert King' and date greater than '2025-09-28' and time equals '1:00 PM'",
-            "prompt_for_task_generation": "Cancel an appointment where speciality equals 'Neurology' and doctor_name equals 'Dr. Robert King' and date greater than '2025-09-28' and time equals '1:00 PM'",
-        },
-        {
-            "prompt": "Cancel an appointment where doctor_name equals 'Dr. Michael Smith' and date equals '2025-09-30' and time not equals '3:00 PM' and speciality equals 'Pediatrics'",
-            "prompt_for_task_generation": "Cancel an appointment where doctor_name equals 'Dr. Michael Smith' and date equals '2025-09-30' and time not equals '3:00 PM' and speciality equals 'Pediatrics'",
-        },
-        {
-            "prompt": "Cancel an appointment where doctor_name contains 'Emma' and speciality not equals 'Oncology' and date less than '2025-10-05' and time equals '4:15 PM'",
-            "prompt_for_task_generation": "Cancel an appointment where doctor_name contains 'Emma' and speciality not equals 'Oncology' and date less than '2025-10-05' and time equals '4:15 PM'",
+            "prompt": "Submit quick appointment form where speciality equals 'Dermatology'",
+            "prompt_for_task_generation": "Request quick appointment where speciality equals 'Dermatology'",
         },
     ],
 )
 
-FILTER_BY_SPECIALITY_USE_CASE = UseCase(
-    name="FILTER_BY_SPECIALTY",
-    description="The user filters prescriptions by a given status.",
-    event=FilterBySpecialityEvent,
-    event_source_code=FilterBySpecialityEvent.get_source_code_of_class(),
-    constraints_generator=generate_filter_by_speciality_constraints,
+SEARCH_APPOINTMENT_USE_CASE = UseCase(
+    name="SEARCH_APPOINTMENT",
+    description="The user clicked Search on the Appointments page to apply doctor, speciality, or date filters.",
+    event=SearchAppointmentEvent,
+    event_source_code=SearchAppointmentEvent.get_source_code_of_class(),
+    constraints_generator=generate_search_appointment_constraints,
+    additional_prompt_info="CRITICAL: Use explicit field names (doctor_name, speciality, date). Format: 'Search appointments where <field> <operator> '<value>''. Copy values EXACTLY.",
     examples=[
         {
-            "prompt": "Filter prescriptions where status equals 'completed'",
-            "prompt_for_task_generation": "Filter prescriptions where status equals 'completed'",
+            "prompt": "Search appointments where doctor_name equals 'Dr. Alice Thompson'",
+            "prompt_for_task_generation": "Search appointments where doctor_name equals 'Dr. Alice Thompson'",
         },
         {
-            "prompt": "Filter prescriptions where status equals 'active'",
-            "prompt_for_task_generation": "Filter prescriptions where status equals 'active'",
+            "prompt": "Search appointments where speciality equals 'Cardiology' and date equals '2025-09-20'",
+            "prompt_for_task_generation": "Search appointments where speciality equals 'Cardiology' and date equals '2025-09-20'",
         },
         {
-            "prompt": "Filter prescriptions where status equals 'discontinued'",
-            "prompt_for_task_generation": "Filter prescriptions where status equals 'discontinued'",
+            "prompt": "Search appointments where date equals '2025-09-25'",
+            "prompt_for_task_generation": "Search appointments where date equals '2025-09-25'",
         },
+    ],
+)
+
+SEARCH_DOCTORS_USE_CASE = UseCase(
+    name="SEARCH_DOCTORS",
+    description="The user clicked Search on the Doctors page to apply name, speciality, and/or language filters.",
+    event=SearchDoctorsEvent,
+    event_source_code=SearchDoctorsEvent.get_source_code_of_class(),
+    constraints_generator=generate_search_doctors_constraints,
+    additional_prompt_info=f"CRITICAL: Use explicit field names (doctor_name, speciality, language). Format: 'Search doctors where <field> <operator> '<value>''. {STRICT_COPY_INSTRUCTION}",
+    examples=[
         {
-            "prompt": "Filter prescriptions where status equals 'all'",
-            "prompt_for_task_generation": "Filter prescriptions where status equals 'all'",
+            "prompt": "Search doctors where doctor_name contains 'Alice 7' and speciality equals 'General Practice g'",
+            "prompt_for_task_generation": "Search doctors where doctor_name contains 'Alice 7' and speciality equals 'General Practice g'",
         },
+    ],
+)
+
+SEARCH_PRESCRIPTION_USE_CASE = UseCase(
+    name="SEARCH_PRESCRIPTION",
+    description="The user clicked Search on the Prescriptions page to apply medicine and/or doctor filters.",
+    event=SearchPrescriptionEvent,
+    event_source_code=SearchPrescriptionEvent.get_source_code_of_class(),
+    constraints_generator=generate_search_prescription_constraints,
+    additional_prompt_info=f"CRITICAL: Use explicit field names (medicine_name, doctor_name). Format: 'Search prescriptions where <field> <operator> '<value>''. {STRICT_COPY_INSTRUCTION}",
+    examples=[
         {
-            "prompt": "Filter prescriptions where status equals 'refill_needed'",
-            "prompt_for_task_generation": "Filter prescriptions where status equals 'refill_needed'",
-        },
-        {
-            "prompt": "Filter prescriptions where status not equals 'completed'",
-            "prompt_for_task_generation": "Filter prescriptions where status not equals 'completed'",
+            "prompt": "Search prescriptions where medicine_name contains 'Vitamin 4' and doctor_name contains 'Smith a'",
+            "prompt_for_task_generation": "Search prescriptions where medicine_name contains 'Vitamin 4' and doctor_name contains 'Smith a'",
         },
     ],
 )
@@ -167,6 +156,7 @@ REFILL_PRESCRIPTION_USE_CASE = UseCase(
     event=RefillRequestEvent,
     event_source_code=RefillRequestEvent.get_source_code_of_class(),
     constraints_generator=generate_refill_prescription_constraints,
+    additional_prompt_info=f"CRITICAL: Use explicit field names (medicine_name). Format: 'Refill prescription where <field> <operator> '<value>''. {STRICT_COPY_INSTRUCTION}",
     examples=[
         {
             "prompt": "Refill prescription where medicine_name equals 'Atorvastatin'",
@@ -202,6 +192,7 @@ VIEW_PRESCRIPTION_USE_CASE = UseCase(
     event=ViewPrescriptionEvent,
     event_source_code=ViewPrescriptionEvent.get_source_code_of_class(),
     constraints_generator=generate_view_prescription_constraints,
+    additional_prompt_info="CRITICAL: Use explicit field names (doctor_name, start_date, dosage, medicine_name, category). Format: 'View a prescription where <field> <operator> '<value>''. Copy values EXACTLY.",
     examples=[
         {
             "prompt": "View a prescription where doctor_name equals 'Dr. Alice Thompson' and start_date equals '2025-08-01' and dosage equals '10 mg daily' and medicine_name equals 'Atorvastatin' and status equals 'active' and category equals 'cholesterol'",
@@ -218,70 +209,130 @@ VIEW_PRESCRIPTION_USE_CASE = UseCase(
     ],
 )
 
-VIEW_HEALTH_METRICS_USE_CASE = UseCase(
-    name="VIEW_HEALTH_METRICS",
-    description="The user viewed health metric files with details such as file name, type, and size.",
-    event=ViewHealthMetricsEvent,
-    event_source_code=ViewHealthMetricsEvent.get_source_code_of_class(),
-    constraints_generator=generate_view_health_metrics_constraints,
+SEARCH_MEDICAL_ANALYSIS_USE_CASE = UseCase(
+    name="SEARCH_MEDICAL_ANALYSIS",
+    description="The user clicked Search on the Medical Records page to apply title and/or doctor filters.",
+    event=SearchMedicalAnalysisEvent,
+    event_source_code=SearchMedicalAnalysisEvent.get_source_code_of_class(),
+    constraints_generator=generate_search_medical_analysis_constraints,
+    additional_prompt_info=f"CRITICAL: Use explicit field names (record_title, doctor_name). Format: 'Search medical analysis where <field> <operator> '<value>''. {STRICT_COPY_INSTRUCTION}",
     examples=[
         {
-            "prompt": "View health metrics where record_title equals 'Complete Blood Count (CBC)' and record_type equals 'lab_result' and record_date equals '2024-01-15'",
-            "prompt_for_task_generation": "View health metrics where record_title equals 'Complete Blood Count (CBC)' and record_type equals 'lab_result' and record_date equals '2024-01-15'",
+            "prompt": "Search medical analysis where record_title equals 'Complete Blood Count (CBC) 99' and doctor_name equals 'Dr. Alice Thompson'",
+            "prompt_for_task_generation": "Search medical analysis where record_title equals 'Complete Blood Count (CBC) 99' and doctor_name equals 'Dr. Alice Thompson'",
         },
         {
-            "prompt": "View health metrics where record_title contains 'Ray' and record_type equals 'imaging' and record_date greater than '2024-02-01'",
-            "prompt_for_task_generation": "View health metrics where record_title contains 'Ray' and record_type equals 'imaging' and record_date greater than '2024-02-01'",
-        },
-        {
-            "prompt": "View health metrics where record_title not equals 'Annual Flu Shot' and record_type not equals 'vaccination' and record_date equals '2024-02-05'",
-            "prompt_for_task_generation": "View health metrics where record_title not equals 'Annual Flu Shot' and record_type not equals 'vaccination' and record_date equals '2024-02-05'",
+            "prompt": "Search medical analysis where record_title contains 'al signs R' and doctor_name contains 'Smith 12'",
+            "prompt_for_task_generation": "Search medical analysis where record_title contains 'al signs R' and doctor_name contains 'Smith 12'",
         },
     ],
 )
-FILTER_BY_CATEGORY_USE_CASE = UseCase(
-    name="FILTER_BY_CATEGORY",
-    description="The user filtered medical records based on their category.",
-    event=FilterByCategoryEvent,
-    event_source_code=FilterByCategoryEvent.get_source_code_of_class(),
-    constraints_generator=generate_filter_by_category_constraints,
+
+VIEW_MEDICAL_ANALYSIS_USE_CASE = UseCase(
+    name="VIEW_MEDICAL_ANALYSIS",
+    description="The user viewed a medical analysis (clicked View Analysis on a card).",
+    event=ViewMedicalAnalysisEvent,
+    event_source_code=ViewMedicalAnalysisEvent.get_source_code_of_class(),
+    constraints_generator=generate_view_medical_analysis_constraints,
+    additional_prompt_info="Use format: 'View medical analysis where field operator value'. Always mention each constraint field explicitly (record_title, doctor_name, record_type).",
     examples=[
         {
-            "prompt": "Filter medical records where category equals 'diagnostic'",
-            "prompt_for_task_generation": "Filter medical records where category equals 'diagnostic'",
+            "prompt": "View medical analysis where record_title equals 'Complete Blood Count (CBC)' and record_type equals 'lab_result' and record_date equals '2024-01-15'",
+            "prompt_for_task_generation": "View medical analysis where record_title equals 'Complete Blood Count (CBC)' and record_type equals 'lab_result' and record_date equals '2024-01-15'",
         },
         {
-            "prompt": "Filter medical records where category equals 'preventive'",
-            "prompt_for_task_generation": "Filter medical records where category equals 'preventive'",
+            "prompt": "View medical analysis where record_title contains 'X-Ray' and doctor_name equals 'Dr. Alice Thompson'",
+            "prompt_for_task_generation": "View medical analysis where record_title contains 'X-Ray' and doctor_name equals 'Dr. Alice Thompson'",
         },
         {
-            "prompt": "Filter medical records where category equals 'monitoring'",
-            "prompt_for_task_generation": "Filter medical records where category equals 'monitoring'",
-        },
-        {
-            "prompt": "Filter medical records where category equals 'treatment'",
-            "prompt_for_task_generation": "Filter medical records where category equals 'treatment'",
+            "prompt": "View medical analysis where record_type equals 'vaccination' and record_date greater than '2024-02-01'",
+            "prompt_for_task_generation": "View medical analysis where record_type equals 'vaccination' and record_date greater than '2024-02-01'",
         },
     ],
 )
+
 VIEW_DOCTOR_PROFILE_USE_CASE = UseCase(
     name="VIEW_DOCTOR_PROFILE",
-    description="The user viewed a doctor's profile, including name, rating, and speciality.",
+    description="The user viewed a doctor's profile, including name, rating, speciality, consultation fee, and languages.",
     event=ViewDoctorProfileEvent,
     event_source_code=ViewDoctorProfileEvent.get_source_code_of_class(),
     constraints_generator=generate_view_doctor_profile_constraints,
+    additional_prompt_info=f"CRITICAL: Use explicit field names (doctor_name, speciality, rating, consultation_fee, language). Format: 'View a doctor profile where <field> <operator> '<value>''. {STRICT_COPY_INSTRUCTION}",
     examples=[
         {
             "prompt": "View a doctor profile where doctor_name equals 'Dr. Alice Thompson' and rating greater than 4.5 and speciality equals 'Cardiology'",
             "prompt_for_task_generation": "View a doctor profile where doctor_name equals 'Dr. Alice Thompson' and rating greater than 4.5 and speciality equals 'Cardiology'",
         },
         {
-            "prompt": "View a doctor profile where doctor_name not equals 'Dr. Brian Patel' and rating less than 4.0 and speciality equals 'Dermatology'",
-            "prompt_for_task_generation": "View a doctor profile where doctor_name not equals 'Dr. Brian Patel' and rating less than 4.0 and speciality equals 'Dermatology'",
+            "prompt": "View a doctor profile where doctor_name contains 'Clara' and consultation_fee less than 200 and language equals 'Spanish'",
+            "prompt_for_task_generation": "View a doctor profile where doctor_name contains 'Clara' and consultation_fee less than 200 and language equals 'Spanish'",
         },
         {
-            "prompt": "View a doctor profile where doctor_name contains 'Clara' and rating equals 4.2 and speciality equals 'Pediatrics'",
-            "prompt_for_task_generation": "View a doctor profile where doctor_name contains 'Clara' and rating equals 4.2 and speciality equals 'Pediatrics'",
+            "prompt": "View a doctor profile where speciality equals 'Dermatology' and language equals 'English'",
+            "prompt_for_task_generation": "View a doctor profile where speciality equals 'Dermatology' and language equals 'English'",
+        },
+    ],
+)
+VIEW_DOCTOR_EDUCATION_USE_CASE = UseCase(
+    name="VIEW_DOCTOR_EDUCATION",
+    description="The user viewed a doctor's Education & Certifications tab on the doctor profile page.",
+    event=ViewDoctorEducationEvent,
+    event_source_code=ViewDoctorEducationEvent.get_source_code_of_class(),
+    constraints_generator=generate_view_doctor_education_constraints,
+    additional_prompt_info=f"CRITICAL: Use explicit field names (doctor_name, speciality). Format: 'View doctor education where <field> <operator> '<value>''. {STRICT_COPY_INSTRUCTION}",
+    examples=[
+        {
+            "prompt": "View doctor education where doctor_name equals 'Dr. Alice Thompson' and speciality equals 'Cardiology'",
+            "prompt_for_task_generation": "View doctor education where doctor_name equals 'Dr. Alice Thompson' and speciality equals 'Cardiology'",
+        },
+        {
+            "prompt": "View doctor education where doctor_name contains 'Patel' and rating greater than 4.5 and language equals 'English'",
+            "prompt_for_task_generation": "View doctor education where doctor_name contains 'Patel' and rating greater than 4.5 and language equals 'English'",
+        },
+        {
+            "prompt": "View doctor education where speciality equals 'Dermatology' and consultation_fee less than 200",
+            "prompt_for_task_generation": "View doctor education where speciality equals 'Dermatology' and consultation_fee less than 200",
+        },
+    ],
+)
+
+VIEW_DOCTOR_AVAILABILITY_USE_CASE = UseCase(
+    name="VIEW_DOCTOR_AVAILABILITY",
+    description="The user viewed a doctor's Availability tab on the doctor profile page.",
+    event=ViewDoctorAvailabilityEvent,
+    event_source_code=ViewDoctorAvailabilityEvent.get_source_code_of_class(),
+    constraints_generator=generate_view_doctor_availability_constraints,
+    additional_prompt_info=f"CRITICAL: Use explicit field names (doctor_name, speciality). Format: 'View doctor availability where <field> <operator> '<value>''. {STRICT_COPY_INSTRUCTION}",
+    examples=[
+        {
+            "prompt": "View doctor availability where doctor_name equals 'Dr. Alice Thompson' and speciality equals 'Cardiology'",
+            "prompt_for_task_generation": "View doctor availability where doctor_name equals 'Dr. Alice Thompson' and speciality equals 'Cardiology'",
+        },
+        {
+            "prompt": "View doctor availability where doctor_name contains 'Patel' and rating greater than 4.5 and language equals 'English'",
+            "prompt_for_task_generation": "View doctor availability where doctor_name contains 'Patel' and rating greater than 4.5 and language equals 'English'",
+        },
+        {
+            "prompt": "View doctor availability where speciality equals 'Dermatology' and consultation_fee less than 200",
+            "prompt_for_task_generation": "View doctor availability where speciality equals 'Dermatology' and consultation_fee less than 200",
+        },
+    ],
+)
+OPEN_CONTACT_DOCTOR_FORM_USE_CASE = UseCase(
+    name="OPEN_CONTACT_DOCTOR_FORM",
+    description="The user opened the contact doctor form (clicked Contact Doctor button on a doctor profile).",
+    event=OpenContactDoctorFormEvent,
+    event_source_code=OpenContactDoctorFormEvent.get_source_code_of_class(),
+    constraints_generator=generate_open_contact_doctor_form_constraints,
+    additional_prompt_info=f"CRITICAL: Use explicit field names (doctor_name, speciality, language). Format: 'Open contact doctor form where <field> <operator> '<value>''. {STRICT_COPY_INSTRUCTION}",
+    examples=[
+        {
+            "prompt": "Open contact doctor form where doctor_name equals 'Dr. Alice Thompson' and speciality equals 'Cardiology'",
+            "prompt_for_task_generation": "Open contact doctor form where doctor_name equals 'Dr. Alice Thompson' and speciality equals 'Cardiology'",
+        },
+        {
+            "prompt": "Open contact form for Dr. Brian Patel",
+            "prompt_for_task_generation": "Open contact doctor form where doctor_name contains 'Patel' and speciality equals 'Dermatology'",
         },
     ],
 )
@@ -308,6 +359,8 @@ Correct:
 "Contact a doctor where doctor_name equals 'Dr. Alice Thompson' and speciality equals 'Cardiology' and rating equals '4.8'."
 Incorrect:
 "Retrieve doctor 'Dr. Alice Thompson' and speciality equals 'Cardiology'."
+
+4. CRITICAL: Copy the constraint values EXACTLY as provided. Do NOT correct typos or remove numbers. (e.g., if constraint is 'Rodriguez 78', write 'Rodriguez 78', NOT 'Rodriguez').
 """.strip()
 CONTACT_DOCTOR_USE_CASE = UseCase(
     name="CONTACT_DOCTOR",
@@ -344,293 +397,76 @@ CONTACT_DOCTOR_USE_CASE = UseCase(
     ],
 )
 
+DOCTOR_CONTACTED_SUCCESSFULLY_ADDITIONAL_INFO = f"""
+CRITICAL: Use explicit field names (doctor_name, patient_name, speciality, patient_email, patient_phone, preferred_contact_method, subject, urgency, message).
+Format: "Contact a doctor where <field> <operator> '<value>'"
+Example: "Contact a doctor where doctor_name equals 'Dr. Alice Thompson' and patient_name contains 'John Smith' and subject equals 'General consultation'"
+{STRICT_COPY_INSTRUCTION}
+""".strip()
 DOCTOR_CONTACTED_SUCCESSFULLY_USE_CASE = UseCase(
     name="DOCTOR_CONTACTED_SUCCESSFULLY",
     description="The user has successfully contacted a doctor, providing personal details, contact preferences, and message context.",
     event=DoctorContactedSuccessfullyEvent,
     event_source_code=DoctorContactedSuccessfullyEvent.get_source_code_of_class(),
-    # additional_prompt_info=CONTACT_DOCTOR_SUCCESSFULLY_ADDITIONAL_INFO,
+    additional_prompt_info=DOCTOR_CONTACTED_SUCCESSFULLY_ADDITIONAL_INFO,
     constraints_generator=generate_doctor_contact_successfully_constraints,
     examples=[
         {
-            "prompt": "Doctor contacted successfully where doctor_name equals 'Dr. Alice Thompson' and patient_name equals 'John Smith'",
-            "prompt_for_task_generation": "Doctor contacted successfully where doctor_name equals 'Dr. Alice Thompson' and patient_name equals 'John Smith'",
+            "prompt": "Contact a doctor where doctor_name equals 'Dr. Alice Thompson' and patient_name equals 'John Smith' and subject equals 'General consultation'",
+            "prompt_for_task_generation": "Contact a doctor where doctor_name equals 'Dr. Alice Thompson' and patient_name equals 'John Smith' and subject equals 'General consultation'",
         },
         {
-            "prompt": "Doctor contacted successfully where speciality equals 'Dermatology' and urgency equals 'high'",
-            "prompt_for_task_generation": "Doctor contacted successfully where speciality equals 'Dermatology' and urgency equals 'high'",
+            "prompt": "Send a message to a doctor where speciality equals 'Dermatology' and urgency equals 'high' and message contains 'urgent rash'",
+            "prompt_for_task_generation": "Send a message to a doctor where speciality equals 'Dermatology' and urgency equals 'high' and message contains 'urgent rash'",
         },
         {
-            "prompt": "Doctor contacted successfully where patient_email equals 'maria.gonzalez@example.com' and preferred_contact_method equals 'email'",
-            "prompt_for_task_generation": "Doctor contacted successfully where patient_email equals 'maria.gonzalez@example.com' and preferred_contact_method equals 'email'",
-        },
-        {
-            "prompt": "Doctor contacted successfully where subject contains 'knee pain' and message contains 'difficulty walking'",
-            "prompt_for_task_generation": "Doctor contacted successfully where subject contains 'knee pain' and message contains 'difficulty walking'",
-        },
-        {
-            "prompt": "Doctor contacted successfully where doctor_name equals 'Dr. Brian Patel' and preferred_contact_method equals 'phone'",
-            "prompt_for_task_generation": "Doctor contacted successfully where doctor_name equals 'Dr. Brian Patel' and preferred_contact_method equals 'phone'",
-        },
-        {
-            "prompt": "Doctor contacted successfully where patient_phone equals '+1-555-678-1234' and urgency equals 'low'",
-            "prompt_for_task_generation": "Doctor contacted successfully where patient_phone equals '+1-555-678-1234' and urgency equals 'low'",
+            "prompt": "Reach out to a doctor where patient_email equals 'maria.gonzalez@example.com' and preferred_contact_method equals 'email' and doctor_name contains 'Patel'",
+            "prompt_for_task_generation": "Reach out to a doctor where patient_email equals 'maria.gonzalez@example.com' and preferred_contact_method equals 'email' and doctor_name contains 'Patel'",
         },
     ],
 )
-CANCEL_CONTACT_DOCTOR_ADDITIONAL_INFO = """
-CRITICAL REQUIREMENTS:
-1. The request must start with: "Cancel contact request...".
-2. Do not mention a single constraint more than once in the request.
-
-Correct examples:
-- Cancel contact request where doctor_name equals 'Dr. Alice Thompson' and speciality equals 'Cardiology'.
-
-Incorrect examples:
-- Retrieve doctor 'Dr. Alice Thompson'.
-
-3. Pay attention to the constraints:
-Example:
-constraints:
-{
-'doctor_name': {'operator': 'equals', 'value': 'Dr. Alice Thompson'},
-'speciality': {'operator': 'equals', 'value': 'Cardiology'}
-}
-Correct:
-"Cancel contact request where doctor_name equals 'Dr. Alice Thompson' and speciality equals 'Cardiology'."
-Incorrect:
-"Cancel doctor 'Dr. Alice Thompson' and speciality equals 'Cardiology'."
-""".strip()
-CANCEL_CONTACT_DOCTOR_USE_CASE = UseCase(
-    name="CANCEL_CONTACT_DOCTOR",
-    description="The user canceled a request to contact a doctor.",
-    event=CancelContactDoctorEvent,
-    event_source_code=CancelContactDoctorEvent.get_source_code_of_class(),
-    additional_prompt_info=CANCEL_CONTACT_DOCTOR_ADDITIONAL_INFO,
-    constraints_generator=generate_cancel_contact_doctor_constraints,
+FILTER_DOCTOR_REVIEWS_USE_CASE = UseCase(
+    name="FILTER_DOCTOR_REVIEWS",
+    description="The user filtered or sorted a doctor's reviews (by star rating and/or sort order: newest, oldest, highest, lowest).",
+    event=FilterDoctorReviewsEvent,
+    event_source_code=FilterDoctorReviewsEvent.get_source_code_of_class(),
+    constraints_generator=generate_filter_doctor_reviews_constraints,
+    additional_prompt_info=f"CRITICAL: Use explicit field names (doctor_name, speciality, filter_rating, sort_order). Format: 'Filter doctor reviews where <field> <operator> '<value>''. {STRICT_COPY_INSTRUCTION}",
     examples=[
         {
-            "prompt": "Cancel contact request where doctor_name equals 'Dr. Alice Thompson'",
-            "prompt_for_task_generation": "Cancel contact request where doctor_name equals 'Dr. Alice Thompson'",
+            "prompt": "Filter doctor reviews where doctor_name equals 'Dr. Alice Thompson' and filter_rating equals 5",
+            "prompt_for_task_generation": "Filter doctor reviews where doctor_name equals 'Dr. Alice Thompson' and filter_rating equals 5",
         },
         {
-            "prompt": "Cancel contact request where doctor_name equals 'Dr. John Smith'",
-            "prompt_for_task_generation": "Cancel contact request where doctor_name equals 'Dr. John Smith'",
+            "prompt": "View 1-star reviews of Dr. Pepe where filter_rating equals 1 and doctor_name contains 'Pepe'",
+            "prompt_for_task_generation": "Filter doctor reviews where filter_rating equals 1 and doctor_name contains 'Pepe'",
         },
         {
-            "prompt": "Cancel contact request where speciality equals 'Cardiologist'",
-            "prompt_for_task_generation": "Cancel contact request where speciality equals 'Cardiologist'",
+            "prompt": "Filter doctor reviews where speciality equals 'Dermatology' and sort_order equals 'newest'",
+            "prompt_for_task_generation": "Filter doctor reviews where speciality equals 'Dermatology' and sort_order equals 'newest'",
         },
         {
-            "prompt": "Cancel contact request where speciality equals 'Dermatologist'",
-            "prompt_for_task_generation": "Cancel contact request where speciality equals 'Dermatologist'",
-        },
-        {
-            "prompt": "Cancel contact request where doctor_name not equals 'Dr. Emily Davis'",
-            "prompt_for_task_generation": "Cancel contact request where doctor_name not equals 'Dr. Emily Davis'",
-        },
-        {
-            "prompt": "Cancel contact request where speciality contains 'Pediatric'",
-            "prompt_for_task_generation": "Cancel contact request where speciality contains 'Pediatric'",
-        },
-    ],
-)
-VIEW_REVIEW_CLICKED_ADDITIONAL_INFO = """
-CRITICAL REQUIREMENTS:
-1. The request must start with: "View reviews clicked...".
-2. Do not mention a single constraint more than once in the request.
-
-Correct examples:
-- View reviews clicked where doctor_name equals 'Dr. Alice Thompson' and speciality equals 'Cardiology' and rating equals '4.8'.
-
-Incorrect examples:
-- View review 'Dr. Alice Thompson'.
-
-3. Pay attention to the constraints:
-Example:
-constraints:
-{
-'doctor_name': {'operator': 'equals', 'value': 'Dr. Alice Thompson'},
-'speciality': {'operator': 'equals', 'value': 'Cardiology'},
-'rating': {'operator': 'equals', 'value': '4.8'},
-}
-Correct:
-"View reviews clicked where doctor_name equals 'Dr. Alice Thompson' and speciality equals 'Cardiology' and rating equals '4.8'."
-Incorrect:
-"View reviews 'Dr. Alice Thompson' and speciality equals 'Cardiology'."
-""".strip()
-VIEW_REVIEWS_CLICKED_USE_CASE = UseCase(
-    name="VIEW_REVIEWS_CLICKED",
-    description="The user clicked to view reviews for a doctor.",
-    event=ViewReviewClickedEvent,
-    event_source_code=ViewReviewClickedEvent.get_source_code_of_class(),
-    additional_prompt_info=VIEW_REVIEW_CLICKED_ADDITIONAL_INFO,
-    constraints_generator=generate_view_review_clicked_constraints,
-    examples=[
-        {
-            "prompt": "View reviews clicked where doctor_name equals 'Dr. Alice Thompson'",
-            "prompt_for_task_generation": "View reviews clicked where doctor_name equals 'Dr. Alice Thompson'",
-        },
-        {
-            "prompt": "View reviews clicked where doctor_name equals 'Dr. Michael Johnson'",
-            "prompt_for_task_generation": "View reviews clicked where doctor_name equals 'Dr. Michael Johnson'",
-        },
-        {
-            "prompt": "View reviews clicked where speciality equals 'Cardiologist'",
-            "prompt_for_task_generation": "View reviews clicked where speciality equals 'Cardiologist'",
-        },
-        {
-            "prompt": "View reviews clicked where speciality contains 'Dermatology'",
-            "prompt_for_task_generation": "View reviews clicked where speciality contains 'Dermatology'",
-        },
-        {
-            "prompt": "View reviews clicked where rating greater than 4.5",
-            "prompt_for_task_generation": "View reviews clicked where rating greater than 4.5",
-        },
-        {
-            "prompt": "View reviews clicked where rating less than 3.0",
-            "prompt_for_task_generation": "View reviews clicked where rating less than 3.0",
-        },
-    ],
-)
-FILTER_REVIEWS_USE_CASE = UseCase(
-    name="FILTER_REVIEWS",
-    description="The user filtered doctor reviews based on rating, doctor name, or speciality.",
-    event=FilterReviewsEvent,
-    event_source_code=FilterReviewsEvent.get_source_code_of_class(),
-    constraints_generator=generate_filter_reviews_constraints,
-    examples=[
-        {
-            "prompt": "Filter reviews where filter_rating equals 5",
-            "prompt_for_task_generation": "Filter reviews where filter_rating equals 5",
-        },
-        {
-            "prompt": "Filter reviews where filter_rating equals 3 and speciality equals 'Dermatologist'",
-            "prompt_for_task_generation": "Filter reviews where filter_rating equals 3 and speciality equals 'Dermatologist'",
-        },
-        {
-            "prompt": "Filter reviews for doctor 'Dr. Alice Thompson' where filter_rating greater than 4",
-            "prompt_for_task_generation": "Filter reviews for doctor 'Dr. Alice Thompson' where filter_rating greater than 4",
-        },
-        {
-            "prompt": "Filter reviews where speciality equals 'Neurologist' and filter_rating less than 3",
-            "prompt_for_task_generation": "Filter reviews where speciality equals 'Neurologist' and filter_rating less than 3",
-        },
-        {
-            "prompt": "Filter reviews where doctor_name equals 'Dr. John Smith' and filter_rating not equals 2",
-            "prompt_for_task_generation": "Filter reviews where doctor_name equals 'Dr. John Smith' and filter_rating not equals 2",
-        },
-        {
-            "prompt": "Filter reviews where filter_rating equals 1 and speciality equals 'Cardiologist'",
-            "prompt_for_task_generation": "Filter reviews where filter_rating equals 1 and speciality equals 'Cardiologist'",
-        },
-    ],
-)
-SORT_REVIEWS_USE_CASE = UseCase(
-    name="SORT_REVIEWS",
-    description="The user sorted doctor reviews by order such as lowest, highest, oldest, or newest, optionally filtered by doctor or speciality.",
-    event=SortReviewsEvent,
-    event_source_code=SortReviewsEvent.get_source_code_of_class(),
-    constraints_generator=generate_sort_reviews_constraints,
-    examples=[
-        {
-            "prompt": "Sort reviews where sort_order equals 'highest'",
-            "prompt_for_task_generation": "Sort reviews where sort_order equals 'highest'",
-        },
-        {
-            "prompt": "Sort reviews where sort_order equals 'lowest' for doctor_name equals 'Dr. Alice Thompson'",
-            "prompt_for_task_generation": "Sort reviews where sort_order equals 'lowest' for doctor_name equals 'Dr. Alice Thompson'",
-        },
-        {
-            "prompt": "Sort reviews where sort_order equals 'newest' and speciality equals 'Cardiologist'",
-            "prompt_for_task_generation": "Sort reviews where sort_order equals 'newest' and speciality equals 'Cardiologist'",
-        },
-        {
-            "prompt": "Sort reviews where sort_order equals 'oldest' for doctor_name equals 'Dr. John Smith'",
-            "prompt_for_task_generation": "Sort reviews where sort_order equals 'oldest' for doctor_name equals 'Dr. John Smith'",
-        },
-        {
-            "prompt": "Sort reviews where sort_order equals 'highest' and speciality equals 'Dermatologist'",
-            "prompt_for_task_generation": "Sort reviews where sort_order equals 'highest' and speciality equals 'Dermatologist'",
-        },
-        {
-            "prompt": "Sort reviews where sort_order equals 'newest'",
-            "prompt_for_task_generation": "Sort reviews where sort_order equals 'newest'",
-        },
-    ],
-)
-CANCEL_VIEW_REVIEW_ADDITIONAL_INFO = """
-CRITICAL REQUIREMENTS:
-1. The request must start with: "Cancel view reviews...".
-2. Do not mention a single constraint more than once in the request.
-
-Correct examples:
-- Cancel view reviews clicked where doctor_name equals 'Dr. Alice Thompson' and speciality equals 'Cardiology'.
-
-Incorrect examples:
-- Cancel view review 'Dr. Alice Thompson'.
-
-3. Pay attention to the constraints:
-Example:
-constraints:
-{
-'doctor_name': {'operator': 'equals', 'value': 'Dr. Alice Thompson'},
-'speciality': {'operator': 'equals', 'value': 'Cardiology'},
-}
-Correct:
-"Cancel view reviews clicked where doctor_name equals 'Dr. Alice Thompson' and speciality equals 'Cardiology'."
-Incorrect:
-"View reviews 'Dr. Alice Thompson' and speciality equals 'Cardiology'."
-""".strip()
-CANCEL_VIEW_REVIEWS_USE_CASE = UseCase(
-    name="CANCEL_VIEW_REVIEWS",
-    description="The user canceled viewing reviews of a doctor or speciality.",
-    event=CancelViewReviewsEvent,
-    event_source_code=CancelViewReviewsEvent.get_source_code_of_class(),
-    additional_prompt_info=CANCEL_VIEW_REVIEW_ADDITIONAL_INFO,
-    constraints_generator=generate_cancel_view_review_constraints,
-    examples=[
-        {
-            "prompt": "Cancel view reviews where doctor_name equals 'Dr. Alice Thompson'",
-            "prompt_for_task_generation": "Cancel view reviews where doctor_name equals 'Dr. Alice Thompson'",
-        },
-        {
-            "prompt": "Cancel view reviews where speciality equals 'Cardiologist'",
-            "prompt_for_task_generation": "Cancel view reviews where speciality equals 'Cardiologist'",
-        },
-        {
-            "prompt": "Cancel view reviews where doctor_name equals 'Dr. John Smith' and speciality equals 'Dermatologist'",
-            "prompt_for_task_generation": "Cancel view reviews where doctor_name equals 'Dr. John Smith' and speciality equals 'Dermatologist'",
-        },
-        {
-            "prompt": "Cancel view reviews for doctor_name equals 'Dr. Emily Davis'",
-            "prompt_for_task_generation": "Cancel view reviews for doctor_name equals 'Dr. Emily Davis'",
-        },
-        {
-            "prompt": "Cancel view reviews where speciality equals 'Neurologist'",
-            "prompt_for_task_generation": "Cancel view reviews where speciality equals 'Neurologist'",
-        },
-        {
-            "prompt": "Cancel view reviews without specifying doctor_name or speciality",
-            "prompt_for_task_generation": "Cancel view reviews without specifying doctor_name or speciality",
+            "prompt": "Sort doctor reviews by highest rating for Dr. Brian Patel",
+            "prompt_for_task_generation": "Filter doctor reviews where doctor_name equals 'Dr. Brian Patel' and sort_order equals 'highest'",
         },
     ],
 )
 ALL_USE_CASES = [
-    BOOK_APPOINTMENT_USE_CASE,
+    OPEN_APPOINTMENT_FORM_USE_CASE,
     APPOINTMENT_BOOKED_SUCCESSFULLY_USE_CASE,
-    CANCEL_BOOK_APPOINTMENT_USE_CASE,
-    VIEW_PRESCRIPTION_USE_CASE,
-    FILTER_BY_SPECIALITY_USE_CASE,
+    REQUEST_QUICK_APPOINTMENT_USE_CASE,
+    SEARCH_APPOINTMENT_USE_CASE,
+    SEARCH_DOCTORS_USE_CASE,
+    SEARCH_PRESCRIPTION_USE_CASE,
     REFILL_PRESCRIPTION_USE_CASE,
-    VIEW_HEALTH_METRICS_USE_CASE,
-    FILTER_BY_CATEGORY_USE_CASE,
+    VIEW_PRESCRIPTION_USE_CASE,
+    SEARCH_MEDICAL_ANALYSIS_USE_CASE,
+    VIEW_MEDICAL_ANALYSIS_USE_CASE,
     VIEW_DOCTOR_PROFILE_USE_CASE,
+    VIEW_DOCTOR_EDUCATION_USE_CASE,
+    VIEW_DOCTOR_AVAILABILITY_USE_CASE,
+    FILTER_DOCTOR_REVIEWS_USE_CASE,
+    OPEN_CONTACT_DOCTOR_FORM_USE_CASE,
     CONTACT_DOCTOR_USE_CASE,
     DOCTOR_CONTACTED_SUCCESSFULLY_USE_CASE,
-    CANCEL_CONTACT_DOCTOR_USE_CASE,
-    VIEW_REVIEWS_CLICKED_USE_CASE,
-    FILTER_REVIEWS_USE_CASE,
-    SORT_REVIEWS_USE_CASE,
-    CANCEL_VIEW_REVIEWS_USE_CASE,
 ]

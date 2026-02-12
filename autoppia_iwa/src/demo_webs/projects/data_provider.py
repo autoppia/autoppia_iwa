@@ -124,14 +124,20 @@ async def load_dataset_data(
     project_key: str,
     entity_type: str,
     seed_value: int,
-    limit: int,
+    limit: int = 50,
     method: str = "select",
     filter_key: str | None = None,
     filter_values: str | None = None,
 ) -> list[dict]:
     """
     Async loader for /datasets/load using aiohttp with a simple in-memory cache.
+
+    Args:
+        limit: Number of items to fetch. Defaults to 50 and will be enforced to exactly 50.
     """
+    # Enforce exactly 50 items
+    limit = 50
+
     # Construir URL directamente usando el backend_url proporcionado
     url = urljoin(backend_url.rstrip("/"), "datasets/load")
     params: dict[str, str | int] = {

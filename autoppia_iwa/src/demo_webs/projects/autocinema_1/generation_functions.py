@@ -17,7 +17,7 @@ def generate_registration_constraints(dataset: list[dict]):
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "username equals newuser<web_agent_id> AND email equals newuser<web_agent_id>@gmail.com AND password equals password123"
+    constraints_str = "username equals <signup_username> AND email equals <signup_email> AND password equals <signup_password>"
 
     return parse_constraints_str(constraints_str)
 
@@ -30,7 +30,7 @@ def generate_login_constraints(dataset: list[dict]):
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "username equals <web_agent_id> AND password equals password123"
+    constraints_str = "username equals <username> AND password equals <password>"
 
     return parse_constraints_str(constraints_str)
 
@@ -43,7 +43,7 @@ def generate_logout_constraints(dataset: list[dict]):
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "username equals <web_agent_id> AND password equals password123"
+    constraints_str = "username equals <username> AND password equals <password>"
     return parse_constraints_str(constraints_str)
 
 
@@ -204,7 +204,7 @@ async def generate_film_filter_constraints(task_url: str | None = None, dataset:
     if dataset is None or dataset == {}:
         seed = await resolve_v2_seed_from_url(task_url) if task_url else None
         films = await fetch_data(seed_value=seed)
-        dataset = {"films": films}
+        dataset = {"movies": films}
 
     films = dataset.get("films", []) or dataset.get("movies") if dataset else []
     if not films:

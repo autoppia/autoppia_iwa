@@ -139,16 +139,34 @@ class UseCase(BaseModel):
         if not self.constraints:
             return ""
 
+        # Mapping to natural language for better prompt generation
+        op_map = {
+            "equals": "equals",
+            "not_equals": "not equals",
+            "contains": "contains",
+            "not_contains": "not contains",
+            "greater_than": "greater than",
+            "less_than": "less than",
+            "greater_equal": "greater equal",
+            "less_equal": "less equal",
+            "in_list": "is one of",
+            "not_in_list": "is not one of",
+        }
+
         parts = []
         for idx, constraint in enumerate(self.constraints, start=1):
             field = constraint["field"]
             op = constraint["operator"]
             value = constraint["value"]
 
+            # Use natural language if available, otherwise use raw value
+            op_str = op.value if hasattr(op, "value") else str(op)
+            op_label = op_map.get(op_str, op_str)
+
             # Special formatting for lists
             value_str = f"[{', '.join(map(str, value))}]" if isinstance(value, list) else str(value)
 
-            parts.append(f"{idx}) {field} {op.value} {value_str}")
+            parts.append(f"{idx}) {field} {op_label} {value_str}")
 
         return " AND ".join(parts)
 
@@ -166,10 +184,16 @@ class UseCase(BaseModel):
 
     def serialize(self) -> dict:
         """Serialize a UseCase object to a dictionary."""
+        from autoppia_iwa.src.data_generation.tests.simple.utils import enum_to_raw_recursive
+
         serialized = self.model_dump()
         serialized["event"] = self.event.__name__
         if "event_source_code" in serialized:
             serialized["event_source_code"] = True
+        # Explicitly ensure constraints are included (they're needed for validation)
+        # Convert ComparisonOperator enums to strings for JSON serialization
+        if self.constraints is not None:
+            serialized["constraints"] = enum_to_raw_recursive(self.constraints)
         return serialized
 
     @classmethod

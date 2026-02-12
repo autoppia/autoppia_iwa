@@ -56,9 +56,12 @@ SOTA_AGENTS = [
     # CLAUDE_CUA_AGENT,
 ]
 
-# Active agents to run.
+# Active agents to run. Simple agent (Flask /solve_task) on port 7000.
 AGENTS = [
-    ApifiedWebAgent(base_url="http://localhost:5000", id="1", name="LocalAgent"),
+    ApifiedWebAgent(host="localhost", port=7000, id="simple", name="SimpleAgent", timeout=120),
+    # ApifiedWebAgent(base_url="http://localhost:5000", id="1", name="LocalAgent"),
+    # ApifiedWebAgent(id="1", name="Anthropic-CUA", host="127.0.0.1", port=5000, timeout=398)
+    # ApifiedWebCUA(base_url="http://localhost:5000", id="1", name="BrowserUse-OpenAI"),
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)
@@ -116,9 +119,10 @@ CFG = BenchmarkConfig(
     # Evaluator mode
     evaluator_mode="concurrent",  # ← Agente genera lista completa de acciones
     # Tasks
-    prompts_per_use_case=3,
     # use_cases=None means all use-cases
     use_cases=None,
+    prompts_per_use_case=2,
+    use_cached_tasks=True,  # Use cached tasks if available
     # Execution
     runs=1,  # single run is enough for this fixed agent
     max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents

@@ -35,7 +35,7 @@ from .generation_functions import (
     generate_registration_constraints,
     generate_search_film_constraints,
 )
-from .replace_functions import login_replace_func, register_replace_func, replace_film_placeholders
+from .replace_functions import replace_film_placeholders
 
 
 async def _get_movies_data_for_prompts(seed_value: int | None = None, count: int = 50) -> list[dict]:
@@ -86,7 +86,7 @@ REGISTRATION_USE_CASE = UseCase(
     description="The user fills out the registration form and successfully creates a new account.",
     event=RegistrationEvent,
     event_source_code=RegistrationEvent.get_source_code_of_class(),
-    replace_func=register_replace_func,
+    # replace_func not needed - credentials remain as placeholders until evaluation
     constraints_generator=generate_registration_constraints,
     additional_prompt_info=REGISTRATION_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -124,7 +124,7 @@ LOGIN_USE_CASE = UseCase(
     description="The user fills out the login form and logs in successfully.",
     event=LoginEvent,
     event_source_code=LoginEvent.get_source_code_of_class(),
-    replace_func=login_replace_func,
+    # replace_func not needed - credentials remain as placeholders until evaluation
     constraints_generator=generate_login_constraints,
     additional_prompt_info=LOGIN_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -162,7 +162,7 @@ LOGOUT_USE_CASE = UseCase(
     description="The user logs out of the platform after logging in.",
     event=LogoutEvent,
     event_source_code=LogoutEvent.get_source_code_of_class(),
-    replace_func=login_replace_func,
+    # replace_func not needed - credentials remain as placeholders until evaluation
     constraints_generator=generate_logout_constraints,
     additional_prompt_info=LOGOUT_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -808,7 +808,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
     description="The user edits their profile, modifying one or more attributes such as first name, last name, bio, location, website, or favorite genres. Username and email cannot be edited.",
     event=EditUserEvent,
     event_source_code=EditUserEvent.get_source_code_of_class(),
-    replace_func=login_replace_func,
+    # replace_func not needed - credentials remain as placeholders until evaluation
     constraints_generator=generate_edit_profile_constraints,
     additional_prompt_info=EDIT_PROFILE_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -837,8 +837,8 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login where username equals <username> and password equals <password>. Change your last name to <last_name>.",
         },
         {
-            "prompt": "Login where username equals user<web_agent_id> and password equals password123. Modify your profile to ensure that your location does NOT contain 'a' and that your website contains 'https://cinephileworld.example.org'",
-            "prompt_for_task_generation": "Login where username equals user<web_agent_id> and password equals password123. Modify your profile to ensure that your location does NOT contain 'a' and that your website contains <website>",
+            "prompt": "Login where username equals <username> and password equals <password>. Modify your profile to ensure that your location does NOT contain 'a' and that your website contains 'https://cinephileworld.example.org'",
+            "prompt_for_task_generation": "Login where username equals <username> and password equals <password>. Modify your profile to ensure that your location does NOT contain 'a' and that your website contains <website>",
         },
     ],
 )

@@ -27,6 +27,7 @@ class BenchmarkConfig:
     use_cases: list[str] | None = None
     prompts_per_use_case: int = 1
     dynamic: bool = False
+    use_cached_tasks: bool = False
 
     # Execution
     runs: int = 1

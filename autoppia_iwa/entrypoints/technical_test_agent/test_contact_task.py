@@ -86,10 +86,13 @@ async def test_contact_task():
     try:
         # Get solution from agent
         logger.info("Sending task to agent...")
-        prepared_task = task.prepare_for_agent(agent.id)
-        solution = await agent.solve_task(prepared_task)
+        # Send task WITH placeholders - agent should return actions with placeholders
+        solution = await agent.solve_task(task)
 
         task_solution = TaskSolution(task_id=task.id, actions=solution.actions or [], web_agent_id=agent.id)
+        # Replace credential placeholders in actions BEFORE evaluation
+        task_solution.replace_credentials(agent.id)
+        # Normalize any embedded agent IDs inside actions if needed
         task_solution.actions = task_solution.replace_web_agent_id()
 
         logger.info(f"Agent returned {len(task_solution.actions)} actions")
