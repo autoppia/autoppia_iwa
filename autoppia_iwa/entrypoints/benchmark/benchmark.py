@@ -20,7 +20,7 @@ from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStat
 from autoppia_iwa.src.evaluation.concurrent_evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.evaluation.stateful_evaluator import AsyncStatefulEvaluator
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer
-from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution, replace_credentials_in_action, sanitize_snapshot_html
+from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution, sanitize_snapshot_html
 
 visualizer = SubnetVisualizer()
 
@@ -167,9 +167,8 @@ class Benchmark:
 
                 logger.debug(f"[stateful_eval] agent {agent.name} returned {len(actions)} actions, executing {len(actions_to_execute)}")
 
-                # Ejecutar TODAS las acciones en batch (reemplazar placeholders antes de ejecutar)
+                # Ejecutar TODAS las acciones en batch (el evaluator reemplaza placeholders internamente)
                 for action in actions_to_execute:
-                    replace_credentials_in_action(action, agent.id)
                     step_result = await evaluator.step(action)
                     final_score = step_result.score.raw_score
                     tests_passed = step_result.score.tests_passed

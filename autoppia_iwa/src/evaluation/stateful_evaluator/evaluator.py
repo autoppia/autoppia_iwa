@@ -27,6 +27,7 @@ from autoppia_iwa.src.execution.actions.actions import NavigateAction
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.execution.browser_executor import PlaywrightBrowserExecutor
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
+from autoppia_iwa.src.web_agents.classes import replace_credentials_in_action
 from autoppia_iwa.src.web_agents.cua import AsyncWebCUASession, SyncWebCUASession
 
 
@@ -175,6 +176,7 @@ class AsyncStatefulEvaluator(AsyncWebCUASession):
         if action is not None:
             if not self._executor:
                 raise RuntimeError("AsyncStatefulEvaluator: not initialized. Call reset() first.")
+            replace_credentials_in_action(action, self.web_agent_id)
             idx = len(self._history)
             try:
                 action_result = await asyncio.wait_for(
