@@ -879,9 +879,9 @@ def generate_edit_profile_constraints(dataset: list[dict]):
     # Generar constraints
     constraints = []
 
-    # Always add username and password constraints explicitly
-    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<web_agent_id>"})
-    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "password123"})
+    # Login constraints use placeholders; replaced at validation time in base_events (same as in actions).
+    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<username>"})
+    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<password>"})
 
     # Select random fields to edit
     selected_fields = sample(editable_fields, k=choice([1, 2, 3]))

@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 from pydantic import BaseModel
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue, validate_criterion
+from autoppia_iwa.src.web_agents.classes import replace_credential_placeholders_in_string
 
 
 class Event(BaseModel):
@@ -26,15 +27,17 @@ class Event(BaseModel):
         if criteria and hasattr(criteria, "model_fields"):
             for field_name in criteria.model_fields:
                 field_value = getattr(criteria, field_name)
-                # print(f"Before: {field_value}. self_web_agent_id:{self.web_agent_id}")
-
                 if hasattr(field_value, "value"):
                     if isinstance(field_value.value, str):
-                        replaced_value = field_value.value.replace("<web_agent_id>", self.web_agent_id)
-                        field_value.value = replaced_value
+                        field_value.value = replace_credential_placeholders_in_string(
+                            field_value.value, self.web_agent_id
+                        )
                 elif isinstance(field_value, str):
-                    replaced_value = field_value.replace("<web_agent_id>", self.web_agent_id)
-                    setattr(criteria, field_name, replaced_value)
+                    setattr(
+                        criteria,
+                        field_name,
+                        replace_credential_placeholders_in_string(field_value, self.web_agent_id),
+                    )
 
         return self._validate_criteria(criteria)
 
