@@ -1,54 +1,15 @@
-def login_replace_func(text: str, **kwargs) -> str:
-    if not isinstance(text, str):
-        return text
-
-    replacements = {"<username>": "user<web_agent_id>", "<password>": "password123"}
-
-    for placeholder, value in replacements.items():
-        text = text.replace(placeholder, value)
-
-    return text
-
-
-def register_replace_func(text: str, **kwargs) -> str:
-    if not isinstance(text, str):
-        return text
-
-    constraints = kwargs.get("constraints")
-    if not constraints:
-        return text
-
-    username = next((str(c.get("value")) for c in constraints if c.get("field") == "username"), "")
-    email = next((str(c.get("value")) for c in constraints if c.get("field") == "email"), "")
-    password = next((str(c.get("value")) for c in constraints if c.get("field") == "password"), "")
-
-    if username:
-        text = text.replace("<signup_username>", username)
-        text = text.replace("<username>", username)
-    if email:
-        text = text.replace("<signup_email>", email)
-        text = text.replace("<email>", email)
-    if password:
-        text = text.replace("<signup_password>", password)
-        text = text.replace("<password>", password)
-
-    return text
+from .data_utils import fetch_data
 
 
 async def replace_book_placeholders(
     text: str,
     seed_value: int | None = None,
-    dataset: list[dict] | dict | None = None,
-    **kwargs,
+    dataset: list[dict] | None = None,
 ) -> str:
     if not isinstance(text, str):
         return text
 
-    if isinstance(dataset, dict):
-        dataset = dataset.get("books", [])
-
-    books_data = dataset if dataset is not None else await fetch_books_data(seed_value=seed_value)
-
+    books_data = dataset if dataset is not None else await fetch_data(seed_value=seed_value)
     if not books_data:
         return text
 

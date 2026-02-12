@@ -25,20 +25,15 @@ from .events import (
 from .generation_functions import (
     generate_add_comment_constraints,
     generate_add_film_constraints,
-    generate_add_to_watchlist_constraints,
     generate_contact_constraints,
-    generate_delete_film_constraints,
     generate_edit_film_constraints,
     generate_edit_profile_constraints,
-    generate_film_detail_constraints,
+    generate_film_constraints,
     generate_film_filter_constraints,
     generate_login_constraints,
     generate_logout_constraints,
     generate_registration_constraints,
-    generate_remove_from_watchlist_constraints,
     generate_search_film_constraints,
-    generate_share_film_constraints,
-    generate_watch_trailer_constraints,
 )
 from .replace_functions import replace_film_placeholders
 
@@ -227,7 +222,7 @@ FILM_DETAIL_USE_CASE = UseCase(
     event=FilmDetailEvent,
     event_source_code=FilmDetailEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
-    constraints_generator=generate_film_detail_constraints,
+    constraints_generator=generate_film_constraints,
     examples=[
         {
             "prompt": "Navigate to The Matrix movie page",
@@ -297,7 +292,7 @@ ADD_TO_WATCHLIST_USE_CASE = UseCase(
     event=AddToWatchlistEvent,
     event_source_code=AddToWatchlistEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
-    constraints_generator=generate_add_to_watchlist_constraints,
+    constraints_generator=generate_film_constraints,
     examples=[
         {
             "prompt": "Add to wishlist The Matrix movie",
@@ -345,7 +340,7 @@ REMOVE_FROM_WATCHLIST_USE_CASE = UseCase(
     event=RemoveFromWatchlistEvent,
     event_source_code=RemoveFromWatchlistEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # populated dynamically
-    constraints_generator=generate_remove_from_watchlist_constraints,
+    constraints_generator=generate_film_constraints,
     examples=[
         {
             "prompt": "Remove the film '<movie>' from the watchlist",
@@ -392,7 +387,7 @@ SHARE_FILM_USE_CASE = UseCase(
     event=ShareFilmEvent,
     event_source_code=ShareFilmEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
-    constraints_generator=generate_share_film_constraints,
+    constraints_generator=generate_film_constraints,
     examples=[
         {
             "prompt": "Share The Matrix movie",
@@ -462,7 +457,7 @@ WATCH_TRAILER_USE_CASE = UseCase(
     event=WatchTrailer,
     event_source_code=WatchTrailer.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
-    constraints_generator=generate_watch_trailer_constraints,
+    constraints_generator=generate_film_constraints,
     examples=[
         {
             "prompt": "Watch the trailer for The Matrix movie",
@@ -689,7 +684,7 @@ DELETE_FILM_USE_CASE = UseCase(
     event=DeleteFilmEvent,
     event_source_code=DeleteFilmEvent.get_source_code_of_class(),
     additional_prompt_info=DELETE_FILM_ADDITIONAL_PROMPT_INFO,
-    constraints_generator=generate_delete_film_constraints,
+    constraints_generator=generate_film_constraints,
     examples=[
         {
             "prompt": "Remove The Matrix, a film released after 2014, from the database",
@@ -795,17 +790,17 @@ CONTACT_USE_CASE = UseCase(
 ###############################################################################
 EDIT_PROFILE_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints — every field (username, password, first_name, last_name, bio, location, website, favorite_genres) that appears in the constraints MUST be explicitly mentioned in the prompt with its exact value.
-2. Use the EXACT constraint values in the prompt — do NOT replace them with placeholders like <username> or <password>. If the constraint says "username equals <web_agent_id>", the prompt must contain "<web_agent_id>". If it says "password equals password123", the prompt must contain "password123". Same for first_name, last_name, bio, location, website, favorite_genres: use the exact string, URL, or value from the constraints.
-3. Begin with a login instruction that states username and password using their exact constraint values (e.g. "Login with username equals <web_agent_id> and password equals password123" or "Login where username is <web_agent_id> and password is password123").
-4. Then add an edit-profile instruction that explicitly mentions each remaining constraint field and its exact value (e.g. "Update your first name to John", "Set your website to https://filmcritics.example.com", "Modify your bio to include the word cinema", "Change your location to New York, USA", "Set your favorite genre to Sci-Fi").
-5. Be phrased as a request to edit or modify a user profile (use "Edit...", "Modify...", "Update...", "Change...", "Set...").
+1. Include ALL constraints mentioned above — not just some of them.
+2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
+3. Begin with "Login for the following username equals <username> and password equals <password>".
+4. Be sure to add instruction to login using username equals '<username>' and password equals '<password> (**strictly** containing both the username and password placeholders)'.
+5. Be phrased as a request to edit or modify a user profile (use phrases like "Edit...", "Modify...", "Update...", "Change...", etc.).
 
-Example: constraints "username equals <web_agent_id>, password equals pass456, website equals https://filmcritics.example.com, bio contains cinema":
-- CORRECT: "Login with username equals <web_agent_id> and password equals pass456. Edit your profile: set your website to https://filmcritics.example.com and update your bio to include the word cinema."
-- INCORRECT: "Login with username and password. Edit your profile." (missing exact values and field names).
+For example, if the constraints are "username equals 'filmfan' AND password equals 'pass123' AND bio contains 'cinema'":
+- CORRECT: "Login for the following username:filmfan and password:pass123. Edit your profile to update your bio to include the word 'cinema'."
+- INCORRECT: "Edit a profile to change the website" (missing login information and specific constraints).
 
-ALL prompts must mention every constraint field and use EXACTLY the values from the constraints.
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
 
 EDIT_USER_PROFILE_USE_CASE = UseCase(

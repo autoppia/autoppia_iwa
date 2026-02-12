@@ -38,7 +38,7 @@ from .generation_functions import (
     generate_registration_constraints,
     generate_search_book_constraints,
 )
-from .replace_functions import register_replace_func, replace_book_placeholders
+from .replace_functions import replace_book_placeholders
 
 
 async def _get_books_data_for_prompts(seed_value: int | None = None, count: int = 50) -> list[dict]:
@@ -91,7 +91,7 @@ REGISTRATION_USE_CASE = UseCase(
     description="The user fills out the registration form and successfully creates a new account.",
     event=RegistrationEvent,
     event_source_code=RegistrationEvent.get_source_code_of_class(),
-    replace_func=register_replace_func,
+    # replace_func not needed - credentials remain as placeholders until evaluation
     constraints_generator=generate_registration_constraints,
     additional_prompt_info=REGISTRATION_ADDITIONAL_PROMPT_INFO,
     examples=[

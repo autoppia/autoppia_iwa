@@ -47,9 +47,7 @@ USE_CASES = ["FILM_DETAIL"]  # or None for all use cases
 CFG = BenchmarkConfig(
     projects=PROJECTS,
     agents=AGENTS,
-    # Evaluator mode
-    evaluator_mode="concurrent",  # ← Agente genera lista completa de acciones
-    # Tasks
+    evaluator_mode="concurrent",
     use_cases=USE_CASES,
     prompts_per_use_case=1,
     use_cached_tasks=False,
