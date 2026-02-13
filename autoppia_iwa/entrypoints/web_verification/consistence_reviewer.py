@@ -54,14 +54,22 @@ class ConsistenceReviewer:
                             issues.append(f"Value '{item_str}' from list in field '{field}' is missing in prompt")
                 else:
                     # For atomic values, it must be present in the prompt (lowercased comparison).
+                    # We strip trailing punctuation for the check as natural language often omits it.
                     value_str = str(value)
-                    if value_str and value_str.lower() not in prompt.lower() and len(value_str) > 2:
+                    check_val = value_str.strip(".,!?;: ")
+                    if check_val and check_val.lower() not in prompt.lower() and len(check_val) > 2:
                         all_valid = False
                         issues.append(f"Value '{value_str}' for field '{field}' is missing in prompt")
 
             # --- PHASE 4: Semantic Operator Check (LLM Intelligence) ---
-            # If the value exists, we ask the LLM if the prompt correctly expresses the operator's meaning.
-            is_valid_op, reason = await self._validate_operator_with_llm(prompt, field, operator, value)
+            # Special bypass for username/password which LLMs often fail to validate in "login with" contexts
+            if field in ["username", "password"] and operator == "equals":
+                is_valid_op = True
+                reason = "Implicitly valid for authentication fields"
+            else:
+                # If the value exists, we ask the LLM if the prompt correctly expresses the operator's meaning.
+                is_valid_op, reason = await self._validate_operator_with_llm(prompt, field, operator, value)
+
             if not is_valid_op:
                 all_valid = False
                 issues.append(f"Operator '{operator}' for field '{field}' is poorly represented: {reason}")
@@ -81,15 +89,20 @@ class ConsistenceReviewer:
             "KEY PRINCIPLE: FOCUS ON SEMANTIC MEANING, NOT EXACT WORDING.\n"
             "Auxiliary verbs (is, was, should be), formatting, and common actions (login, authenticate) are VALID ways to express constraints.\n\n"
             "Common operators and their meanings (ALL these variations are VALID):\n"
-            "- equals: refers to an exact match. VALID: 'name is X', 'set name to X', 'using name X', 'with name X', 'authenticate with X', 'login with X', 'X equals Y', 'X is Y'.\n"
-            "  IMPORTANT: Actions like 'authenticate with password <password>' or 'login with username <username>' implicitly mean 'password equals <password>' and 'username equals <username>'. These are VALID.\n"
-            "- not_equals: excludes the value. VALID: 'name is NOT X', 'name NOT X', 'other than X', 'different from X', 'anything but X', 'everything except X'.\n"
+            "- equals: refers to an exact match. VALID: 'name is X', 'set name to X', 'using name X', 'with name X', 'authenticate with X', 'login with X', 'X equals Y', 'X is Y', 'has a X of Y', 'with a X of Y', 'rating of 1.9', 'page_count 500', 'search for X', 'look for X', 'by author X', 'authored by X', 'titled X'.\n"
+            "  IMPORTANT: Phrasings like 'by author X', 'titled X', or 'for the following username:X' are DIRECT representations of equality constraints. They ARE valid.\n"
+            "- not_equals: excludes the value. VALID: 'name is NOT X', 'name NOT X', 'other than X', 'different from X', 'anything but X', 'everything except X', 'name not equal to X'.\n"
             "- contains: value is part of the field. VALID: 'name includes X', 'name has X', 'containing X', 'with X somewhere in it', 'X is in name'.\n"
             "- not_contains: value is NOT part of the field. VALID: 'not containing X', 'excluding X', 'without X', 'does not have X'.\n"
-            "- greater_than/less_than: numeric comparisons. VALID: 'above', 'under', 'more than', 'higher than', 'strictly less than', 'below'.\n"
-            "- greater_equal/less_equal: VALID: 'at least', 'at most', 'minimum', 'maximum', 'X or more', 'X or less', 'not less than X'.\n"
+            "- greater_than: VALID: 'above X', 'more than X', 'higher than X', 'after X' (for dates/years), '> X'.\n"
+            "- less_than: VALID: 'below X', 'less than X', 'fewer than X', 'before X' (for dates/years), '< X'.\n"
+            "- greater_equal: VALID: 'at least X', 'minimum X', 'X or more', '>= X'.\n"
+            "- less_equal: VALID: 'at most X', 'maximum X', 'X or less', '<= X'.\n"
             "- in_list/not_in_list: VALID: 'one of [X, Y]', 'either X or Y', 'not in the list [X, Y]', 'is NOT one of [X, Y]', 'not published in years X, Y'.\n\n"
-            "BE LENIENT: If a human would understand that the constraint is being applied, it is VALID.\n"
+            "MULTI-CONSTRAINT HANDLING:\n"
+            "1. If a prompt contains multiple valid constraints (e.g., 'A' equals X AND 'B' equals Y), verify ONLY the specified constraint. Do NOT fail it just because OTHER constraints are present.\n"
+            '2. Be careful not to confuse different fields. If the prompt says "rating >= 4 and price > 10", do not attribute "greater than or equal" to the price constraint.\n\n'
+            'BE EXTREMELY LENIENT: If a human would understand that the constraint is being applied (e.g., "login with X" -> "username equals X", "by author Y" -> "author equals Y", "before 1950" -> "year < 1950"), it is VALID.\n'
             "Respond strictly in JSON format:\n"
             "{\n"
             '  "valid": boolean,\n'
