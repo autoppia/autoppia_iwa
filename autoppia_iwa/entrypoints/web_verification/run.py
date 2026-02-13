@@ -206,8 +206,24 @@ def parse_args():
         "--reviewer",
         type=str,
         choices=["old", "new"],
-        default="old",
-        help="Type of reviewer to use: 'old' (strict) or 'new' (semantical/lenient)",
+        default="new",
+        help="Type of reviewer to use: 'old' (strict) or 'new' (semantical/lenient) (default: new)",
+    )
+
+    parser.add_argument(
+        "--old",
+        action="store_const",
+        dest="reviewer",
+        const="old",
+        help="Use the old strict reviewer (shorthand for --reviewer old)",
+    )
+
+    parser.add_argument(
+        "--new",
+        action="store_const",
+        dest="reviewer",
+        const="new",
+        help="Use the new semantical reviewer (shorthand for --reviewer new)",
     )
 
     parser.add_argument(
