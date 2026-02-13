@@ -39,12 +39,19 @@ class ConsistenceReviewer:
                 value = constraint.get("value")
             else:
                 field = constraint.field
-                operator = constraint.operator if isinstance(constraint.operator, str) else constraint.operator.value
+                operator = constraint.operator
                 value = constraint.value
+
+            # Standardize operator to its string value (handles Enums and raw strings)
+            if hasattr(operator, "value"):
+                operator = operator.value
+            operator = str(operator)
 
             # --- PHASE 3: Deterministic Value Check (Safety Filter) ---
             # We check if the literal value of the constraint exists in the prompt text.
-            if value is not None:
+            # We skip this for exclusion operators (not_equals, not_contains) because the prompt
+            # might express the exclusion by mentioning the opposite (e.g., 'Scroll RIGHT' for 'not LEFT').
+            if value is not None and operator not in ["not_equals", "not_contains", "not_in_list"]:
                 if isinstance(value, list):
                     # For list values (like IN_LIST), each item must be present.
                     for item in value:
@@ -76,41 +83,50 @@ class ConsistenceReviewer:
 
             reasoning_parts.append(f"Field '{field}': {reason}")
 
-        # --- PHASE 5: Aggregating Results ---
         return {"valid": all_valid, "score": 1.0 if all_valid else 0.0, "issues": issues, "reasoning": " | ".join(reasoning_parts) if reasoning_parts else "No constraints to check"}
 
     async def _validate_operator_with_llm(self, prompt: str, field: str, operator: str, value: Any) -> tuple[bool, str]:
         """Communicates with the LLM to validate the semantic representation of an operator."""
 
-        # Crafting the instruction prompt (The knowledge base of the reviewer)
+        # Human-friendly operator names for the LLM to avoid confusion with internal Enum names
+        human_op_map = {
+            "equals": "equals",
+            "not_equals": "not equals",
+            "contains": "contains",
+            "not_contains": "does not contain",
+            "greater_than": "is greater than",
+            "less_than": "is less than",
+            "greater_equal": "is greater than or equal to",
+            "less_equal": "is less than or equal to",
+            "in_list": "is one of",
+            "not_in_list": "is not one of",
+        }
+        human_operator = human_op_map.get(operator, operator.replace("_", " "))
+
         system_prompt = (
-            "You are a validation expert. Your task is to verify if a natural language prompt "
-            "accurately represents a specific constraint, especially the semantic meaning of the operator.\n\n"
-            "KEY PRINCIPLE: FOCUS ON SEMANTIC MEANING, NOT EXACT WORDING.\n"
-            "Auxiliary verbs (is, was, should be), formatting, and common actions (login, authenticate) are VALID ways to express constraints.\n\n"
-            "Common operators and their meanings (ALL these variations are VALID):\n"
-            "- equals: refers to an exact match. VALID: 'name is X', 'set name to X', 'using name X', 'with name X', 'authenticate with X', 'login with X', 'X equals Y', 'X is Y', 'has a X of Y', 'with a X of Y', 'rating of 1.9', 'page_count 500', 'search for X', 'look for X', 'by author X', 'authored by X', 'titled X'.\n"
-            "  IMPORTANT: Phrasings like 'by author X', 'titled X', or 'for the following username:X' are DIRECT representations of equality constraints. They ARE valid.\n"
-            "- not_equals: excludes the value. VALID: 'name is NOT X', 'name NOT X', 'other than X', 'different from X', 'anything but X', 'everything except X', 'name not equal to X'.\n"
-            "- contains: value is part of the field. VALID: 'name includes X', 'name has X', 'containing X', 'with X somewhere in it', 'X is in name'.\n"
-            "- not_contains: value is NOT part of the field. VALID: 'not containing X', 'excluding X', 'without X', 'does not have X'.\n"
-            "- greater_than: VALID: 'above X', 'more than X', 'higher than X', 'after X' (for dates/years), '> X'.\n"
-            "- less_than: VALID: 'below X', 'less than X', 'fewer than X', 'before X' (for dates/years), '< X'.\n"
-            "- greater_equal: VALID: 'at least X', 'minimum X', 'X or more', '>= X'.\n"
-            "- less_equal: VALID: 'at most X', 'maximum X', 'X or less', '<= X'.\n"
-            "- in_list/not_in_list: VALID: 'one of [X, Y]', 'either X or Y', 'not in the list [X, Y]', 'is NOT one of [X, Y]', 'not published in years X, Y'.\n\n"
-            "MULTI-CONSTRAINT HANDLING:\n"
-            "1. If a prompt contains multiple valid constraints (e.g., 'A' equals X AND 'B' equals Y), verify ONLY the specified constraint. Do NOT fail it just because OTHER constraints are present.\n"
-            '2. Be careful not to confuse different fields. If the prompt says "rating >= 4 and price > 10", do not attribute "greater than or equal" to the price constraint.\n\n'
-            'BE EXTREMELY LENIENT: If a human would understand that the constraint is being applied (e.g., "login with X" -> "username equals X", "by author Y" -> "author equals Y", "before 1950" -> "year < 1950"), it is VALID.\n'
-            "Respond strictly in JSON format:\n"
+            "You are an AI assistant helping to verify if natural language prompts correctly express structured constraints.\n\n"
+            "### EVALUATION CRITERIA\n"
+            "1. **Semantic Equivalence**: A prompt is VALID if it conveys the same meaning as the constraint. Be extremely lenient.\n"
+            "   - 'Add Item X', 'titled X', 'name X' -> matching title/name\n"
+            "   - 'Update to X', 'Change to X', 'Make it X' -> matching value (equals X)\n"
+            "   - 'Greater than X', 'More than X', 'Above X' -> matching greater_than X\n"
+            "   - 'Less than X', 'Below X', 'Under X' -> matching less_than X\n"
+            "   - 'X or more', 'at least X' -> matching greater_equal X\n"
+            "   - 'X or less', 'at most X' -> matching less_equal X\n"
+            "2. **Ignore Conditionals**: If a prompt says 'Update items where Name is Y to Price 10', and you are validating 'price equals 10', it is VALID. The fact that it only applies to 'Y' items does NOT invalidate the price constraint.\n"
+            "3. **Isolation**: Only evaluate the 'Target Constraint'. Ignore all other constraints in the prompt. Do not let negations from other fields influence your decision.\n"
+            "4. **Direct Mapping**: If you see the words 'greater than 7' in the prompt, and the constraint is 'greater_than 7', it is AUTOMATICALLY VALID. Do not over-analyze.\n\n"
+            "### RESPONSE FORMAT\n"
+            "You MUST respond with a valid JSON object:\n"
             "{\n"
-            '  "valid": boolean,\n'
-            '  "reason": "A short explanation of why the operator is correctly or incorrectly represented."\n'
+            '  "valid": true,\n'
+            '  "reason": "Brief explanation of why it matches or fails."\n'
             "}"
         )
 
-        user_prompt = f"Prompt: \"{prompt}\"\nConstraint: {field} {operator} '{value}'\n\nDoes the prompt accurately reflect this constraint's operator and value?"
+        user_prompt = (
+            f'Prompt: "{prompt}"\n\nTarget Constraint to verify:\n- Field: {field}\n- Operator: {human_operator}\n- Value: {value}\n\nDoes the prompt correctly express this specific constraint?'
+        )
 
         messages = [
             {"role": "system", "content": system_prompt},
