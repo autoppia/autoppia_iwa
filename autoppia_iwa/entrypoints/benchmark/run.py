@@ -185,7 +185,6 @@ def main():
         if CFG.evaluator_mode == "stateful":
             logger.info(f"Stateful mode enabled: max {CFG.max_steps_per_task} steps per task")
 
-
         benchmark = Benchmark(CFG)
         asyncio.run(benchmark.run())
 

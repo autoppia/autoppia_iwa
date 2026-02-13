@@ -42,7 +42,6 @@ from .generation_functions import (
 )
 from .replace_functions import replace_film_placeholders
 
-
 STRICT_COPY_INSTRUCTION = "CRITICAL: Copy values EXACTLY as provided in the constraints. Do NOT correct typos, do NOT remove numbers, do NOT truncate or summarize strings, and do NOT 'clean up' names or titles (e.g., if constraint is 'Sofia 4', write 'Sofia 4', NOT 'Sofia'; if it is 'ng', write 'ng', NOT 'an')."
 
 
@@ -204,7 +203,7 @@ LOGOUT_USE_CASE = UseCase(
 
 def _get_film_detail_info(movies_data: list[dict]) -> str:
     """Generate film detail info dynamically from API data."""
-    movie_names = _generate_movie_names_list(movies_data)
+    _generate_movie_names_list(movies_data)
     return f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above (field, operator, and value).
@@ -362,18 +361,15 @@ def _get_share_film_info(movies_data: list[dict]) -> str:
     """Generate share film info dynamically from API data."""
     return f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-<<<<<<< HEAD
 1. Include ALL constraints mentioned above - not just some of them
 2. Include ONLY the constraints mentioned above - do not add any other criteria
 3. Include ALL fields given in constraints along with their operators and field values.
 4. Be phrased as a request to **view details** of a movie (use phrases like "Share details for..." etc.).
 5. Only use the movies name defined below.
-=======
 1. Include ALL constraints mentioned above (field, operator, and value).
 2. Include ONLY the constraints mentioned above - do not add any other criteria.
 3. Be phrased as a request to **share a movie** (e.g., "Share this movie...", "I want to share the film...", "Send the film info...").
 4. {STRICT_COPY_INSTRUCTION}
->>>>>>> 6b69c456 (feat(autocinema): enforce strict constraint copying and update validation prompts)
 
 For example, if the constraints are "director equals 'James Cameron' AND rating greater_than 4.0":
 - CORRECT: "Share a movie directed by James Cameron with a rating higher than 4.0"
@@ -897,14 +893,11 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 4. {STRICT_COPY_INSTRUCTION}
 
 For example, if the constraints are "movie_name contains 'Inception' AND content not_contains 'boring'":
-<<<<<<< HEAD
 - CORRECT: "Add a comment to a movie that contains 'Inception' with a content that does NOT contain the word 'boring'."
 - INCORRECT: "Write a comment about any movie" (missing specific constraints)
 - INCORRECT: "Post a review that includes extra unnecessary details" (adding constraints not specified)
-=======
 - CORRECT: "Add a comment to a movie that contains 'Inception' with a review that does NOT contain the word 'boring'."
 - INCORRECT: "Write a comment about any movie" (missing constraints)
->>>>>>> 6b69c456 (feat(autocinema): enforce strict constraint copying and update validation prompts)
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """

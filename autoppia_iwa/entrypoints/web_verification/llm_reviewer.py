@@ -78,8 +78,6 @@ class LLMReviewer:
 
         # Build the review prompt
         system_prompt = (
-<<<<<<< HEAD
-<<<<<<< HEAD
             "You are a QA validator that checks whether a task prompt correctly represents a set of constraints.\n\n"
             "Your ONLY responsibility is to verify, for EACH constraint, whether the task prompt correctly represents:\n\n"
             "1. FIELD\n"
@@ -156,7 +154,6 @@ class LLMReviewer:
             '  "issues": [string],\n'
             '  "reasoning": string\n'
             "}"
-=======
             "You are a quality assurance expert reviewing task prompts and their associated constraints. "
             "Your ONLY job is to verify that the task prompt accurately represents ALL constraints by checking:\n"
             "1. FIELD: Is the constraint field mentioned/referenced in the prompt?\n"
@@ -260,7 +257,6 @@ class LLMReviewer:
             "Constraint 'year not_equals 2010' → Prompt 'year equals 2010' ✗ (contradicts)\n\n"
             "Respond strictly in JSON with the following schema:\n"
             "{\n"
-=======
             "You are a quality assurance expert reviewing task prompts and their associated constraints. "
             "Your ONLY job is to verify that the task prompt accurately represents ALL constraints by checking:\n"
             "1. FIELD: Is the constraint field mentioned/referenced in the prompt?\n"
@@ -364,7 +360,6 @@ class LLMReviewer:
             "Constraint 'year not_equals 2010' → Prompt 'year equals 2010' ✗ (contradicts)\n\n"
             "Respond strictly in JSON with the following schema:\n"
             "{\n"
->>>>>>> 8fa9ec93 (new reviewer)
             '  "valid": boolean,  // TRUE if prompt includes ALL constraints correctly, FALSE otherwise\n'
             '  "score": float,     // MUST be 1.0 if valid=true, 0.0 if valid=false (NO intermediate scores)\n'
             '  "issues": [string], // List of issues found (empty if valid is true)\n'
@@ -412,11 +407,6 @@ class LLMReviewer:
             "✓ If ALL constraints correctly represented → valid=true, score=1.0\n"
             "✓ If ANY constraint missing or misrepresented → valid=false, score=0.0\n"
             "✓ NO intermediate scores - strictly binary (1.0 or 0.0)"
-<<<<<<< HEAD
-
->>>>>>> 6b69c456 (feat(autocinema): enforce strict constraint copying and update validation prompts)
-=======
->>>>>>> 8fa9ec93 (new reviewer)
         )
 
         user_prompt = (

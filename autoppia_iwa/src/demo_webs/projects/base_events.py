@@ -29,9 +29,7 @@ class Event(BaseModel):
                 field_value = getattr(criteria, field_name)
                 if hasattr(field_value, "value"):
                     if isinstance(field_value.value, str):
-                        field_value.value = replace_credential_placeholders_in_string(
-                            field_value.value, self.web_agent_id
-                        )
+                        field_value.value = replace_credential_placeholders_in_string(field_value.value, self.web_agent_id)
                 elif isinstance(field_value, str):
                     setattr(
                         criteria,

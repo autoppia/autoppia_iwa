@@ -919,13 +919,8 @@ class WebVerificationPipeline:
                 continue
 
             # Map reviews by task_id for stability
-<<<<<<< HEAD
             reviews_by_task_id: dict[str, dict[str, Any]] = {str(r.get("task_id")): r for r in reviews if isinstance(r, dict) and r.get("task_id") is not None}
-=======
-            reviews_by_task_id: dict[str, dict[str, Any]] = {
-                str(r.get("task_id")): r for r in reviews if isinstance(r, dict) and r.get("task_id") is not None
-            }
->>>>>>> 8237bf2b (feat(verification): port misgenerated tasks report logic)
+            reviews_by_task_id: dict[str, dict[str, Any]] = {str(r.get("task_id")): r for r in reviews if isinstance(r, dict) and r.get("task_id") is not None}
 
             flagged_tasks: list[dict[str, Any]] = []
             for task in tasks:
@@ -1045,28 +1040,20 @@ class WebVerificationPipeline:
             return [atom]
 
         # Special case: sometimes equals with float "4.5" may appear as "4,5" in some locales; try a loose match
-<<<<<<< HEAD
         if op in {"equals", "greater_than", "less_than", "greater_equal", "less_equal"} and re.fullmatch(r"-?\\d+\\.\\d+", atom.strip()):
             alt = atom.replace(".", ",")
             if self._normalize_text_for_match(alt) in prompt_norm:
                 return []
-=======
-        if op in {"equals", "greater_than", "less_than", "greater_equal", "less_equal"}:
-            if re.fullmatch(r"-?\\d+\\.\\d+", atom.strip()):
-                alt = atom.replace(".", ",")
-                if self._normalize_text_for_match(alt) in prompt_norm:
-                    return []
->>>>>>> 8237bf2b (feat(verification): port misgenerated tasks report logic)
+        if op in {"equals", "greater_than", "less_than", "greater_equal", "less_equal"} and re.fullmatch(r"-?\\d+\\.\\d+", atom.strip()):
+            alt = atom.replace(".", ",")
+            if self._normalize_text_for_match(alt) in prompt_norm:
+                return []
 
         return []
 
     @staticmethod
     def _stringify_atom(v: Any) -> str:
-<<<<<<< HEAD
         if isinstance(v, int | float | bool):
-=======
-        if isinstance(v, (int, float, bool)):
->>>>>>> 8237bf2b (feat(verification): port misgenerated tasks report logic)
             return str(v)
         if isinstance(v, str):
             return v
