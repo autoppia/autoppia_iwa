@@ -12,6 +12,21 @@ from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.execution.actions.base import BaseAction
 
 
+def replace_credential_placeholders_in_string(s: str, web_agent_id: str) -> str:
+    """
+    Replace credential placeholders in a string with actual values.
+    Used in actions (replace_credentials_in_action) and in event criteria validation (base_events).
+    Replaces: <username>, <password>, <signup_username>, <signup_email>, <signup_password>, <web_agent_id>.
+    """
+    s = s.replace("<username>", f"user{web_agent_id}")
+    s = s.replace("<password>", "Passw0rd!")
+    s = s.replace("<signup_username>", f"newuser{web_agent_id}")
+    s = s.replace("<signup_email>", f"newuser{web_agent_id}@gmail.com")
+    s = s.replace("<signup_password>", "Passw0rd!")
+    s = s.replace("<web_agent_id>", web_agent_id)
+    return s
+
+
 def replace_credentials_in_action(action: BaseAction, web_agent_id: str) -> None:
     """
     Replace credential placeholders in a single action with actual values.
@@ -32,15 +47,7 @@ def replace_credentials_in_action(action: BaseAction, web_agent_id: str) -> None
         if hasattr(action, field_name):
             value = getattr(action, field_name)
             if isinstance(value, str):
-                # Replace credential placeholders
-                new_value = value.replace("<username>", f"user{web_agent_id}")
-                new_value = new_value.replace("<password>", "Passw0rd!")
-                new_value = new_value.replace("<signup_username>", f"newuser{web_agent_id}")
-                new_value = new_value.replace("<signup_email>", f"newuser{web_agent_id}@gmail.com")
-                new_value = new_value.replace("<signup_password>", "Passw0rd!")
-                # Also replace <web_agent_id> for backward compatibility
-                new_value = new_value.replace("<web_agent_id>", web_agent_id)
-
+                new_value = replace_credential_placeholders_in_string(value, web_agent_id)
                 if new_value != value:
                     setattr(action, field_name, new_value)
 
@@ -48,13 +55,7 @@ def replace_credentials_in_action(action: BaseAction, web_agent_id: str) -> None
     if hasattr(action, "selector") and action.selector and hasattr(action.selector, "value"):
         selector_value = action.selector.value
         if isinstance(selector_value, str):
-            new_selector_value = selector_value.replace("<username>", f"user{web_agent_id}")
-            new_selector_value = new_selector_value.replace("<password>", "Passw0rd!")
-            new_selector_value = new_selector_value.replace("<signup_username>", f"newuser{web_agent_id}")
-            new_selector_value = new_selector_value.replace("<signup_email>", f"newuser{web_agent_id}@gmail.com")
-            new_selector_value = new_selector_value.replace("<signup_password>", "Passw0rd!")
-            new_selector_value = new_selector_value.replace("<web_agent_id>", web_agent_id)
-
+            new_selector_value = replace_credential_placeholders_in_string(selector_value, web_agent_id)
             if new_selector_value != selector_value:
                 action.selector.value = new_selector_value
 

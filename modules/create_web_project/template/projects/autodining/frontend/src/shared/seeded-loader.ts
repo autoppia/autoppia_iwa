@@ -24,7 +24,7 @@ export interface SeededLoadOptions {
 }
 
 export function isDbLoadModeEnabled(): boolean {
-  const raw = (process.env.NEXT_PUBLIC_ENABLE_DYNAMIC_V2_DB_MODE || process.env.ENABLE_DYNAMIC_V2_DB_MODE || "").toString().toLowerCase();
+  const raw = (process.env.NEXT_PUBLIC_ENABLE_DYNAMIC_V2 || process.env.ENABLE_DYNAMIC_V2 || "").toString().toLowerCase();
   return raw === "true";
 }
 

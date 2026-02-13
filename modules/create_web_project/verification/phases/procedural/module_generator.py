@@ -132,18 +132,7 @@ class ModuleGenerator:
         frontend_expr = self._url_expression("frontend")
         backend_expr = self._url_expression("backend")
         project_instance = f"{self.slug}_project"
-        summary = self.project.get("summary", "")
-        owner = self.project.get("owner", "")
-        contact = self.project.get("contact", "")
-        seed_notes = self.project.get("seed_notes", "")
-
         project_id = self.project.get("deck_id") or self.slug
-        relevant_data = {
-            "summary": summary,
-            "owner": owner,
-            "contact": contact,
-            "seed_notes": seed_notes,
-        }
 
         imports = ["from autoppia_iwa.src.demo_webs.classes import WebProject"]
         utils_imports = []
@@ -165,7 +154,6 @@ class ModuleGenerator:
                 f"    backend_url={backend_expr},",
                 "    events=EVENTS,",
                 "    use_cases=ALL_USE_CASES,",
-                f"    relevant_data={dump_python(relevant_data)},",
                 ")",
             ]
         )
