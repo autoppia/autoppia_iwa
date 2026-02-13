@@ -203,6 +203,14 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--reviewer",
+        type=str,
+        choices=["old", "new"],
+        default="old",
+        help="Type of reviewer to use: 'old' (strict) or 'new' (semantical/lenient)",
+    )
+
+    parser.add_argument(
         "--no-iwap",
         action="store_true",
         help="Disable IWAP doability check",
@@ -309,6 +317,7 @@ async def main():
         seed_values=seed_values,
         output_dir=args.output_dir,
         verbose=args.verbose,
+        reviewer_type=args.reviewer,
     )
 
     # Create and run pipeline
