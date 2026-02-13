@@ -5,7 +5,27 @@ from typing import Any
 from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
-from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
+from ..shared_utils import create_constraint_dict
+from .data import (
+    ALL_GENRES,
+    COMMENT_KEYWORDS,
+    COMMENTER_NAMES,
+    CONTACT_EMAILS,
+    CONTACT_MESSAGES,
+    CONTACT_NAMES,
+    CONTACT_SUBJECTS,
+    FIELD_OPERATORS_MAP_ADD_COMMENT,
+    FIELD_OPERATORS_MAP_ADD_FILM,
+    FIELD_OPERATORS_MAP_CONTACT,
+    FIELD_OPERATORS_MAP_EDIT_USER,
+    FIELD_OPERATORS_MAP_FILM,
+    FIELD_OPERATORS_MAP_FILTER_FILM,
+    PROFILE_BIOS,
+    PROFILE_LOCATIONS,
+    PROFILE_NAMES,
+    PROFILE_TEXT_ELEMENTS,
+    PROFILE_WEBSITES,
+)
 from .data_utils import fetch_data
 
 
@@ -38,6 +58,8 @@ def _generate_constraint_value(
     if operator == ComparisonOperator.EQUALS:
         if isinstance(field_value, list) and field_value:
             return choice(field_value)
+        if isinstance(field_value, str):
+            return field_value.strip()
         return field_value
 
     if operator == ComparisonOperator.NOT_EQUALS:
@@ -45,11 +67,13 @@ def _generate_constraint_value(
             others = [d.get(field) for d in dataset if d.get(field) is not None and d.get(field) != field_value]
             return choice(others) if others else (field_value + 1 if isinstance(field_value, int) else field_value + 0.1)
         if isinstance(field_value, str):
+            field_value = field_value.strip()
             others = [d.get(field) for d in dataset if d.get(field) and d.get(field) != field_value]
             return choice(others) if others else (field_value + "x" if field_value else "other")
         return field_value
 
     if operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
+        field_value = field_value.strip()
         # Ensure substring has at least 2 chars for meaningful constraints (avoid "i", "e", etc.)
         min_len = 2
         if len(field_value) >= min_len:
@@ -60,6 +84,7 @@ def _generate_constraint_value(
         return field_value
 
     if operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
+        field_value = field_value.strip()
         for _ in range(100):
             test_str = "".join(random.choice("abcdefghijklmnopqrstuvwxyz") for _ in range(3))
             if test_str.lower() not in (field_value or "").lower():
@@ -182,7 +207,7 @@ def generate_registration_constraints(dataset: list[dict]):
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "username equals <signup_username> AND email equals <signup_email> AND password equals <signup_password>"
+    constraints_str = "username equals signup_username AND email equals signup_email AND password equals signup_password"
 
     return parse_constraints_str(constraints_str)
 
@@ -586,6 +611,7 @@ def generate_edit_profile_constraints(dataset: list[dict]):
     constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<password>"})
 
     # Select random fields to edit
+    editable_fields = ["first_name", "last_name", "bio", "location", "website", "favorite_genres"]
     selected_fields = sample(editable_fields, k=choice([1, 2, 3]))
     # Ensure "website" is always included
     if "website" not in selected_fields:
@@ -603,17 +629,16 @@ def generate_edit_profile_constraints(dataset: list[dict]):
         operator = ComparisonOperator(operator_str)
 
         if field == "first_name" or field == "last_name":
-            value = choice(random_names) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(random_text_elements)
+            value = choice(random_names) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(PROFILE_TEXT_ELEMENTS)
         elif field == "bio":
-            value = choice(random_bios) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(random_text_elements)
+            value = choice(random_bios) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(PROFILE_TEXT_ELEMENTS)
         elif field == "location":
-            value = choice(random_locations) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(random_text_elements)
+            value = choice(random_locations) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(PROFILE_TEXT_ELEMENTS)
         elif field == "website":
             # Website only uses EQUALS operator
             value = choice(random_websites)
         elif field == "favorite_genres":
-            # For favorite_genres, only use EQUALS with a single genre
-            value = choice(all_genres)
+            value = sample(all_genres, k=random.randint(2, 3)) if operator.name in [ComparisonOperator.IN_LIST, ComparisonOperator.NOT_IN_LIST] else choice(all_genres)
 
         constraints.append({"field": field, "operator": operator, "value": value})
 

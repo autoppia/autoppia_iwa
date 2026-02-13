@@ -119,7 +119,7 @@ FIELD_OPERATORS_MAP_EDIT_USER = {
     "bio": [EQUALS, CONTAINS, NOT_EQUALS, NOT_CONTAINS],
     "location": STRING_OPERATORS,
     "website": [NOT_EQUALS, CONTAINS, NOT_CONTAINS],
-    "favorite_genres": [IN_LIST, NOT_IN_LIST],
+    "favorite_genres": [EQUALS, NOT_EQUALS, IN_LIST, NOT_IN_LIST],
 }
 
 # Value pools for fields not coming from DB (contact form, profile edit)

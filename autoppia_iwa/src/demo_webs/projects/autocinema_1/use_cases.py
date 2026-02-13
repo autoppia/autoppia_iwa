@@ -81,11 +81,13 @@ def _generate_allowed_genres_list(movies_data: list[dict]) -> list[str]:
 ###############################################################################
 # REGISTRATION_USE_CASE
 ###############################################################################
-REGISTRATION_ADDITIONAL_PROMPT_INFO = """
+REGISTRATION_ADDITIONAL_PROMPT_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Be sure to add instruction to register using username equals '<username>', email equals <email> and password equals '<password> (**strictly** containing the username, email and password placeholders)'.
-Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
-All email must finish with @gmail.com, so pay attention to the constraints.
+1. Include ALL constraints mentioned above (username, email, and password).
+2. Explicitly include instruction to register using username equals 'signup_username', email equals 'signup_email' and password equals 'signup_password' (**strictly** containing these identifiers).
+3. Be phrased as a request to register or create a new account (e.g., "Please register using...", "Create an account with...", "Sign up using...").
+4. {STRICT_COPY_INSTRUCTION}
+
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
 REGISTRATION_USE_CASE = UseCase(
@@ -98,20 +100,20 @@ REGISTRATION_USE_CASE = UseCase(
     additional_prompt_info=REGISTRATION_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Register where username equals <username>, email equals <email> and password equals <password>",
-            "prompt_for_task_generation": "Register where username equals <username>, email equals <email> and password equals <password>",
+            "prompt": "Register where username equals signup_username, email equals signup_email and password equals signup_password",
+            "prompt_for_task_generation": "Register where username equals signup_username, email equals signup_email and password equals signup_password",
         },
         {
-            "prompt": "Create a new account where username equals <username>, email equals <email> and password equals <password>",
-            "prompt_for_task_generation": "Create a new account where username equals <username>, email equals <email> and password equals <password>",
+            "prompt": "Create a new account where username equals signup_username, email equals signup_email and password equals signup_password",
+            "prompt_for_task_generation": "Create a new account where username equals signup_username, email equals signup_email and password equals signup_password",
         },
         {
-            "prompt": "Fill the registration form where username equals <username>, email equals <email> and password equals <password>",
-            "prompt_for_task_generation": "Fill the registration form where username equals <username>, email equals <email> and password equals <password>",
+            "prompt": "Fill the registration form where username equals signup_username, email equals signup_email and password equals signup_password",
+            "prompt_for_task_generation": "Fill the registration form where username equals signup_username, email equals signup_email and password equals signup_password",
         },
         {
-            "prompt": "Sign up for an account where username equals <username>, email equals <email> and password equals <password>",
-            "prompt_for_task_generation": "Sign up for an account where username equals <username>, email equals <email> and password equals <password>",
+            "prompt": "Sign up for an account where username equals signup_username, email equals signup_email and password equals signup_password",
+            "prompt_for_task_generation": "Sign up for an account where username equals signup_username, email equals signup_email and password equals signup_password",
         },
     ],
 )
@@ -119,10 +121,11 @@ REGISTRATION_USE_CASE = UseCase(
 ###############################################################################
 # LOGIN_USE_CASE
 ###############################################################################
-LOGIN_ADDITIONAL_PROMPT_INFO = """
+LOGIN_ADDITIONAL_PROMPT_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Be sure to add instruction to login using username equals '<username>' and password equals '<password> (**strictly** containing both the username and password placeholders)'.
-Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
+1. Include instruction to login using username equals '<username>' and password equals '<password> (**strictly** containing both the username and password placeholders)'.
+2. Be phrased as a request to login or sign in.
+3. {STRICT_COPY_INSTRUCTION}
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
@@ -157,10 +160,11 @@ LOGIN_USE_CASE = UseCase(
 ###############################################################################
 # LOGOUT_USE_CASE
 ###############################################################################
-LOGOUT_ADDITIONAL_PROMPT_INFO = """"
+LOGOUT_ADDITIONAL_PROMPT_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Be sure to add instruction to login using username equals '<username>' and password equals '<password> (**strictly** containing both the username and password placeholders)'.
-Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
+1. Include instruction to login using username equals '<username>' and password equals '<password> (**strictly** containing both the username and password placeholders)'.
+2. Be phrased as a request to login and then logout.
+3. {STRICT_COPY_INSTRUCTION}
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
@@ -602,15 +606,18 @@ ADD_FILM_USE_CASE = UseCase(
 EDIT_FILM_ADDITIONAL_PROMPT_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above (field, operator, and value).
-2. Include ONLY the constraints mentioned above - do not add any other criteria.
-3. Be phrased as a request to edit or modify a film (e.g., "Edit...", "Update the film...", "Modify...").
-4. {STRICT_COPY_INSTRUCTION}
+2. Explicitly mention the field names (name, director, year, genres, rating, duration, cast). For 'genres', you can also use 'genre' in singular.
+3. Use clear operator indicators (e.g., "equals", "contains", "greater than", "less than"). DO NOT use ambiguous words like "including" for a CONTAINS operator; use "contains" instead.
+4. Include ONLY the constraints mentioned above - do not add any other criteria.
+5. Be phrased as a request to edit or modify a film (e.g., "Edit...", "Update the film...", "Modify...").
+6. {STRICT_COPY_INSTRUCTION}
 
-For example, if the constraints are "year equals 2014 AND director contains 'e'":
-- CORRECT: "Edit a film where the year equals 2014 and the director's name contains 'e'."
-- INCORRECT: "Update a random film with a high rating" (missing specific constraints)
+For example, if the constraints are "name equals 'The Matrix' AND year equals 1999 AND director contains 'Wachowskis'":
+- CORRECT: "Update the movie where name equals 'The Matrix', set the year equals 1999 and ensure the director contains 'Wachowskis'."
+- CORRECT: "Modify the record for movie name 'The Matrix', changing the year to 1999 and ensuring the director contains 'Wachowskis'."
+- INCORRECT: "Update The Matrix from 1999" (missing director constraint and explicit operators)
 
-ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria and mentioning the field names.
 """
 EDIT_FILM_USE_CASE = UseCase(
     name="EDIT_FILM",
@@ -776,17 +783,18 @@ CONTACT_USE_CASE = UseCase(
 ###############################################################################
 EDIT_PROFILE_ADDITIONAL_PROMPT_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints — every field (username, password, first_name, last_name, bio, location, website, favorite_genres) that appears in the constraints MUST be explicitly mentioned in the prompt with its exact value.
-2. Use the EXACT constraint values in the prompt — do NOT replace them with placeholders like <username> or <password>. If the constraint says "username equals <web_agent_id>", the prompt must contain "<web_agent_id>". If it says "password equals password123", the prompt must contain "password123".
-3. Begin with a login instruction that states username and password using their exact constraint values (e.g. "Login with username equals <web_agent_id> and password equals password123").
-4. Then add an edit-profile instruction that explicitly mentions each remaining constraint field and its exact value.
-5. {STRICT_COPY_INSTRUCTION}
+1. Include ALL constraints — every field (username, password, first_name, last_name, bio, location, website, favorite_genres) that appears in the constraints MUST be explicitly mentioned in the prompt with its exact value and operator.
+2. Use clear operator indicators (e.g., "equals", "contains"). For ComparisonOperator.CONTAINS, use the word "contains" explicitly (e.g., "website contains 'filmcritics'"). DO NOT use ambiguous words like "include" or "contains the word".
+3. Use the EXACT constraint values in the prompt — do NOT replace them with placeholders like <username> or <password>. If the constraint says "username equals <web_agent_id>", the prompt must contain "<web_agent_id>". If it says "password equals password123", the prompt must contain "password123".
+4. Begin with a login instruction that states username and password using their exact constraint values (e.g. "Login with username equals <web_agent_id> and password equals password123").
+5. Then add an edit-profile instruction that explicitly mentions each remaining constraint field and its exact value and operator.
+6. {STRICT_COPY_INSTRUCTION}
 
 Example: constraints "username equals <web_agent_id>, password equals pass456, website contains 'filmcritics', bio contains 'cinema'":
-- CORRECT: "Login with username equals <web_agent_id> and password equals pass456. Edit your profile: set your website to include 'filmcritics' and update your bio to include the word 'cinema'."
+- CORRECT: "Login with username equals <web_agent_id> and password equals pass456. Edit your profile: ensure your website contains 'filmcritics' and your bio contains 'cinema'."
 - INCORRECT: "Login and edit your profile." (missing exact values).
 
-ALL prompts must mention every constraint field and use EXACTLY the values from the constraints.
+ALL prompts must mention every constraint field and use EXACTLY the values and operators from the constraints.
 """
 
 EDIT_USER_PROFILE_USE_CASE = UseCase(
@@ -888,18 +896,17 @@ FILTER_FILM_USE_CASE = UseCase(
 ADD_COMMENT_ADDITIONAL_PROMPT_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above (field, operator, and value).
-2. Include ONLY the constraints mentioned above - do not add any other fields.
-3. Be phrased as a request to add a comment to a movie (e.g., "Add a comment...", "Post a review...").
-4. {STRICT_COPY_INSTRUCTION}
+2. Explicitly mention the field names (movie_name, commenter_name, content). For movie_name, you can use "movie_name" or "movie name".
+3. Include ONLY the constraints mentioned above - do not add any other fields.
+4. Be phrased as a request to add a comment to a movie (e.g., "Add a comment...", "Post a review...").
+5. {STRICT_COPY_INSTRUCTION}
 
 For example, if the constraints are "movie_name contains 'Inception' AND content not_contains 'boring'":
-- CORRECT: "Add a comment to a movie that contains 'Inception' with a content that does NOT contain the word 'boring'."
+- CORRECT: "Add a comment to the movie_name that contains 'Inception' with a content that does NOT contain the word 'boring'."
+- CORRECT: "Post a review for the movie name 'Inception' where the content does NOT have 'boring'."
 - INCORRECT: "Write a comment about any movie" (missing specific constraints)
-- INCORRECT: "Post a review that includes extra unnecessary details" (adding constraints not specified)
-- CORRECT: "Add a comment to a movie that contains 'Inception' with a review that does NOT contain the word 'boring'."
-- INCORRECT: "Write a comment about any movie" (missing constraints)
 
-ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria and mentioning the field names.
 """
 ADD_COMMENT_USE_CASE = UseCase(
     name="ADD_COMMENT",
