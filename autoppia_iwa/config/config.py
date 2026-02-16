@@ -16,19 +16,6 @@ except ImportError:
             raise ValueError(f"invalid truth value {val!r}")
 
 
-try:
-    from dotenv import load_dotenv
-except ImportError:
-    # dotenv is optional - environment variables can be set directly
-    def load_dotenv():
-        pass
-
-
-# Load environment variables from the autoppia_iwa project .env, not the caller CWD.
-# This ensures DEMO_WEB_SERVICE_PORT and related settings come from this repo.
-_PROJECT_ROOT = Path(__file__).resolve().parents[2]
-load_dotenv(_PROJECT_ROOT / ".env", override=True)
-
 # ============================
 # LLM CONFIGURATION
 # ============================
