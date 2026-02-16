@@ -61,7 +61,7 @@ async def _ensure_entity_dataset(
     """
 
     # Otherwise, fetch the specific entity type dynamically using the provided parameters
-    seed = resolve_v2_seed_from_url(task_url) if task_url else None
+    seed = await resolve_v2_seed_from_url(task_url) if task_url else None
 
     fetched_dataset = await fetch_data(
         entity_type=entity_type,

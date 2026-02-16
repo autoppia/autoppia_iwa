@@ -27,7 +27,7 @@ async def _ensure_task_dataset(task_url: str | None = None, dataset: dict[str, l
     """Extract tasks data from the pre-loaded dataset, or fetch from server if not available."""
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
-        seed = resolve_v2_seed_from_url(task_url) if task_url else None
+        seed = await resolve_v2_seed_from_url(task_url) if task_url else None
         tasks = await fetch_data(seed_value=seed)
         dataset = {"tasks": tasks}
 

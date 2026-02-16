@@ -4,7 +4,8 @@ __pycache__/
 *.config
 notebooks/
 .ipynb_checkpoints
-.env
+.env*
+!.env.example
 .venv
 env/
 venv/
