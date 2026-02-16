@@ -26,24 +26,6 @@ EQUALITY_OPERATORS = [EQUALS, NOT_EQUALS]
 # ADD_COMMENT
 # ---------------------------------------------------------------------------
 FIELD_OPERATORS_MAP_ADD_COMMENT = {
-    "movie_name": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
-    "commenter_name": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
-    "content": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
-}
-FIELD_OPERATORS_MAP_FILM = {
-    "name": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
-    "director": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS, IN_LIST, NOT_IN_LIST],
-    "year": [EQUALS, NOT_EQUALS, GREATER_THAN, LESS_THAN, GREATER_EQUAL, LESS_EQUAL],
-    "rating": [EQUALS, NOT_EQUALS, GREATER_THAN, LESS_THAN, GREATER_EQUAL, LESS_EQUAL],
-    "duration": [EQUALS, NOT_EQUALS, GREATER_THAN, LESS_THAN, GREATER_EQUAL, LESS_EQUAL],
-    "genres": [CONTAINS, NOT_CONTAINS, IN_LIST, NOT_IN_LIST],
-}
-# Common Operators with Fields
-FIELD_OPERATORS_MAP_CONTACT = {
-    "name": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
-    "email": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
-    "subject": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
-    "message": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
     "movie_name": STRING_OPERATORS,
     "commenter_name": STRING_OPERATORS,
     "content": STRING_OPERATORS,
@@ -119,7 +101,7 @@ FIELD_OPERATORS_MAP_EDIT_USER = {
     "bio": [EQUALS, CONTAINS, NOT_EQUALS, NOT_CONTAINS],
     "location": STRING_OPERATORS,
     "website": [NOT_EQUALS, CONTAINS, NOT_CONTAINS],
-    "favorite_genres": [EQUALS, NOT_EQUALS, IN_LIST, NOT_IN_LIST],
+    "favorite_genres": [IN_LIST, NOT_IN_LIST],
 }
 
 # Value pools for fields not coming from DB (contact form, profile edit)

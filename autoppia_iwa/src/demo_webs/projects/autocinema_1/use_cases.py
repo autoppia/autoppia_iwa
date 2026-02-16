@@ -3,7 +3,7 @@
 # -----------------------------------------------------------------------------
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
-from .data_utils import fetch_data
+from .data_utils import fetch_movies_data
 from .events import (
     AddCommentEvent,
     AddFilmEvent,
@@ -40,14 +40,14 @@ from .generation_functions import (
     generate_share_film_constraints,
     generate_watch_trailer_constraints,
 )
-from .replace_functions import replace_film_placeholders
+from .replace_functions import login_replace_func, register_replace_func, replace_film_placeholders
 
 STRICT_COPY_INSTRUCTION = "CRITICAL: Copy values EXACTLY as provided in the constraints. Do NOT correct typos, do NOT remove numbers, do NOT truncate or summarize strings, and do NOT 'clean up' names or titles (e.g., if constraint is 'Sofia 4', write 'Sofia 4', NOT 'Sofia'; if it is 'ng', write 'ng', NOT 'an')."
 
 
 async def _get_movies_data_for_prompts(seed_value: int | None = None, count: int = 50) -> list[dict]:
     """Fetch movies data from API for use in prompt generation."""
-    return await fetch_data(seed_value=seed_value, count=count)
+    return await fetch_movies_data(seed_value=seed_value, count=count)
 
 
 def _generate_movie_names_list(movies_data: list[dict]) -> str:
@@ -95,7 +95,7 @@ REGISTRATION_USE_CASE = UseCase(
     description="The user fills out the registration form and successfully creates a new account.",
     event=RegistrationEvent,
     event_source_code=RegistrationEvent.get_source_code_of_class(),
-    # replace_func not needed - credentials remain as placeholders until evaluation
+    replace_func=register_replace_func,
     constraints_generator=generate_registration_constraints,
     additional_prompt_info=REGISTRATION_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -134,7 +134,7 @@ LOGIN_USE_CASE = UseCase(
     description="The user fills out the login form and logs in successfully.",
     event=LoginEvent,
     event_source_code=LoginEvent.get_source_code_of_class(),
-    # replace_func not needed - credentials remain as placeholders until evaluation
+    replace_func=login_replace_func,
     constraints_generator=generate_login_constraints,
     additional_prompt_info=LOGIN_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -173,7 +173,7 @@ LOGOUT_USE_CASE = UseCase(
     description="The user logs out of the platform after logging in.",
     event=LogoutEvent,
     event_source_code=LogoutEvent.get_source_code_of_class(),
-    # replace_func not needed - credentials remain as placeholders until evaluation
+    replace_func=login_replace_func,
     constraints_generator=generate_logout_constraints,
     additional_prompt_info=LOGOUT_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -322,8 +322,8 @@ ADD_TO_WATCHLIST_USE_CASE = UseCase(
             "prompt_for_task_generation": "Add to wishlist a <genre> film less than <duration> minutes long",
         },
         {
-            "prompt": "Add to wishlist a film from the 1999 with Al Pacino",
-            "prompt_for_task_generation": "Add to wishlist a film from the <year> with <actor>",
+            "prompt": "Add to wishlist a film from the 90s with Al Pacino",
+            "prompt_for_task_generation": "Add to wishlist a film from the <decade>s with <actor>",
         },
         {
             "prompt": "Add to wishlist a horror movie not directed by Wes Craven",
@@ -365,11 +365,6 @@ def _get_share_film_info(movies_data: list[dict]) -> str:
     """Generate share film info dynamically from API data."""
     return f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above - not just some of them
-2. Include ONLY the constraints mentioned above - do not add any other criteria
-3. Include ALL fields given in constraints along with their operators and field values.
-4. Be phrased as a request to **view details** of a movie (use phrases like "Share details for..." etc.).
-5. Only use the movies name defined below.
 1. Include ALL constraints mentioned above (field, operator, and value).
 2. Include ONLY the constraints mentioned above - do not add any other criteria.
 3. Be phrased as a request to **share a movie** (e.g., "Share this movie...", "I want to share the film...", "Send the film info...").
@@ -416,8 +411,8 @@ SHARE_FILM_USE_CASE = UseCase(
             "prompt_for_task_generation": "Share <genre> film less than <duration> minutes long",
         },
         {
-            "prompt": "Share film details from the 1999 with Al Pacino",
-            "prompt_for_task_generation": "Share film details from the <year> with <actor>",
+            "prompt": "Share film details from the 90s with Al Pacino",
+            "prompt_for_task_generation": "Share film details from the <decade>s with <actor>",
         },
         {
             "prompt": "Share horror movie not directed by Wes Craven",
@@ -561,7 +556,7 @@ ADD_FILM_USE_CASE = UseCase(
     event=AddFilmEvent,
     event_source_code=AddFilmEvent.get_source_code_of_class(),
     constraints_generator=generate_add_film_constraints,
-    additional_prompt_info=ADD_FILM_ADDITIONAL_PROMPT_INFO,
+    additional_prompt_info=ADD_FIL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Add the movie 'The Grand Budapest Hotel' directed by 'Wes Anderson'",
@@ -802,7 +797,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
     description="The user edits their profile, modifying one or more attributes such as first name, last name, bio, location, website, or favorite genres. Username and email cannot be edited.",
     event=EditUserEvent,
     event_source_code=EditUserEvent.get_source_code_of_class(),
-    # replace_func not needed - credentials remain as placeholders until evaluation
+    replace_func=login_replace_func,
     constraints_generator=generate_edit_profile_constraints,
     additional_prompt_info=EDIT_PROFILE_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -831,8 +826,8 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login where username equals <username> and password equals <password>. Change your last name to <last_name>.",
         },
         {
-            "prompt": "Login where username equals <username> and password equals <password>. Modify your profile to ensure that your location does NOT contain 'a' and that your website contains 'https://cinephileworld.example.org'",
-            "prompt_for_task_generation": "Login where username equals <username> and password equals <password>. Modify your profile to ensure that your location does NOT contain 'a' and that your website contains <website>",
+            "prompt": "Login where username equals user<web_agent_id> and password equals password123. Modify your profile to ensure that your location does NOT contain 'a' and that your website contains 'https://cinephileworld.example.org'",
+            "prompt_for_task_generation": "Login where username equals user<web_agent_id> and password equals password123. Modify your profile to ensure that your location does NOT contain 'a' and that your website contains <website>",
         },
     ],
 )

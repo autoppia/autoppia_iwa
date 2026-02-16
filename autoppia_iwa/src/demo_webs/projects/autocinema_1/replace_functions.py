@@ -1,4 +1,56 @@
-from autoppia_iwa.src.demo_webs.projects.autocinema_1.data_utils import fetch_data
+from autoppia_iwa.src.demo_webs.projects.autocinema_1.data_utils import fetch_movies_data
+
+
+def login_replace_func(text: str, constraints: list[dict] | None = None, **kwargs) -> str:
+    if not isinstance(text, str):
+        return text
+
+    replacements = {"<username>": "user<web_agent_id>", "<password>": "password123"}
+
+    # Basic replacements
+    for placeholder, value in replacements.items():
+        text = text.replace(placeholder, value)
+
+    # Generic replacements from constraints (for EDIT_USER profiles, etc.)
+    if constraints:
+        for c in constraints:
+            field = c.get("field")
+            value = c.get("value")
+            if field and value is not None:
+                placeholder = f"<{field}>"
+                if placeholder in text:
+                    text = text.replace(placeholder, str(value))
+
+    return text
+
+
+def register_replace_func(text: str, **kwargs) -> str:
+    if not isinstance(text, str):
+        return text
+
+    replacements = {"<username>": "newuser<web_agent_id>", "<email>": "newuser<web_agent_id>@gmail.com", "<password>": "password123"}
+
+    for placeholder, value in replacements.items():
+        text = text.replace(placeholder, value)
+
+    return text
+
+
+def _film_name_from_constraints(constraints: list[dict] | None) -> str | None:
+    """
+    Extract film name for <movie> placeholder from constraints so prompt matches validation.
+    - field 'name': EDIT_FILM, FILM_DETAIL, etc.
+    - field 'query': SEARCH_FILM (search query is the film title).
+    """
+    if not constraints:
+        return None
+    for c in constraints:
+        field = c.get("field")
+        if field == "name" or field == "query":
+            val = c.get("value")
+            if val is not None:
+                return str(val)
+    return None
 
 
 def _film_name_from_constraints(constraints: list[dict] | None) -> str | None:
@@ -27,7 +79,11 @@ async def replace_film_placeholders(
     if not isinstance(text, str):
         return text
 
-    movies_data = dataset if dataset is not None else await fetch_data(seed_value=seed_value)
+    if dataset is not None:
+        # Task generator passes full project dict {"films": [...], "users": [...]}; use films list
+        movies_data = dataset.get("films", []) if isinstance(dataset, dict) else dataset
+    else:
+        movies_data = await fetch_movies_data(seed_value=seed_value)
     if not movies_data:
         return text
 
