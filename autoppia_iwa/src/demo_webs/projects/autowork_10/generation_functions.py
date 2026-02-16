@@ -49,11 +49,11 @@ async def _ensure_dataset(
         For "experts": list[dict[str, Any]] of expert data
         For "skills": list[str] of skill names
     """
-    from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
+    from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
     from .data_utils import fetch_data
 
-    seed = await resolve_v2_seed_from_url(task_url) if task_url else None
+    seed = get_seed_from_url(task_url)
     fetched_data = await fetch_data(entity_type=entity_type, seed_value=seed)
 
     if not fetched_data:

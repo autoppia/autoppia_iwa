@@ -2,7 +2,7 @@ import random
 from random import choice, randint, sample
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
 from ..criterion_helper import ComparisonOperator
 from ..operators import EQUALS, NOT_EQUALS
@@ -60,7 +60,7 @@ TEMPLATES = [
 
 async def _ensure_email_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Extract emails data from the pre-loaded dataset, or fetch from server if not available."""
-    seed = await resolve_v2_seed_from_url(task_url) if task_url else None
+    seed = get_seed_from_url(task_url)
     emails = await fetch_data(seed_value=seed)
     dataset = {"emails": emails}
 

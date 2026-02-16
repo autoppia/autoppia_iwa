@@ -15,7 +15,7 @@ from loguru import logger
 
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url, resolve_v2_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.interfaces import ILLM
 
@@ -28,7 +28,7 @@ TASK_GENERATION_LEVEL_NO = 23
 @dataclass(slots=True)
 class ConstraintContext:
     url: str
-    v2_seed: int
+    seed: int
 
 
 def _ensure_task_generation_level() -> None:
@@ -131,8 +131,6 @@ class SimpleTaskGenerator:
             use_case_copy = copy.deepcopy(use_case)
             # Generate constraints specific to this seed's dataset
             if hasattr(use_case, "generate_constraints_async"):
-                if dynamic and seed != 1:
-                    seed = await resolve_v2_seed_from_url(task_url)
                 dataset = await self._load_dataset(seed) or {}
 
                 try:
@@ -204,7 +202,7 @@ class SimpleTaskGenerator:
         random.shuffle(tasks)
         return tasks
 
-    async def _preload_dataset_for_use_case(self, use_case: UseCase, v2_seed: int) -> Any:
+    async def _preload_dataset_for_use_case(self, use_case: UseCase, seed: int) -> Any:
         """
         Load complete dataset for the current project with given seed.
 
@@ -231,17 +229,17 @@ class SimpleTaskGenerator:
             return None
 
         try:
-            return await self._load_dataset_for_module(module_name, v2_seed)
+            return await self._load_dataset_for_module(module_name, seed)
         except Exception as e:
             # Don't propagate errors - dataset is optional
             logger.debug(f"Could not preload dataset for use case '{use_case.name}': {e}. Will generate constraints without dataset.")
             return None
 
-    async def _load_dataset_for_module(self, module_name: str, v2_seed: int) -> Any:
+    async def _load_dataset_for_module(self, module_name: str, seed: int) -> Any:
         """
         Load and cache dataset results for a generation_functions module keyed by module + seed.
         """
-        cache_key = (module_name, v2_seed)
+        cache_key = (module_name, seed)
         if cache_key in self._dataset_cache:
             return self._dataset_cache[cache_key]
 
@@ -267,10 +265,10 @@ class SimpleTaskGenerator:
             return None
 
         try:
-            dataset_result = loader(seed_value=v2_seed)
+            dataset_result = loader(seed_value=seed)
             dataset = await dataset_result if inspect.isawaitable(dataset_result) else dataset_result
             if dataset:
-                _log_task_generation(f"Pre-loaded dataset with v2_seed={v2_seed} ({len(dataset)} items)", context="OPTIMIZATION")
+                _log_task_generation(f"Pre-loaded dataset with seed={seed} ({len(dataset)} items)", context="OPTIMIZATION")
                 self._dataset_cache[cache_key] = dataset
             return dataset
         except Exception as exc:  # pragma: no cover - best effort
@@ -429,15 +427,15 @@ class SimpleTaskGenerator:
 
     async def _build_constraint_context(self, base_url: str, dynamic: bool | None) -> ConstraintContext:
         constraint_url = self._build_constraint_url(base_url, dynamic)
-        v2_seed = await self._resolve_seed(constraint_url)
-        return ConstraintContext(url=constraint_url, v2_seed=v2_seed)
+        base_seed = await self._resolve_seed(constraint_url)
+        return ConstraintContext(url=constraint_url, seed=base_seed)
 
     async def _resolve_seed(self, url: str) -> int:
         if url in self._seed_cache:
             return self._seed_cache[url]
-        v2_seed = await resolve_v2_seed_from_url(url)
-        self._seed_cache[url] = v2_seed
-        return v2_seed
+        seed = get_seed_from_url(url)
+        self._seed_cache[url] = seed
+        return seed
 
     @staticmethod
     def _dataset_length(dataset: Any) -> int | None:

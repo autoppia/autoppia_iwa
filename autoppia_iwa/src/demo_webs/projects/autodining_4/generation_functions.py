@@ -4,7 +4,7 @@ from random import choice
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
 from ..shared_utils import create_constraint_dict, generate_mock_date_strings, generate_mock_dates
 from .data import (
@@ -251,7 +251,7 @@ async def _generate_value_for_field(field_name: str) -> Any:
 # --- Constraint Generators ---
 async def generate_view_restaurant_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
     if not dataset:
-        seed = await resolve_v2_seed_from_url(task_url) if task_url else None
+        seed = get_seed_from_url(task_url)
         restaurants = await fetch_data(seed_value=seed)
     else:
         restaurants = dataset
@@ -265,7 +265,7 @@ async def generate_view_restaurant_constraints(task_url: str | None = None, data
 
 async def generate_view_full_menu_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
     if not dataset:
-        seed = await resolve_v2_seed_from_url(task_url) if task_url else None
+        seed = get_seed_from_url(task_url)
         restaurants = await fetch_data(seed_value=seed)
     else:
         restaurants = dataset
@@ -279,7 +279,7 @@ async def generate_view_full_menu_constraints(task_url: str | None = None, datas
 
 async def generate_collapse_menu_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
     if not dataset:
-        seed = await resolve_v2_seed_from_url(task_url) if task_url else None
+        seed = get_seed_from_url(task_url)
         restaurants = await fetch_data(seed_value=seed)
     else:
         restaurants = dataset
@@ -319,7 +319,7 @@ async def generate_constraints_for_single_field(field: str, allowed_operators: d
 
 async def generate_book_restaurant_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
     if not dataset:
-        seed = await resolve_v2_seed_from_url(task_url) if task_url else None
+        seed = get_seed_from_url(task_url)
         restaurants = await fetch_data(seed_value=seed)
     else:
         restaurants = dataset
@@ -342,7 +342,7 @@ async def generate_book_restaurant_constraints(task_url: str | None = None, data
 
 async def generate_country_selected_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
     if not dataset:
-        seed = await resolve_v2_seed_from_url(task_url) if task_url else None
+        seed = get_seed_from_url(task_url)
         restaurants = await fetch_data(seed_value=seed)
     else:
         restaurants = dataset
@@ -367,7 +367,7 @@ async def generate_country_selected_constraints(task_url: str | None = None, dat
 
 async def generate_occasion_selected_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
     if not dataset:
-        seed = await resolve_v2_seed_from_url(task_url) if task_url else None
+        seed = get_seed_from_url(task_url)
         restaurants = await fetch_data(seed_value=seed)
     else:
         restaurants = dataset
@@ -391,7 +391,7 @@ async def generate_occasion_selected_constraints(task_url: str | None = None, da
 
 async def generate_reservation_complete_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
     if not dataset:
-        seed = await resolve_v2_seed_from_url(task_url) if task_url else None
+        seed = get_seed_from_url(task_url)
         restaurants = await fetch_data(seed_value=seed)
     else:
         restaurants = dataset
