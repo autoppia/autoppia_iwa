@@ -13,10 +13,10 @@ from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
 from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.apified_one_shot_agent import ApifiedOneShotWebAgent
 
 # Configuración del agente esperado en la prueba técnica
-TECHNICAL_TEST_AGENT = ApifiedWebAgent(
+TECHNICAL_TEST_AGENT = ApifiedOneShotWebAgent(
     id="technical_test_agent",
     name="Technical Test Agent (Contact Form)",
     host="127.0.0.1",

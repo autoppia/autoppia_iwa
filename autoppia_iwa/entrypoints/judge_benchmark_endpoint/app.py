@@ -9,7 +9,7 @@ from loguru import logger
 from pydantic import BaseModel
 
 from autoppia_iwa.entrypoints.judge_benchmark.test_real_web import WebVoyagerBenchmark, WebVoyagerConfig
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.apified_one_shot_agent import ApifiedOneShotWebAgent
 
 DEFAULT_HOST: str = "0.0.0.0"
 DEFAULT_PORT: int = 5070
@@ -68,7 +68,7 @@ async def run_real_web_task(config: RealWebTaskConfig):
         unique_id = str(uuid.uuid4())
         unique_name = f"JudgeAgent_{unique_id[:8]}"
 
-        agent = ApifiedWebAgent(
+        agent = ApifiedOneShotWebAgent(
             id=unique_id,
             name=unique_name,
             host=config.agent_host,

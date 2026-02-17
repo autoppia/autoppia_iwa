@@ -15,18 +15,18 @@ from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
 from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.web_agents.cua import ApifiedWebCUA
+from autoppia_iwa.src.web_agents.cua import ApifiedIterativeWebAgent
 
 # =============================================================================
 # 1) AGENTS
 # =============================================================================
-# Standard: all agents expose POST /act. Use ApifiedWebCUA for both modes.
+# Standard: all agents expose POST /act. Use ApifiedIterativeWebAgent for both modes.
 # - Concurrent: benchmark calls /act once (step_index=0); agent returns full action list.
 # - Stateful:   benchmark calls /act repeatedly with browser snapshot each step.
-# Legacy: if your agent only exposes POST /solve_task, use ApifiedWebAgent instead.
+# Legacy: if your agent only exposes POST /solve_task, use ApifiedOneShotWebAgent instead.
 
 AGENTS = [
-    ApifiedWebCUA(base_url="http://localhost:5000", id="1", name="LocalAgent", timeout=120),
+    ApifiedIterativeWebAgent(base_url="http://localhost:5000", id="1", name="LocalAgent", timeout=120),
 ]
 
 # =============================================================================
@@ -58,7 +58,7 @@ CFG = BenchmarkConfig(
     save_results_json=True,
 )
 
-# --- STATEFUL: agent decides step-by-step (must use ApifiedWebCUA in AGENTS) ---
+# --- STATEFUL: agent decides step-by-step (must use ApifiedIterativeWebAgent in AGENTS) ---
 # Uncomment this block and comment the CFG block above to run in stateful mode.
 # CFG = BenchmarkConfig(
 #     projects=PROJECTS,

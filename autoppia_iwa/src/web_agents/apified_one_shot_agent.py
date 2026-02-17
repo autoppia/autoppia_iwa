@@ -12,9 +12,9 @@ from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
 from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution
 
 
-class ApifiedWebAgent(IWebAgent):
+class ApifiedOneShotWebAgent(IWebAgent):
     """
-    Calls a remote /solve_task endpoint and rebuilds a TaskSolution.
+    One-shot agent that calls a remote /solve_task endpoint and rebuilds a TaskSolution.
     """
 
     def __init__(self, host: str | None = None, port: int | None = None, id: str | None = None, name: str | None = None, timeout=180, base_url: str | None = None):
@@ -152,3 +152,6 @@ class ApifiedWebAgent(IWebAgent):
 
         new_url = parsed._replace(scheme=remote_parsed.scheme or parsed.scheme, netloc=netloc)
         return urlunparse(new_url)
+
+
+__all__ = ["ApifiedOneShotWebAgent"]

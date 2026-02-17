@@ -13,7 +13,7 @@ from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
 from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.apified_one_shot_agent import ApifiedOneShotWebAgent
 
 # =====================
 # Constants / Settings
@@ -70,10 +70,10 @@ async def test_your_agent(config: AgentConfig):
         parsed = urlparse(config.ip)
         if parsed.scheme:
             base_url = config.ip.rstrip("/")
-            agent = ApifiedWebAgent(id=unique_id, name=unique_name, timeout=config.timeout, base_url=base_url)
+            agent = ApifiedOneShotWebAgent(id=unique_id, name=unique_name, timeout=config.timeout, base_url=base_url)
         else:
             # Treat ip as host
-            agent = ApifiedWebAgent(id=unique_id, name=unique_name, host=config.ip, port=config.port, timeout=config.timeout)
+            agent = ApifiedOneShotWebAgent(id=unique_id, name=unique_name, host=config.ip, port=config.port, timeout=config.timeout)
 
         benchmark_config = BenchmarkConfig(
             projects=projects,

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from autoppia_iwa.src.web_agents.cua.apified_cua import ApifiedWebCUA
+from autoppia_iwa.src.web_agents.apified_iterative_agent import ApifiedIterativeWebAgent
 from autoppia_iwa.src.web_agents.cua.webcua import (
     AsyncWebCUASession,
     BrowserSnapshot,
@@ -10,7 +10,7 @@ from autoppia_iwa.src.web_agents.cua.webcua import (
 )
 
 __all__ = [
-    "ApifiedWebCUA",
+    "ApifiedIterativeWebAgent",
     "AsyncWebCUASession",
     "BrowserSnapshot",
     "ScoreDetails",

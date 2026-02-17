@@ -5,7 +5,7 @@ Tiny FastAPI service exposing `/evaluate` for Affine validators.
 
 Flow per request:
 - Pick a deterministic task (cached JSON or generated on startup).
-- Call the remote agent at `base_url/solve_task` (OpenAI-style) via ApifiedWebAgent.
+- Call the remote agent at `base_url/solve_task` (OpenAI-style) via ApifiedOneShotWebAgent.
 - Evaluate the returned actions with ConcurrentEvaluator against remote demo webs.
 - Respond with `{score, success, error, extra}`.
 """
@@ -24,7 +24,7 @@ from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.apified_one_shot_agent import ApifiedOneShotWebAgent
 
 
 class EvaluateRequest(BaseModel):
@@ -139,7 +139,7 @@ async def evaluate(req: EvaluateRequest) -> EvaluateResponse:
     except Exception as exc:
         raise HTTPException(status_code=503, detail=f"Task loading failed: {exc}") from exc
 
-    agent = ApifiedWebAgent(base_url=str(req.base_url), timeout=req.timeout or 600)
+    agent = ApifiedOneShotWebAgent(base_url=str(req.base_url), timeout=req.timeout or 600)
 
     try:
         task_solution = await agent.solve_task(task)

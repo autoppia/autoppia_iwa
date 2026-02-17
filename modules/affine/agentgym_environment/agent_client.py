@@ -4,22 +4,22 @@ from loguru import logger
 
 try:
     from autoppia_iwa.src.data_generation.tasks.classes import Task
-    from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+    from autoppia_iwa.src.web_agents.apified_one_shot_agent import ApifiedOneShotWebAgent
     from autoppia_iwa.src.web_agents.classes import TaskSolution
 except ModuleNotFoundError:  # pragma: no cover - source-tree fallback
     from autoppia_iwa.autoppia_iwa.src.data_generation.tasks.classes import Task
-    from autoppia_iwa.autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+    from autoppia_iwa.autoppia_iwa.src.web_agents.apified_one_shot_agent import ApifiedOneShotWebAgent
     from autoppia_iwa.autoppia_iwa.src.web_agents.classes import TaskSolution
 
 
 class RemoteAgentClient:
-    """Thin wrapper around ApifiedWebAgent to talk to miner endpoints."""
+    """Thin wrapper around ApifiedOneShotWebAgent to talk to miner endpoints."""
 
     def __init__(self, base_url: str, timeout: float, web_agent_name: str):
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.web_agent_name = web_agent_name
-        self._agent = ApifiedWebAgent(base_url=self.base_url, timeout=self.timeout, name=web_agent_name, id=web_agent_name)
+        self._agent = ApifiedOneShotWebAgent(base_url=self.base_url, timeout=self.timeout, name=web_agent_name, id=web_agent_name)
 
     async def solve_task(self, task: Task) -> TaskSolution:
         """Send the task to the miner and convert the response into a TaskSolution."""

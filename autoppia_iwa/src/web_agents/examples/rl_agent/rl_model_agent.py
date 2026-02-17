@@ -84,7 +84,7 @@ class RLModelAgent(IWebAgent):
             "To use RL agents:\n"
             "1. See: autoppia-rl-agent repository\n"
             "2. Or implement your own using this interface\n"
-            "3. Or use ApifiedWebAgent to call your trained model via HTTP"
+            "3. Or use ApifiedOneShotWebAgent to call your trained model via HTTP"
         )
 
 

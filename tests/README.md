@@ -25,7 +25,7 @@ tests/
 │       └── test_verify_projects.py
 │
 ├── web_agents/           # Web Agent Tests
-│   └── test_apified_agent.py
+│   └── test_apified_one_shot_agent.py
 │
 ├── _deprecated/          # Old/Deprecated Tests
 │
@@ -103,7 +103,7 @@ pytest tests/demo_webs/                # All demo web tests
 
 ### **web_agents/** - Web Agent Tests
 Tests for different web agent implementations:
-- ApifiedWebAgent
+- ApifiedOneShotWebAgent
 - BrowserUse agent
 - RL agents
 

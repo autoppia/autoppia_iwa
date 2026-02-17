@@ -95,7 +95,8 @@ class IWebAgent(ABC):
     - Modo stateful: Se llama iterativamente, el agente ve el estado en cada paso
 
     Example implementations:
-    - ApifiedWebCUA: HTTP API-based agent (para benchmark y subnet)
+    - ApifiedIterativeWebAgent: HTTP API-based iterative agent (para benchmark y subnet)
+    - ApifiedOneShotWebAgent: one-shot /solve_task agent
     - Miners: Repositorios GitHub deployados como contenedores HTTP
     """
 

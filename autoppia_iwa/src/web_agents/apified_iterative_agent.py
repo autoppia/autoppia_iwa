@@ -13,9 +13,9 @@ from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
 from autoppia_iwa.src.web_agents.classes import IWebAgent
 
 
-class ApifiedWebCUA(IWebAgent):
+class ApifiedIterativeWebAgent(IWebAgent):
     """
-    HTTP wrapper for step-wise WebCUA agents exposing a /act (or /step) endpoint.
+    Iterative agent that calls a remote /act (or /step) endpoint to get next actions.
 
     The remote API is expected to accept a JSON payload describing the current
     browser state and return one or more actions to execute.
@@ -179,4 +179,4 @@ class ApifiedWebCUA(IWebAgent):
         return urlunparse(new_url)
 
 
-__all__ = ["ApifiedWebCUA"]
+__all__ = ["ApifiedIterativeWebAgent"]
