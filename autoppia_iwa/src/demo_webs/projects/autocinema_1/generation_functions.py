@@ -3,6 +3,7 @@ from random import choice, sample
 from typing import Any
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
+from ..data_provider import get_seed_from_url
 from ..shared_utils import create_constraint_dict
 from .data import (
     ALL_GENRES,
@@ -31,7 +32,7 @@ from .data_utils import fetch_data
 async def _ensure_dataset(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None) -> dict:
     """Fetch full dataset if not provided or empty. Single source of truth for data loading."""
     if dataset is None or dataset == {}:
-        seed = await resolve_v2_seed_from_url(task_url) if task_url else None
+        seed = get_seed_from_url(task_url)
         return await fetch_data(seed_value=seed) or {}
     return dataset
 
