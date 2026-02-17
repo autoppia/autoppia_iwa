@@ -11,6 +11,7 @@ This module provides:
 import asyncio
 import contextlib
 import os
+import json
 from dataclasses import dataclass
 from typing import Any
 
@@ -165,6 +166,21 @@ class AsyncStatefulEvaluator(AsyncWebCUASession):
                 "X-Validator-Id": validator_id,
             },
         )
+        # Demo websites derive attribution ids from localStorage. Relying on URL
+        # query params is brittle because some apps normalize navigation and
+        # drop unknown params (keeping only ?seed=...). Set the ids at document
+        # init time so event logging is correctly attributed to this evaluator.
+        with contextlib.suppress(Exception):
+            await self._context.add_init_script(
+                f"""
+(() => {{
+  try {{
+    localStorage.setItem("web_agent_id", {json.dumps(self.web_agent_id)});
+    localStorage.setItem("validator_id", {json.dumps(validator_id)});
+  }} catch (e) {{}}
+}})();
+"""
+            )
         with contextlib.suppress(Exception):
             self._context.set_default_timeout(self.config.page_default_timeout_ms)
         self._page = await self._context.new_page()
