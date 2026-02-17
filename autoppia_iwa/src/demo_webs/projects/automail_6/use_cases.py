@@ -107,7 +107,7 @@ STAR_EMAIL_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Star the email where from_email equals 'grace.lee@company.com' and subject equals 'Team Outing Plan'",
-            "prompt_for_task_generation": "Star the email where from_email 'grace.lee@company.com' and subject equals 'Team Outing Plan'",
+            "prompt_for_task_generation": "Star the email where from_email equals 'grace.lee@company.com' and subject equals 'Team Outing Plan'",
         },
         {
             "prompt": "Star the email where from_email equals 'bob.johnson@tech.org' and is_starred equals 'False'",
@@ -126,7 +126,7 @@ STAR_EMAIL_USE_CASE = UseCase(
 
 MARK_EMAIL_AS_IMPORTANT_ADDITIONAL_PROMPT_INFO = """
 Critical requirements:
-1. The request must start with one of the following: "Mark the email...".
+1. The request must start with one of the following: "Mark the email as important...".
 2. Do not mention a single constraint more than once in the request.
 3. Do not add additional information in the prompt that is not mentioned in the constraints.
 4. Pay attention to the constraints:
@@ -146,20 +146,16 @@ MARK_EMAIL_AS_IMPORTANT_USE_CASE = UseCase(
     additional_prompt_info=MARK_EMAIL_AS_IMPORTANT_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Mark the email where from equals 'david.brown@company.com' and subject equals 'Q2 Report Feedback' and is_important equals 'True'.",
-            "prompt_for_task_generation": "Mark the email where from equals 'david.brown@company.com' and subject equals 'Q2 Report Feedback' and is_important equals 'True'.",
+            "prompt": "Mark the email important where from equals 'david.brown@company.com' and subject equals 'Q2 Report Feedback' and is_important equals 'True'.",
+            "prompt_for_task_generation": "Mark the email important where from equals 'david.brown@company.com' and subject equals 'Q2 Report Feedback' and is_important equals 'True'.",
         },
         {
-            "prompt": "Mark the email where from equals 'promo.bot@scam.com' and subject equals 'Amazing Deal Awaits!' and is_important equals 'False'.",
-            "prompt_for_task_generation": "Mark the email where from equals 'promo.bot@scam.com' and subject equals 'Amazing Deal Awaits!' and is_important equals 'False'.",
+            "prompt": "Mark the email important where from equals 'promo.bot@scam.com' and subject equals 'Amazing Deal Awaits!' and is_important equals 'False'.",
+            "prompt_for_task_generation": "Mark the email important where from equals 'promo.bot@scam.com' and subject equals 'Amazing Deal Awaits!' and is_important equals 'False'.",
         },
         {
             "prompt": "Mark the email with ID 'email25' as important",
             "prompt_for_task_generation": "Mark the email with ID 'email25' as important",
-        },
-        {
-            "prompt": "Mark the message about 'Client Proposal Review' as high priority",
-            "prompt_for_task_generation": "Mark the message about 'Client Proposal Review' as high priority",
         },
     ],
 )
@@ -176,6 +172,9 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 2. Mention the Subject, Email ID, or Sender if available.
 3. Vary wording across prompts but keep meaning intact.
 4. Make sure the constraints for the fields are mentioned like contains, not_contains, equals, not_equals, etc.
+Examples:
+CORRECT: Mark the email unread where from email equals 'emma.davis@yahoo.com' and subject equals 'Community Forum Update' and is_read equals false.
+INCORRECT: Mark the email unread 'emma.davis@yahoo.com'.
 """
 
 MARK_AS_UNREAD_USE_CASE = UseCase(
@@ -487,23 +486,49 @@ EMAIL_SAVE_AS_DRAFT_USE_CASE = UseCase(
     ],
 )
 
+EDIT_DRAFT_EMAIL_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Begin with edit draft, open draft, or revise draft.
+2. Include ALL given constraints in the prompt.
+3. Make sure the constraints for the fields are mentioned like contains, not_contains, equals, not_equals, etc.
+4. Do not mention a single constraint more than once in the request.
+5. Do not add additional information in the prompt that is not mentioned in the constraints.
+Examples:
+    Correct: Edit the draft email where to equals 'jane.doe@example.com' and subject equals 'Budget Review Meeting'.
+    Correct: Open the draft where to contains 'jane.doe' and subject not contains 'Training Workshop'.
+    Incorrect: Edit the draft email where to equals 'jane.doe@example.com' and to equals 'jane.doe@example.com' (mentioned to twice).
+""".strip()
+
 EDIT_DRAFT_EMAIL_USE_CASE = UseCase(
     name="EDIT_DRAFT_EMAIL",
     description="The user opens and edits an existing draft email.",
     event=EditDraftEmailEvent,
     event_source_code=EditDraftEmailEvent.get_source_code_of_class(),
     constraints_generator=generate_save_as_draft_send_email_constraints,
+    additional_prompt_info=EDIT_DRAFT_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Edit the draft email to update the subject to 'Client Proposal Updates'.",
-            "prompt_for_task_generation": "Edit the draft email to update the subject to 'Client Proposal Updates'.",
+            "prompt": "Edit the draft email where to equals 'jane.doe@example.com' and subject equals 'Client Proposal Updates'.",
+            "prompt_for_task_generation": "Edit the draft email where to equals 'jane.doe@example.com' and subject equals 'Client Proposal Updates'.",
         },
         {
-            "prompt": "Open the draft addressed to 'jane.doe@example.com' and revise it.",
-            "prompt_for_task_generation": "Open the draft addressed to 'jane.doe@example.com' and revise it.",
+            "prompt": "Open the draft where to equals 'jane.doe@example.com' and revise it.",
+            "prompt_for_task_generation": "Open the draft where to equals 'jane.doe@example.com' and revise it.",
+        },
+        {
+            "prompt": "Edit the draft email where to contains 'jane.doe' and body contains 'Please review'.",
+            "prompt_for_task_generation": "Edit the draft email where to contains 'jane.doe' and body contains 'Please review'.",
         },
     ],
 )
+ARCHIVE_EMAIL_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Begin with Archive the email... or similar phrasing.
+Examples:
+CORRECT: "Archive the email whose from email equals 'alice.smith@company.com' and subject equals 'Project Kickoff Meeting'."
+2. Include ALL given constraints in the prompt.
+3. Maintain natural and varied user language.
+"""
 
 ARCHIVE_EMAIL_USE_CASE = UseCase(
     name="ARCHIVE_EMAIL",
@@ -511,17 +536,35 @@ ARCHIVE_EMAIL_USE_CASE = UseCase(
     event=ArchiveEmailEvent,
     event_source_code=ArchiveEmailEvent.get_source_code_of_class(),
     constraints_generator=generate_archive_email_constraints,
+    additional_prompt_info=ARCHIVE_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Archive the email from 'alice.smith@company.com' about 'Project Kickoff Meeting'.",
-            "prompt_for_task_generation": "Archive the email from 'alice.smith@company.com' about 'Project Kickoff Meeting'.",
+            "prompt": "Archive the email whose from email equals 'alice.smith@company.com' and subject equals 'Project Kickoff Meeting'.",
+            "prompt_for_task_generation": "Archive the email whose from email equals 'alice.smith@company.com' and subject equals 'Project Kickoff Meeting'.",
         },
         {
-            "prompt": "Move to archive the message with subject 'Q2 Report Feedback'.",
-            "prompt_for_task_generation": "Move to archive the message with subject 'Q2 Report Feedback'.",
+            "prompt": "Archive the email whose from email contains 'company.com' and subject not equals 'Project Kickoff Meeting'.",
+            "prompt_for_task_generation": "Archive the email whose from email contains 'company.com' and subject not equals 'Project Kickoff Meeting'.",
+        },
+        {
+            "prompt": "Archive the email whose from email not contains 'alice' and subject contains 'Project'.",
+            "prompt_for_task_generation": "Archive the email whose from email not contains 'alice' and subject contains 'Project'.",
         },
     ],
 )
+
+REPLY_EMAIL_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Begin with reply, reply all, or respond.
+2. Include ALL given constraints in the prompt.
+3. Make sure the constraints for the fields are mentioned like contains, not_contains, equals, not_equals, etc.
+4. Do not mention a single constraint more than once in the request.
+5. Do not add additional information in the prompt that is not mentioned in the constraints.
+Examples:
+    Correct: Reply to the email where from_email equals 'bob.johnson@tech.org' and subject equals 'Lunch Plans'.
+    Correct: Reply all to the email where from_email contains 'bob' and subject contains 'Meeting'.
+    Incorrect: Reply to the email where from_email equals 'bob.johnson@tech.org' and from_email contains 'bob' (mentioned from_email twice).
+""".strip()
 
 REPLY_EMAIL_USE_CASE = UseCase(
     name="REPLY_EMAIL",
@@ -529,17 +572,35 @@ REPLY_EMAIL_USE_CASE = UseCase(
     event=ReplyEmailEvent,
     event_source_code=ReplyEmailEvent.get_source_code_of_class(),
     constraints_generator=generate_save_as_draft_send_email_constraints,
+    additional_prompt_info=REPLY_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Reply to the email from 'bob.johnson@tech.org' about 'Lunch Plans'.",
-            "prompt_for_task_generation": "Reply to the email from 'bob.johnson@tech.org' about 'Lunch Plans'.",
+            "prompt": "Reply to the email where from_email equals 'bob.johnson@tech.org' and subject equals 'Lunch Plans'.",
+            "prompt_for_task_generation": "Reply to the email where from_email equals 'bob.johnson@tech.org' and subject equals 'Lunch Plans'.",
         },
         {
-            "prompt": "Reply all to the message titled 'Project Kickoff Meeting'.",
-            "prompt_for_task_generation": "Reply all to the message titled 'Project Kickoff Meeting'.",
+            "prompt": "Reply all to the email where subject equals 'Project Kickoff Meeting'.",
+            "prompt_for_task_generation": "Reply all to the email where subject equals 'Project Kickoff Meeting'.",
+        },
+        {
+            "prompt": "Reply to the email where from_email contains 'bob' and to equals 'alice@company.com'.",
+            "prompt_for_task_generation": "Reply to the email where from_email contains 'bob' and to equals 'alice@company.com'.",
         },
     ],
 )
+
+FORWARD_EMAIL_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Begin with forward, send forward, or share.
+2. Include ALL given constraints in the prompt.
+3. Make sure the constraints for the fields are mentioned like contains, not_contains, equals, not_equals, etc.
+4. Do not mention a single constraint more than once in the request.
+5. Do not add additional information in the prompt that is not mentioned in the constraints.
+Examples:
+    Correct: Forward the email where subject equals 'Q2 Report Feedback' and to equals 'john.doe@gmail.com'.
+    Correct: Forward the email where from_email equals 'alice.smith@company.com' and subject contains 'Report'.
+    Incorrect: Forward the email where subject equals 'Q2 Report Feedback' and subject contains 'Report' (mentioned subject twice).
+""".strip()
 
 FORWARD_EMAIL_USE_CASE = UseCase(
     name="FORWARD_EMAIL",
@@ -547,14 +608,19 @@ FORWARD_EMAIL_USE_CASE = UseCase(
     event=ForwardEmailEvent,
     event_source_code=ForwardEmailEvent.get_source_code_of_class(),
     constraints_generator=generate_save_as_draft_send_email_constraints,
+    additional_prompt_info=FORWARD_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Forward the email 'Q2 Report Feedback' to john.doe@gmail.com.",
-            "prompt_for_task_generation": "Forward the email 'Q2 Report Feedback' to john.doe@gmail.com.",
+            "prompt": "Forward the email where subject equals 'Q2 Report Feedback' and to equals 'john.doe@gmail.com'.",
+            "prompt_for_task_generation": "Forward the email where subject equals 'Q2 Report Feedback' and to equals 'john.doe@gmail.com'.",
         },
         {
-            "prompt": "Forward the message from 'alice.smith@company.com' to the finance team.",
-            "prompt_for_task_generation": "Forward the message from 'alice.smith@company.com' to the finance team.",
+            "prompt": "Forward the email where from_email equals 'alice.smith@company.com' and subject equals 'Project Update'.",
+            "prompt_for_task_generation": "Forward the email where from_email equals 'alice.smith@company.com' and subject equals 'Project Update'.",
+        },
+        {
+            "prompt": "Forward the email where from_email contains 'alice' and to contains 'john'.",
+            "prompt_for_task_generation": "Forward the email where from_email contains 'alice' and to contains 'john'.",
         },
     ],
 )
@@ -720,27 +786,54 @@ VIEW_TEMPLATES_USE_CASE = UseCase(
     ],
 )
 
+TEMPLATE_SELECTED_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Begin with select template, choose template, or pick template.
+2. Include ALL given constraints in the prompt.
+3. Make sure the constraints for the fields are mentioned like contains, not_contains, equals, not_equals, etc.
+4. Do not mention a single constraint more than once in the request.
+5. Do not add additional information in the prompt that is not mentioned in the constraints.
+Examples:
+    Correct: Select the template where template_name equals 'Warm Introduction' and subject equals 'Introduction & Next Steps'.
+    Correct: Choose the template where subject contains 'Next Steps'.
+    Incorrect: Select the template where template_name equals 'Warm Introduction' and name equals 'Warm Introduction' (mentioned template_name twice).
+""".strip()
+
 TEMPLATE_SELECTED_USE_CASE = UseCase(
     name="TEMPLATE_SELECTED",
     description="The user chooses a specific email template to work with.",
     event=TemplateSelectedEvent,
     event_source_code=TemplateSelectedEvent.get_source_code_of_class(),
     constraints_generator=generate_template_selection_constraints,
+    additional_prompt_info=TEMPLATE_SELECTED_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Select the Meeting Recap email template.",
-            "prompt_for_task_generation": "Select the Meeting Recap email template.",
+            "prompt": "Select the template where template_name equals 'Meeting Recap'.",
+            "prompt_for_task_generation": "Select the template where template_name equals 'Meeting Recap'.",
         },
         {
             "prompt": "Select the template where subject equals 'Introduction & Next Steps'.",
             "prompt_for_task_generation": "Select the template where subject equals 'Introduction & Next Steps'.",
         },
         {
-            "prompt": "Select the template where name equals 'Friendly Follow Up'.",
-            "prompt_for_task_generation": "Select the template where name equals 'Friendly Follow Up'.",
+            "prompt": "Select the template where template_name equals 'Friendly Follow Up' and subject contains 'follow-up'.",
+            "prompt_for_task_generation": "Select the template where template_name equals 'Friendly Follow Up' and subject contains 'follow-up'.",
         },
     ],
 )
+
+TEMPLATE_BODY_EDITED_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Begin with edit template body, update template body, or modify template content.
+2. Include ALL given constraints in the prompt.
+3. Make sure the constraints for the fields are mentioned like contains, not_contains, equals, not_equals, etc.
+4. Do not mention a single constraint more than once in the request.
+5. Do not add additional information in the prompt that is not mentioned in the constraints.
+Examples:
+    Correct: Update the body text of the template where template_name equals 'Warm Introduction' and subject equals 'Introduction & Next Steps'.
+    Correct: Edit the body of the template where template_name contains 'Introduction'.
+    Incorrect: Update the body text of the template where template_name equals 'Warm Introduction' and name equals 'Warm Introduction' (mentioned template_name twice).
+""".strip()
 
 TEMPLATE_BODY_EDITED_USE_CASE = UseCase(
     name="TEMPLATE_BODY_EDITED",
@@ -748,21 +841,35 @@ TEMPLATE_BODY_EDITED_USE_CASE = UseCase(
     event=TemplateBodyEditedEvent,
     event_source_code=TemplateBodyEditedEvent.get_source_code_of_class(),
     constraints_generator=generate_template_body_constraints,
+    additional_prompt_info=TEMPLATE_BODY_EDITED_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Update the body text of the Warm Introduction template.",
-            "prompt_for_task_generation": "Edit the content of the Warm Introduction template.",
+            "prompt": "Update the body text of the template where template_name equals 'Warm Introduction'.",
+            "prompt_for_task_generation": "Update the body text of the template where template_name equals 'Warm Introduction'.",
         },
         {
-            "prompt": "Update the body text of template that name equals 'Warm Introduction'.",
-            "prompt_for_task_generation": "Update the body text of template that name equals 'Warm Introduction'.",
+            "prompt": "Update the body text of the template where subject equals 'Thank you for your time'.",
+            "prompt_for_task_generation": "Update the body text of the template where subject equals 'Thank you for your time'.",
         },
         {
-            "prompt": "Update the body text of template that subject equals 'Thank you for your time'.",
-            "prompt_for_task_generation": "Update the body text of template that subject equals 'Thank you for your time'.",
+            "prompt": "Edit the body of the template where template_name contains 'Introduction' and body contains 'connecting'.",
+            "prompt_for_task_generation": "Edit the body of the template where template_name contains 'Introduction' and body contains 'connecting'.",
         },
     ],
 )
+
+TEMPLATE_SENT_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Begin with send template, send email using template, or dispatch template.
+2. Include ALL given constraints in the prompt.
+3. Make sure the constraints for the fields are mentioned like contains, not_contains, equals, not_equals, etc.
+4. Do not mention a single constraint more than once in the request.
+5. Do not add additional information in the prompt that is not mentioned in the constraints.
+Examples:
+    Correct: Send an email using the template where template_name equals 'Friendly Follow Up' and to equals 'john.doe@gmail.com'.
+    Correct: Send the template where subject contains 'follow-up' and to contains 'john'.
+    Incorrect: Send an email using the template where template_name equals 'Friendly Follow Up' and name equals 'Friendly Follow Up' (mentioned template_name twice).
+""".strip()
 
 TEMPLATE_SENT_USE_CASE = UseCase(
     name="TEMPLATE_SENT",
@@ -770,21 +877,35 @@ TEMPLATE_SENT_USE_CASE = UseCase(
     event=TemplateSentEvent,
     event_source_code=TemplateSentEvent.get_source_code_of_class(),
     constraints_generator=generate_sent_template_constraints,
+    additional_prompt_info=TEMPLATE_SENT_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Send an email using the Friendly Follow Up template.",
-            "prompt_for_task_generation": "Send an email using the Friendly Follow Up template.",
+            "prompt": "Send an email using the template where template_name equals 'Friendly Follow Up'.",
+            "prompt_for_task_generation": "Send an email using the template where template_name equals 'Friendly Follow Up'.",
         },
         {
-            "prompt": "Send an email using Warm Introduction template.",
-            "prompt_for_task_generation": "Send an email using the Warm Introduction template.",
+            "prompt": "Send an email using the template where template_name equals 'Warm Introduction' and to equals 'alice@company.com'.",
+            "prompt_for_task_generation": "Send an email using the template where template_name equals 'Warm Introduction' and to equals 'alice@company.com'.",
         },
         {
-            "prompt": "Send an email using Meeting Recap template.",
-            "prompt_for_task_generation": "Send an email using Meeting Recap template.",
+            "prompt": "Send the template where subject equals 'Recap: key notes from our meeting' and to contains 'john'.",
+            "prompt_for_task_generation": "Send the template where subject equals 'Recap: key notes from our meeting' and to contains 'john'.",
         },
     ],
 )
+
+TEMPLATE_SAVED_DRAFT_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Begin with save template as draft, keep template as draft, or store template draft.
+2. Include ALL given constraints in the prompt.
+3. Make sure the constraints for the fields are mentioned like contains, not_contains, equals, not_equals, etc.
+4. Do not mention a single constraint more than once in the request.
+5. Do not add additional information in the prompt that is not mentioned in the constraints.
+Examples:
+    Correct: Save the template as draft where template_name equals 'Warm Introduction' and to equals 'john.doe@gmail.com'.
+    Correct: Keep the template as draft where subject contains 'follow-up'.
+    Incorrect: Save the template as draft where template_name equals 'Warm Introduction' and name equals 'Warm Introduction' (mentioned template_name twice).
+""".strip()
 
 TEMPLATE_SAVED_DRAFT_USE_CASE = UseCase(
     name="TEMPLATE_SAVED_DRAFT",
@@ -792,21 +913,35 @@ TEMPLATE_SAVED_DRAFT_USE_CASE = UseCase(
     event=TemplateSavedDraftEvent,
     event_source_code=TemplateSavedDraftEvent.get_source_code_of_class(),
     constraints_generator=generate_sent_template_constraints,
+    additional_prompt_info=TEMPLATE_SAVED_DRAFT_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Save the Warm Introduction template as draft.",
-            "prompt_for_task_generation": "Save the Warm Introduction template as draft.",
+            "prompt": "Save the template as draft where template_name equals 'Warm Introduction'.",
+            "prompt_for_task_generation": "Save the template as draft where template_name equals 'Warm Introduction'.",
         },
         {
-            "prompt": "Save the Meeting Recap template as draft.",
-            "prompt_for_task_generation": "Save the Meeting Recap template as draft.",
+            "prompt": "Save the template as draft where template_name equals 'Meeting Recap' and to equals 'alice@company.com'.",
+            "prompt_for_task_generation": "Save the template as draft where template_name equals 'Meeting Recap' and to equals 'alice@company.com'.",
         },
         {
-            "prompt": "Save the Friendly Follow Up template as draft.",
-            "prompt_for_task_generation": "Save the Friendly Follow Up template as draft.",
+            "prompt": "Keep the template as draft where subject contains 'follow-up' and body contains 'check in'.",
+            "prompt_for_task_generation": "Keep the template as draft where subject contains 'follow-up' and body contains 'check in'.",
         },
     ],
 )
+
+TEMPLATE_CANCELED_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Begin with cancel template, discard template changes, or reset template.
+2. Include ALL given constraints in the prompt.
+3. Make sure the constraints for the fields are mentioned like contains, not_contains, equals, not_equals, etc.
+4. Do not mention a single constraint more than once in the request.
+5. Do not add additional information in the prompt that is not mentioned in the constraints.
+Examples:
+    Correct: Cancel changes on the template where template_name equals 'Thank You' and subject equals 'Thank you for your time'.
+    Correct: Discard changes to the template where template_name contains 'Follow Up'.
+    Incorrect: Cancel changes on the template where template_name equals 'Thank You' and name equals 'Thank You' (mentioned template_name twice).
+""".strip()
 
 TEMPLATE_CANCELED_USE_CASE = UseCase(
     name="TEMPLATE_CANCELED",
@@ -814,18 +949,19 @@ TEMPLATE_CANCELED_USE_CASE = UseCase(
     event=TemplateCanceledEvent,
     event_source_code=TemplateCanceledEvent.get_source_code_of_class(),
     constraints_generator=generate_sent_template_constraints,
+    additional_prompt_info=TEMPLATE_CANCELED_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Cancel changes on the Thank You template.",
-            "prompt_for_task_generation": "Cancel changes to the Thank You template.",
+            "prompt": "Cancel changes on the template where template_name equals 'Thank You'.",
+            "prompt_for_task_generation": "Cancel changes on the template where template_name equals 'Thank You'.",
         },
         {
-            "prompt": "Cancel changes on the Meeting Recap template.",
-            "prompt_for_task_generation": "Cancel changes on the Meeting Recap template.",
+            "prompt": "Cancel changes on the template where template_name equals 'Meeting Recap' and subject contains 'Recap'.",
+            "prompt_for_task_generation": "Cancel changes on the template where template_name equals 'Meeting Recap' and subject contains 'Recap'.",
         },
         {
-            "prompt": "Cancel changes on the Friendly Follow Up template.",
-            "prompt_for_task_generation": "Discard changes to the Friendly Follow Up template.",
+            "prompt": "Discard changes to the template where subject equals 'Friendly reminder' and to equals 'john@example.com'.",
+            "prompt_for_task_generation": "Discard changes to the template where subject equals 'Friendly reminder' and to equals 'john@example.com'.",
         },
     ],
 )
