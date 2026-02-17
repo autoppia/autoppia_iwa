@@ -70,7 +70,10 @@ class WebVerificationPipeline:
 
         if config.llm_review_enabled:
             if config.reviewer_type == "new":
-                self.llm_reviewer = ConsistenceReviewer(llm_service=self.llm_service)
+                self.llm_reviewer = ConsistenceReviewer(
+                    llm_service=self.llm_service,
+                    temperature=config.llm_temperature,
+                )
                 logger.info("Using NEW ConsistenceReviewer for validation")
             else:
                 self.llm_reviewer = LLMReviewer(

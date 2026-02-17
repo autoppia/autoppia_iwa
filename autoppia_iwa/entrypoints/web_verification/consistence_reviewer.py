@@ -8,9 +8,10 @@ class ConsistenceReviewer:
     and uses deterministic checks for value presence.
     """
 
-    def __init__(self, llm_service):
-        """Initializes the reviewer with an LLM service."""
+    def __init__(self, llm_service, temperature: float = 0.0):
+        """Initializes the reviewer with an LLM service and temperature."""
         self.llm_service = llm_service
+        self.temperature = temperature
 
     async def review_task_and_constraints(self, task: Any) -> dict[str, Any]:
         """
@@ -138,7 +139,7 @@ class ConsistenceReviewer:
 
         try:
             # Request LLM prediction
-            response_str = await self.llm_service.async_predict(messages=messages, json_format=True)
+            response_str = await self.llm_service.async_predict(messages=messages, json_format=True, temperature=self.temperature)
             if not response_str:
                 return False, "Empty response from LLM"
 

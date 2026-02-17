@@ -16,6 +16,7 @@ class WebVerificationConfig:
     # LLM review
     llm_review_enabled: bool = True
     llm_timeout_seconds: float = 30.0
+    llm_temperature: float = 0.0
     reviewer_type: str = "new"  # Either 'old' or 'new'
 
     # IWAP client
