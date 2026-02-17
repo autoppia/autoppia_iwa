@@ -32,7 +32,14 @@ unsafe-fixes = true  # Allows unsafe fixes
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
-ignore = ["E402", "E501", "F821"]
+ignore = ["E402", "E501"]
+
+# F821 (undefined name) only in project events.py: forward refs in type hints (BackendEvent, etc.)
+# avoid circular imports. F821 still reported everywhere else (e.g. missing imports).
+[tool.ruff.lint.per-file-ignores]
+"**/demo_webs/projects/*/events.py" = ["F821"]
+"**/demo_webs/projects/base_events.py" = ["F821"]
+"**/generated_projects/*/events.py" = ["F821"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["autoppia_iwa"]

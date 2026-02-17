@@ -170,7 +170,6 @@ class ModuleGenerator:
             else:
                 # All backends use shared service (no index needed)
                 return "get_backend_service_url()"
-            return f"{helper}(index={index})"
         raise ConfigError(f"deployment.{kind}_url or {kind}_port_index must be provided")
 
     def _render_events(self) -> str:
