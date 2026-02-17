@@ -1,6 +1,7 @@
 import asyncio
 import base64
-from datetime import datetime
+import contextlib
+from datetime import UTC, datetime
 
 from playwright.async_api import Page
 
@@ -47,18 +48,18 @@ class PlaywrightBrowserExecutor:
                 snapshot_before = await self._capture_snapshot()
             else:
                 snapshot_before = {"html": "", "screenshot": "", "url": "", "error": ""}
-            start_time = datetime.now()
+            start_time = datetime.now(UTC)
 
             # Execute the action
             await action.execute(self.page, self.backend_demo_webs_service, web_agent_id)
-            execution_time = (datetime.now() - start_time).total_seconds()
+            execution_time = (datetime.now(UTC) - start_time).total_seconds()
 
             # Capture backend events and updated browser state
             await self.page.wait_for_load_state("domcontentloaded")
             await self._after_action(action, iteration)
 
             # backend_events = await self._get_backend_events(web_agent_id, is_web_real)
-            # Always capture URL/HTML for tests; only include screenshot if recording is enabled
+            # Capture an initial snapshot after action execution.
             if should_record:
                 snapshot_after = await self._capture_snapshot()
             else:
@@ -78,6 +79,15 @@ class PlaywrightBrowserExecutor:
                         break
                     await asyncio.sleep(0.2)
 
+            # Re-snapshot URL/HTML after backend events polling. Some apps can trigger
+            # client-side navigations after domcontentloaded; this keeps the snapshot
+            # aligned with the events we just fetched.
+            if not should_record:
+                with contextlib.suppress(Exception):
+                    snapshot_after["html"] = await self.page.content()
+                with contextlib.suppress(Exception):
+                    snapshot_after["url"] = self.page.url
+
             # Create a detailed browser snapshot
             browser_snapshot = BrowserSnapshot(
                 iteration=iteration,
@@ -85,7 +95,7 @@ class PlaywrightBrowserExecutor:
                 prev_html=snapshot_before["html"],
                 current_html=snapshot_after["html"],
                 backend_events=backend_events,
-                timestamp=datetime.now(),
+                timestamp=datetime.now(UTC),
                 current_url=snapshot_after["url"],
                 screenshot_before=snapshot_before["screenshot"],
                 screenshot_after=snapshot_after["screenshot"],
