@@ -2,8 +2,6 @@ import random
 from random import choice, sample
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
-
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 from ..shared_utils import create_constraint_dict
 from .data import (
