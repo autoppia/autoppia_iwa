@@ -11,7 +11,7 @@ repos:
     rev: v0.10.0
     hooks:
       - id: ruff
-        args: [ "--fix", "--line-length", "200" ]
+        args: [ "--fix", "--config", "pyproject.toml" ]
 
       - id: ruff-format
-        args: [ "--line-length", "200" ]
+        args: [ "--config", "pyproject.toml" ]
