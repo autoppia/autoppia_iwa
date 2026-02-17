@@ -9,6 +9,7 @@ from .projects.autoconnect_9.main import connect_project
 from .projects.autocrm_5.main import crm_project
 from .projects.autodelivery_7.main import autodelivery_project
 from .projects.autodining_4.main import autodining_project
+from .projects.autodiscord_16.main import autodiscord_project
 from .projects.autodrive_13.main import drive_project
 from .projects.autohealth_14.main import health_project
 from .projects.autolist_12.main import autolist_project
@@ -35,4 +36,5 @@ demo_web_projects: list[WebProject] = [
     autolist_project,
     drive_project,
     health_project,
+    autodiscord_project,
 ]
