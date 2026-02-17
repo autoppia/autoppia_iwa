@@ -2,6 +2,7 @@ import asyncio
 import base64
 import contextlib
 from datetime import UTC, datetime
+from typing import Any
 
 from playwright.async_api import Page
 
@@ -39,6 +40,28 @@ class PlaywrightBrowserExecutor:
         """
         if not self.page:
             raise RuntimeError("Playwright page is not initialized.")
+
+        def _parse_event_ts(e: Any) -> datetime | None:
+            # Expected shapes:
+            # - {"timestamp":"...Z", ...}
+            # - {"data":{"timestamp":"...Z"}, ...} (legacy)
+            if not isinstance(e, dict):
+                return None
+            ts = e.get("timestamp")
+            if not ts and isinstance(e.get("data"), dict):
+                ts = e["data"].get("timestamp")
+            if not isinstance(ts, str) or not ts:
+                return None
+            try:
+                # Accept "...Z" and "+00:00"
+                if ts.endswith("Z"):
+                    ts = ts[:-1] + "+00:00"
+                dt = datetime.fromisoformat(ts)
+                if dt.tzinfo is None:
+                    return dt.replace(tzinfo=UTC)
+                return dt.astimezone(UTC)
+            except Exception:
+                return None
 
         try:
             await self._before_action(action, iteration)
@@ -78,6 +101,15 @@ class PlaywrightBrowserExecutor:
                     if backend_events:
                         break
                     await asyncio.sleep(0.2)
+                # Filter out stale events that happened before this action started.
+                # This prevents previous tasks (same web_agent_id) from incorrectly satisfying checks.
+                if backend_events:
+                    filtered: list[Any] = []
+                    for ev in backend_events:
+                        ev_ts = _parse_event_ts(ev)
+                        if ev_ts is None or ev_ts >= start_time:
+                            filtered.append(ev)
+                    backend_events = filtered
 
             # Re-snapshot URL/HTML after backend events polling. Some apps can trigger
             # client-side navigations after domcontentloaded; this keeps the snapshot
@@ -139,6 +171,13 @@ class PlaywrightBrowserExecutor:
                     if backend_events:
                         break
                     await asyncio.sleep(0.2)
+                if backend_events:
+                    filtered: list[Any] = []
+                    for ev in backend_events:
+                        ev_ts = _parse_event_ts(ev)
+                        if ev_ts is None or ev_ts >= start_time:
+                            filtered.append(ev)
+                    backend_events = filtered
 
             # Create error snapshot
             browser_snapshot = BrowserSnapshot(
@@ -147,7 +186,7 @@ class PlaywrightBrowserExecutor:
                 prev_html=snapshot_error.get("html", ""),
                 current_html=snapshot_error.get("html", ""),
                 backend_events=backend_events,
-                timestamp=datetime.now(),
+                timestamp=datetime.now(UTC),
                 current_url=snapshot_error.get("url", ""),
                 screenshot_before=snapshot_error.get("screenshot", ""),
                 screenshot_after=snapshot_error.get("screenshot", ""),
