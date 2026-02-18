@@ -66,18 +66,12 @@ class WebVerificationPipeline:
             else None
         )
 
-        from .consistence_reviewer import ConsistenceReviewer
-
         if config.llm_review_enabled:
-            if config.reviewer_type == "new":
-                self.llm_reviewer = ConsistenceReviewer(llm_service=self.llm_service)
-                logger.info("Using NEW ConsistenceReviewer for validation")
-            else:
-                self.llm_reviewer = LLMReviewer(
-                    llm_service=self.llm_service,
-                    timeout_seconds=config.llm_timeout_seconds,
-                )
-                logger.info("Using OLD LLMReviewer for validation")
+            self.llm_reviewer = LLMReviewer(
+                llm_service=self.llm_service,
+                timeout_seconds=config.llm_timeout_seconds,
+            )
+            logger.info("Using LLMReviewer for validation")
         else:
             self.llm_reviewer = None
 

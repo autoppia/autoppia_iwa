@@ -13,10 +13,9 @@ class WebVerificationConfig:
     tasks_per_use_case: int = 2
     dynamic_enabled: bool = True
 
-    # LLM review
+    # LLM review (uses LLMReviewer only)
     llm_review_enabled: bool = True
     llm_timeout_seconds: float = 30.0
-    reviewer_type: str = "old"  # Either 'old' or 'new'
 
     # IWAP client
     iwap_enabled: bool = True

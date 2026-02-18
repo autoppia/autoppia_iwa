@@ -1,6 +1,18 @@
 from autoppia_iwa.src.demo_webs.projects.autocinema_1.data_utils import fetch_movies_data
 
 
+async def login_and_film_replace_func(
+    text: str,
+    seed_value: int | None = None,
+    dataset: list | dict | None = None,
+    constraints: list[dict] | None = None,
+    **kwargs,
+) -> str:
+    """Apply login placeholders then film placeholders. Use for auth-required film use cases (EDIT_FILM, ADD_FILM, ADD_TO_WATCHLIST, REMOVE_FROM_WATCHLIST)."""
+    text = login_replace_func(text, constraints=constraints, **kwargs)
+    return await replace_film_placeholders(text, seed_value=seed_value, dataset=dataset, constraints=constraints, **kwargs)
+
+
 def login_replace_func(text: str, constraints: list[dict] | None = None, **kwargs) -> str:
     if not isinstance(text, str):
         return text
@@ -53,23 +65,6 @@ def _film_name_from_constraints(constraints: list[dict] | None) -> str | None:
     return None
 
 
-def _film_name_from_constraints(constraints: list[dict] | None) -> str | None:
-    """
-    Extract film name for <movie> placeholder from constraints so prompt matches validation.
-    - field 'name': EDIT_FILM, FILM_DETAIL, etc.
-    - field 'query': SEARCH_FILM (search query is the film title).
-    """
-    if not constraints:
-        return None
-    for c in constraints:
-        field = c.get("field")
-        if field == "name" or field == "query":
-            val = c.get("value")
-            if val is not None:
-                return str(val)
-    return None
-
-
 async def replace_film_placeholders(
     text: str,
     seed_value: int | None = None,
@@ -80,8 +75,8 @@ async def replace_film_placeholders(
         return text
 
     if dataset is not None:
-        # Task generator passes full project dict {"films": [...], "users": [...]}; use films list
-        movies_data = dataset.get("films", []) if isinstance(dataset, dict) else dataset
+        # Task generator passes full project dict {"movies": [...], "users": [...]} (API key); use movies list
+        movies_data = dataset.get("movies", []) if isinstance(dataset, dict) else dataset
     else:
         movies_data = await fetch_movies_data(seed_value=seed_value)
     if not movies_data:

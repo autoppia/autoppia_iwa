@@ -40,7 +40,7 @@ from .generation_functions import (
     generate_share_film_constraints,
     generate_watch_trailer_constraints,
 )
-from .replace_functions import login_replace_func, register_replace_func, replace_film_placeholders
+from .replace_functions import login_and_film_replace_func, login_replace_func, register_replace_func, replace_film_placeholders
 
 STRICT_COPY_INSTRUCTION = "CRITICAL: Copy values EXACTLY as provided in the constraints. Do NOT correct typos, do NOT remove numbers, do NOT truncate or summarize strings, and do NOT 'clean up' names or titles (e.g., if constraint is 'Sofia 4', write 'Sofia 4', NOT 'Sofia'; if it is 'ng', write 'ng', NOT 'an')."
 
@@ -273,18 +273,16 @@ FILM_DETAIL_USE_CASE = UseCase(
 
 
 def _get_add_to_watchlist_info(movies_data: list[dict]) -> str:
-    """Generate add to watchlist info dynamically from API data."""
+    """Generate add to watchlist / remove from watchlist info dynamically from API data (auth required)."""
     return f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above (field, operator, and value).
-2. Include ONLY the constraints mentioned above - do not add any other criteria.
-3. Be phrased as a request to **add to watchlist or wishlist** of a movie (e.g., "Add to wishlist...", "Put in my watchlist...", "I want to watch later...").
-4. {STRICT_COPY_INSTRUCTION}
+1. Begin with a login instruction using username equals <username> and password equals <password> (exact constraint values).
+2. Include ALL constraints mentioned above (field, operator, and value).
+3. Include ONLY the constraints mentioned above - do not add any other criteria.
+4. Be phrased as a request to **add to watchlist or wishlist** (or **remove from watchlist**) of a movie (e.g., "Add to wishlist...", "Remove from watchlist...").
+5. {STRICT_COPY_INSTRUCTION}
 
-For example, if the constraints are "name contains ng AND rating greater_than 3.8":
-- CORRECT: "Add to wishlist a movie whose name contains 'ng' and that has a rating greater than 3.8"
-- INCORRECT: "Add to wishlist a movie directed by Christopher Nolan" (wrong constraints)
-
+For example: "Login with username equals <username> and password equals <password>. Add to wishlist a movie whose name contains 'ng' and that has a rating greater than 3.8."
 ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
 """
 
@@ -294,6 +292,7 @@ ADD_TO_WATCHLIST_USE_CASE = UseCase(
     description="The user explicitly requests to add a film into wishlist of a specific movie that meets certain criteria, where they can view information including director, year, genres, rating, duration, and cast.",
     event=AddToWatchlistEvent,
     event_source_code=AddToWatchlistEvent.get_source_code_of_class(),
+    replace_func=login_and_film_replace_func,
     additional_prompt_info=None,  # Will be populated dynamically from API
     constraints_generator=generate_add_to_watchlist_constraints,
     examples=[
@@ -342,6 +341,7 @@ REMOVE_FROM_WATCHLIST_USE_CASE = UseCase(
     description="Remove a film from the watchlist using the provided constraints (used to validate removal events).",
     event=RemoveFromWatchlistEvent,
     event_source_code=RemoveFromWatchlistEvent.get_source_code_of_class(),
+    replace_func=login_and_film_replace_func,
     additional_prompt_info=None,  # populated dynamically
     constraints_generator=generate_remove_from_watchlist_constraints,
     examples=[
@@ -538,15 +538,13 @@ SEARCH_FILM_USE_CASE = UseCase(
 ###############################################################################
 ADD_FILM_ADDITIONAL_PROMPT_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above (field, operator, and value).
-2. Include ONLY the constraints mentioned above - do not add any other criteria.
-3. Be phrased as a request to add or insert a film (e.g., "Add the movie...", "Insert a new film...", "Register a movie...").
-4. {STRICT_COPY_INSTRUCTION}
+1. Begin with a login instruction using username equals <username> and password equals <password> (exact constraint values).
+2. Include ALL constraints mentioned above (field, operator, and value).
+3. Include ONLY the constraints mentioned above - do not add any other criteria.
+4. Be phrased as a request to add or insert a film (e.g., "Add the movie...", "Insert a new film...", "Register a movie...").
+5. {STRICT_COPY_INSTRUCTION}
 
-For example, if the constraints are "year equals 2014 AND director equals 'Wes Anderson'":
-- CORRECT: "Add a film whose year equals 2014 and that is directed by Wes Anderson."
-- INCORRECT: "Add a film with a high rating" (missing specific constraints)
-
+For example: "Login with username equals <username> and password equals <password>. Add a film whose year equals 2014 and that is directed by Wes Anderson."
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
 
@@ -555,8 +553,9 @@ ADD_FILM_USE_CASE = UseCase(
     description="The user adds a new film to the system, specifying details such as name, director, year, genres, duration, language, and cast.",
     event=AddFilmEvent,
     event_source_code=AddFilmEvent.get_source_code_of_class(),
+    replace_func=login_and_film_replace_func,
     constraints_generator=generate_add_film_constraints,
-    additional_prompt_info=ADD_FIL_ADDITIONAL_PROMPT_INFO,
+    additional_prompt_info=ADD_FILM_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Add the movie 'The Grand Budapest Hotel' directed by 'Wes Anderson'",
@@ -600,18 +599,15 @@ ADD_FILM_USE_CASE = UseCase(
 ###############################################################################
 EDIT_FILM_ADDITIONAL_PROMPT_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above (field, operator, and value).
-2. Explicitly mention the field names (name, director, year, genres, rating, duration, cast). For 'genres', you can also use 'genre' in singular.
-3. Use clear operator indicators (e.g., "equals", "contains", "greater than", "less than"). DO NOT use ambiguous words like "including" for a CONTAINS operator; use "contains" instead.
-4. Include ONLY the constraints mentioned above - do not add any other criteria.
-5. Be phrased as a request to edit or modify a film (e.g., "Edit...", "Update the film...", "Modify...").
-6. {STRICT_COPY_INSTRUCTION}
+1. Begin with a login instruction using username equals <username> and password equals <password> (exact constraint values).
+2. Include ALL constraints mentioned above (field, operator, and value).
+3. Explicitly mention the field names (name, director, year, genres, rating, duration, cast). For 'genres', you can also use 'genre' in singular.
+4. Use clear operator indicators (e.g., "equals", "contains", "greater than", "less than"). DO NOT use ambiguous words like "including" for a CONTAINS operator; use "contains" instead.
+5. Include ONLY the constraints mentioned above - do not add any other criteria.
+6. Be phrased as a request to edit or modify a film (e.g., "Edit...", "Update the film...", "Modify...").
+7. {STRICT_COPY_INSTRUCTION}
 
-For example, if the constraints are "name equals 'The Matrix' AND year equals 1999 AND director contains 'Wachowskis'":
-- CORRECT: "Update the movie where name equals 'The Matrix', set the year equals 1999 and ensure the director contains 'Wachowskis'."
-- CORRECT: "Modify the record for movie name 'The Matrix', changing the year to 1999 and ensuring the director contains 'Wachowskis'."
-- INCORRECT: "Update The Matrix from 1999" (missing director constraint and explicit operators)
-
+For example: "Login with username equals <username> and password equals <password>. Update the movie where name equals 'The Matrix', set the year equals 1999 and ensure the director contains 'Wachowskis'."
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria and mentioning the field names.
 """
 EDIT_FILM_USE_CASE = UseCase(
@@ -619,7 +615,7 @@ EDIT_FILM_USE_CASE = UseCase(
     description="The user edits an existing film, modifying one or more attributes such as name, director, year, genres, rating, duration, or cast.",
     event=EditFilmEvent,
     event_source_code=EditFilmEvent.get_source_code_of_class(),
-    replace_func=replace_film_placeholders,
+    replace_func=login_and_film_replace_func,
     constraints_generator=generate_edit_film_constraints,
     additional_prompt_info=EDIT_FILM_ADDITIONAL_PROMPT_INFO,
     examples=[
