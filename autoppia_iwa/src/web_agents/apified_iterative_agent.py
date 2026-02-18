@@ -185,4 +185,4 @@ class ApifiedWebAgent(IWebAgent):
 
 ApifiedIterativeWebAgent = ApifiedWebAgent
 
-__all__ = ["ApifiedWebAgent", "ApifiedIterativeWebAgent"]
+__all__ = ["ApifiedIterativeWebAgent", "ApifiedWebAgent"]

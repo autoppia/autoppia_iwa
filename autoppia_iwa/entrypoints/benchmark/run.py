@@ -68,24 +68,24 @@ AGENTS = [
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
-    "autocrm",
+    "autocinema",
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 USE_CASES = None  # None = all use cases
 
 # =====================================================
-# CONFIGURACIÓN: Elige el modo de evaluación aquí
+# CONFIGURATION: Choose the evaluation mode here
 # =====================================================
 
-# OPCIÓN 1: Modo CONCURRENT (tradicional)
-# El agente genera TODAS las acciones de una vez y se evalúan
+# OPTION 1: CONCURRENT mode (traditional)
+# Agent generates ALL actions at once and they are evaluated
 CFG = BenchmarkConfig(
     projects=PROJECTS,
     agents=AGENTS,
     # Evaluator mode
-    evaluator_mode="concurrent",  # ← Agente genera lista completa de acciones
+    evaluator_mode="concurrent",  # ← Agent generates full action list
     # Tasks
-    prompts_per_use_case=3,
+    prompts_per_use_case=1,
     # use_cases=None means all use-cases
     use_cases=None,
     # Execution
@@ -94,7 +94,7 @@ CFG = BenchmarkConfig(
     record_gif=False,  # if your evaluator returns GIFs
     # Dynamic mode: disabled for this simple fixed-task test to avoid seed constraints.
     dynamic=True,
-    # TODO REVISAR PORQUE SOLO DEBEIRA HABER UNO
+    # TODO REVIEW BECAUSE THERE SHOULD ONLY BE ONE
     # dynamic_phase_config=DynamicPhaseConfig(
     #     enable_d1_structure=True,
     #     enable_d3_attributes=True,
@@ -110,8 +110,8 @@ CFG = BenchmarkConfig(
 #     projects=PROJECTS,
 #     agents=AGENTS,
 #     # Evaluator mode
-#     evaluator_mode="stateful",  # ← Modo iterativo: agente decide paso a paso
-#     max_steps_per_task=50,  # ← Límite de pasos por tarea
+#     evaluator_mode="stateful",  # ← Iterative mode: agent decides step by step
+#     max_steps_per_task=50,  # ← Step limit per task
 #     # Tasks
 #     use_cached_tasks=True,
 #     prompts_per_use_case=1,
@@ -120,8 +120,8 @@ CFG = BenchmarkConfig(
 #     # Execution
 #     runs=1,
 #     max_parallel_agent_calls=1,
-#     use_cached_solutions=False,  # ⚠️ No compatible con modo stateful
-#     record_gif=True,  # Recomendado para ver la navegación adaptativa
+#     use_cached_solutions=False,  # ⚠️ Not compatible with stateful mode
+#     record_gif=True,  # Recommended to see adaptive navigation
 #     # Dynamic mode
 #     dynamic=False,
 #     # Persistence
