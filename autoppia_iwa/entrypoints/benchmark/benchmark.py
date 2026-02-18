@@ -103,7 +103,7 @@ class Benchmark:
         Evalúa un agente usando AsyncStatefulEvaluator en modo iterativo.
 
         ✅ El agente debe implementar IWebAgent con método act().
-        Típicamente es un ApifiedWebCUA (agente HTTP) corriendo en un servidor.
+        Típicamente es un ApifiedIterativeWebAgent (agente HTTP) corriendo en un servidor.
 
         El agente debe estar corriendo en un servidor HTTP y responder en:
         POST /act con: {task, snapshot_html, url, step_index}
@@ -114,7 +114,7 @@ class Benchmark:
             raise ValueError(
                 f"❌ El agente '{agent.name}' no implementa IWebAgent correctamente.\n"
                 f"Debe tener el método act() que recibe el estado del browser.\n"
-                f"Usa: ApifiedWebCUA(base_url='http://localhost:PORT')"
+                f"Usa: ApifiedIterativeWebAgent(base_url='http://localhost:PORT')"
             )
 
         evaluator = AsyncStatefulEvaluator(

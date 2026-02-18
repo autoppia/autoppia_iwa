@@ -14,7 +14,7 @@ from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.concurrent_evaluator import ConcurrentEvaluator
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.apified_one_shot_agent import ApifiedOneShotWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 # Configuration
@@ -76,7 +76,7 @@ async def test_contact_task():
     logger.info(f"Task URL: {task.url}")
 
     # Create agent
-    agent = ApifiedWebAgent(id="technical_test_agent", name="Technical Test Agent", host=AGENT_HOST, port=AGENT_PORT, timeout=AGENT_TIMEOUT)
+    agent = ApifiedOneShotWebAgent(id="technical_test_agent", name="Technical Test Agent", host=AGENT_HOST, port=AGENT_PORT, timeout=AGENT_TIMEOUT)
 
     # Reset database
     backend = BackendDemoWebService(project)

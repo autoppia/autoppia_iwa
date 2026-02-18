@@ -9,7 +9,7 @@ import asyncio
 from loguru import logger
 
 from autoppia_iwa.entrypoints.judge_benchmark.test_real_web import WebVoyagerBenchmark, WebVoyagerConfig
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.apified_one_shot_agent import ApifiedOneShotWebAgent
 
 # =========================
 # 💡 Configuration
@@ -17,7 +17,7 @@ from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
 # 1) Agent (where your agent is listening)
 AGENTS = [
-    ApifiedWebAgent(id="1", name="BrowserUse-OpenAI", host="127.0.0.1", port=5000, timeout=250),
+    ApifiedOneShotWebAgent(id="1", name="BrowserUse-OpenAI", host="127.0.0.1", port=5000, timeout=250),
 ]
 
 # 2) Choose how to select tasks

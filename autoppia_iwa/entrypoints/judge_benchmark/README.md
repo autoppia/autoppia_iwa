@@ -30,7 +30,7 @@ Minimal example inside `run.py`:
 ```python
 # Agent
 AGENTS = [
-    ApifiedWebAgent(id="1", name="BrowserUse-OpenAI", host="127.0.0.1", port=5000, timeout=120),
+    ApifiedOneShotWebAgent(id="1", name="BrowserUse-OpenAI", host="127.0.0.1", port=5000, timeout=120),
 ]
 
 # Choose how to select tasks

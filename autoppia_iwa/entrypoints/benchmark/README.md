@@ -115,13 +115,13 @@ All benchmark settings configured in code (no CLI):
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
 from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.apified_one_shot_agent import ApifiedOneShotWebAgent
 
 # 1) Agents to evaluate (all expose POST /act)
-from autoppia_iwa.src.web_agents.cua import ApifiedWebCUA
+from autoppia_iwa.src.web_agents.cua import ApifiedIterativeWebAgent
 
 AGENTS = [
-    ApifiedWebCUA(base_url="http://localhost:5000", id="1", name="MyAgent", timeout=120),
+    ApifiedIterativeWebAgent(base_url="http://localhost:5000", id="1", name="MyAgent", timeout=120),
 ]
 
 # 2) Projects to test
@@ -186,7 +186,7 @@ There is **one entrypoint**, `run.py`. All agents expose **POST /act**; you choo
 | **Calls** | Once per task: `step_index=0`, agent returns full action list | Repeated: each call gets current `snapshot_html`, agent returns next action(s) |
 | **Typical use** | Agent plans full sequence in one go | Agent decides step-by-step (same as subnet miners) |
 
-**How to switch in `run.py`:** Use the first `CFG` block for concurrent, or the commented stateful block for stateful. In both cases use `ApifiedWebCUA` with your agent’s base URL (agent must expose `POST /act`).
+**How to switch in `run.py`:** Use the first `CFG` block for concurrent, or the commented stateful block for stateful. In both cases use `ApifiedIterativeWebAgent` with your agent’s base URL (agent must expose `POST /act`).
 
 **`/act` endpoint (POST) — used for both modes:**
 
@@ -593,14 +593,14 @@ Tasks are always generated fresh for each benchmark run. No caching is used.
 
 ## 🤖 Agent Integration
 
-### **ApifiedWebAgent**
+### **ApifiedOneShotWebAgent**
 
 HTTP-based agent (recommended approach):
 
 ```python
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.apified_one_shot_agent import ApifiedOneShotWebAgent
 
-agent = ApifiedWebAgent(
+agent = ApifiedOneShotWebAgent(
     id="1",
     name="MyAgent",
     host="127.0.0.1",  # or remote server
@@ -680,9 +680,9 @@ CFG = BenchmarkConfig(
 
 ```python
 AGENTS = [
-    ApifiedWebAgent(id="1", name="Agent1", port=7000),
-    ApifiedWebAgent(id="2", name="Agent2", port=7001),
-    ApifiedWebAgent(id="3", name="Agent3", port=7002),
+    ApifiedOneShotWebAgent(id="1", name="Agent1", port=7000),
+    ApifiedOneShotWebAgent(id="2", name="Agent2", port=7001),
+    ApifiedOneShotWebAgent(id="3", name="Agent3", port=7002),
 ]
 CFG = BenchmarkConfig(
     runs=10,

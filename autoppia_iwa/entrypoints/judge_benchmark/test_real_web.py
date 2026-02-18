@@ -20,7 +20,7 @@ from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfi
 from autoppia_iwa.src.evaluation.concurrent_evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_task
 from autoppia_iwa.src.shared.web_voyager_utils import TaskData, generate_hash, load_real_tasks
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.apified_one_shot_agent import ApifiedOneShotWebAgent
 from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution
 
 
@@ -45,9 +45,9 @@ class WebVoyagerConfig:
 # Define agents
 AGENTS: list[IWebAgent] = [
     # RandomClickerWebAgent(name="Random-clicker"),
-    ApifiedWebAgent(name="Browser-Use", host="localhost", port=5000, timeout=250),
-    # ApifiedWebAgent(name="OpenAI-CUA", host="localhost", port=5000, timeout=400),
-    # ApifiedWebAgent(name="Autoppia-Agent", host="localhost", port=9002, timeout=120),
+    ApifiedOneShotWebAgent(name="Browser-Use", host="localhost", port=5000, timeout=250),
+    # ApifiedOneShotWebAgent(name="OpenAI-CUA", host="localhost", port=5000, timeout=400),
+    # ApifiedOneShotWebAgent(name="Autoppia-Agent", host="localhost", port=9002, timeout=120),
 ]
 
 visualizer = SubnetVisualizer()

@@ -18,7 +18,7 @@ from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.concurrent_evaluator import ConcurrentEvaluator
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.apified_one_shot_agent import ApifiedOneShotWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 # ==============
@@ -122,7 +122,7 @@ async def run_prompt_test():
         "tests": [t.model_dump() for t in task.tests],
     }
 
-    agent = ApifiedWebAgent(id="1", name="TestAgent", host=CONFIG.agent_host, port=CONFIG.agent_port, timeout=CONFIG.agent_timeout)
+    agent = ApifiedOneShotWebAgent(id="1", name="TestAgent", host=CONFIG.agent_host, port=CONFIG.agent_port, timeout=CONFIG.agent_timeout)
     task.should_record = CONFIG.save_output
     backend = BackendDemoWebService(project)
     await backend.reset_database(web_agent_id=agent.id)

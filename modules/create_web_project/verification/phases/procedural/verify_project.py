@@ -356,17 +356,6 @@ def _bootstrap_llm_from_env():
         use_bearer = os.getenv("CHUTES_USE_BEARER", "false").strip().lower() in {"1", "true", "yes"}
         return LLMFactory.create_llm("chutes", config, base_url=base_url, api_key=api_key, use_bearer=use_bearer), None
 
-    if provider == "local":
-        endpoint = os.getenv("LOCAL_LLM_ENDPOINT")
-        if not endpoint:
-            return None, RuntimeError("LOCAL_LLM_ENDPOINT is not configured for local provider")
-        config = LLMConfig(
-            model=os.getenv("LOCAL_LLM_MODEL", "local-model"),
-            temperature=_read_float_env("LOCAL_LLM_TEMPERATURE", 0.7),
-            max_tokens=_read_int_env("LOCAL_LLM_MAX_TOKENS", 1024),
-        )
-        return LLMFactory.create_llm("local", config, endpoint_url=endpoint), None
-
     return None, RuntimeError(f"Unsupported LLM_PROVIDER '{provider}'")
 
 
