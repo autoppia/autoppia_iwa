@@ -187,14 +187,15 @@ class SimpleTaskGenerator:
                     replaced_prompt = use_case_copy.apply_replacements(prompt_text, **replace_kwargs)
 
                 # Create and append task - use the COPY which has constraints preserved
-                tasks.append(
-                    Task(
-                        web_project_id=self.web_project.id,
-                        url=task_url,
-                        prompt=replaced_prompt,
-                        use_case=use_case_copy,  # Use the copy with preserved constraints
-                    )
+                task = Task(
+                    web_project_id=self.web_project.id,
+                    url=task_url,
+                    prompt=replaced_prompt,
+                    use_case=use_case_copy,  # Use the copy with preserved constraints
                 )
+                if dynamic:
+                    task.assign_seed_to_url()
+                tasks.append(task)
                 use_case.constraints = None
             except Exception as ex:
                 logger.error(f"Could not assemble Task for prompt '{prompt_text}': {ex!s}")

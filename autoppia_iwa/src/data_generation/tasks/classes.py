@@ -1,6 +1,8 @@
 # file: data_generation/domain/classes.py
+import random
 import uuid
 from typing import Annotated, Any
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
@@ -119,6 +121,32 @@ class Task(BaseModel):
 
         # Remove any None values to make the output cleaner
         return {k: v for k, v in cleaned.items() if v is not None}
+
+    def assign_seed_to_url(self, seed_value: int | None = None) -> None:
+        """
+        Ensure the task URL has a seed parameter (1-999) for dynamic tasks.
+        If the URL already includes a seed, it is left unchanged.
+        """
+        if not self.url:
+            return
+
+        try:
+            parsed = urlparse(self.url)
+            query_params = parse_qs(parsed.query)
+            existing_seed = query_params.get("seed")
+            if existing_seed and str(existing_seed[0]).strip():
+                return
+
+            seed_value = random.randint(1, 999) if seed_value is None else max(1, min(int(seed_value), 999))
+
+            query_params["seed"] = [str(seed_value)]
+            new_query = urlencode(query_params, doseq=True)
+            self.url = urlunparse(parsed._replace(query=new_query))
+        except Exception:
+            seed_value = random.randint(1, 999) if seed_value is None else max(1, min(int(seed_value), 999))
+
+            sep = "&" if "?" in self.url else "?"
+            self.url = f"{self.url}{sep}seed={seed_value}"
 
 
 class TaskGenerationConfig(BaseModel):
