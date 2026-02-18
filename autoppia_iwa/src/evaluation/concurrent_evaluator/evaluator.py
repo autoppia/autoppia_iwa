@@ -6,6 +6,10 @@ import time
 from collections import defaultdict
 from urllib.parse import urlparse
 
+try:
+    from autoppia_web_agents_subnet.validator.config import TESTING as SUBNET_TESTING
+except Exception:
+    SUBNET_TESTING = None
 
 from loguru import logger
 from playwright.async_api import async_playwright
@@ -38,6 +42,8 @@ EVALUATION_LEVEL_NO = 25
 
 
 def _is_testing_mode() -> bool:
+    if isinstance(SUBNET_TESTING, bool):
+        return SUBNET_TESTING
     return os.getenv("TESTING", "").strip().lower() in {"1", "true", "yes", "on"}
 
 
