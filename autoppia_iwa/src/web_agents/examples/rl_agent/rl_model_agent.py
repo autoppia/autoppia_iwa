@@ -55,6 +55,7 @@ class RLModelAgent(IWebAgent):
         *,
         task: Task,
         snapshot_html: str,
+        screenshot: str | bytes | None = None,
         url: str,
         step_index: int,
         history: list[dict[str, Any]] | None = None,

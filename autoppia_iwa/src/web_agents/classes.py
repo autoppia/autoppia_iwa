@@ -95,7 +95,7 @@ class IWebAgent(ABC):
     - Modo stateful: Se llama iterativamente, el agente ve el estado en cada paso
 
     Example implementations:
-    - ApifiedIterativeWebAgent: HTTP API-based iterative agent (para benchmark y subnet)
+    - ApifiedWebAgent: HTTP API-based iterative agent (para benchmark y subnet)
     - ApifiedOneShotWebAgent: one-shot /solve_task agent
     - Miners: Repositorios GitHub deployados como contenedores HTTP
     """
@@ -109,6 +109,7 @@ class IWebAgent(ABC):
         *,
         task: Task,
         snapshot_html: str,
+        screenshot: str | bytes | None = None,
         url: str,
         step_index: int,
         history: list[dict[str, Any]] | None = None,
@@ -123,6 +124,7 @@ class IWebAgent(ABC):
         Args:
             task: La tarea a resolver
             snapshot_html: HTML actual de la página
+            screenshot: Snapshot visual del estado actual (bytes o base64 str). Optional.
             url: URL actual
             step_index: Número de iteración (0 en concurrent, incrementa en stateful)
             history: Historial opcional de acciones previas
