@@ -74,7 +74,7 @@ def _url_hostname(url: str | None) -> str | None:
 
 
 def _is_testing_mode() -> bool:
-    return os.getenv("TESTING", "").strip().lower() in {"1", "true", "yes"}
+    return os.getenv("TESTING", "").strip().lower() in {"1", "true", "yes", "on"}
 
 
 def _is_navigation_url_allowed(*, is_web_real: bool, task_url: str | None, candidate_url: str | None) -> tuple[bool, str | None]:

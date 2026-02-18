@@ -6,6 +6,7 @@ import time
 from collections import defaultdict
 from urllib.parse import urlparse
 
+
 from loguru import logger
 from playwright.async_api import async_playwright
 
@@ -34,6 +35,10 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 EVALUATION_LEVEL_NAME = "EVALUATION"
 EVALUATION_LEVEL_NO = 25
+
+
+def _is_testing_mode() -> bool:
+    return os.getenv("TESTING", "").strip().lower() in {"1", "true", "yes", "on"}
 
 
 def _ensure_evaluation_level() -> None:
@@ -103,7 +108,7 @@ def _is_navigation_url_allowed(*, is_web_real: bool, task_url: str | None, candi
         return True, None
 
     if not is_web_real:
-        if os.getenv("TESTING", "").strip().lower() in {"1", "true", "yes"}:
+        if _is_testing_mode():
             return True, None
         if target_host in {"localhost", "127.0.0.1", "::1"}:
             return True, None
