@@ -1,4 +1,4 @@
-from autoppia_iwa.src.demo_webs.projects.autocinema_1.data_utils import fetch_movies_data
+from autoppia_iwa.src.demo_webs.projects.autocinema_1.data_utils import fetch_data
 
 
 async def login_and_film_replace_func(
@@ -78,7 +78,7 @@ async def replace_film_placeholders(
         # Task generator passes full project dict {"movies": [...], "users": [...]} (API key); use movies list
         movies_data = dataset.get("movies", []) if isinstance(dataset, dict) else dataset
     else:
-        movies_data = await fetch_movies_data(seed_value=seed_value)
+        movies_data = await fetch_data(seed_value=seed_value)
     if not movies_data:
         return text
 
