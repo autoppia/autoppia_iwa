@@ -13,7 +13,7 @@ from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
 from autoppia_iwa.src.web_agents.classes import IWebAgent
 
 
-class ApifiedIterativeWebAgent(IWebAgent):
+class ApifiedWebAgent(IWebAgent):
     """
     Iterative agent that calls a remote /act (or /step) endpoint to get next actions.
 
@@ -50,6 +50,7 @@ class ApifiedIterativeWebAgent(IWebAgent):
         *,
         task: Task,
         snapshot_html: str,
+        screenshot: str | bytes | None = None,
         url: str,
         step_index: int,
         history: list[dict[str, Any]] | None = None,
@@ -62,6 +63,7 @@ class ApifiedIterativeWebAgent(IWebAgent):
             "prompt": getattr(task, "prompt", None),
             "url": self._force_localhost(url),
             "snapshot_html": snapshot_html,
+            "screenshot": screenshot,
             "step_index": int(step_index),
             "web_project_id": getattr(task, "web_project_id", None),
         }
@@ -87,6 +89,7 @@ class ApifiedIterativeWebAgent(IWebAgent):
         *,
         task: Task,
         snapshot_html: str,
+        screenshot: str | bytes | None = None,
         url: str,
         step_index: int,
         history: list[dict[str, Any]] | None = None,
@@ -95,6 +98,7 @@ class ApifiedIterativeWebAgent(IWebAgent):
             self.act(
                 task=task,
                 snapshot_html=snapshot_html,
+                screenshot=screenshot,
                 url=url,
                 step_index=step_index,
                 history=history,
@@ -179,4 +183,6 @@ class ApifiedIterativeWebAgent(IWebAgent):
         return urlunparse(new_url)
 
 
-__all__ = ["ApifiedIterativeWebAgent"]
+ApifiedIterativeWebAgent = ApifiedWebAgent
+
+__all__ = ["ApifiedWebAgent", "ApifiedIterativeWebAgent"]

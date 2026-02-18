@@ -19,6 +19,7 @@ class ScoreDetails(Protocol):
 class BrowserSnapshot(Protocol):
     html: str
     url: str
+    screenshot: bytes | None
 
 
 class StepResult(Protocol):
@@ -28,7 +29,7 @@ class StepResult(Protocol):
 
 
 @runtime_checkable
-class AsyncWebCUASession(Protocol):
+class AsyncWebAgentSession(Protocol):
     """
     Async interface for a step-wise browser + backend session over Autoppia tasks.
     """
@@ -51,9 +52,9 @@ class AsyncWebCUASession(Protocol):
 
 
 @runtime_checkable
-class SyncWebCUASession(Protocol):
+class SyncWebAgentSession(Protocol):
     """
-    Sync wrapper interface around a WebCUA session, suitable for RL envs.
+    Sync wrapper interface around a web-agent session, suitable for RL envs.
     """
 
     def reset(self) -> StepResult: ...
@@ -77,7 +78,19 @@ class SyncWebCUASession(Protocol):
     def history(self) -> list[ActionExecutionResult]: ...
 
 
+WebAgentSession = AsyncWebAgentSession
+WebAgentSyncSession = SyncWebAgentSession
+
+
+AsyncWebCUASession = AsyncWebAgentSession
+SyncWebCUASession = SyncWebAgentSession
+
+
 __all__ = [
+    "WebAgentSession",
+    "WebAgentSyncSession",
+    "AsyncWebAgentSession",
+    "SyncWebAgentSession",
     "AsyncWebCUASession",
     "BrowserSnapshot",
     "ScoreDetails",

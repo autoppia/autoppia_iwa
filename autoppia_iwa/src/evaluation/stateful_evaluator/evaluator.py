@@ -4,7 +4,7 @@ from __future__ import annotations
 Async-first stateful evaluator for Autoppia IWA tasks.
 
 This module provides:
-- AsyncStatefulEvaluator: async WebCUA-compatible session over a single Task.
+- AsyncStatefulEvaluator: async Web-Agent-compatible session over a single Task.
 - StatefulEvaluator: sync wrapper around AsyncStatefulEvaluator for PPO/RL envs.
 """
 
@@ -31,7 +31,7 @@ from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.execution.browser_executor import PlaywrightBrowserExecutor
 from autoppia_iwa.src.execution.classes import ActionExecutionResult, BrowserSnapshot as ExecutionBrowserSnapshot
 from autoppia_iwa.src.web_agents.classes import replace_credentials_in_action
-from autoppia_iwa.src.web_agents.cua import AsyncWebCUASession, SyncWebCUASession
+from autoppia_iwa.src.web_agents.cua import AsyncWebAgentSession, SyncWebAgentSession
 
 
 @dataclass
@@ -106,9 +106,9 @@ def _is_navigation_url_allowed(*, is_web_real: bool, task_url: str | None, candi
     return True, None
 
 
-class AsyncStatefulEvaluator(AsyncWebCUASession):
+class AsyncStatefulEvaluator(AsyncWebAgentSession):
     """
-    Async WebCUA-compatible session for a single Task.
+    Async Web-agent-compatible session for a single Task.
     """
 
     def __init__(
@@ -387,7 +387,7 @@ class AsyncStatefulEvaluator(AsyncWebCUASession):
         return list(self._history)
 
 
-class StatefulEvaluator(SyncWebCUASession):
+class StatefulEvaluator(SyncWebAgentSession):
     """
     Sync wrapper around AsyncStatefulEvaluator for PPO/RL envs and non-async callers.
     """
