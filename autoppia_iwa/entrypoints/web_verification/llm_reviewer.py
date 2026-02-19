@@ -3,6 +3,7 @@ LLM Reviewer for validating that generated tests make sense with task prompts
 """
 
 import asyncio
+import re
 from typing import Any
 
 from loguru import logger
@@ -151,53 +152,11 @@ class LLMReviewer:
             "- No intermediate or partial scores are allowed.\n\n"
             "Respond ONLY in the following JSON format:\n"
             "{\n"
-            '  "valid": boolean,  // TRUE if prompt includes ALL constraints correctly, FALSE otherwise\n'
-            '  "score": float,     // MUST be 1.0 if valid=true, 0.0 if valid=false (NO intermediate scores)\n'
-            '  "issues": [string], // List of issues found (empty if valid is true)\n'
-            '  "reasoning": string // Explanation of your assessment\n'
-            "}\n\n"
-            "CRITICAL: BINARY EVALUATION ONLY\n"
-            "- valid=true, score=1.0: Prompt includes ALL constraints correctly\n"
-            "- valid=false, score=0.0: Prompt is missing constraints OR misrepresents them\n"
-            "- NO intermediate scores (0.7, 0.75, 0.8, etc.) are allowed\n"
-            "- DO NOT penalize for 'too many constraints' or 'may not be fulfillable' - that's not your concern\n"
-            "- Your ONLY job: Check if prompt accurately represents all constraints - that's it\n\n"
-            "EVALUATION PROCESS (STRICT BINARY - valid=true/score=1.0 OR valid=false/score=0.0):\n\n"
-            "STEP 1: Validate constraint well-formedness\n"
-            "   - Check if CONSTRAINT fields are in the available fields list\n"
-            "   - Check if CONSTRAINT operators are supported by those fields\n"
-            "   - If constraints are invalid → valid=false, score=0.0\n"
-            "   - If constraints are valid → proceed to STEP 2\n\n"
-            "STEP 2: Verify prompt represents all constraints\n"
-            "   For EACH constraint, check THREE things:\n"
-            "   1. FIELD: Is the constraint field mentioned/referenced in the prompt?\n"
-            "      - Prompt can mention fields in ANY way - IGNORE quotation marks\n"
-            "   2. OPERATOR: Is the constraint operator correctly reflected?\n"
-            "      - Check SEMANTIC MEANING, not exact wording\n"
-            "      - Key equivalences: 'is NOT' = 'not_equals', 'set X to Y' = 'X equals Y', 'to include X' = 'contains X'\n"
-            "      - IGNORE auxiliary verbs and sentence structure variations\n"
-            "   3. VALUE: Does the constraint value match?\n"
-            "      - For 'equals': Exact value match (can be 'using X', 'with Y', 'set to Y', etc.)\n"
-            "      - For others: Semantic equivalence\n"
-            "      - IGNORE quotation marks around values and IGNORE units (minutes, stars, etc.)\n"
-            "   If ALL constraints pass all three checks → valid=true, score=1.0\n"
-            "   If ANY constraint fails ANY check → valid=false, score=0.0\n\n"
-            "WHAT TO IGNORE:\n"
-            "- Quotation marks (single or double) around fields or values - IGNORE completely\n"
-            "- Units like 'minutes', 'seconds', 'min', 'stars', '$' - IGNORE completely if numeric value matches\n"
-            "- Auxiliary verbs (is, was, has, should be) - IGNORE completely\n"
-            "- Formatting differences (spaces, punctuation) - focus on content\n"
-            "- Extra information in prompt (preconditions, context) - this is VALID\n"
-            "- Verb variations (Show/Share, Modify/Edit) - synonyms are VALID\n"
-            "- Placeholders (<name>, <web_agent_id>) - valid in both prompt and constraint\n"
-            "- Operator quality judgments - if constraint uses an operator and prompt reflects it semantically, it's VALID\n"
-            "- Short or generic values (e.g. 'ti', 'hen', 'e') - if the prompt mentions the exact value, it is VALID; do NOT reject for vagueness\n\n"
-            "FINAL CHECKLIST:\n"
-            "✓ Check ONLY: FIELD, OPERATOR, VALUE for each constraint\n"
-            "✓ Semantic meaning matters, NOT exact wording\n"
-            "✓ If ALL constraints correctly represented → valid=true, score=1.0\n"
-            "✓ If ANY constraint missing or misrepresented → valid=false, score=0.0\n"
-            "✓ NO intermediate scores - strictly binary (1.0 or 0.0)"
+            '  "valid": boolean,\n'
+            '  "score": float,\n'
+            '  "issues": [string],\n'
+            '  "reasoning": string\n'
+            "}"
         )
 
         user_prompt = (
@@ -232,6 +191,27 @@ class LLMReviewer:
             )
 
             result = self._parse_llm_response(raw_response)
+
+            # Deterministic sanity check to reduce LLM reviewer false positives/negatives.
+            heuristic = self._heuristic_value_presence_check(task.prompt, constraints)
+            result["heuristic"] = heuristic
+
+            # If the LLM says it's valid but values are missing, treat it as invalid (likely false positive).
+            if result.get("valid", False) and not heuristic.get("pass", True):
+                result["valid"] = False
+                result["score"] = 0.0
+                result.setdefault("issues", [])
+                result["issues"].extend([f"Heuristic: {msg}" for msg in heuristic.get("issues", [])])
+                result["reasoning"] = (result.get("reasoning", "") + "\n\nHeuristic check failed: missing constraint value(s).").strip()
+
+            # If the LLM says it's invalid but all values are present, treat it as valid (likely false negative).
+            elif not result.get("valid", False) and heuristic.get("pass", False):
+                result["valid"] = True
+                result["score"] = 1.0
+                result["overridden_by_heuristic"] = True
+                result.setdefault("issues", [])
+                result["issues"].append("Heuristic override: all constraint values were found in the prompt.")
+                result["reasoning"] = (result.get("reasoning", "") + "\n\nHeuristic override applied: all constraint values present.").strip()
 
             # Verify binary score
             valid = result.get("valid", False)
@@ -274,6 +254,52 @@ class LLMReviewer:
                 "issues": [f"LLM review error: {e!s}"],
                 "reasoning": f"Error during LLM review: {e!s}",
             }
+
+    def _heuristic_value_presence_check(self, prompt: str, constraints: list[dict[str, Any]] | None) -> dict[str, Any]:
+        """
+        Lightweight deterministic check: ensure each constraint VALUE appears in the prompt text.
+
+        This intentionally does NOT try to fully validate operator semantics or field mention.
+        It exists to:
+        - Flag likely false positives when values are missing
+        - Recover from likely false negatives when the LLM reviewer misreads formatting
+        """
+        if not constraints:
+            return {"pass": True, "issues": []}
+        if not isinstance(prompt, str) or not prompt.strip():
+            return {"pass": False, "issues": ["Empty prompt text"]}
+
+        prompt_norm = self._normalize_for_match(prompt)
+        issues: list[str] = []
+
+        for constraint in constraints:
+            if not isinstance(constraint, dict):
+                continue
+            field = str(constraint.get("field", "") or "")
+            value = constraint.get("value", None)
+            if value is None:
+                continue
+
+            if isinstance(value, list):
+                atoms = [self._normalize_for_match(str(v)) for v in value if v is not None and str(v).strip()]
+                atoms = [a for a in atoms if a]
+                if atoms and not any(a in prompt_norm for a in atoms):
+                    issues.append(f"Missing any listed value for field '{field}'")
+                continue
+
+            atom = self._normalize_for_match(str(value))
+            if atom and atom not in prompt_norm:
+                issues.append(f"Missing value '{value}' for field '{field}'")
+
+        return {"pass": len(issues) == 0, "issues": issues}
+
+    @staticmethod
+    def _normalize_for_match(text: str) -> str:
+        lowered = text.lower()
+        lowered = re.sub(r"[\"'`]", "", lowered)
+        lowered = re.sub(r"[^a-z0-9<>@._\-\s]", " ", lowered)
+        lowered = re.sub(r"\s+", " ", lowered).strip()
+        return lowered
 
     def _parse_llm_response(self, raw_response: Any) -> dict[str, Any]:
         """

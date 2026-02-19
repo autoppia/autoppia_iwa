@@ -66,14 +66,14 @@ class WebVerificationPipeline:
             else None
         )
 
-        if config.llm_review_enabled:
-            self.llm_reviewer = LLMReviewer(
+        self.llm_reviewer = (
+            LLMReviewer(
                 llm_service=self.llm_service,
                 timeout_seconds=config.llm_timeout_seconds,
             )
-            logger.info("Using LLMReviewer for validation")
-        else:
-            self.llm_reviewer = None
+            if config.llm_review_enabled
+            else None
+        )
 
         self.dynamic_verifier = (
             DynamicVerifier(
@@ -894,7 +894,7 @@ class WebVerificationPipeline:
                 "use_cases_with_issues": 0,
                 "failed_llm_review_tasks": 0,
                 "suspicious_tasks": 0,
-                "total_tasks": 0,
+                "total_flagged_tasks": 0,
             },
         }
 
@@ -906,14 +906,13 @@ class WebVerificationPipeline:
             if not tasks:
                 report["use_cases"][use_case_name] = {
                     "use_case_description": use_case_data.get("use_case_description", ""),
-                    "tasks": [],
+                    "flagged_tasks": [],
                     "generation_error": use_case_data.get("error") or "No tasks generated",
                 }
                 report["summary"]["use_cases_with_issues"] += 1
                 continue
 
             # Map reviews by task_id for stability
-            reviews_by_task_id: dict[str, dict[str, Any]] = {str(r.get("task_id")): r for r in reviews if isinstance(r, dict) and r.get("task_id") is not None}
             reviews_by_task_id: dict[str, dict[str, Any]] = {str(r.get("task_id")): r for r in reviews if isinstance(r, dict) and r.get("task_id") is not None}
 
             flagged_tasks: list[dict[str, Any]] = []
@@ -934,11 +933,6 @@ class WebVerificationPipeline:
                 if not should_flag:
                     continue
 
-                # Clean review result for report
-                clean_review = {}
-                if review:
-                    clean_review = {k: v for k, v in review.items() if k not in ["reasoning", "task_id"]}
-
                 flagged_tasks.append(
                     {
                         "task_id": task_id,
@@ -946,7 +940,9 @@ class WebVerificationPipeline:
                         "prompt": prompt,
                         "constraints_str": constraints_str,
                         "constraints": constraints,
-                        "llm_review": clean_review,
+                        "llm_review": review,
+                        "suspicious_reasons": suspicious_reasons,
+                        "overridden_by_heuristic": overridden,
                     }
                 )
 
@@ -958,10 +954,10 @@ class WebVerificationPipeline:
             if flagged_tasks:
                 report["use_cases"][use_case_name] = {
                     "use_case_description": use_case_data.get("use_case_description", ""),
-                    "tasks": flagged_tasks,
+                    "flagged_tasks": flagged_tasks,
                 }
                 report["summary"]["use_cases_with_issues"] += 1
-                report["summary"]["total_tasks"] += len(flagged_tasks)
+                report["summary"]["total_flagged_tasks"] += len(flagged_tasks)
 
         return report
 
@@ -1034,10 +1030,6 @@ class WebVerificationPipeline:
             return [atom]
 
         # Special case: sometimes equals with float "4.5" may appear as "4,5" in some locales; try a loose match
-        if op in {"equals", "greater_than", "less_than", "greater_equal", "less_equal"} and re.fullmatch(r"-?\\d+\\.\\d+", atom.strip()):
-            alt = atom.replace(".", ",")
-            if self._normalize_text_for_match(alt) in prompt_norm:
-                return []
         if op in {"equals", "greater_than", "less_than", "greater_equal", "less_equal"} and re.fullmatch(r"-?\\d+\\.\\d+", atom.strip()):
             alt = atom.replace(".", ",")
             if self._normalize_text_for_match(alt) in prompt_norm:

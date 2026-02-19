@@ -13,7 +13,7 @@ class WebVerificationConfig:
     tasks_per_use_case: int = 2
     dynamic_enabled: bool = True
 
-    # LLM review (uses LLMReviewer only)
+    # LLM review
     llm_review_enabled: bool = True
     llm_timeout_seconds: float = 30.0
 
