@@ -6,6 +6,11 @@ import time
 from collections import defaultdict
 from urllib.parse import urlparse
 
+try:
+    from autoppia_web_agents_subnet.validator.config import TESTING as SUBNET_TESTING
+except Exception:
+    SUBNET_TESTING = False
+
 from loguru import logger
 from playwright.async_api import async_playwright
 
@@ -34,6 +39,10 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 EVALUATION_LEVEL_NAME = "EVALUATION"
 EVALUATION_LEVEL_NO = 25
+
+
+def _is_testing_mode() -> bool:
+    return bool(SUBNET_TESTING)
 
 
 def _ensure_evaluation_level() -> None:
@@ -103,6 +112,8 @@ def _is_navigation_url_allowed(*, is_web_real: bool, task_url: str | None, candi
         return True, None
 
     if not is_web_real:
+        if _is_testing_mode():
+            return True, None
         if target_host in {"localhost", "127.0.0.1", "::1"}:
             return True, None
         return False, f"NavigateAction host '{target_host}' is not allowed for demo webs"
