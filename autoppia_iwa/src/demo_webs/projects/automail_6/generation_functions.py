@@ -58,6 +58,38 @@ TEMPLATES = [
 ]
 
 
+def _body_safe_substring_for_contains(body: str) -> str:
+    """
+    Return a substring of body suitable for 'contains' that does not include <name>,
+    so the task prompt generator and verification pipeline can match reliably.
+    """
+    if "<name>" not in body:
+        if "\n" in body:
+            parts = [p.strip() for p in body.split("\n") if p.strip()]
+            return max(parts, key=len) if parts else body
+        return body if len(body) <= 80 else body[:80]
+    parts = [p.strip() for p in body.split("\n") if p.strip() and "<name>" not in p]
+    if not parts:
+        return body.replace("<name>", "").strip()
+    return max(parts, key=len)
+
+
+def _email_body_safe_for_constraint(body: str) -> str:
+    """
+    Return a substring of email body suitable for constraint value so that
+    prompt generation and heuristic verification match reliably (no newline/encoding issues).
+    Prefer a single line or short phrase so the value appears verbatim in the prompt.
+    """
+    if not body or not isinstance(body, str):
+        return body
+    if "\n" not in body and len(body) <= 80:
+        return body
+    parts = [p.strip() for p in body.split("\n") if p.strip()]
+    if not parts:
+        return body.strip()[:80]
+    return max(parts, key=len)[:80]
+
+
 async def _ensure_email_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Extract emails data from the pre-loaded dataset, or fetch from server if not available."""
     seed = get_seed_from_url(task_url)
@@ -357,6 +389,9 @@ async def generate_save_as_draft_send_email_constraints(task_url: str | None = N
         operator = ComparisonOperator(random.choice(allowed_ops))
         field_value = email.get(field)
         value = random.choice(LIST_OF_EMAILS) if field == "to" else _generate_constraint_value(operator, field_value, field, base)
+        if field == "body" and isinstance(value, str) and (("\n" in value) or len(value) > 80) and operator == ComparisonOperator.EQUALS:
+            operator = ComparisonOperator.CONTAINS
+            value = _email_body_safe_for_constraint(value)
         constraints_list.append(create_constraint_dict(field, operator, value))
     return constraints_list
 
@@ -502,11 +537,10 @@ async def generate_template_selection_constraints() -> list[dict[str, Any]]:
         mapped_field = field_map.get(field, field)
         field_value = template.get(mapped_field)
         value = _generate_constraint_value(operator, field_value, mapped_field, TEMPLATES)
-        constraint = create_constraint_dict(mapped_field, operator, value)
+        constraint = create_constraint_dict(field, operator, value)
         constraints_list.append(constraint)
 
     return constraints_list
-    # return [create_constraint_dict("template_name", ComparisonOperator.EQUALS, template["name"])]
 
 
 async def generate_template_body_constraints() -> list[dict[str, Any]]:
@@ -526,8 +560,22 @@ async def generate_template_body_constraints() -> list[dict[str, Any]]:
         operator = ComparisonOperator(choice(allowed_ops))
         mapped_field = field_map.get(field, field)
         field_value = template.get(mapped_field)
-        value = _generate_constraint_value(operator, field_value, mapped_field, TEMPLATES)
-        constraint = create_constraint_dict(mapped_field, operator, value)
+        if field == "body" and isinstance(field_value, str) and "<name>" in field_value:
+            if operator == ComparisonOperator.EQUALS:
+                operator = ComparisonOperator.CONTAINS
+                value = _body_safe_substring_for_contains(field_value)
+            elif operator == ComparisonOperator.NOT_EQUALS:
+                operator = ComparisonOperator.NOT_CONTAINS
+                alphabet = "abcdefghijklmnopqrstuvwxyz"
+                while True:
+                    value = "".join(random.choice(alphabet) for _ in range(3))
+                    if value not in field_value.lower():
+                        break
+            else:
+                value = _generate_constraint_value(operator, field_value, mapped_field, TEMPLATES)
+        else:
+            value = _generate_constraint_value(operator, field_value, mapped_field, TEMPLATES)
+        constraint = create_constraint_dict(field, operator, value)
         constraints_list.append(constraint)
 
     return constraints_list
@@ -554,12 +602,26 @@ async def generate_sent_template_constraints() -> list[dict[str, Any]]:
         if field == "to":
             field_value = sample_email.get(field)
             value = _generate_constraint_value(operator, field_value, mapped_field, to_emails)
-            constraint = create_constraint_dict(mapped_field, operator, value)
+            constraint = create_constraint_dict(field, operator, value)
             constraints_list.append(constraint)
         else:
             field_value = template.get(mapped_field)
-            value = _generate_constraint_value(operator, field_value, mapped_field, TEMPLATES)
-            constraint = create_constraint_dict(mapped_field, operator, value)
+            if field == "body" and isinstance(field_value, str) and "<name>" in field_value:
+                if operator == ComparisonOperator.EQUALS:
+                    operator = ComparisonOperator.CONTAINS
+                    value = _body_safe_substring_for_contains(field_value)
+                elif operator == ComparisonOperator.NOT_EQUALS:
+                    operator = ComparisonOperator.NOT_CONTAINS
+                    alphabet = "abcdefghijklmnopqrstuvwxyz"
+                    while True:
+                        value = "".join(random.choice(alphabet) for _ in range(3))
+                        if value not in field_value.lower():
+                            break
+                else:
+                    value = _generate_constraint_value(operator, field_value, mapped_field, TEMPLATES)
+            else:
+                value = _generate_constraint_value(operator, field_value, mapped_field, TEMPLATES)
+            constraint = create_constraint_dict(field, operator, value)
             constraints_list.append(constraint)
 
     return constraints_list
