@@ -384,6 +384,12 @@ async def generate_occasion_selected_constraints(task_url: str | None = None, da
         validate_dates=True,
         dataset=restaurants,
     )
+
+    # Post-process date constraints to remove time component
+    for constraint in booking_contraints:
+        if constraint["field"] == "date" and isinstance(constraint["value"], str) and "T" in constraint["value"]:
+            constraint["value"] = constraint["value"].split("T")[0]
+
     all_constraints = restaurant_constraints + booking_contraints
 
     return all_constraints

@@ -349,10 +349,20 @@ COLLAPSE_MENU_USE_CASE = UseCase(
 BOOK_RESTAURANT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Clearly state the intention to **book a table** or make a reservation.
-2. ONLY INCLUDES RESTAURANT NAMES IN THE LIST IF THE NAME ARE IN THE CONSTRAINTS. YOU CANNOT SAY A NAME IF NOT ARE IN THE CONSTRAINTS
-3. Specify the desired date, time, and number of guests for the booking. BE SC
-4. DO NOT CONFUSE DESC with NAME. If the constraints mention DESC (description) just include the constriants do not use name if it is not specified in the prompt
-5. IF NAME IS IN CONSTRAINTS SPECIFY CLEARLY YOU CANNOT SAY Book a table in a restaurant that does NOT contain 'qpehvk'. ONLY IF NAME IS IN CONSTRAINTS, an dthen you have to specify NAME
+2. INCLUDE ALL CONSTRAINTS provided in the prompt. If the constraints specify a restaurant name, cuisine, rating, OR reviews, you MUST mention them.
+   - Example: if constraints are (name='X', rating>=4, cuisine='Italian'), prompt MUST say "Book at Italian restaurant X with rating 4 or more".
+3. Specify the desired date, time, and number of guests.
+4. DO NOT omit any constraint.
+5. **DATE HANDLING IS STRICT**:
+   - For `equals`: You MUST say "date equals 'YYYY-MM-DDTHH:MM:SS+00:00'".
+   - For `greater_equal`: You MUST say "on or after 'YYYY-MM-DDTHH:MM:SS+00:00'".
+   - For `less_equal`: You MUST say "on or before 'YYYY-MM-DDTHH:MM:SS+00:00'".
+   - For `greater_than`: You MUST say "after 'YYYY-MM-DDTHH:MM:SS+00:00'".
+   - For `less_than`: You MUST say "before 'YYYY-MM-DDTHH:MM:SS+00:00'".
+   - NEVER simplify the date string (e.g., do NOT use just '2026-02-22'). USE THE FULL ISO STRING.
+6. **TIME HANDLING IS STRICT**:
+   - For `equals`: You MUST say "at exactly time 'HH:MM AM/PM'".
+   - For `not_equals`: You MUST say "at a time that is NOT 'HH:MM AM/PM'".
 """
 
 BOOK_RESTAURANT_USE_CASE = UseCase(
@@ -364,16 +374,24 @@ BOOK_RESTAURANT_USE_CASE = UseCase(
     additional_prompt_info=BOOK_RESTAURANT_INFO,
     examples=[
         {
-            "prompt": "I'd like to book a table at the restaurant which name 'The Royal Dine' for 2 people on 2025-05-16 at 1:30 PM.",
-            "prompt_for_task_generation": "I'd like to book a table at the restaurant which name'<name>' for <people> people on <date> at <time>.",
+            "prompt": "Book a table for 2 people at 'The Royal Dine' where date equals '2025-05-16T13:30:00+00:00' and at exactly time '1:30 PM'.",
+            "prompt_for_task_generation": "Book a table for <people> people at '<name>' where date equals '<date>' and at exactly time '<time>'.",
         },
         {
-            "prompt": "Book a table for 3 people on 2024-07-18 for dinner at the restaurant which name 'Sushi Palace' at time '1:30 PM'.",
-            "prompt_for_task_generation": "Book a table for <people> people on <date> for <time> at the restaurant which name '<name>'.",
+            "prompt": "I need a reservation for more than 4 people at a restaurant where cuisine contains 'Italian' on a date after '2026-01-01T00:00:00+00:00'.",
+            "prompt_for_task_generation": "I need a reservation for more than <people> people at a restaurant where cuisine contains '<cuisine>' on a date after '<date>'.",
         },
         {
-            "prompt": "Book a table for 7 or more people on '2025-08-06' at a time that is NOT '12:30 PM' with a rating of 5 or less.",
-            "prompt_for_task_generation": "Book a table for <people> or more people on <date> at a time that is NOT <time> with a rating of <rating> or less.",
+            "prompt": "Book a table for 8 people on a date on or before '2026-02-22T19:00:00+00:00' at exactly time '1:00 PM' where reviews are at least 300.",
+            "prompt_for_task_generation": "Book a table for <people> people on a date on or before '<date>' at exactly time '<time>' where reviews are at least <reviews>.",
+        },
+        {
+            "prompt": "Find a table for exactly 3 people at 'Sushi Palace' (rating not equal to 3) at a time that is NOT '1:30 PM'.",
+            "prompt_for_task_generation": "Find a table for exactly <people> people at '<name>' (rating not equal to <rating>) at a time that is NOT '<time>'.",
+        },
+        {
+            "prompt": "Reserve a spot for less than 5 people on a date on or after '2026-03-01T12:00:00+00:00' at any time after 5:00 PM.",
+            "prompt_for_task_generation": "Reserve a spot for less than <people> people on a date on or after '<date>' at any time after <time>.",
         },
     ],
 )
@@ -390,6 +408,18 @@ CRITICAL REQUIREMENTS:
 3. The prompt MUST be situated in the context of a **larger form-filling** or reservation-related flow (e.g., selecting country for contact or billing details).
 4. The corresponding event MUST lead to the `COUNTRY_SELECTED` event.
 5. If the prompt mentions a restaurant, it should be included **only in the prompt**, **not in the event criteria**.
+6. **DATE HANDLING IS STRICT**:
+   - For `equals`: You MUST say "date equals 'YYYY-MM-DDTHH:MM:SS+00:00'".
+   - For `greater_equal`: You MUST say "on or after 'YYYY-MM-DDTHH:MM:SS+00:00'".
+   - For `less_equal`: You MUST say "on or before 'YYYY-MM-DDTHH:MM:SS+00:00'".
+   - For `greater_than`: You MUST say "after 'YYYY-MM-DDTHH:MM:SS+00:00'".
+   - For `less_than`: You MUST say "before 'YYYY-MM-DDTHH:MM:SS+00:00'".
+   - NEVER simplify the date string (e.g., do NOT use just '2026-02-22'). USE THE FULL ISO STRING.
+   - **INCORRECT**: "booking on '2026-02-22...'" (missing 'date equals')
+7. **TIME HANDLING IS STRICT**:
+   - For `equals`: You MUST say "at exactly time 'HH:MM AM/PM'".
+   - For `not_equals`: You MUST say "at a time that is NOT 'HH:MM AM/PM'".
+   - **INCORRECT**: "at '1:30 PM'" (missing 'exactly time')
 """
 
 COUNTRY_SELECTED_USE_CASE = UseCase(
@@ -401,28 +431,24 @@ COUNTRY_SELECTED_USE_CASE = UseCase(
     additional_prompt_info=COUNTRY_SELECTED_INFO,
     examples=[
         {
-            "prompt": "Select a country where country equals 'India'.",
-            "prompt_for_task_generation": "Select a country where country equals '<country>'.",
+            "prompt": "Select a country where country equals 'India' for a booking where date equals '2026-06-01T19:00:00+00:00'.",
+            "prompt_for_task_generation": "Select a country where country equals '<country>' for a booking where date equals '<date>'.",
         },
         {
-            "prompt": "Select a country where country not equals 'United States'.",
-            "prompt_for_task_generation": "Select a country where country not equals '<country>'.",
+            "prompt": "Select the country 'Spain' (people > 4, date before '2026-12-31T23:59:59+00:00').",
+            "prompt_for_task_generation": "Select the country '<country>' (people > <people>, date before '<date>').",
         },
         {
-            "prompt": "Select a country where code equals 'IN'.",
-            "prompt_for_task_generation": "Select a country where code equals '<code>'.",
+            "prompt": "Choose 'France' as the country for a reservation on or after '2025-01-01T00:00:00+00:00'.",
+            "prompt_for_task_generation": "Choose '<country>' as the country for a reservation on or after '<date>'.",
         },
         {
-            "prompt": "Select a country where code not equals 'US' and name equals 'The Royal Dine'.",
-            "prompt_for_task_generation": "Select a country where code not equals '<code>' and name equals '<name>'.",
+            "prompt": "Select country 'USA' where people equals 2 and date equals '2025-05-16T19:00:00+00:00' and at exactly time '1:30 PM'.",
+            "prompt_for_task_generation": "Select country '<country>' where people equals <people> and date equals '<date>' and at exactly time '<time>'.",
         },
         {
-            "prompt": "Select a country where country equals 'Australia' and people equals 2 and date equals '2025-05-16' and time equals '1:30 PM'.",
-            "prompt_for_task_generation": "Select a country where country equals '<country>' and people equals <people> and date equals '<date>' and time equals '<time>'.",
-        },
-        {
-            "prompt": "Select a country where country equals 'Canada' and name contains 'Palace' and rating greater than or equal to 4.",
-            "prompt_for_task_generation": "Select a country where country equals '<country>' and name contains '<name>' and rating greater than or equal to <rating>.",
+            "prompt": "Select a country that is NOT 'Italy' for a booking date on or before '2026-03-01T19:00:00+00:00'.",
+            "prompt_for_task_generation": "Select a country that is NOT '<country>' for a booking date on or before '<date>'.",
         },
     ],
 )
@@ -436,6 +462,16 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Indicate the action of **selecting a special occasion** for a booking.
 2. Specify the type of occasion (e.g., "birthday", "anniversary").
 3. Lead to the OCCASION_SELECTED event.
+4. **DATE HANDLING IS STRICT**:
+   - For `equals`: You MUST say "date equals 'YYYY-MM-DD'".
+   - For `greater_equal`: You MUST say "on or after 'YYYY-MM-DD'".
+   - For `less_equal`: You MUST say "on or before 'YYYY-MM-DD'".
+   - For `greater_than`: You MUST say "after 'YYYY-MM-DD'".
+   - For `less_than`: You MUST say "before 'YYYY-MM-DD'".
+   - Use strictly 'YYYY-MM-DD' format for dates in this use case (NO time component).
+5. **TIME HANDLING IS STRICT**:
+   - For `equals`: You MUST say "at exactly time 'HH:MM AM/PM'".
+   - For `not_equals`: You MUST say "at a time that is NOT 'HH:MM AM/PM'".
 """
 
 OCCASION_SELECTED_USE_CASE = UseCase(
@@ -447,16 +483,20 @@ OCCASION_SELECTED_USE_CASE = UseCase(
     additional_prompt_info=OCCASION_SELECTED_INFO,
     examples=[
         {
-            "prompt": "This reservation is for a 'birthday'.",
-            "prompt_for_task_generation": "This reservation is for a '<occasion>'.",
+            "prompt": "Select 'birthday' as the occasion for a booking on date equals '2026-06-01'.",
+            "prompt_for_task_generation": "Select '<occasion>' as the occasion for a booking on date equals '<date>'.",
         },
         {
-            "prompt": "Mark this booking as a special occasion (not anniversary)",
-            "prompt_for_task_generation": "Mark this booking as a special occasion (not <occasion>)",
+            "prompt": "Mark this as an 'anniversary' (for 2 people, at exactly time '8:00 PM').",
+            "prompt_for_task_generation": "Mark this as an '<occasion>' (for <people> people, at exactly time '<time>').",
         },
         {
-            "prompt": "Select 'business dinner' as the occasion type",
-            "prompt_for_task_generation": "Select '<occasion>' as the occasion type",
+            "prompt": "Choose a special occasion that is NOT 'business' for a date before '2026-12-31'.",
+            "prompt_for_task_generation": "Choose a special occasion that is NOT '<occasion>' for a date before '<date>'.",
+        },
+        {
+            "prompt": "The occasion is 'date night' (rating > 4).",
+            "prompt_for_task_generation": "The occasion is '<occasion>' (rating > <rating>).",
         },
     ],
 )
@@ -468,9 +508,30 @@ OCCASION_SELECTED_USE_CASE = UseCase(
 RESERVATION_COMPLETE_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Clearly indicate the **final confirmation or completion** of a restaurant reservation.
-2. May involve providing final details like contact information (email, phone) or special requests if these are part of the final step.
-3. Lead to the RESERVATION_COMPLETE event.
-4. Only provide a restauant name if its mentioned in the constraints
+2. INCLUDE ALL CONSTRAINTS provided in the prompt. If the constraints specify a restaurant name, cuisine, rating, bookings, OR reviews, you MUST mention them.
+3. Specify the desired date, time, number of guests, and occasion if present in constraints.
+4. Lead to the RESERVATION_COMPLETE event.
+5. **CODE HANDLING**:
+   - If a 'code' constraint is present (e.g., promo code, country code), you MUST explicitly mention it in the prompt.
+   - Example `equals`: "with code equals 'XYZ'"
+   - Example `not_equals`: "with a code that is NOT 'XYZ'"
+   - DO NOT omit the code constraint.
+6. **DATE HANDLING IS STRICT**:
+   - For `equals`: You MUST say "date equals 'YYYY-MM-DDTHH:MM:SS+00:00'".
+   - For `greater_equal`: You MUST say "on or after 'YYYY-MM-DDTHH:MM:SS+00:00'".
+   - For `less_equal`: You MUST say "on or before 'YYYY-MM-DDTHH:MM:SS+00:00'".
+   - For `greater_than`: You MUST say "after 'YYYY-MM-DDTHH:MM:SS+00:00'".
+   - For `less_than`: You MUST say "before 'YYYY-MM-DDTHH:MM:SS+00:00'".
+   - NEVER simplify the date string (e.g., do NOT use just '2026-02-22'). USE THE FULL ISO STRING.
+6. **TIME HANDLING IS STRICT**:
+   - For `equals`: You MUST say "at exactly time 'HH:MM AM/PM'".
+   - For `not_equals`: You MUST say "at a time that is NOT 'HH:MM AM/PM'".
+7. **PHONE HANDLING**:
+   - If a 'phone' constraint is present, you MUST explicitly mention it.
+   - Example `equals`: "with phone number equals '123-456-7890'"
+8. **DO NOT HALLUCINATE**:
+   - If 'date' or 'time' are NOT in the constraints, DO NOT include them in the prompt.
+   - Only specify fields that are actually present in the provided constraints list.
 """
 
 RESERVATION_COMPLETE_USE_CASE = UseCase(
@@ -482,24 +543,32 @@ RESERVATION_COMPLETE_USE_CASE = UseCase(
     constraints_generator=generate_reservation_complete_constraints,
     examples=[
         {
-            "prompt": "Complete my reservation for 'The Royal Dine' on July 18th at 1:30 PM for 2 people. My phone is 123, it's for a birthday, and special request is 'a quiet table'.",
-            "prompt_for_task_generation": "Complete my reservation for '<name>' on <date> at <time> for <people>. My email is <email>, phone is <phone>, it's for a <occasion>, and special request is '<request>'.",
+            "prompt": "Complete my reservation for 'The Royal Dine' where date equals '2025-07-18T19:00:00+00:00' at exactly time '1:30 PM' for 2 people. My phone is 123, it's for a birthday, and special request is 'a quiet table'.",
+            "prompt_for_task_generation": "Complete my reservation for '<name>' where date equals '<date>' at exactly time '<time>' for <people>. My email is <email>, phone is <phone>, it's for a <occasion>, and special request is '<request>'.",
         },
         {
-            "prompt": "Please finalize my reservation at 'Ocean Breeze' for July 20th, 8:00 PM, 4 people. You can reach me at my number is 9876543210. It's for an anniversary. We'd like a table with a sea view.",
-            "prompt_for_task_generation": "Please finalize my reservation at '<name>' for <date>, <time>, <people>. You can reach me at my number is <phone>. It's for an <occasion>. We'd like a table with a <request>.",
+            "prompt": "Please finalize my reservation at 'Ocean Breeze' for a date on or after '2025-07-20T19:00:00+00:00', at exactly time '8:00 PM', 4 people. You can reach me at my number is 9876543210. It's for an anniversary. We'd like a table with a sea view.",
+            "prompt_for_task_generation": "Please finalize my reservation at '<name>' for a date on or after '<date>', at exactly time '<time>', <people>. You can reach me at my number is <phone>. It's for an <occasion>. We'd like a table with a <request>.",
         },
         {
-            "prompt": "Finish booking at 'Mountain Top Grill' for 6 people at 6:15 PM on August 5. My email is sam.kim@domain.org and phone is 111-222-3333. Please note it's for a corporate event. Requesting projector setup.",
-            "prompt_for_task_generation": "Finish booking at '<name>' for <people> at <time> on <date>. My phone is <phone>. Please note it's for a <occasion>. Requesting <request>.",
+            "prompt": "Finish booking at 'Mountain Top Grill' for 6 people at exactly time '6:15 PM' on a date on or before '2025-08-05T19:00:00+00:00'. Please note it's for a corporate event. Requesting projector setup.",
+            "prompt_for_task_generation": "Finish booking at '<name>' for <people> at exactly time '<time>' on a date on or before '<date>'. Please note it's for a <occasion>. Requesting <request>.",
         },
         {
-            "prompt": "Confirm my dinner booking at 'Bella Roma' for September 9th at 9 PM for 3. Call me at +44-1234-567890. We're celebrating a graduation. Please arrange for a dessert surprise.",
-            "prompt_for_task_generation": "Confirm my dinner booking at '<name>' for <date> at <time> for <people>. Call me at <phone>. We're celebrating a <occasion>. Please arrange <request>.",
+            "prompt": "Confirm my reservation at 'Italian specialized' restaurant named 'Bella Roma' with rating >= 4, for 'graduation' occasion on date equals '2026-05-01T19:00:00+00:00' at exactly time '9:00 PM'.",
+            "prompt_for_task_generation": "Confirm my reservation at '<cuisine>' specialized restaurant named '<name>' with rating >= <rating>, for '<occasion>' occasion on date equals '<date>' at exactly time '<time>'.",
         },
         {
-            "prompt": "Book my table at 'City Lights Bistro' on October 2nd, 5 PM, party of 5. Phone: 555-0099. It's a reunion. No loud music please.",
-            "prompt_for_task_generation": "Book my table at '<name>' on <date>, <time>, party of <people>. phone: <phone>. It's a <occasion>. <request>.",
+            "prompt": "Complete booking for 'Taj Mahal' (Indian) with 120 or more bookings, for 2 people on date equals '2026-03-04T13:30:00+00:00' at exactly time '2:30 PM' and code not equals 'ABC'.",
+            "prompt_for_task_generation": "Complete booking for '<name>' (<cuisine>) with <bookings> or more bookings, for <people> people on date equals '<date>' at exactly time '<time>' and code not equals '<code>'.",
+        },
+        {
+            "prompt": "Finalize reservation with code equals 'PROMO20' for 4 guests.",
+            "prompt_for_task_generation": "Finalize reservation with code equals '<code>' for <people> guests.",
+        },
+        {
+            "prompt": "Complete reservation for 'My Place' with phone number equals '555-0199'.",
+            "prompt_for_task_generation": "Complete reservation for '<name>' with phone number equals '<phone>'.",
         },
     ],
 )
@@ -511,16 +580,19 @@ RESERVATION_COMPLETE_USE_CASE = UseCase(
 SCROLL_VIEW_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Explicitly describe scrolling or navigating (use phrases like "Scroll", "Browse more", etc.).
-2. Include the carousel section title if it is specified in the constraints.
+2. Include the carousel section title if it is specified in the constraints. YOU MUST USE "section equals 'Title'" phrasing if the operator is equals.
 3. Specify the scroll direction (left/right) if it is included in the constraints.
 4. Avoid mentioning product selection actions or any interactions other than scrolling.
 5. Do not include multiple conditions for the same field (e.g., specifying the direction twice is not allowed).
-
+6. **DIRECTION HANDLING IS STRICT**:
+   - For `not_equals`: You MUST say "direction is NOT 'right/left'".
+   - DO NOT substitute "not right" with "left". The reviewer is strict and does not know they are opposites.
+   - Example: If constraint is `direction != right`, say "direction is NOT 'right'", do NOT say "direction is 'left'".
 
 For example:
 - CORRECT: "Scroll in the direction 'right' where section equals 'Featured Products'"
+- INCORRECT: "Scroll in the section 'Featured Products'" (ambiguous operator)
 - INCORRECT: "View details for product in section" (wrong action)
-- INCORRECT: "Show me section items" (no scroll action)
 """
 
 SCROLL_VIEW_USE_CASE = UseCase(
@@ -536,12 +608,12 @@ SCROLL_VIEW_USE_CASE = UseCase(
             "prompt_for_task_generation": "Scroll in the <direction> where section equals <Featured Products>.",
         },
         {
-            "prompt": "Scroll in the direction 'left' where section not equal to 'Featured Products'.",
-            "prompt_for_task_generation": "Scroll in the <direction> where section not equal to <Featured Products>.",
+            "prompt": "Scroll in a direction that is NOT 'left' where section not equal to 'Featured Products'.",
+            "prompt_for_task_generation": "Scroll in a direction that is NOT '<direction>' where section not equal to <Featured Products>.",
         },
         {
-            "prompt": "Scroll in the direction 'right' where section contains 'Top Sellers'.",
-            "prompt_for_task_generation": "Scroll in the <direction> where section contains <Top Sellers>.",
+            "prompt": "Scroll, but ensuring the direction is NOT 'right', where section equals 'Top Sellers'.",
+            "prompt_for_task_generation": "Scroll, but ensuring the direction is NOT '<direction>', where section equals '<section>'.",
         },
         {
             "prompt": "Scroll in the direction 'left' where section does not contain 'Electronics'.",
@@ -629,7 +701,18 @@ ABOUT_FEATURE_CLICK_USE_CASE = UseCase(
     event_source_code=AboutFeatureClickEvent.get_source_code_of_class(),
     constraints_generator=generate_about_feature_click_constraints,
     examples=[
-        {"prompt": "Click the live availability feature on the About page.", "prompt_for_task_generation": "Click the live availability feature on the About page."},
+        {
+            "prompt": "Click the feature that says 'trusted reviews'.",
+            "prompt_for_task_generation": "Click the feature that says '<feature>'.",
+        },
+        {
+            "prompt": "Click the feature containing 'availability'.",
+            "prompt_for_task_generation": "Click the feature containing '<feature>'.",
+        },
+        {
+            "prompt": "Click any feature that is NOT 'Money back guarantee'.",
+            "prompt_for_task_generation": "Click any feature that is NOT '<feature>'.",
+        },
     ],
 )
 
@@ -651,7 +734,20 @@ CONTACT_CARD_CLICK_USE_CASE = UseCase(
     event=ContactCardClickEvent,
     event_source_code=ContactCardClickEvent.get_source_code_of_class(),
     constraints_generator=generate_contact_card_click_constraints,
-    examples=[{"prompt": "Click the phone contact card on the contact page.", "prompt_for_task_generation": "Click the phone contact card."}],
+    examples=[
+        {
+            "prompt": "Click the phone contact card.",
+            "prompt_for_task_generation": "Click the phone contact card.",
+        },
+        {
+            "prompt": "Click the contact card where card_type equals 'Email'.",
+            "prompt_for_task_generation": "Click the contact card where card_type equals '<card_type>'.",
+        },
+        {
+            "prompt": "Click on a contact card that contains 'Chat' in the type.",
+            "prompt_for_task_generation": "Click on a contact card that contains '<card_type>' in the type.",
+        },
+    ],
 )
 
 HELP_CATEGORY_SELECTED_USE_CASE = UseCase(
@@ -660,7 +756,24 @@ HELP_CATEGORY_SELECTED_USE_CASE = UseCase(
     event=HelpCategorySelectedEvent,
     event_source_code=HelpCategorySelectedEvent.get_source_code_of_class(),
     constraints_generator=generate_help_category_selected_constraints,
-    examples=[{"prompt": "Select the Payments category in Help.", "prompt_for_task_generation": "Select the Payments category in Help."}],
+    examples=[
+        {
+            "prompt": "Select the category where name equals 'Payments'.",
+            "prompt_for_task_generation": "Select the category where name equals '<category>'.",
+        },
+        {
+            "prompt": "Select the help category containing 'Reservation'.",
+            "prompt_for_task_generation": "Select the help category containing '<category>'.",
+        },
+        {
+            "prompt": "Select a category that is not 'Account'.",
+            "prompt_for_task_generation": "Select a category that is not '<category>'.",
+        },
+        {
+            "prompt": "Select a category that does not contain 'Feedback'.",
+            "prompt_for_task_generation": "Select a category that does not contain '<category>'.",
+        },
+    ],
 )
 
 HELP_FAQ_TOGGLED_USE_CASE = UseCase(
@@ -669,7 +782,24 @@ HELP_FAQ_TOGGLED_USE_CASE = UseCase(
     event=HelpFaqToggledEvent,
     event_source_code=HelpFaqToggledEvent.get_source_code_of_class(),
     constraints_generator=generate_help_faq_toggled_constraints,
-    examples=[{"prompt": "Expand the refund FAQ.", "prompt_for_task_generation": "Expand the refund FAQ."}],
+    examples=[
+        {
+            "prompt": "Expand the FAQ about 'refund'.",
+            "prompt_for_task_generation": "Expand the FAQ about '<question>'.",
+        },
+        {
+            "prompt": "Toggle the question that contains 'password'.",
+            "prompt_for_task_generation": "Toggle the question that contains '<question>'.",
+        },
+        {
+            "prompt": "Expand the FAQ which is NOT 'Is there a cancellation fee?'.",
+            "prompt_for_task_generation": "Expand the FAQ which is NOT '<question>'.",
+        },
+        {
+            "prompt": "Toggle any question other than 'How do I contact support?'.",
+            "prompt_for_task_generation": "Toggle any question other than '<question>'.",
+        },
+    ],
 )
 
 ###############################################################################
