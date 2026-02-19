@@ -388,9 +388,12 @@ async def generate_save_as_draft_send_email_constraints(task_url: str | None = N
 
         operator = ComparisonOperator(random.choice(allowed_ops))
         field_value = email.get(field)
-        value = random.choice(LIST_OF_EMAILS) if field == "to" else _generate_constraint_value(operator, field_value, field, base)
-        if field == "body" and operator == ComparisonOperator.CONTAINS and isinstance(value, str) and (("\n" in value) or len(value) > 80):
-            value = _email_body_safe_for_constraint(value)
+        if field == "body" and operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
+            value = _generate_constraint_value(operator, field_value, field, base)
+            if ("\n" in value or len(value) > 80) and isinstance(value, str):
+                value = _email_body_safe_for_constraint(value)
+        else:
+            value = random.choice(LIST_OF_EMAILS) if field == "to" else _generate_constraint_value(operator, field_value, field, base)
         constraints_list.append(create_constraint_dict(field, operator, value))
     return constraints_list
 
@@ -559,9 +562,10 @@ async def generate_template_body_constraints() -> list[dict[str, Any]]:
         operator = ComparisonOperator(choice(allowed_ops))
         mapped_field = field_map.get(field, field)
         field_value = template.get(mapped_field)
-        value = _generate_constraint_value(operator, field_value, mapped_field, TEMPLATES)
         if field == "body" and operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
             value = _body_safe_substring_for_contains(field_value)
+        else:
+            value = _generate_constraint_value(operator, field_value, mapped_field, TEMPLATES)
         constraint = create_constraint_dict(field, operator, value)
         constraints_list.append(constraint)
 
@@ -593,9 +597,10 @@ async def generate_sent_template_constraints() -> list[dict[str, Any]]:
             constraints_list.append(constraint)
         else:
             field_value = template.get(mapped_field)
-            value = _generate_constraint_value(operator, field_value, mapped_field, TEMPLATES)
             if field == "body" and operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
                 value = _body_safe_substring_for_contains(field_value)
+            else:
+                value = _generate_constraint_value(operator, field_value, mapped_field, TEMPLATES)
             constraint = create_constraint_dict(field, operator, value)
             constraints_list.append(constraint)
 
