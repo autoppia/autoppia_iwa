@@ -1,4 +1,5 @@
 import random
+import string
 from random import choice, randint, sample
 from typing import Any
 
@@ -116,15 +117,17 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
             return random.choice(valid) if valid else None
 
     elif operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
-        if isinstance(field_value, str) and "\n" in field_value:
+        if "\n" in field_value:
             parts = [part for part in field_value.split("\n") if part.strip()]
             if parts:
                 field_value = max(parts, key=len)
-                return field_value
-        if len(field_value) > 2:
-            start = random.randint(0, max(0, len(field_value) - 2))
-            end = random.randint(start + 1, len(field_value))
-            return field_value[start:end]
+        min_len = 3
+        if len(field_value) >= min_len:
+            start = random.randint(0, max(0, len(field_value) - min_len))
+            end = random.randint(start + min_len, len(field_value))
+            substring = field_value[start:end]
+            stripped = substring.strip(string.whitespace + string.punctuation)
+            return stripped if stripped else substring
         return field_value
 
     elif operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
@@ -376,6 +379,7 @@ async def generate_save_as_draft_send_email_constraints(task_url: str | None = N
     constraints_list = []
     base = await _ensure_email_dataset(task_url, dataset)
     email = choice(base)
+    to_emails = [{"to": e} for e in LIST_OF_EMAILS]
     selected_fields = ["to"]  # Fixed 'to'
     possible_fields = ["subject", "body"]
     num_constraints = random.randint(1, len(possible_fields))
@@ -392,8 +396,11 @@ async def generate_save_as_draft_send_email_constraints(task_url: str | None = N
             value = _generate_constraint_value(operator, field_value, field, base)
             if ("\n" in value or len(value) > 80) and isinstance(value, str):
                 value = _email_body_safe_for_constraint(value)
+        elif field == "to":
+            field_value = choice(LIST_OF_EMAILS)
+            value = _generate_constraint_value(operator, field_value, field, to_emails)
         else:
-            value = random.choice(LIST_OF_EMAILS) if field == "to" else _generate_constraint_value(operator, field_value, field, base)
+            value = _generate_constraint_value(operator, field_value, field, base)
         constraints_list.append(create_constraint_dict(field, operator, value))
     return constraints_list
 
