@@ -277,12 +277,12 @@ def _get_add_to_watchlist_info(movies_data: list[dict]) -> str:
     return f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Begin with a login instruction using username equals <username> and password equals <password> (exact constraint values).
-2. Include ALL constraints mentioned above (field, operator, and value).
+2. Include ALL mentioned constraints in the prompt.
 3. Include ONLY the constraints mentioned above - do not add any other criteria.
 4. Be phrased as a request to **add to watchlist or wishlist** (or **remove from watchlist**) of a movie (e.g., "Add to wishlist...", "Remove from watchlist...").
 5. {STRICT_COPY_INSTRUCTION}
 
-For example: "Login with username equals <username> and password equals <password>. Add to wishlist a movie whose name contains 'ng' and that has a rating greater than 3.8."
+For example: "Login with username equals <username> and password equals <password> and then Add to wishlist a movie whose name contains 'ng' and that has a rating greater than 3.8."
 ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
 """
 
@@ -297,40 +297,40 @@ ADD_TO_WATCHLIST_USE_CASE = UseCase(
     constraints_generator=generate_add_to_watchlist_constraints,
     examples=[
         {
-            "prompt": "Add to wishlist The Matrix movie",
-            "prompt_for_task_generation": "Add to wishlist <movie> movie",
+            "prompt": "Login with the username equals <username> and password equals <password> and then add to watchlist The Matrix movie",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then add to watchlist <movie> movie",
         },
         {
-            "prompt": "Add to wishlist Interstellar by Christopher Nolan",
-            "prompt_for_task_generation": "Add to wishlist <movie> by <director>",
+            "prompt": "Login with the username equals <username> and password equals <password> and then add to watchlist Interstellar by Christopher Nolan",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then add to watchlist <movie> by <director>",
         },
         {
-            "prompt": "Add to wishlist sci-fi movie from 2010",
-            "prompt_for_task_generation": "Add to wishlist <genre> movie from <year>",
+            "prompt": "Login with the username equals <username> and password equals <password> and then add to watchlist sci-fi movie from 2010",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then add to watchlist <genre> movie from <year>",
         },
         {
-            "prompt": "Add to wishlist movie with rating above 4.5",
-            "prompt_for_task_generation": "Add to wishlist a movie with rating above <rating>",
+            "prompt": "Login with the username equals <username> and password equals <password> and then add to watchlist movie with rating above 4.5",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then add to watchlist a movie with rating above <rating>",
         },
         {
-            "prompt": "Add to wishlist Pulp Fiction film",
-            "prompt_for_task_generation": "Add to wishlist <movie> film",
+            "prompt": "Login with the username equals <username> and password equals <password> and then add to watchlist Pulp Fiction film",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then add to watchlist <movie> film",
         },
         {
-            "prompt": "Add to wishlist a comedy film less than 100 minutes long",
-            "prompt_for_task_generation": "Add to wishlist a <genre> film less than <duration> minutes long",
+            "prompt": "Login with the username equals <username> and password equals <password> and then add to watchlist a comedy film less than 100 minutes long",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then add to watchlist a <genre> film less than <duration> minutes long",
         },
         {
-            "prompt": "Add to wishlist a film from the 90s with Al Pacino",
-            "prompt_for_task_generation": "Add to wishlist a film from the <decade>s with <actor>",
+            "prompt": "Login with the username equals <username> and password equals <password> and then add to watchlist a film from the 90s with Al Pacino",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then add to watchlist a film from the <decade>s with <actor>",
         },
         {
-            "prompt": "Add to wishlist a horror movie not directed by Wes Craven",
-            "prompt_for_task_generation": "Add to wishlist a <genre> movie not directed by <director>",
+            "prompt": "Login with the username equals <username> and password equals <password> and then add to watchlist a horror movie not directed by Wes Craven",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then add to watchlist a <genre> movie not directed by <director>",
         },
         {
-            "prompt": "Add to wishlist a highest-rated James Cameron film",
-            "prompt_for_task_generation": "Add to wishlist a highest-rated <director> film",
+            "prompt": "Login with the username equals <username> and password equals <password> and then add to watchlist a highest-rated James Cameron film",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then add to watchlist a highest-rated <director> film",
         },
     ],
 )
@@ -346,16 +346,40 @@ REMOVE_FROM_WATCHLIST_USE_CASE = UseCase(
     constraints_generator=generate_remove_from_watchlist_constraints,
     examples=[
         {
-            "prompt": "Remove the film '<movie>' from the watchlist",
-            "prompt_for_task_generation": "Remove the film '<movie>' from the watchlist",
+            "prompt": "Login with the username equals <username> and password equals <password> and then remove from watchlist The Matrix movie",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then remove from watchlist <movie> movie",
         },
         {
-            "prompt": "Remove a <genre> movie directed by <director> from the watchlist",
-            "prompt_for_task_generation": "Remove a <genre> movie directed by <director> from the watchlist",
+            "prompt": "Login with the username equals <username> and password equals <password> and then remove from watchlist Interstellar by Christopher Nolan",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then remove from watchlist <movie> by <director>",
         },
         {
-            "prompt": "Remove any movie released before <year> from the watchlist",
-            "prompt_for_task_generation": "Remove any movie released before <year> from the watchlist",
+            "prompt": "Login with the username equals <username> and password equals <password> and then remove from watchlist sci-fi movie from 2010",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then remove from watchlist <genre> movie from <year>",
+        },
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then remove from watchlist movie with rating above 4.5",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then remove from watchlist a movie with rating above <rating>",
+        },
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then remove from watchlist Pulp Fiction film",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then remove from watchlist <movie> film",
+        },
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then remove from watchlist a comedy film less than 100 minutes long",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then remove from watchlist a <genre> film less than <duration> minutes long",
+        },
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then remove from watchlist a film from the 90s with Al Pacino",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then remove from watchlist a film from the <decade>s with <actor>",
+        },
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then remove from watchlist a horror movie not directed by Wes Craven",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then remove from watchlist a <genre> movie not directed by <director>",
+        },
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then remove from watchlist a highest-rated James Cameron film",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then remove from watchlist a highest-rated <director> film",
         },
     ],
 )
