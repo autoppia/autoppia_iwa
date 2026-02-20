@@ -1050,6 +1050,10 @@ EVENTS = [
     BillingSearchEvent,
     LogDelete,
     ChangeUserName,
+    AddClientEvent,
+    DeleteClientEvent,
+    FilterClientsEvent,
+    HelpViewedEvent,
 ]
 
 BACKEND_EVENT_TYPES = {
@@ -1072,4 +1076,8 @@ BACKEND_EVENT_TYPES = {
     "SORT_MATTER_BY_CREATED_AT": SortMatterByCreatedAt,
     "UPDATE_MATTER": UpdateMatter,
     "VIEW_PENDING_EVENTS": ViewPendingEvents,
+    "ADD_CLIENT": AddClientEvent,
+    "DELETE_CLIENT": DeleteClientEvent,
+    "FILTER_CLIENTS": FilterClientsEvent,
+    "HELP_VIEWED": HelpViewedEvent,
 }
