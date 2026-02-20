@@ -25,17 +25,24 @@ from .events import (
 from .generation_functions import (
     generate_add_comment_constraints,
     generate_add_film_constraints,
+    generate_add_to_watchlist_constraints,
     generate_contact_constraints,
+    generate_delete_film_constraints,
     generate_edit_film_constraints,
     generate_edit_profile_constraints,
-    generate_film_constraints,
+    generate_film_detail_constraints,
     generate_film_filter_constraints,
     generate_login_constraints,
     generate_logout_constraints,
     generate_registration_constraints,
+    generate_remove_from_watchlist_constraints,
     generate_search_film_constraints,
+    generate_share_film_constraints,
+    generate_watch_trailer_constraints,
 )
-from .replace_functions import replace_film_placeholders
+from .replace_functions import login_and_film_replace_func, login_replace_func, register_replace_func, replace_film_placeholders
+
+STRICT_COPY_INSTRUCTION = "CRITICAL: Copy values EXACTLY as provided in the constraints. Do NOT correct typos, do NOT remove numbers, do NOT truncate or summarize strings, and do NOT 'clean up' names or titles (e.g., if constraint is 'Sofia 4', write 'Sofia 4', NOT 'Sofia'; if it is 'ng', write 'ng', NOT 'an')."
 
 
 async def _get_movies_data_for_prompts(seed_value: int | None = None, count: int = 50) -> list[dict]:
@@ -74,11 +81,13 @@ def _generate_allowed_genres_list(movies_data: list[dict]) -> list[str]:
 ###############################################################################
 # REGISTRATION_USE_CASE
 ###############################################################################
-REGISTRATION_ADDITIONAL_PROMPT_INFO = """
+REGISTRATION_ADDITIONAL_PROMPT_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Be sure to add instruction to register using username equals '<username>', email equals <email> and password equals '<password> (**strictly** containing the username, email and password placeholders)'.
-Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
-All email must finish with @gmail.com, so pay attention to the constraints.
+1. Include ALL constraints mentioned above (username, email, and password).
+2. Explicitly include instruction to register using username equals 'signup_username', email equals 'signup_email' and password equals 'signup_password' (**strictly** containing these identifiers).
+3. Be phrased as a request to register or create a new account (e.g., "Please register using...", "Create an account with...", "Sign up using...").
+4. {STRICT_COPY_INSTRUCTION}
+
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
 REGISTRATION_USE_CASE = UseCase(
@@ -86,25 +95,25 @@ REGISTRATION_USE_CASE = UseCase(
     description="The user fills out the registration form and successfully creates a new account.",
     event=RegistrationEvent,
     event_source_code=RegistrationEvent.get_source_code_of_class(),
-    # replace_func not needed - credentials remain as placeholders until evaluation
+    replace_func=register_replace_func,
     constraints_generator=generate_registration_constraints,
     additional_prompt_info=REGISTRATION_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Register where username equals <username>, email equals <email> and password equals <password>",
-            "prompt_for_task_generation": "Register where username equals <username>, email equals <email> and password equals <password>",
+            "prompt": "Register where username equals signup_username, email equals signup_email and password equals signup_password",
+            "prompt_for_task_generation": "Register where username equals signup_username, email equals signup_email and password equals signup_password",
         },
         {
-            "prompt": "Create a new account where username equals <username>, email equals <email> and password equals <password>",
-            "prompt_for_task_generation": "Create a new account where username equals <username>, email equals <email> and password equals <password>",
+            "prompt": "Create a new account where username equals signup_username, email equals signup_email and password equals signup_password",
+            "prompt_for_task_generation": "Create a new account where username equals signup_username, email equals signup_email and password equals signup_password",
         },
         {
-            "prompt": "Fill the registration form where username equals <username>, email equals <email> and password equals <password>",
-            "prompt_for_task_generation": "Fill the registration form where username equals <username>, email equals <email> and password equals <password>",
+            "prompt": "Fill the registration form where username equals signup_username, email equals signup_email and password equals signup_password",
+            "prompt_for_task_generation": "Fill the registration form where username equals signup_username, email equals signup_email and password equals signup_password",
         },
         {
-            "prompt": "Sign up for an account where username equals <username>, email equals <email> and password equals <password>",
-            "prompt_for_task_generation": "Sign up for an account where username equals <username>, email equals <email> and password equals <password>",
+            "prompt": "Sign up for an account where username equals signup_username, email equals signup_email and password equals signup_password",
+            "prompt_for_task_generation": "Sign up for an account where username equals signup_username, email equals signup_email and password equals signup_password",
         },
     ],
 )
@@ -112,10 +121,11 @@ REGISTRATION_USE_CASE = UseCase(
 ###############################################################################
 # LOGIN_USE_CASE
 ###############################################################################
-LOGIN_ADDITIONAL_PROMPT_INFO = """
+LOGIN_ADDITIONAL_PROMPT_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Be sure to add instruction to login using username equals '<username>' and password equals '<password> (**strictly** containing both the username and password placeholders)'.
-Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
+1. Include instruction to login using username equals '<username>' and password equals '<password> (**strictly** containing both the username and password placeholders)'.
+2. Be phrased as a request to login or sign in.
+3. {STRICT_COPY_INSTRUCTION}
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
@@ -124,7 +134,7 @@ LOGIN_USE_CASE = UseCase(
     description="The user fills out the login form and logs in successfully.",
     event=LoginEvent,
     event_source_code=LoginEvent.get_source_code_of_class(),
-    # replace_func not needed - credentials remain as placeholders until evaluation
+    replace_func=login_replace_func,
     constraints_generator=generate_login_constraints,
     additional_prompt_info=LOGIN_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -150,10 +160,11 @@ LOGIN_USE_CASE = UseCase(
 ###############################################################################
 # LOGOUT_USE_CASE
 ###############################################################################
-LOGOUT_ADDITIONAL_PROMPT_INFO = """"
+LOGOUT_ADDITIONAL_PROMPT_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Be sure to add instruction to login using username equals '<username>' and password equals '<password> (**strictly** containing both the username and password placeholders)'.
-Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
+1. Include instruction to login using username equals '<username>' and password equals '<password> (**strictly** containing both the username and password placeholders)'.
+2. Be phrased as a request to login and then logout.
+3. {STRICT_COPY_INSTRUCTION}
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
@@ -162,7 +173,7 @@ LOGOUT_USE_CASE = UseCase(
     description="The user logs out of the platform after logging in.",
     event=LogoutEvent,
     event_source_code=LogoutEvent.get_source_code_of_class(),
-    # replace_func not needed - credentials remain as placeholders until evaluation
+    replace_func=login_replace_func,
     constraints_generator=generate_logout_constraints,
     additional_prompt_info=LOGOUT_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -196,21 +207,18 @@ LOGOUT_USE_CASE = UseCase(
 
 def _get_film_detail_info(movies_data: list[dict]) -> str:
     """Generate film detail info dynamically from API data."""
-    movie_names = _generate_movie_names_list(movies_data)
+    _generate_movie_names_list(movies_data)
     return f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above - not just some of them
-2. Include ONLY the constraints mentioned above - do not add any other criteria
-3. Be phrased as a request to **view details** of a movie (use phrases like "Show details for...", "Navigate to the details page for...", etc.).
-4. Only use the movies name defined below.
-
-MOVIES NAMES:
-{movie_names}
+1. Include ALL constraints mentioned above (field, operator, and value).
+2. Include ONLY the constraints mentioned above - do not add any other criteria.
+3. Be phrased as a request to **view details** of a movie (e.g., "Show details for...", "Navigate to the details page for...", "Go to the film page for...").
+4. {STRICT_COPY_INSTRUCTION}
 
 For example, if the constraints are "director not_equals Robert Zemeckis AND year greater_than 2010":
 - CORRECT: "Show me details about a movie not directed by Robert Zemeckis that was released after 2010"
 - INCORRECT: "Show me details about a movie directed by Christopher Nolan" (you added a random director, and missing the year constraint)
-- INCORRECT: "Show me details about a movie not directed by Robert Zemeckis that was released after 2010 with a high rating" (adding an extra constraint about rating)
+- INCORRECT: "Show me details about a movie released after 2010 with a high rating" (adding an extra constraint about rating and missing director)
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
 """
@@ -222,7 +230,7 @@ FILM_DETAIL_USE_CASE = UseCase(
     event=FilmDetailEvent,
     event_source_code=FilmDetailEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
-    constraints_generator=generate_film_constraints,
+    constraints_generator=generate_film_detail_constraints,
     examples=[
         {
             "prompt": "Navigate to The Matrix movie page",
@@ -265,23 +273,16 @@ FILM_DETAIL_USE_CASE = UseCase(
 
 
 def _get_add_to_watchlist_info(movies_data: list[dict]) -> str:
-    """Generate add to watchlist info dynamically from API data."""
-    movie_names = _generate_movie_names_list(movies_data)
+    """Generate add to watchlist / remove from watchlist info dynamically from API data (auth required)."""
     return f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above - not just some of them
-2. Include ONLY the constraints mentioned above - do not add any other criteria
-3. Be phrased as a request to **view details** of a movie (use phrases like "Add to wishlist..." etc.).
-4. Only use the movies name defined below.
+1. Begin with a login instruction using username equals <username> and password equals <password> (exact constraint values).
+2. Include ALL constraints mentioned above (field, operator, and value).
+3. Include ONLY the constraints mentioned above - do not add any other criteria.
+4. Be phrased as a request to **add to watchlist or wishlist** (or **remove from watchlist**) of a movie (e.g., "Add to wishlist...", "Remove from watchlist...").
+5. {STRICT_COPY_INSTRUCTION}
 
-MOVIES NAMES:
-{movie_names}
-
-For example, if the constraints are "director not_equals Robert Zemeckis AND year greater_than 2010":
-- CORRECT: "Add to wishlist a movie not directed by Robert Zemeckis that was released after 2010"
-- INCORRECT: "Add to wishlist a movie directed by Christopher Nolan" (you added a random director, and missing the year constraint)
-- INCORRECT: "Add to wishlist a movie not directed by Robert Zemeckis that was released after 2010 with a high rating" (adding an extra constraint about rating)
-
+For example: "Login with username equals <username> and password equals <password>. Add to wishlist a movie whose name contains 'ng' and that has a rating greater than 3.8."
 ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
 """
 
@@ -291,8 +292,9 @@ ADD_TO_WATCHLIST_USE_CASE = UseCase(
     description="The user explicitly requests to add a film into wishlist of a specific movie that meets certain criteria, where they can view information including director, year, genres, rating, duration, and cast.",
     event=AddToWatchlistEvent,
     event_source_code=AddToWatchlistEvent.get_source_code_of_class(),
+    replace_func=login_and_film_replace_func,
     additional_prompt_info=None,  # Will be populated dynamically from API
-    constraints_generator=generate_film_constraints,
+    constraints_generator=generate_add_to_watchlist_constraints,
     examples=[
         {
             "prompt": "Add to wishlist The Matrix movie",
@@ -319,8 +321,8 @@ ADD_TO_WATCHLIST_USE_CASE = UseCase(
             "prompt_for_task_generation": "Add to wishlist a <genre> film less than <duration> minutes long",
         },
         {
-            "prompt": "Add to wishlist a film from the 1999 with Al Pacino",
-            "prompt_for_task_generation": "Add to wishlist a film from the <year> with <actor>",
+            "prompt": "Add to wishlist a film from the 90s with Al Pacino",
+            "prompt_for_task_generation": "Add to wishlist a film from the <decade>s with <actor>",
         },
         {
             "prompt": "Add to wishlist a horror movie not directed by Wes Craven",
@@ -339,8 +341,9 @@ REMOVE_FROM_WATCHLIST_USE_CASE = UseCase(
     description="Remove a film from the watchlist using the provided constraints (used to validate removal events).",
     event=RemoveFromWatchlistEvent,
     event_source_code=RemoveFromWatchlistEvent.get_source_code_of_class(),
+    replace_func=login_and_film_replace_func,
     additional_prompt_info=None,  # populated dynamically
-    constraints_generator=generate_film_constraints,
+    constraints_generator=generate_remove_from_watchlist_constraints,
     examples=[
         {
             "prompt": "Remove the film '<movie>' from the watchlist",
@@ -360,22 +363,16 @@ REMOVE_FROM_WATCHLIST_USE_CASE = UseCase(
 
 def _get_share_film_info(movies_data: list[dict]) -> str:
     """Generate share film info dynamically from API data."""
-    movie_names = _generate_movie_names_list(movies_data)
     return f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above - not just some of them
-2. Include ONLY the constraints mentioned above - do not add any other criteria
-3. Include ALL fields given in constraints along with their operators and field values.
-4. Be phrased as a request to **view details** of a movie (use phrases like "Share details for..." etc.).
-5. Only use the movies name defined below.
+1. Include ALL constraints mentioned above (field, operator, and value).
+2. Include ONLY the constraints mentioned above - do not add any other criteria.
+3. Be phrased as a request to **share a movie** (e.g., "Share this movie...", "I want to share the film...", "Send the film info...").
+4. {STRICT_COPY_INSTRUCTION}
 
-MOVIES NAMES:
-{movie_names}
-
-For example, if the constraints are "director not_equals Robert Zemeckis AND year greater_than 2010":
-- CORRECT: "Share details about a movie not directed by Robert Zemeckis that was released after 2010"
-- INCORRECT: "Share details about a movie directed by Christopher Nolan" (you added a random director, and missing the year constraint)
-- INCORRECT: "Share details about a movie not directed by Robert Zemeckis that was released after 2010 with a high rating" (adding an extra constraint about rating)
+For example, if the constraints are "director equals 'James Cameron' AND rating greater_than 4.0":
+- CORRECT: "Share a movie directed by James Cameron with a rating higher than 4.0"
+- INCORRECT: "Share the details of Titanic" (missing constraints)
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
 """
@@ -387,7 +384,7 @@ SHARE_FILM_USE_CASE = UseCase(
     event=ShareFilmEvent,
     event_source_code=ShareFilmEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
-    constraints_generator=generate_film_constraints,
+    constraints_generator=generate_share_film_constraints,
     examples=[
         {
             "prompt": "Share The Matrix movie",
@@ -414,8 +411,8 @@ SHARE_FILM_USE_CASE = UseCase(
             "prompt_for_task_generation": "Share <genre> film less than <duration> minutes long",
         },
         {
-            "prompt": "Share film details from the 1999 with Al Pacino",
-            "prompt_for_task_generation": "Share film details from the <year> with <actor>",
+            "prompt": "Share film details from the 90s with Al Pacino",
+            "prompt_for_task_generation": "Share film details from the <decade>s with <actor>",
         },
         {
             "prompt": "Share horror movie not directed by Wes Craven",
@@ -431,21 +428,16 @@ SHARE_FILM_USE_CASE = UseCase(
 
 def _get_watch_trailer_info(movies_data: list[dict]) -> str:
     """Generate watch trailer info dynamically from API data."""
-    movie_names = _generate_movie_names_list(movies_data)
     return f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above - not just some of them
-2. Include ONLY the constraints mentioned above - do not add any other criteria
-3. Be phrased as a request to **watch the trailer** of a movie (use phrases like "Watch trailer for...", "Play the trailer of...", "View the trailer for...", etc.).
-4. Only use the movies name defined below.
-
-MOVIES NAMES:
-{movie_names}
+1. Include ALL constraints mentioned above (field, operator, and value).
+2. Include ONLY the constraints mentioned above - do not add any other criteria.
+3. Be phrased as a request to **watch the trailer** of a movie (e.g., "Watch trailer for...", "Play the trailer of...", "View the trailer for...").
+4. {STRICT_COPY_INSTRUCTION}
 
 For example, if the constraints are "director not_equals Robert Zemeckis AND year greater_than 2010":
-- CORRECT: "Watch the trailer for a movie not directed by Robert Zemeckis that was released after 2010"
-- INCORRECT: "Watch the trailer for a movie directed by Christopher Nolan" (you added a random director, and missing the year constraint)
-- INCORRECT: "Watch the trailer for a movie not directed by Robert Zemeckis that was released after 2010 with a high rating" (adding an extra constraint about rating)
+- CORRECT: "Watch the trailer for a movie not directed by Robert Zemeckis produced after 2010"
+- INCORRECT: "Watch the trailer for Titanic" (missing constraints)
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
 """
@@ -457,7 +449,7 @@ WATCH_TRAILER_USE_CASE = UseCase(
     event=WatchTrailer,
     event_source_code=WatchTrailer.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
-    constraints_generator=generate_film_constraints,
+    constraints_generator=generate_watch_trailer_constraints,
     examples=[
         {
             "prompt": "Watch the trailer for The Matrix movie",
@@ -500,27 +492,17 @@ WATCH_TRAILER_USE_CASE = UseCase(
 ###############################################################################
 # SEARCH_FILM_USE_CASE
 ###############################################################################
-SEARCH_FILM_INFO = """
+SEARCH_FILM_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Make it EXPLICIT that this is a SEARCH for a movie using clear terms such as:
-   - "Search for..."
-   - "Look for the film..."
-   - "Find a movie..."
-   - "Look up a movie..."
-2. Avoid ambiguous phrases like "Show details" or "Give me information" that could be confused with other actions
-3. Include ONLY the movie title as part of the search
-4. DO NOT include ANY constraints or conditions like director, year, genre, etc.
-5. PAY ATTENTION to the constraints, especially when referring to EQUALS or NOT EQUALS.
-For example:
-- CORRECT: "Search for the movie Inception in the database"
-- CORRECT: "Look for the film Titanic"
-- CORRECT: "Find movies called The Matrix"
-- INCORRECT: "Show me details about Inception" (doesn't specify it's a search)
-- INCORRECT: "Give me information on Titanic" (ambiguous, doesn't clearly indicate search)
-- INCORRECT: "Search for Titanic NOT directed by James Cameron" (includes constraints)
-- INCORRECT: "Find a movie called Inception released after 2010" (includes constraints)
+1. Make it EXPLICIT that this is a SEARCH for a movie using clear terms (e.g., "Search for...", "Find a movie...").
+2. DO NOT include ANY constraints other than the movie title ('query' field).
+3. {STRICT_COPY_INSTRUCTION}
 
-ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL clearly indicating that it is a simple SEARCH with NO additional constraints.
+For example:
+- CORRECT: "Search for the movie 'Inception'"
+- INCORRECT: "Show me details about Inception" (doesn't specify it's a search)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL clearly indicating that it is a simple SEARCH.
 """
 
 SEARCH_FILM_USE_CASE = UseCase(
@@ -554,16 +536,15 @@ SEARCH_FILM_USE_CASE = UseCase(
 ###############################################################################
 # ADD_FILM_USE_CASE
 ###############################################################################
-ADD_FILM_ADDITIONAL_PROMPT_INFO = """
+ADD_FILM_ADDITIONAL_PROMPT_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above — not just some of them.
-2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
-3. Be phrased as a request to add or insert a film (use phrases like "Add...", "Insert...", "Register...", etc.).
+1. Begin with a login instruction using username equals <username> and password equals <password> (exact constraint values).
+2. Include ALL constraints mentioned above (field, operator, and value).
+3. Include ONLY the constraints mentioned above - do not add any other criteria.
+4. Be phrased as a request to add or insert a film (e.g., "Add the movie...", "Insert a new film...", "Register a movie...").
+5. {STRICT_COPY_INSTRUCTION}
 
-For example, if the constraints are "year equals 2014 AND director equals 'Wes Anderson'":
-- CORRECT: "Add a film whose year equals 2014 and that is directed by Wes Anderson."
-- INCORRECT: "Add a film with a high rating" (you added an extra filter).
-
+For example: "Login with username equals <username> and password equals <password>. Add a film whose year equals 2014 and that is directed by Wes Anderson."
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
 
@@ -572,6 +553,7 @@ ADD_FILM_USE_CASE = UseCase(
     description="The user adds a new film to the system, specifying details such as name, director, year, genres, duration, language, and cast.",
     event=AddFilmEvent,
     event_source_code=AddFilmEvent.get_source_code_of_class(),
+    replace_func=login_and_film_replace_func,
     constraints_generator=generate_add_film_constraints,
     additional_prompt_info=ADD_FILM_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -615,24 +597,25 @@ ADD_FILM_USE_CASE = UseCase(
 ###############################################################################
 # EDIT_FILM_USE_CASE
 ###############################################################################
-EDIT_FILM_ADDITIONAL_PROMPT_INFO = """
+EDIT_FILM_ADDITIONAL_PROMPT_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above — not just some of them.
-2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
-3. Be phrased as a request to edit or modify a film (use phrases like "Edit...", "Modify...", "Update...", "Change...", etc.).
+1. Begin with a login instruction using username equals <username> and password equals <password> (exact constraint values).
+2. Include ALL constraints mentioned above (field, operator, and value).
+3. Explicitly mention the field names (name, director, year, genres, rating, duration, cast). For 'genres', you can also use 'genre' in singular.
+4. Use clear operator indicators (e.g., "equals", "contains", "greater than", "less than"). DO NOT use ambiguous words like "including" for a CONTAINS operator; use "contains" instead.
+5. Include ONLY the constraints mentioned above - do not add any other criteria.
+6. Be phrased as a request to edit or modify a film (e.g., "Edit...", "Update the film...", "Modify...").
+7. {STRICT_COPY_INSTRUCTION}
 
-For example, if the constraints are "year equals 2014 AND director contains 'e'":
-- CORRECT: "Edit a film where the year equals 2014 and the director's name contains the letter 'e'."
-- INCORRECT: "Edit a random film with a high rating" (you added an extra filter).
-
-ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+For example: "Login with username equals <username> and password equals <password>. Update the movie where name equals 'The Matrix', set the year equals 1999 and ensure the director contains 'Wachowskis'."
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria and mentioning the field names.
 """
 EDIT_FILM_USE_CASE = UseCase(
     name="EDIT_FILM",
     description="The user edits an existing film, modifying one or more attributes such as name, director, year, genres, rating, duration, or cast.",
     event=EditFilmEvent,
     event_source_code=EditFilmEvent.get_source_code_of_class(),
-    replace_func=replace_film_placeholders,
+    replace_func=login_and_film_replace_func,
     constraints_generator=generate_edit_film_constraints,
     additional_prompt_info=EDIT_FILM_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -665,15 +648,16 @@ EDIT_FILM_USE_CASE = UseCase(
 ###############################################################################
 # DELETE_FILM_USE_CASE
 ###############################################################################
-DELETE_FILM_ADDITIONAL_PROMPT_INFO = """
+DELETE_FILM_ADDITIONAL_PROMPT_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above — not just some of them.
-2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
-3. Be phrased as a request to delete or remove a film (use phrases like "Remove...", "Delete...", "Erase...", "Discard...").
+1. Include ALL constraints mentioned above (field, operator, and value).
+2. Include ONLY the constraints mentioned above - do not add any other criteria.
+3. Be phrased as a request to delete or remove a film (e.g., "Remove the film...", "Delete...", "Erase...").
+4. {STRICT_COPY_INSTRUCTION}
 
-For example, if the constraints are "year greater_than 2014 AND genres contains Sci-Fi":
-- CORRECT: "Delete a film whose year is greater than 2014 and that belongs to the Sci-Fi genre."
-- INCORRECT: "Delete a film from 2015 with a high rating" (you added an extra filter).
+For example, if the constraints are "year greater_than 2014 AND genres contains 'Sci-Fi'":
+- CORRECT: "Delete a film whose year is greater than 2014 and that belongs to the 'Sci-Fi' genre."
+- INCORRECT: "Delete a film from 2015 with a high rating" (wrong constraints)
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
@@ -684,7 +668,7 @@ DELETE_FILM_USE_CASE = UseCase(
     event=DeleteFilmEvent,
     event_source_code=DeleteFilmEvent.get_source_code_of_class(),
     additional_prompt_info=DELETE_FILM_ADDITIONAL_PROMPT_INFO,
-    constraints_generator=generate_film_constraints,
+    constraints_generator=generate_delete_film_constraints,
     examples=[
         {
             "prompt": "Remove The Matrix, a film released after 2014, from the database",
@@ -734,16 +718,16 @@ DELETE_FILM_USE_CASE = UseCase(
 # CONTACT_USE_CASE
 ###############################################################################
 
-CONTACT_ADDITIONAL_PROMPT_INFO = """
+CONTACT_ADDITIONAL_PROMPT_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above — not just some of them.
-2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
-3. Be phrased as a request to fill or submit the contact form (e.g., "Fill out the contact form...", "Submit a contact form...", "Go to the contact page and send a form...").
+1. Include ALL constraints mentioned above (field, operator, and value).
+2. Include ONLY the constraints mentioned above - do not add any other fields.
+3. Be phrased as a request to fill or submit the contact form (e.g., "Fill out the contact form...", "Submit feedback...").
+4. {STRICT_COPY_INSTRUCTION}
 
-For example, if the constraints are "name not_equals John AND message contains 'services'":
-- CORRECT: "Fill out the contact form with a name not_equals John and a message that contains 'services'."
-- INCORRECT: "Fill out the form with name = John" (contradice not_equals John)
-- INCORRECT: "Fill out the form and mention your budget" (agrega un constraint que NO está en la lista)
+For example, if the constraints are "name not_equals 'John' AND message contains 'services'":
+- CORRECT: "Fill out the contact form with a name NOT 'John' and a message that contains 'services'."
+- INCORRECT: "Fill out the form with name = John" (contradicts constraint)
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
@@ -788,19 +772,20 @@ CONTACT_USE_CASE = UseCase(
 ###############################################################################
 # EDIT_USER_PROFILE_USE_CASE
 ###############################################################################
-EDIT_PROFILE_ADDITIONAL_PROMPT_INFO = """
+EDIT_PROFILE_ADDITIONAL_PROMPT_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above — not just some of them.
-2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
-3. Begin with "Login for the following username equals <username> and password equals <password>".
-4. Be sure to add instruction to login using username equals '<username>' and password equals '<password> (**strictly** containing both the username and password placeholders)'.
-5. Be phrased as a request to edit or modify a user profile (use phrases like "Edit...", "Modify...", "Update...", "Change...", etc.).
+1. Include ALL constraints — every field (username, password, first_name, last_name, bio, location, website, favorite_genres) that appears in the constraints MUST be explicitly mentioned in the prompt with its exact value and operator.
+2. Use clear operator indicators (e.g., "equals", "contains"). For ComparisonOperator.CONTAINS, use the word "contains" explicitly (e.g., "website contains 'filmcritics'"). DO NOT use ambiguous words like "include" or "contains the word".
+3. Use the EXACT constraint values in the prompt — do NOT replace them with placeholders like <username> or <password>. If the constraint says "username equals <web_agent_id>", the prompt must contain "<web_agent_id>". If it says "password equals password123", the prompt must contain "password123".
+4. Begin with a login instruction that states username and password using their exact constraint values (e.g. "Login with username equals <web_agent_id> and password equals password123").
+5. Then add an edit-profile instruction that explicitly mentions each remaining constraint field and its exact value and operator.
+6. {STRICT_COPY_INSTRUCTION}
 
-For example, if the constraints are "username equals 'filmfan' AND password equals 'pass123' AND bio contains 'cinema'":
-- CORRECT: "Login for the following username:filmfan and password:pass123. Edit your profile to update your bio to include the word 'cinema'."
-- INCORRECT: "Edit a profile to change the website" (missing login information and specific constraints).
+Example: constraints "username equals <web_agent_id>, password equals pass456, website contains 'filmcritics', bio contains 'cinema'":
+- CORRECT: "Login with username equals <web_agent_id> and password equals pass456. Edit your profile: ensure your website contains 'filmcritics' and your bio contains 'cinema'."
+- INCORRECT: "Login and edit your profile." (missing exact values).
 
-ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+ALL prompts must mention every constraint field and use EXACTLY the values and operators from the constraints.
 """
 
 EDIT_USER_PROFILE_USE_CASE = UseCase(
@@ -808,7 +793,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
     description="The user edits their profile, modifying one or more attributes such as first name, last name, bio, location, website, or favorite genres. Username and email cannot be edited.",
     event=EditUserEvent,
     event_source_code=EditUserEvent.get_source_code_of_class(),
-    # replace_func not needed - credentials remain as placeholders until evaluation
+    replace_func=login_replace_func,
     constraints_generator=generate_edit_profile_constraints,
     additional_prompt_info=EDIT_PROFILE_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -837,8 +822,8 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login where username equals <username> and password equals <password>. Change your last name to <last_name>.",
         },
         {
-            "prompt": "Login where username equals <username> and password equals <password>. Modify your profile to ensure that your location does NOT contain 'a' and that your website contains 'https://cinephileworld.example.org'",
-            "prompt_for_task_generation": "Login where username equals <username> and password equals <password>. Modify your profile to ensure that your location does NOT contain 'a' and that your website contains <website>",
+            "prompt": "Login where username equals user<web_agent_id> and password equals password123. Modify your profile to ensure that your location does NOT contain 'a' and that your website contains 'https://cinephileworld.example.org'",
+            "prompt_for_task_generation": "Login where username equals user<web_agent_id> and password equals password123. Modify your profile to ensure that your location does NOT contain 'a' and that your website contains <website>",
         },
     ],
 )
@@ -849,30 +834,19 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
 ###############################################################################
 def _get_filter_film_info(movies_data: list[dict]) -> str:
     """Generate filter film info dynamically from API data."""
-    allowed_years = _generate_allowed_years_list(movies_data)
-    allowed_genres = _generate_allowed_genres_list(movies_data)
     return f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above — not just some of them.
-2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
-3. Include the word "Filter" (or "filtering", "filtered", "filters") explicitly in the prompt.
-4. Be phrased as a request to filter or browse films (e.g., "Filter...", "Show only...", "Display...", "Browse...", etc.).
-5. Use ONLY the allowed genres and years from the lists below.
+1. Include ALL constraints mentioned above (field, operator, and value).
+2. Include ONLY the constraints mentioned above - do not add any other criteria.
+3. Be phrased as a request to filter or browse films (e.g., "Filter...", "Show only...", "Display...", "Browse...").
+4. {STRICT_COPY_INSTRUCTION}
 
-ALLOWED YEARS:
-{allowed_years}
-
-ALLOWED GENRES:
-{allowed_genres}
-
-For example, if the constraints are "genre_name equals 'Action' AND year equals 1999":
-- CORRECT: "Filter for Action movies released in 1999."
+For example, if the constraints are "genres equals 'Action' AND year equals 1999":
+- CORRECT: "Filter for Action movies released in 1999"
 - CORRECT: "Browse films from 1999 in the Action genre."
-- INCORRECT: "Search for Action films from the 90s" (uses vague year and incorrect phrasing).
-- INCORRECT: "Show all Action films" (missing the year constraint if both are provided).
-- INCORRECT: "Filter for Mystery movies" (Mystery is not in the allowed genre list).
+- INCORRECT: "Show all Action films" (missing year)
 
-ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
 """
 
 
@@ -910,18 +884,20 @@ FILTER_FILM_USE_CASE = UseCase(
 ###############################################################################
 # ADD_COMMENT_USE_CASE
 ###############################################################################
-ADD_COMMENT_ADDITIONAL_PROMPT_INFO = """
+ADD_COMMENT_ADDITIONAL_PROMPT_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above — not just some of them.
-2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
-3. Be phrased as a request to add a comment to a movie (use phrases like "Add a comment...", "Write a review...", "Post a comment...", "Leave feedback...").
-4. If the constraints include the 'content' field (e.g., content contains or content not_contains), the prompt MUST refer specifically to the comment **content or message**, using expressions like "a comment whose content...", "a review whose message...", etc., and NOT just a vague instruction".
-For example, if the constraints are "movie_name contains 'Inception' AND content not_contains 'boring'":
-- CORRECT: "Add a comment to a movie that contains 'Inception' with a content that does NOT contain the word 'boring'."
-- INCORRECT: "Write a comment about any movie" (missing specific constraints)
-- INCORRECT: "Post a review that includes extra unnecessary details" (adding constraints not specified)
+1. Include ALL constraints mentioned above (field, operator, and value).
+2. Explicitly mention the field names (movie_name, commenter_name, content). For movie_name, you can use "movie_name" or "movie name".
+3. Include ONLY the constraints mentioned above - do not add any other fields.
+4. Be phrased as a request to add a comment to a movie (e.g., "Add a comment...", "Post a review...").
+5. {STRICT_COPY_INSTRUCTION}
 
-ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+For example, if the constraints are "movie_name contains 'Inception' AND content not_contains 'boring'":
+- CORRECT: "Add a comment to the movie_name that contains 'Inception' with a content that does NOT contain the word 'boring'."
+- CORRECT: "Post a review for the movie name 'Inception' where the content does NOT have 'boring'."
+- INCORRECT: "Write a comment about any movie" (missing specific constraints)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria and mentioning the field names.
 """
 ADD_COMMENT_USE_CASE = UseCase(
     name="ADD_COMMENT",
