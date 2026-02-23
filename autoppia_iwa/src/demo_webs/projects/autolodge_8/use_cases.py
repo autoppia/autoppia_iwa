@@ -359,19 +359,17 @@ RESERVE_HOTEL_USE_CASE = UseCase(
 
 
 EDIT_CHECK_IN_OUT_DATES_INFO = """
-CRITICAL REQUIREMENTS:
-1. Start the prompt like:
-    Example: Edit checkin checkout dates where checkin date <operator> <checkin-date> and checkout date <operator> <checkout-date> ...
-2. Keep the constraints values as it is in the prompt, and do not complete or correct them.
-    Do not add values not present in event_criteria (e.g., if guests = 1, do NOT write '1 and 2')
-3. Do NOT split, rephrase, or interpret list values. Use them exactly as shown in event_criteria.
-    Example:
-        'amenities': {'operator': 'in_list', 'value': ['Ski-in, Ski-out']}
+Critical requirements:
+1. The request must start with one of the following: "Edit checkin checkout dates...".
+2. Include ALL mentioned constraints in the prompt.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
+4. All constraint values must be copied exactly as provided, character-for-character.
+5. Do NOT reformat, normalize, paraphrase, or adjust any values (including time, date, capitalization, spacing, or punctuation).
 
-    Correct: amenities in list ['Ski-in, Ski-out']
-    Incorrect: amenities include 'Ski-in' or 'Ski-out'
-
-"""
+EXAMPLES:
+✅ CORRECT: Edit checkin checkout dates where checkin date less than '2025-11-19 00:00:00', and checkout date less than '2025-12-21 00:00:00' and hotel location contains 'ain', and price greater than '700', and rating equals '4.7', and amenities IN LIST ['Dedicated workspace', 'Easy check-in'], and title equals 'Pineview Chalet'.
+❌ INCORRECT: Edit checkin dates where date '11-19' and checkout '12-21'. (Not all constraints in the prompt and also not exactly the value copied)
+""".strip()
 
 EDIT_CHECK_IN_OUT_DATES_USE_CASE = UseCase(
     name="EDIT_CHECK_IN_OUT_DATES",
@@ -382,24 +380,24 @@ EDIT_CHECK_IN_OUT_DATES_USE_CASE = UseCase(
     additional_prompt_info=EDIT_CHECK_IN_OUT_DATES_INFO,
     examples=[
         {
-            "prompt": "Edit checkin checkout dates where check-in date greater than August 12, 2025 and check-out date less than or equal September 1, 2025.",
-            "prompt_for_task_generation": "Edit checkin checkout dates where check-in date greater than August 12, 2025 and check-out date less than or equal September 1, 2025.",
+            "prompt": "Edit checkin checkout dates where checkin date '2025-08-20 00:00:00', and checkout date less than or equal '2025-10-24 00:00:00'.",
+            "prompt_for_task_generation": "Edit checkin checkout dates where checkin date '2025-08-20 00:00:00', and checkout date less than or equal '2025-10-24 00:00:00'.",
         },
         {
-            "prompt": "Edit checkin checkout dates where check-in date not equal to September 5, 2025 and check-out date equal to September 9, 2025.",
-            "prompt_for_task_generation": "Edit checkin checkout dates where check-in date not equal to September 5, 2025 and check-out date equal to September 9, 2025.",
+            "prompt": "Edit checkin checkout dates where checkin date NOT '2025-08-12 00:00:00', and checkout date greater than or equal '2025-10-27 00:00:00'.",
+            "prompt_for_task_generation": "Edit checkin checkout dates where checkin date NOT '2025-08-12 00:00:00', and checkout date greater than or equal '2025-10-27 00:00:00'.",
         },
         {
-            "prompt": "Edit checkin checkout dates where check-in date less than September 18, 2025 and check-out date greater than or equal September 22, 2025.",
-            "prompt_for_task_generation": "Edit checkin checkout dates where check-in date less than September 18, 2025 and check-out date greater than or equal September 22, 2025.",
+            "prompt": "Edit checkin checkout dates where checkin date greater than '2025-08-12 00:00:00', and checkout date less than '2025-10-27 00:00:00' and hotel location equals 'Mexico', and price equals '500'.",
+            "prompt_for_task_generation": "Edit checkin checkout dates where checkin date greater than '2025-08-12 00:00:00', and checkout date less than '2025-10-27 00:00:00' and hotel location equals 'Mexico', and price equals '500'.",
         },
         {
-            "prompt": "Edit checkin checkout dates where check-in date equal to October 2, 2025 and check-out date greater than October 5, 2025.",
-            "prompt_for_task_generation": "Edit checkin checkout dates where check-in date equal to October 2, 2025 and check-out date greater than October 5, 2025.",
+            "prompt": "Edit checkin checkout dates where checkin date equals '2025-10-12 00:00:00', and checkout date less than '2025-10-27 00:00:00' and hotel location NOT 'Spain', and price less than '700', and rating greater equals '4.7'.",
+            "prompt_for_task_generation": "Edit checkin checkout dates where checkin date equals '2025-10-12 00:00:00', and checkout date less than '2025-10-27 00:00:00' and hotel location NOT 'Spain', and price less than '700', and rating greater equals '4.7'.",
         },
         {
-            "prompt": "Edit checkin checkout dates where check-in date not equal to October 11, 2025 and check-out date less than October 15, 2025.",
-            "prompt_for_task_generation": "Edit checkin checkout dates where check-in date not equal to October 11, 2025 and check-out date less than October 15, 2025.",
+            "prompt": "Edit checkin checkout dates where checkin date less than '2025-11-19 00:00:00', and checkout date less than '2025-12-21 00:00:00' and hotel location contains 'ain', and price greater than '700', and rating equals '4.7', and amenities IN LIST ['Dedicated workspace', 'Easy check-in'], and title equals 'Pineview Chalet'.",
+            "prompt_for_task_generation": "Edit checkin checkout dates where checkin date less than '2025-11-19 00:00:00', and checkout date less than '2025-12-21 00:00:00' and hotel location contains 'ain', and price greater than '700', and rating equals '4.7', and amenities IN LIST ['Dedicated workspace', 'Easy check-in'], and title equals 'Pineview Chalet'.",
         },
     ],
 )
