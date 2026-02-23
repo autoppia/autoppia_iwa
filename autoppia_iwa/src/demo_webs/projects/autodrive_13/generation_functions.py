@@ -22,6 +22,20 @@ from .data import (
 from .data_utils import fetch_data
 
 
+def normalize_contain_value(value: str) -> str:
+    """
+    If value contains " - " with non-empty text after it, return the part after " - " (stripped).
+    Otherwise return the part before " - " or the whole string.
+    """
+    if not value:
+        return value
+    if " - " in value:
+        left, _, right = value.partition(" - ")
+        right_stripped = right.strip()
+        return right_stripped if right_stripped else left.strip()
+    return value.strip()
+
+
 async def _ensure_drive_dataset(
     task_url: str | None,
     dataset: dict[str, list[dict[str, Any]]] | None,
@@ -100,8 +114,10 @@ def _generate_constraint_value(
         if len(field_value) > 2:
             start = random.randint(0, max(0, len(field_value) - 2))
             end = random.randint(start + 1, len(field_value))
-            return field_value[start:end]
-        return field_value
+            result = field_value[start:end]
+        else:
+            result = field_value
+        return normalize_contain_value(result) if "-" in result else result
 
     if operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
         alphabet = "abcdefghijklmnopqrstuvwxyz"
