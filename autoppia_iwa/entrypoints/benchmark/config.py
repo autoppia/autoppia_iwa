@@ -33,6 +33,7 @@ class BenchmarkConfig:
     runs: int = 1
     max_parallel_agent_calls: int = 1
     record_gif: bool = False
+    headless: bool | None = None  # None = use EVALUATOR_HEADLESS env; False = show Chromium window
 
     # Evaluator mode
     # "concurrent": El agente genera todas las acciones de una vez (modo tradicional)

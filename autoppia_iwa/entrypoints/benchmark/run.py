@@ -33,9 +33,9 @@ AGENTS = [
 # 2) PROJECTS & USE CASES
 # =============================================================================
 
-PROJECT_IDS = ["autocinema"]
+PROJECT_IDS = ["autostats"]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
-USE_CASES = ["FILM_DETAIL"]  # or None for all use cases
+USE_CASES = None  # or None for all use cases
 
 # =============================================================================
 # 3) EVALUATOR MODE: choose one block (concurrent or stateful)
@@ -44,36 +44,38 @@ USE_CASES = ["FILM_DETAIL"]  # or None for all use cases
 # Stateful: call /act repeatedly with snapshot_html each step.
 
 # --- CONCURRENT (default): agent generates full action sequence in one go ---
+# CFG = BenchmarkConfig(
+#    projects=PROJECTS,
+#    agents=AGENTS,
+#    evaluator_mode="concurrent",
+#    use_cases=USE_CASES,
+#    prompts_per_use_case=1,
+#    use_cached_tasks=False,
+#    runs=1,
+#    max_parallel_agent_calls=1,
+#    record_gif=False,
+#    dynamic=True,
+#    save_results_json=True,
+#    headless=False,  # Show Chromium window (set True or omit to use EVALUATOR_HEADLESS env)
+# )
+
+# --- STATEFUL: agent decides step-by-step (must use ApifiedWebAgent in AGENTS) ---
+# Uncomment this block and comment the CFG block above to run in stateful mode.
 CFG = BenchmarkConfig(
     projects=PROJECTS,
     agents=AGENTS,
-    evaluator_mode="concurrent",
+    evaluator_mode="stateful",
+    max_steps_per_task=50,
     use_cases=USE_CASES,
     prompts_per_use_case=1,
     use_cached_tasks=False,
     runs=1,
     max_parallel_agent_calls=1,
-    record_gif=False,
-    dynamic=True,
+    record_gif=True,
+    dynamic=False,
     save_results_json=True,
+    headless=True,  # Show Chromium window (set True or omit to use EVALUATOR_HEADLESS env)
 )
-
-# --- STATEFUL: agent decides step-by-step (must use ApifiedWebAgent in AGENTS) ---
-# Uncomment this block and comment the CFG block above to run in stateful mode.
-# CFG = BenchmarkConfig(
-#     projects=PROJECTS,
-#     agents=AGENTS,
-#     evaluator_mode="stateful",
-#     max_steps_per_task=50,
-#     use_cases=USE_CASES,
-#     prompts_per_use_case=1,
-#     use_cached_tasks=True,
-#     runs=1,
-#     max_parallel_agent_calls=1,
-#     record_gif=True,
-#     dynamic=False,
-#     save_results_json=True,
-# )
 
 
 def main():

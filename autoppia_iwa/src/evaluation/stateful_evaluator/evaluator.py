@@ -129,12 +129,14 @@ class AsyncStatefulEvaluator(AsyncWebAgentSession):
         should_record_gif: bool = False,
         capture_screenshot: bool = False,
         config: EvaluatorConfig | None = None,
+        headless: bool | None = None,
     ) -> None:
         self.task = task
         self.web_agent_id = web_agent_id
         self.should_record_gif = should_record_gif
         self.capture_screenshot = capture_screenshot
         self.config = config or EvaluatorConfig()
+        self._headless = headless
 
         self._playwright = None
         self._browser = None
@@ -216,8 +218,9 @@ class AsyncStatefulEvaluator(AsyncWebAgentSession):
         logger.info("[AsyncStatefulEvaluator] launching browser")
         self._playwright = await async_playwright().start()
         specs = self.task.specifications or BrowserSpecification()
+        headless = self._headless if self._headless is not None else EVALUATOR_HEADLESS
         self._browser = await self._playwright.chromium.launch(
-            headless=EVALUATOR_HEADLESS,
+            headless=headless,
             args=[f"--window-size={specs.screen_width},{specs.screen_height}"],
         )
         validator_id = VALIDATOR_ID or os.getenv("VALIDATOR_ID", "validator_001")

@@ -79,6 +79,7 @@ class Event(BaseModel):
         from autoppia_iwa.src.demo_webs.projects.autolist_12.events import BACKEND_EVENT_TYPES as web_12_backend_types
         from autoppia_iwa.src.demo_webs.projects.autolodge_8.events import BACKEND_EVENT_TYPES as web_8_backend_types
         from autoppia_iwa.src.demo_webs.projects.automail_6.events import BACKEND_EVENT_TYPES as web_6_backend_types
+        from autoppia_iwa.src.demo_webs.projects.autostats_15.events import BACKEND_EVENT_TYPES as web_15_backend_types
         from autoppia_iwa.src.demo_webs.projects.autowork_10.events import BACKEND_EVENT_TYPES as web_10_backend_types
         from autoppia_iwa.src.demo_webs.projects.autozone_3.events import BACKEND_EVENT_TYPES as web_3_backend_types
 
@@ -97,6 +98,7 @@ class Event(BaseModel):
             **web_12_backend_types,
             **web_13_backend_types,
             **web_14_backend_types,
+            **web_15_backend_types,
         }
         event_class_map = ALL_BACKEND_EVENT_TYPES
 

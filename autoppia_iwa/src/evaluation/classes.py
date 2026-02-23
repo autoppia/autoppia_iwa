@@ -110,3 +110,4 @@ class EvaluatorConfig(BaseModel):
     should_record_gif: bool = Field(default=False, description="Record evaluation on browser executions.")
     dynamic_phase_config: DynamicPhaseConfig | None = Field(default=None, description="Optional DOM mutation configuration (D1/D3/D4 phases).")
     max_consecutive_action_failures: int = Field(default=2, gt=0, description="Maximum consecutive action failures before marking task as failed. Default: 2")
+    headless: bool | None = Field(default=None, description="Override browser headless. None = use EVALUATOR_HEADLESS env.")

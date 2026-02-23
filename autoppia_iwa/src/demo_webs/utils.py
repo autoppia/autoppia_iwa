@@ -79,6 +79,7 @@ def get_web_version(project_id: str, frontend_url: str | None = None) -> str | N
         "autolist": "web_12_autolist",
         "autodrive": "web_13_autodrive",
         "autohealth": "web_14_autohealth",
+        "autostats": "web_15_autostats",
     }
 
     web_folder = project_to_web_map.get(project_id)
