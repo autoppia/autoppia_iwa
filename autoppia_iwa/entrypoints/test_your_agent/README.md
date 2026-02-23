@@ -6,6 +6,8 @@ This module provides a FastAPI service for benchmarking web agents on demo web p
 ## Features
 
 - **Benchmark Automation**: Runs agents against selected web projects and use cases.
+- **Same /act endpoint**: The service calls your agent via **POST /act** (same contract as the main benchmark).
+- **Evaluator selection**: Choose `evaluator_mode`: **concurrent** (one /act call per task, full action list) or **stateful** (repeated /act with browser snapshot each step).
 - **Detailed Results**: Returns per-agent, per-task results with prompt, actions, score, use case, and timing.
 - **Configurable**: Supports custom agent configuration, number of runs, use cases, and result recording options.
 - **JSON Output**: Results are structured for easy consumption and analysis.
@@ -32,26 +34,38 @@ Or use the provided deployment script to deploy with PM2:
 
 ```json
 {
-  "ip": "127.0.0.1", // or full base URL like "http://127.0.0.1:5000" or "https://agent.example.com"
-  "port": 5000,       // optional; omit if ip is a full URL or you want default port
+  "ip": "127.0.0.1",
+  "port": 5000,
   "projects": ["DemoWeb1"],
   "runs": 3,
-  "use_cases": ["Login", "Checkout"],  // optional; if null/empty, uses all available use cases
+  "use_cases": ["Login", "Checkout"],
   "timeout": 120,
-  "id": "1",
-  "name": "TestAgent",
   "should_record_gif": false,
-  "save_results_json": false,
-  "dynamic": false  // optional; if true, tasks will include random seeds for dynamic content
+  "dynamic": false,
+  "evaluator_mode": "concurrent",
+  "max_steps_per_task": 50
 }
 ```
 
+| Field | Description |
+|-------|-------------|
+| `ip` | Agent base URL (e.g. `http://127.0.0.1:5000`) or hostname/IP. |
+| `port` | Optional; used only when `ip` is hostname/IP. Omit if `ip` is a full URL. |
+| `projects` | List of demo project IDs to run. |
+| `runs` | Number of runs per project. |
+| `use_cases` | Optional; if null/empty, all use cases are used. |
+| `timeout` | Request timeout in seconds (default 120). |
+| `should_record_gif` | Whether to record GIFs of evaluation. |
+| `dynamic` | If true, tasks include random seeds for dynamic content. |
+| `evaluator_mode` | `"concurrent"` (default): one **POST /act** per task, agent returns full action list. `"stateful"`: **POST /act** called repeatedly with browser snapshot and `step_index` 0, 1, 2, … |
+| `max_steps_per_task` | Max steps per task when `evaluator_mode` is `"stateful"` (default 50). Ignored in concurrent mode. |
+
+**Your agent must expose POST /act** with payload including `task_id`, `prompt`, `url`, `snapshot_html`, `step_index`, and optional `web_project_id`. Response: `{ "actions": [ ... ] }`.
+
 #### Behavior
 
-- If `ip` includes a scheme (e.g., starts with `http://` or `https://`), the service will use it as the base URL and ignore `port`.
-- If `ip` is a plain hostname/IP (e.g., `127.0.0.1`), the service will:
-  - include `:port` if `port` is provided
-  - omit the port otherwise (e.g., `http://127.0.0.1`).
+- If `ip` includes a scheme (e.g. `http://` or `https://`), the service uses it as the base URL and ignores `port`.
+- If `ip` is a plain hostname/IP (e.g. `127.0.0.1`), the service will include `:port` if `port` is provided, or omit the port otherwise.
 
 #### Response
 
