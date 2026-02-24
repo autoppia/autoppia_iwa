@@ -8,24 +8,35 @@ from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_d
 
 from .data import (
     ACCOUNT_TYPES,
+    FIELD_OPERATORS_MAP_CONNECT_WALLET,
+    FIELD_OPERATORS_MAP_DISCONNECT_WALLET,
     FIELD_OPERATORS_MAP_EXECUTE_BUY,
     FIELD_OPERATORS_MAP_EXECUTE_SELL,
+    FIELD_OPERATORS_MAP_FAVORITE_SUBNET,
+    FIELD_OPERATORS_MAP_TRANSFER_COMPLETE,
     FIELD_OPERATORS_MAP_VIEW_ACCOUNT,
     FIELD_OPERATORS_MAP_VIEW_BLOCK,
     FIELD_OPERATORS_MAP_VIEW_SUBNET,
     FIELD_OPERATORS_MAP_VIEW_VALIDATOR,
     INTEGER_FIELDS_EXECUTE_BUY,
     INTEGER_FIELDS_EXECUTE_SELL,
+    INTEGER_FIELDS_FAVORITE_SUBNET,
+    INTEGER_FIELDS_TRANSFER_COMPLETE,
     INTEGER_FIELDS_VIEW_ACCOUNT,
     INTEGER_FIELDS_VIEW_BLOCK,
     INTEGER_FIELDS_VIEW_VALIDATOR,
+    SELECTED_FIELDS_CONNECT_WALLET,
+    SELECTED_FIELDS_DISCONNECT_WALLET,
     SELECTED_FIELDS_EXECUTE_BUY,
     SELECTED_FIELDS_EXECUTE_SELL,
+    SELECTED_FIELDS_FAVORITE_SUBNET,
+    SELECTED_FIELDS_TRANSFER_COMPLETE,
     SELECTED_FIELDS_VIEW_ACCOUNT,
     SELECTED_FIELDS_VIEW_BLOCK,
     SELECTED_FIELDS_VIEW_SUBNET,
     SELECTED_FIELDS_VIEW_VALIDATOR,
     SUBNET_NAMES,
+    WALLET_NAMES,
 )
 
 
@@ -226,4 +237,83 @@ async def generate_execute_sell_constraints(task_url: str | None = None, dataset
         SELECTED_FIELDS_EXECUTE_SELL,
         num_constraints=2,
         integer_fields=INTEGER_FIELDS_EXECUTE_SELL,
+    )
+
+
+def _build_connect_wallet_dataset() -> list[dict[str, Any]]:
+    """Synthetic wallet connections (wallet_name + deterministic address pattern)."""
+    return [{"wallet_name": name, "address": f"5Connect{i}...{name[:4].replace(' ', '')}"} for i, name in enumerate(WALLET_NAMES)]
+
+
+def _build_disconnect_wallet_dataset() -> list[dict[str, Any]]:
+    """Same as connect for constraint generation (wallet_name, address)."""
+    return _build_connect_wallet_dataset()
+
+
+def _build_transfer_complete_dataset() -> list[dict[str, Any]]:
+    """Synthetic completed transfers for constraint generation."""
+    return [
+        {
+            "hash": f"0x{'a' * 16}{i:06x}{'b' * 32}",
+            "from_": f"5Sender{i}...",
+            "to": f"5Recip{i}...",
+            "amount": 10 + random.randint(0, 990),
+            "block_number": 3_200_000 + random.randint(0, 50_000),
+        }
+        for i in range(30)
+    ]
+
+
+def _build_favorite_subnet_dataset() -> list[dict[str, Any]]:
+    """Subnets that can be favorited (subnet_id + subnet_name)."""
+    return [{"subnet_id": i, "subnet_name": name} for i, name in enumerate(SUBNET_NAMES)]
+
+
+async def generate_connect_wallet_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for CONNECT_WALLET (wallet_name, address)."""
+    del task_url, dataset
+    data = _build_connect_wallet_dataset()
+    return _generate_constraints_static(
+        data,
+        FIELD_OPERATORS_MAP_CONNECT_WALLET,
+        SELECTED_FIELDS_CONNECT_WALLET,
+        num_constraints=2,
+    )
+
+
+async def generate_disconnect_wallet_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for DISCONNECT_WALLET (wallet_name, address)."""
+    del task_url, dataset
+    data = _build_disconnect_wallet_dataset()
+    return _generate_constraints_static(
+        data,
+        FIELD_OPERATORS_MAP_DISCONNECT_WALLET,
+        SELECTED_FIELDS_DISCONNECT_WALLET,
+        num_constraints=2,
+    )
+
+
+async def generate_transfer_complete_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for TRANSFER_COMPLETE (to, amount, block_number)."""
+    del task_url, dataset
+    data = _build_transfer_complete_dataset()
+    return _generate_constraints_static(
+        data,
+        FIELD_OPERATORS_MAP_TRANSFER_COMPLETE,
+        SELECTED_FIELDS_TRANSFER_COMPLETE,
+        num_constraints=2,
+        integer_fields=INTEGER_FIELDS_TRANSFER_COMPLETE,
+    )
+
+
+async def generate_favorite_subnet_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for FAVORITE_SUBNET (subnet_name, subnet_id)."""
+    del task_url, dataset
+    data = _build_favorite_subnet_dataset()
+    return _generate_constraints_static(
+        data,
+        FIELD_OPERATORS_MAP_FAVORITE_SUBNET,
+        SELECTED_FIELDS_FAVORITE_SUBNET,
+        num_constraints=2,
+        integer_fields=INTEGER_FIELDS_FAVORITE_SUBNET,
     )

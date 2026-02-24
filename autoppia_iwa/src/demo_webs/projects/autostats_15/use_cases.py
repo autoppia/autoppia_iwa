@@ -3,16 +3,24 @@
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
 from .events import (
+    ConnectWalletEvent,
+    DisconnectWalletEvent,
     ExecuteBuyEvent,
     ExecuteSellEvent,
+    FavoriteSubnetEvent,
+    TransferCompleteEvent,
     ViewAccountEvent,
     ViewBlockEvent,
     ViewSubnetEvent,
     ViewValidatorEvent,
 )
 from .generation_functions import (
+    generate_connect_wallet_constraints,
+    generate_disconnect_wallet_constraints,
     generate_execute_buy_constraints,
     generate_execute_sell_constraints,
+    generate_favorite_subnet_constraints,
+    generate_transfer_complete_constraints,
     generate_view_account_constraints,
     generate_view_block_constraints,
     generate_view_subnet_constraints,
@@ -151,6 +159,80 @@ EXECUTE_SELL_USE_CASE = UseCase(
     ],
 )
 
+CONNECT_WALLET_USE_CASE = UseCase(
+    name="CONNECT_WALLET",
+    description="The user connected a wallet (Polkadot.js, Talisman, or SubWallet).",
+    event=ConnectWalletEvent,
+    event_source_code=ConnectWalletEvent.get_source_code_of_class(),
+    constraints_generator=generate_connect_wallet_constraints,
+    additional_prompt_info=(f"Use field names: wallet_name, address. Format: 'Connect wallet' or 'Connect with Polkadot.js'. {STRICT_COPY_INSTRUCTION}"),
+    examples=[
+        {
+            "prompt": "Connect your wallet with Polkadot.js",
+            "prompt_for_task_generation": "Connect wallet where wallet_name equals 'Polkadot.js'",
+        },
+        {
+            "prompt": "Connect your wallet with Talisman wallet",
+            "prompt_for_task_generation": "Connect wallet where wallet_name equals 'Talisman'",
+        },
+    ],
+)
+
+DISCONNECT_WALLET_USE_CASE = UseCase(
+    name="DISCONNECT_WALLET",
+    description="The user disconnected the connected wallet.",
+    event=DisconnectWalletEvent,
+    event_source_code=DisconnectWalletEvent.get_source_code_of_class(),
+    constraints_generator=generate_disconnect_wallet_constraints,
+    additional_prompt_info=(f"Use field names: wallet_name, address. Format: 'Disconnect wallet'. {STRICT_COPY_INSTRUCTION}"),
+    examples=[
+        {
+            "prompt": "Disconnect wallet",
+            "prompt_for_task_generation": "Disconnect wallet where wallet_name equals 'SubWallet'",
+        },
+    ],
+)
+
+TRANSFER_COMPLETE_USE_CASE = UseCase(
+    name="TRANSFER_COMPLETE",
+    description="The user completed a transfer (sent amount to an address).",
+    event=TransferCompleteEvent,
+    event_source_code=TransferCompleteEvent.get_source_code_of_class(),
+    constraints_generator=generate_transfer_complete_constraints,
+    additional_prompt_info=(
+        f"Use field names: to, amount, block_number (amount and block_number are numbers). Format: 'Send X TAO to address Y' or 'Transfer amount Z to <address>'. {STRICT_COPY_INSTRUCTION}"
+    ),
+    examples=[
+        {
+            "prompt": "Send 50 TAO to 5Recip0...",
+            "prompt_for_task_generation": "Transfer complete where amount equals 50 and to contains '5Recip'",
+        },
+        {
+            "prompt": "Transfer 100 to address 5BiteWLX...",
+            "prompt_for_task_generation": "Transfer complete where amount equals 100",
+        },
+    ],
+)
+
+FAVORITE_SUBNET_USE_CASE = UseCase(
+    name="FAVORITE_SUBNET",
+    description="The user added a subnet to favorites from the subnet detail page.",
+    event=FavoriteSubnetEvent,
+    event_source_code=FavoriteSubnetEvent.get_source_code_of_class(),
+    constraints_generator=generate_favorite_subnet_constraints,
+    additional_prompt_info=(f"Use field names: subnet_name, subnet_id. Format: 'Add Text Prompting to favorites' or 'Favorite the subnet named X'. {STRICT_COPY_INSTRUCTION}"),
+    examples=[
+        {
+            "prompt": "Add Text Prompting to favorites",
+            "prompt_for_task_generation": "Favorite subnet where subnet_name equals 'Text Prompting'",
+        },
+        {
+            "prompt": "Star the Gaming subnet",
+            "prompt_for_task_generation": "Favorite subnet where subnet_name equals 'Gaming'",
+        },
+    ],
+)
+
 ALL_USE_CASES = [
     VIEW_SUBNET_USE_CASE,
     VIEW_VALIDATOR_USE_CASE,
@@ -158,4 +240,8 @@ ALL_USE_CASES = [
     VIEW_ACCOUNT_USE_CASE,
     EXECUTE_BUY_USE_CASE,
     EXECUTE_SELL_USE_CASE,
+    CONNECT_WALLET_USE_CASE,
+    DISCONNECT_WALLET_USE_CASE,
+    TRANSFER_COMPLETE_USE_CASE,
+    FAVORITE_SUBNET_USE_CASE,
 ]

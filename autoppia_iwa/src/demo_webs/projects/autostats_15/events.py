@@ -354,6 +354,158 @@ class ExecuteSellEvent(Event, BaseEventValidator):
         )
 
 
+class ConnectWalletEvent(Event, BaseEventValidator):
+    """Fired when user connects a wallet (Polkadot.js, Talisman, SubWallet)."""
+
+    event_name: str = "CONNECT_WALLET"
+    wallet_name: str | None = None
+    address: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        wallet_name: str | CriterionValue | None = None
+        address: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if criteria is None:
+            return True
+        return all(
+            [
+                self._validate_field(self.wallet_name, criteria.wallet_name),
+                self._validate_field(self.address, criteria.address),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "ConnectWalletEvent":
+        base_event = Event.parse(backend_event)
+        d = _data(backend_event)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            wallet_name=d.get("wallet_name"),
+            address=d.get("address"),
+        )
+
+
+class DisconnectWalletEvent(Event, BaseEventValidator):
+    """Fired when user disconnects the wallet."""
+
+    event_name: str = "DISCONNECT_WALLET"
+    wallet_name: str | None = None
+    address: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        wallet_name: str | CriterionValue | None = None
+        address: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if criteria is None:
+            return True
+        return all(
+            [
+                self._validate_field(self.wallet_name, criteria.wallet_name),
+                self._validate_field(self.address, criteria.address),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "DisconnectWalletEvent":
+        base_event = Event.parse(backend_event)
+        d = _data(backend_event)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            wallet_name=d.get("wallet_name"),
+            address=d.get("address"),
+        )
+
+
+class TransferCompleteEvent(Event, BaseEventValidator):
+    """Fired when a transfer completes successfully (hash, from, to, amount, block_number)."""
+
+    event_name: str = "TRANSFER_COMPLETE"
+    hash: str | None = None
+    from_: str | None = None
+    to: str | None = None
+    amount: float | None = None
+    block_number: int | None = None
+
+    class ValidationCriteria(BaseModel):
+        hash: str | CriterionValue | None = None
+        from_: str | CriterionValue | None = None
+        to: str | CriterionValue | None = None
+        amount: float | CriterionValue | None = None
+        block_number: int | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if criteria is None:
+            return True
+        return all(
+            [
+                self._validate_field(self.hash, criteria.hash),
+                self._validate_field(self.from_, criteria.from_),
+                self._validate_field(self.to, criteria.to),
+                self._validate_field(self.amount, criteria.amount),
+                self._validate_field(self.block_number, criteria.block_number),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "TransferCompleteEvent":
+        base_event = Event.parse(backend_event)
+        d = _data(backend_event)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            hash=d.get("hash"),
+            from_=d.get("from"),
+            to=d.get("to"),
+            amount=d.get("amount"),
+            block_number=d.get("block_number"),
+        )
+
+
+class FavoriteSubnetEvent(Event, BaseEventValidator):
+    """Fired when user adds a subnet to favorites (from subnet detail page)."""
+
+    event_name: str = "FAVORITE_SUBNET"
+    subnet_id: int | None = None
+    subnet_name: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        subnet_id: int | CriterionValue | None = None
+        subnet_name: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if criteria is None:
+            return True
+        return all(
+            [
+                self._validate_field(self.subnet_id, criteria.subnet_id),
+                self._validate_field(self.subnet_name, criteria.subnet_name),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "FavoriteSubnetEvent":
+        base_event = Event.parse(backend_event)
+        d = _data(backend_event)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            subnet_id=d.get("subnet_id"),
+            subnet_name=d.get("subnet_name"),
+        )
+
+
 EVENTS = [
     ViewSubnetEvent,
     ViewValidatorEvent,
@@ -361,6 +513,10 @@ EVENTS = [
     ViewAccountEvent,
     ExecuteBuyEvent,
     ExecuteSellEvent,
+    ConnectWalletEvent,
+    DisconnectWalletEvent,
+    TransferCompleteEvent,
+    FavoriteSubnetEvent,
 ]
 
 BACKEND_EVENT_TYPES = {
@@ -370,4 +526,8 @@ BACKEND_EVENT_TYPES = {
     "VIEW_ACCOUNT": ViewAccountEvent,
     "EXECUTE_BUY": ExecuteBuyEvent,
     "EXECUTE_SELL": ExecuteSellEvent,
+    "CONNECT_WALLET": ConnectWalletEvent,
+    "DISCONNECT_WALLET": DisconnectWalletEvent,
+    "TRANSFER_COMPLETE": TransferCompleteEvent,
+    "FAVORITE_SUBNET": FavoriteSubnetEvent,
 }

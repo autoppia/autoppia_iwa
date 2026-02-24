@@ -105,3 +105,38 @@ INTEGER_FIELDS_VIEW_BLOCK = {"number", "epoch", "extrinsicsCount", "eventsCount"
 INTEGER_FIELDS_VIEW_ACCOUNT = {"rank"}
 INTEGER_FIELDS_EXECUTE_BUY = {"amountTAU", "amountAlpha", "maxAvailableTAU"}
 INTEGER_FIELDS_EXECUTE_SELL = {"amountTAU", "amountAlpha", "maxDelegatedAlpha"}
+
+# Wallet names from web_15 WalletModal
+WALLET_NAMES = ["Polkadot.js", "Talisman", "SubWallet"]
+
+FIELD_OPERATORS_MAP_CONNECT_WALLET = {
+    "wallet_name": STRING_OPERATORS,
+    "address": STRING_OPERATORS,
+}
+
+FIELD_OPERATORS_MAP_DISCONNECT_WALLET = {
+    "wallet_name": STRING_OPERATORS,
+    "address": STRING_OPERATORS,
+}
+
+# Transfer payload: hash, from, to, amount, block_number (event uses from_ for Python keyword)
+FIELD_OPERATORS_MAP_TRANSFER_COMPLETE = {
+    "hash": STRING_OPERATORS,
+    "from_": STRING_OPERATORS,
+    "to": STRING_OPERATORS,
+    "amount": NUMERIC_OPERATORS,
+    "block_number": NUMERIC_OPERATORS,
+}
+
+FIELD_OPERATORS_MAP_FAVORITE_SUBNET = {
+    "subnet_id": NUMERIC_OPERATORS,
+    "subnet_name": STRING_OPERATORS,
+}
+
+SELECTED_FIELDS_CONNECT_WALLET = ["wallet_name", "address"]
+SELECTED_FIELDS_DISCONNECT_WALLET = ["wallet_name", "address"]
+SELECTED_FIELDS_TRANSFER_COMPLETE = ["to", "amount", "block_number"]
+SELECTED_FIELDS_FAVORITE_SUBNET = ["subnet_name", "subnet_id"]
+
+INTEGER_FIELDS_TRANSFER_COMPLETE = {"block_number"}
+INTEGER_FIELDS_FAVORITE_SUBNET = {"subnet_id"}
