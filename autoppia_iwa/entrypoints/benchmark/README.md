@@ -170,7 +170,6 @@ CFG = BenchmarkConfig(
 | `save_results_json`        | bool      | `True`  | Save results to JSON                        |
 | **Features**               |           |         |                                             |
 | `dynamic`                  | bool      | `False` | Enable seed-based web variations            |
-| `dynamic_phase_config`     | object    | `None`  | Dynamic HTML mutation config                |
 
 | **Evaluator mode**        |           |         |                                             |
 | `evaluator_mode`          | str       | `"concurrent"` | `"concurrent"` or `"stateful"` (see below) |
