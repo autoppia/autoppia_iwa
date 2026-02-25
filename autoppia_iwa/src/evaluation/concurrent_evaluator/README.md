@@ -85,13 +85,6 @@ config = EvaluatorConfig(
     # Logging
     verbose_logging=False,
     debug_mode=False,
-
-    # Fases dinámicas (D1/D3/D4)
-    dynamic_phase_config=DynamicPhaseConfig(
-        d1_enabled=True,
-        d3_enabled=False,
-        d4_enabled=False
-    )
 )
 ```
 

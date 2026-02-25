@@ -7,7 +7,7 @@ from pathlib import Path
 from types import ModuleType
 
 from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.execution.dynamic.palette import MutationPalette
+from modules.dynamic_proxy.core.palette import MutationPalette
 
 CONFIG_PATH = Path(__file__).resolve().parents[3] / "autoppia_iwa" / "src" / "demo_webs" / "config.py"
 PROJECTS_PACKAGE = "autoppia_iwa.src.demo_webs.projects"
