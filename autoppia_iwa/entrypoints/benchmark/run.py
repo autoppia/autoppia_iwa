@@ -13,7 +13,9 @@ from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
 from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.web_agents.cua import ApifiedWebAgent
+
+# from autoppia_iwa.src.web_agents.cua import ApifiedWebAgent
+from autoppia_iwa.src.web_agents import ApifiedOneShotWebAgent
 
 # =============================================================================
 # 1) AGENTS
@@ -63,7 +65,8 @@ SOTA_AGENTS = [
 ]
 # Active agents to run.
 AGENTS = [
-    ApifiedWebAgent(base_url="http://localhost:5000", id="1", name="LocalAgent", timeout=120),
+    # ApifiedWebAgent(host="127.0.0.1", id="1", name="BrowserUse-Cloud", timeout=248, port=7000),
+    ApifiedOneShotWebAgent(host="127.0.0.1", id="1", name="BrowserUse-Cloud", timeout=248, port=7000)
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)

@@ -77,11 +77,11 @@ class ApifiedOneShotWebAgent(IWebAgent):
                 payload = task.clean_task()
                 payload["url"] = self._force_localhost(payload.get("url"))
 
-                async with session.post(f"{self.base_url}/solve_task", json=payload) as response:
+                async with session.post(f"{self.base_url}/solve_task_at_once", json=payload) as response:
                     response.raise_for_status()
                     response_json = await response.json()
             except Exception as e:
-                raise RuntimeError(f"Error during HTTP request to {self.base_url}/solve_task: {e}") from e
+                raise RuntimeError(f"Error during HTTP request to {self.base_url}/solve_task_at_once: {e}") from e
 
             actions_data = response_json.get("actions", [])
             for action in actions_data:
