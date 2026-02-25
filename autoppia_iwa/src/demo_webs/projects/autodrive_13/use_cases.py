@@ -25,12 +25,19 @@ from .generation_functions import (
     generate_select_time_constraints,
 )
 
+ENTER_LOCATION_ADDITIONAL_INFO = """
+Critical requirements:
+1. The request must start with "Enter and select a location...".
+2. Include ALL mentioned constraints in the prompt.
+3. Copy constraint values exactly in single quotes.
+""".strip()
 ENTER_LOCATION_USE_CASE = UseCase(
     name="ENTER_LOCATION",
     description="The user enters a location value (e.g., city, country, or region)",
     event=EnterLocationEvent,
     event_source_code=EnterLocationEvent.get_source_code_of_class(),
     constraints_generator=generate_enter_location_constraints,
+    additional_prompt_info=ENTER_LOCATION_ADDITIONAL_INFO,
     examples=[
         {
             "prompt": "Enter and select a location from dropdown where location equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
@@ -50,12 +57,20 @@ ENTER_LOCATION_USE_CASE = UseCase(
         },
     ],
 )
+
+ENTER_DESTINATION_ADDITIONAL_INFO = """
+Critical requirements:
+1. The request must start with "Enter destination...".
+2. Include ALL mentioned constraints in the prompt.
+3. Copy constraint values exactly in single quotes.
+""".strip()
 ENTER_DESTINATION_USE_CASE = UseCase(
     name="ENTER_DESTINATION",
     description="The user enters a destination value (e.g., city, country, or region)",
     event=EnterDestinationEvent,
     event_source_code=EnterDestinationEvent.get_source_code_of_class(),
     constraints_generator=generate_enter_destination_constraints,
+    additional_prompt_info=ENTER_DESTINATION_ADDITIONAL_INFO,
     examples=[
         {
             "prompt": "Enter destination equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
@@ -76,12 +91,19 @@ ENTER_DESTINATION_USE_CASE = UseCase(
     ],
 )
 
+SEARCH_DESTINATION_ADDITIONAL_INFO = """
+Critical requirements:
+1. The request must start with "Search destination...".
+2. Include ALL mentioned constraints in the prompt.
+3. Copy constraint values exactly in single quotes.
+""".strip()
 SEARCH_DESTINATION_USE_CASE = UseCase(
     name="SEARCH_DESTINATION",
     description="The user search a destination value (e.g., city, country, or region)",
     event=SearchDestinationEvent,
     event_source_code=SearchDestinationEvent.get_source_code_of_class(),
     constraints_generator=generate_enter_destination_constraints,
+    additional_prompt_info=SEARCH_DESTINATION_ADDITIONAL_INFO,
     examples=[
         {
             "prompt": "Search destination equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
@@ -102,12 +124,19 @@ SEARCH_DESTINATION_USE_CASE = UseCase(
     ],
 )
 
+SEARCH_LOCATION_ADDITIONAL_INFO = """
+Critical requirements:
+1. The request must start with "Search location...".
+2. Include ALL mentioned constraints in the prompt.
+3. Copy constraint values exactly in single quotes.
+""".strip()
 SEARCH_LOCATION_USE_CASE = UseCase(
     name="SEARCH_LOCATION",
     description="The user searches a location value (e.g., city, country, or region)",
     event=SearchLocationEvent,
     event_source_code=SearchDestinationEvent.get_source_code_of_class(),
     constraints_generator=generate_enter_destination_constraints,
+    additional_prompt_info=SEARCH_LOCATION_ADDITIONAL_INFO,
     examples=[
         {
             "prompt": "Search location equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
@@ -128,12 +157,19 @@ SEARCH_LOCATION_USE_CASE = UseCase(
     ],
 )
 
+SELECT_DATE_ADDITIONAL_INFO = """
+Critical requirements:
+1. The request must start with "Select date...".
+2. Include ALL mentioned constraints in the prompt.
+3. Copy constraint values exactly in single quotes.
+""".strip()
 SELECT_DATE_USE_CASE = UseCase(
     name="SELECT_DATE",
     description="The user selects a specific date for their trip or booking",
     event=SelectDateEvent,
     event_source_code=SelectDateEvent.get_source_code_of_class(),
     constraints_generator=generate_select_date_constraints,
+    additional_prompt_info=SELECT_DATE_ADDITIONAL_INFO,
     examples=[
         {
             "prompt": "Select date equals '2025-08-20'",
@@ -162,12 +198,19 @@ SELECT_DATE_USE_CASE = UseCase(
     ],
 )
 
+SELECT_TIME_ADDITIONAL_INFO = """
+Critical requirements:
+1. The request must start with "Select time...".
+2. Include ALL mentioned constraints in the prompt.
+3. Copy constraint values exactly in single quotes.
+""".strip()
 SELECT_TIME_USE_CASE = UseCase(
     name="SELECT_TIME",
     description="The user selects a specific time for their trip or booking",
     event=SelectTimeEvent,
     event_source_code=SelectTimeEvent.get_source_code_of_class(),
     constraints_generator=generate_select_time_constraints,
+    additional_prompt_info=SELECT_TIME_ADDITIONAL_INFO,
     examples=[
         {
             "prompt": "Select time equals '10:00:00'",
@@ -196,12 +239,19 @@ SELECT_TIME_USE_CASE = UseCase(
     ],
 )
 
+NEXT_PICKUP_ADDITIONAL_INFO = """
+Critical requirements:
+1. The request must start with "Next pickup...".
+2. Include ALL mentioned constraints in the prompt.
+3. Copy constraint values exactly in single quotes.
+""".strip()
 NEXT_PICKUP_USE_CASE = UseCase(
     name="NEXT_PICKUP",
     description="The user clicks the 'Next' button after successfully selecting a pickup date and time.",
     event=NextPickupEvent,
     event_source_code=NextPickupEvent.get_source_code_of_class(),
     constraints_generator=generate_next_pickup_constraints,
+    additional_prompt_info=NEXT_PICKUP_ADDITIONAL_INFO,
     examples=[
         {
             "prompt": "Next pickup date equals '2025-08-20' and time equals '10:00:00'",
@@ -229,12 +279,20 @@ NEXT_PICKUP_USE_CASE = UseCase(
         },
     ],
 )
+
+SEARCH_RIDE_ADDITIONAL_INFO = """
+Critical requirements:
+1. The request must start with "Search ride...".
+2. Include ALL mentioned constraints in the prompt.
+3. Copy constraint values exactly in single quotes.
+""".strip()
 SEARCH_RIDE_USE_CASE = UseCase(
     name="SEARCH",
     description="The user clicks on the 'Search' button after selecting pickup, dropoff, and optionally scheduling a ride.",
     event=SearchRideEvent,
     event_source_code=SearchRideEvent.get_source_code_of_class(),
     constraints_generator=generate_search_ride_constraints,
+    additional_prompt_info=SEARCH_RIDE_ADDITIONAL_INFO,
     examples=[
         {
             "prompt": "Search ride after successfully selects pickup location from dropdown that is not equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
@@ -254,12 +312,20 @@ SEARCH_RIDE_USE_CASE = UseCase(
         },
     ],
 )
+
+SELECT_CAR_ADDITIONAL_INFO = """
+Critical requirements:
+1. The request must start with "Select car...".
+2. Include ALL mentioned constraints in the prompt.
+3. Copy constraint values exactly in single quotes.
+""".strip()
 SELECT_CAR_USE_CASE = UseCase(
     name="SELECT_CAR",
     description="The user selects an available car option for their ride, including details such as price, discount, seats, and pickup/dropoff information.",
     event=SelectCarEvent,
     event_source_code=SelectCarEvent.get_source_code_of_class(),
     constraints_generator=generate_select_car_constraints,
+    additional_prompt_info=SELECT_CAR_ADDITIONAL_INFO,
     examples=[
         {
             "prompt": "Select car with ride name 'AutoDriverX' and eta equals '1 min away · 1:39 PM'",
@@ -287,12 +353,20 @@ SELECT_CAR_USE_CASE = UseCase(
         },
     ],
 )
+
+RESERVE_RIDE_ADDITIONAL_INFO = """
+Critical requirements:
+1. The request must start with "Reserve ride...".
+2. Include ALL mentioned constraints in the prompt.
+3. Copy constraint values exactly in single quotes.
+""".strip()
 RESERVE_RIDE_USE_CASE = UseCase(
     name="RESERVE_RIDE",
     description="The user reserves an available car for their ride, including details such as price, discount, seats, and pickup/dropoff information.",
     event=ReserveRideEvent,
     event_source_code=ReserveRideEvent.get_source_code_of_class(),
     constraints_generator=generate_reserve_ride_constraints,
+    additional_prompt_info=RESERVE_RIDE_ADDITIONAL_INFO,
     examples=[
         {
             "prompt": "Reserve ride where ride name is not equals 'AutoDriverX' and pickup equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
@@ -321,13 +395,19 @@ RESERVE_RIDE_USE_CASE = UseCase(
     ],
 )
 
-
+TRIP_DETAILS_ADDITIONAL_INFO = """
+Critical requirements:
+1. The request must start with "View trip details...".
+2. Include ALL mentioned constraints in the prompt.
+3. Copy constraint values exactly in single quotes.
+""".strip()
 TRIP_DETAILS_USE_CASE = UseCase(
     name="TRIP_DETAILS",
     description="The user views details of a trip, including trip information, ride details, driver information, and location details.",
     event=TripDetailsEvent,
     event_source_code=TripDetailsEvent.get_source_code_of_class(),
     constraints_generator=generate_reserve_ride_constraints,
+    additional_prompt_info=TRIP_DETAILS_ADDITIONAL_INFO,
     examples=[
         {
             "prompt": "View trip details where ride name is not equals 'AutoDriverX' and pickup equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
@@ -356,12 +436,19 @@ TRIP_DETAILS_USE_CASE = UseCase(
     ],
 )
 
+CANCEL_RESERVATION_ADDITIONAL_INFO = """
+Critical requirements:
+1. The request must start with "Cancel reservation...".
+2. Include ALL mentioned constraints in the prompt.
+3. Copy constraint values exactly in single quotes.
+""".strip()
 CANCEL_RESERVATION_USE_CASE = UseCase(
     name="CANCEL_RESERVATION",
     description="The user cancels a trip reservation, including the trip ID and cancellation reason.",
     event=CancelReservationEvent,
     event_source_code=CancelReservationEvent.get_source_code_of_class(),
     constraints_generator=generate_reserve_ride_constraints,
+    additional_prompt_info=CANCEL_RESERVATION_ADDITIONAL_INFO,
     examples=[
         {
             "prompt": "Cancel ride reservation where ride name is not equals 'AutoDriverX' and pickup equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
