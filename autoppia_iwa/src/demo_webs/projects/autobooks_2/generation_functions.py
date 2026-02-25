@@ -854,11 +854,9 @@ async def generate_edit_profile_constraints(task_url: str | None = None, dataset
     selected_fields = sample(editable_fields, k=choice([1, 2, 3]))
     if "website" not in selected_fields:
         selected_fields.append("website")
-    
+
     for field in selected_fields:
-        constraint = _generate_edit_profile_field_constraint(
-            field, random_names, random_text_elements, random_bios, random_locations, random_websites, all_genres
-        )
+        constraint = _generate_edit_profile_field_constraint(field, random_names, random_text_elements, random_bios, random_locations, random_websites, all_genres)
         if constraint:
             constraints.append(constraint)
 
