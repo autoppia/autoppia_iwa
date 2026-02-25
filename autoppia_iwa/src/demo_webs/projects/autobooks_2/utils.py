@@ -3,7 +3,6 @@ from typing import Any
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import constraints_exist_in_db
 
-
 # =============================================================================
 #                            HELPER FUNCTIONS
 # =============================================================================
@@ -11,6 +10,7 @@ from ..shared_utils import constraints_exist_in_db
 # --------------------------------------------------------------------- #
 #  VALUE CONVERSION HELPERS
 # --------------------------------------------------------------------- #
+
 
 def _parse_integer_value(value_str: str) -> int | list[int]:
     """Parse integer value, handling both single values and lists."""
@@ -65,6 +65,7 @@ def _parse_constraint_part(part: str) -> dict[str, Any]:
 #                            MAIN FUNCTIONS
 # =============================================================================
 
+
 def parse_constraints_str(constraints_str: str) -> list[dict[str, Any]]:
     """
     Parses the constraints string into a list of dictionaries.
@@ -86,6 +87,7 @@ def parse_constraints_str(constraints_str: str) -> list[dict[str, Any]]:
 # --------------------------------------------------------------------- #
 #  CONSTRAINT STRING BUILDING HELPERS
 # --------------------------------------------------------------------- #
+
 
 def _format_constraint_value(value: Any) -> str:
     """Format constraint value for string representation."""
