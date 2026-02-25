@@ -6,7 +6,7 @@ import uuid
 from abc import ABC, abstractmethod
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
 
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.execution.actions.base import BaseAction
@@ -159,6 +159,18 @@ class TaskSolution(BaseModel):
     actions: list[BaseAction] = Field(default_factory=list, description="List of actions to execute")
     web_agent_id: str | None = None
     recording: Any | None = Field(default=None, description="Optional recording data associated with the task solution")
+    # Optional cost/token tracking (agents can set these; API may compute cost when missing)
+    cost_usd: float = Field(default=0.0, description="Estimated cost in USD for this solution")
+    input_tokens: int = Field(default=0, description="Number of input tokens used")
+    output_tokens: int = Field(default=0, description="Number of output tokens used")
+    model_used: str | None = Field(default=None, description="Model identifier used for cost calculation")
+
+    @computed_field
+    @property
+    def total_tokens(self) -> int:
+        """Total tokens (input + output)."""
+        return self.input_tokens + self.output_tokens
+
 
     def nested_model_dump(self, *args, **kwargs) -> dict[str, Any]:
         """Serialize with nested action dumps."""
