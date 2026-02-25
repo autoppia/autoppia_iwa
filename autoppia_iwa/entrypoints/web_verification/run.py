@@ -35,112 +35,110 @@ from .config import WebVerificationConfig
 from .web_verification_pipeline import WebVerificationPipeline
 
 
-def validate_project_setup(web_project) -> tuple[bool, list[str]]:
-    """
-    Validate that the project is correctly configured before running the pipeline.
+def _validate_url(url: str, url_type: str, errors: list[str], warnings: list[str]) -> None:
+    """Validate a URL and add errors/warnings to the respective lists."""
+    if not url:
+        errors.append(f"❌ {url_type} URL is missing")
+    elif not url.startswith(("https://", "http://")):
+        warnings.append(f"⚠️  {url_type} URL doesn't start with http:// or https://")
+    # Note: SonarCloud flags http:// as insecure, but we allow it for local development
+    # In production, prefer https:// for security
 
-    This function checks:
-    - Project has ID and name
-    - URLs are valid
-    - Events are defined
-    - Use cases are defined
-    - Each use case has a valid event associated
-    - Events are registered in the EventRegistry
-    - Use case events match project events list
 
-    Args:
-        web_project: The WebProject instance to validate
-
-    Returns:
-        Tuple[bool, list[str]]: (is_valid, list_of_messages)
-            - is_valid: True if no critical errors found
-            - list_of_messages: List of error and warning messages
-    """
-    errors = []
-    warnings = []
-
-    # 1. Validate project has ID and name
+def _validate_basic_project_info(web_project, errors: list[str]) -> None:
+    """Validate basic project information (ID and name)."""
     if not web_project.id:
         errors.append("❌ Project ID is missing")
     if not web_project.name:
         errors.append("❌ Project name is missing")
 
-    # 2. Validate URLs
-    if not web_project.frontend_url:
-        errors.append("❌ Frontend URL is missing")
-    elif not web_project.frontend_url.startswith(("http://", "https://")):
-        warnings.append("⚠️  Frontend URL doesn't start with http:// or https://")
 
-    if not web_project.backend_url:
-        errors.append("❌ Backend URL is missing")
-    elif not web_project.backend_url.startswith(("http://", "https://")):
-        warnings.append("⚠️  Backend URL doesn't start with http:// or https://")
-
-    # 3. Validate events are defined
+def _validate_events(web_project, errors: list[str]) -> None:
+    """Validate that events are defined for the project."""
     if not web_project.events:
         errors.append("❌ No events defined for this project")
     else:
         logger.info(f"✓ Found {len(web_project.events)} events defined")
 
-    # 4. Validate use cases are defined
+
+def _validate_use_cases_basic(web_project, errors: list[str]) -> None:
+    """Validate that use cases are defined for the project."""
     if not web_project.use_cases:
         errors.append("❌ No use cases defined for this project")
     else:
         logger.info(f"✓ Found {len(web_project.use_cases)} use cases")
 
-        # 5. Validate each use case has an event associated
-        from autoppia_iwa.src.demo_webs.projects.base_events import EventRegistry
 
-        use_cases_without_events = []
-        use_cases_with_invalid_events = []
-        events_not_in_registry = []
+def _check_event_in_registry(use_case, event_class_name: str) -> tuple[bool, bool]:
+    """
+    Check if event is in registry and if it's valid.
+    Returns: (is_in_registry, is_valid)
+    """
+    from autoppia_iwa.src.demo_webs.projects.base_events import EventRegistry
 
-        for use_case in web_project.use_cases:
-            if not use_case.event:
-                use_cases_without_events.append(use_case.name)
-            else:
-                # Check that the event is in the registry
-                event_class_name = use_case.event.__name__ if hasattr(use_case.event, "__name__") else str(use_case.event)
-                try:
-                    registered_event = EventRegistry.get_event_class(event_class_name)
-                    # Compare by class name, not by object identity (same class may have different instances)
-                    if registered_event.__name__ != use_case.event.__name__:
-                        use_cases_with_invalid_events.append(f"{use_case.name} (event: {event_class_name})")
-                except (KeyError, ValueError):
-                    events_not_in_registry.append(f"{use_case.name} -> {event_class_name}")
+    try:
+        registered_event = EventRegistry.get_event_class(event_class_name)
+        is_valid = registered_event.__name__ == use_case.event.__name__
+        return True, is_valid
+    except (KeyError, ValueError):
+        return False, False
 
-        if use_cases_without_events:
-            errors.append(f"❌ Use cases without events: {', '.join(use_cases_without_events)}")
 
-        if use_cases_with_invalid_events:
-            errors.append(f"❌ Use cases with invalid events: {', '.join(use_cases_with_invalid_events)}")
+def _validate_use_case_events(web_project, errors: list[str]) -> None:
+    """Validate that each use case has a valid event associated."""
+    use_cases_without_events = []
+    use_cases_with_invalid_events = []
+    events_not_in_registry = []
 
-        if events_not_in_registry:
-            errors.append(f"❌ Events not found in registry: {', '.join(events_not_in_registry)}")
+    for use_case in web_project.use_cases:
+        if not use_case.event:
+            use_cases_without_events.append(use_case.name)
+        else:
+            event_class_name = use_case.event.__name__ if hasattr(use_case.event, "__name__") else str(use_case.event)
+            is_in_registry, is_valid = _check_event_in_registry(use_case, event_class_name)
+            if not is_in_registry:
+                events_not_in_registry.append(f"{use_case.name} -> {event_class_name}")
+            elif not is_valid:
+                use_cases_with_invalid_events.append(f"{use_case.name} (event: {event_class_name})")
 
-        # 6. Validate that use case events are in the project events list
-        project_event_names = {evt.__name__ for evt in web_project.events}
-        use_case_event_names = set()
+    if use_cases_without_events:
+        errors.append(f"❌ Use cases without events: {', '.join(use_cases_without_events)}")
 
-        for use_case in web_project.use_cases:
-            if use_case.event:
-                event_name = use_case.event.__name__ if hasattr(use_case.event, "__name__") else str(use_case.event)
-                use_case_event_names.add(event_name)
+    if use_cases_with_invalid_events:
+        errors.append(f"❌ Use cases with invalid events: {', '.join(use_cases_with_invalid_events)}")
 
-        missing_events = use_case_event_names - project_event_names
-        if missing_events:
-            warnings.append(f"⚠️  Some use case events not in project events list: {', '.join(missing_events)}")
+    if events_not_in_registry:
+        errors.append(f"❌ Events not found in registry: {', '.join(events_not_in_registry)}")
 
-        # 7. Validate use cases have examples
-        use_cases_without_examples = []
-        for use_case in web_project.use_cases:
-            if not use_case.examples or len(use_case.examples) == 0:
-                use_cases_without_examples.append(use_case.name)
 
-        if use_cases_without_examples:
-            warnings.append(f"⚠️  Use cases without examples: {', '.join(use_cases_without_examples)}")
+def _validate_use_case_events_in_project(web_project, warnings: list[str]) -> None:
+    """Validate that use case events are in the project events list."""
+    project_event_names = {evt.__name__ for evt in web_project.events}
+    use_case_event_names = set()
 
-    # 8. Display summary
+    for use_case in web_project.use_cases:
+        if use_case.event:
+            event_name = use_case.event.__name__ if hasattr(use_case.event, "__name__") else str(use_case.event)
+            use_case_event_names.add(event_name)
+
+    missing_events = use_case_event_names - project_event_names
+    if missing_events:
+        warnings.append(f"⚠️  Some use case events not in project events list: {', '.join(missing_events)}")
+
+
+def _validate_use_case_examples(web_project, warnings: list[str]) -> None:
+    """Validate that use cases have examples."""
+    use_cases_without_examples = []
+    for use_case in web_project.use_cases:
+        if not use_case.examples or len(use_case.examples) == 0:
+            use_cases_without_examples.append(use_case.name)
+
+    if use_cases_without_examples:
+        warnings.append(f"⚠️  Use cases without examples: {', '.join(use_cases_without_examples)}")
+
+
+def _display_validation_summary(web_project, errors: list[str], warnings: list[str]) -> None:
+    """Display validation summary (errors, warnings, or success)."""
     if errors:
         logger.error("=" * 80)
         logger.error("PROJECT VALIDATION FAILED")
@@ -167,6 +165,53 @@ def validate_project_setup(web_project) -> tuple[bool, list[str]]:
         logger.info(f"Frontend: {web_project.frontend_url}")
         logger.info(f"Backend: {web_project.backend_url}")
         logger.info("=" * 80)
+
+
+def validate_project_setup(web_project) -> tuple[bool, list[str]]:
+    """
+    Validate that the project is correctly configured before running the pipeline.
+
+    This function checks:
+    - Project has ID and name
+    - URLs are valid
+    - Events are defined
+    - Use cases are defined
+    - Each use case has a valid event associated
+    - Events are registered in the EventRegistry
+    - Use case events match project events list
+
+    Args:
+        web_project: The WebProject instance to validate
+
+    Returns:
+        Tuple[bool, list[str]]: (is_valid, list_of_messages)
+            - is_valid: True if no critical errors found
+            - list_of_messages: List of error and warning messages
+    """
+    errors = []
+    warnings = []
+
+    # 1. Validate project has ID and name
+    _validate_basic_project_info(web_project, errors)
+
+    # 2. Validate URLs
+    _validate_url(web_project.frontend_url, "Frontend", errors, warnings)
+    _validate_url(web_project.backend_url, "Backend", errors, warnings)
+
+    # 3. Validate events are defined
+    _validate_events(web_project, errors)
+
+    # 4. Validate use cases are defined
+    _validate_use_cases_basic(web_project, errors)
+
+    # 5-7. Validate use case details if use cases exist
+    if web_project.use_cases:
+        _validate_use_case_events(web_project, errors)
+        _validate_use_case_events_in_project(web_project, warnings)
+        _validate_use_case_examples(web_project, warnings)
+
+    # 8. Display summary
+    _display_validation_summary(web_project, errors, warnings)
 
     return len(errors) == 0, errors + warnings
 
@@ -288,7 +333,7 @@ async def main():
     logger.info("🔍 VALIDATING PROJECT SETUP")
     logger.info("=" * 80)
 
-    is_valid, validation_messages = validate_project_setup(web_project)
+    is_valid, _ = validate_project_setup(web_project)
     if not is_valid:
         logger.error("❌ Project validation failed. Please fix the errors before running the pipeline.")
         sys.exit(1)
