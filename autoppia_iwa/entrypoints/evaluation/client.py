@@ -68,7 +68,7 @@ class EvaluationClient:
         if self._client:
             await self._client.aclose()
 
-    async def _get_client(self) -> httpx.AsyncClient:
+    def _get_client(self) -> httpx.AsyncClient:
         """Get or create HTTP client"""
         if self._client is None:
             self._client = httpx.AsyncClient(timeout=self.timeout)
@@ -88,7 +88,7 @@ class EvaluationClient:
             True if service is healthy, False otherwise
         """
         try:
-            client = await self._get_client()
+            client = self._get_client()
             response = await client.get(f"{self.base_url}/health")
             if response.status_code == 200:
                 logger.debug(f"Health check passed: {response.json()}")
@@ -125,7 +125,7 @@ class EvaluationClient:
             httpx.HTTPError: If the request fails
         """
         try:
-            client = await self._get_client()
+            client = self._get_client()
 
             # Prepare request payload
             payload = {
@@ -176,7 +176,7 @@ class EvaluationClient:
             EvaluationResult with success status and detailed metrics
         """
         try:
-            client = await self._get_client()
+            client = self._get_client()
             response = await client.post(f"{self.base_url}/evaluate", json=payload)
             response.raise_for_status()
             result_data = response.json()
