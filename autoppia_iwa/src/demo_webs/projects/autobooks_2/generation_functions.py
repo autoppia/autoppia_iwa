@@ -8,6 +8,10 @@ from ..criterion_helper import ComparisonOperator, CriterionValue, validate_crit
 from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
 from .data_utils import fetch_data
 
+# Constants for constraint placeholders
+USERNAME_PLACEHOLDER = "<username>"
+PASSWORD_PLACEHOLDER = "<password>"
+
 
 def generate_registration_constraints():
     """
@@ -17,6 +21,7 @@ def generate_registration_constraints():
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
+    # Note: "<signup_password>" is a placeholder for constraint generation, not a hard-coded credential
     constraints_str = "username equals <signup_username> AND email equals <signup_email> AND password equals <signup_password>"
 
     return parse_constraints_str(constraints_str)
@@ -31,7 +36,7 @@ def generate_login_constraints():
 
     # Generar restricciones frescas basadas en los datos de películas
 
-    constraints_str = "username equals <username> AND password equals <password>"
+    constraints_str = f"username equals {USERNAME_PLACEHOLDER} AND password equals {PASSWORD_PLACEHOLDER}"
 
     return parse_constraints_str(constraints_str)
 
@@ -44,7 +49,7 @@ def generate_logout_constraints():
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "username equals <username> AND password equals <password>"
+    constraints_str = f"username equals {USERNAME_PLACEHOLDER} AND password equals {PASSWORD_PLACEHOLDER}"
     return parse_constraints_str(constraints_str)
 
 
@@ -58,7 +63,7 @@ async def generate_book_constraints(task_url: str | None = None, dataset: dict[s
     constraints = []
 
     # Fetch data if dataset is not provided or is empty
-    if dataset is None or dataset == {}:
+    if not dataset:
         seed = get_seed_from_url(task_url)
         books = await fetch_data(seed_value=seed)
         dataset = {"books": books}
@@ -74,8 +79,8 @@ async def generate_book_constraints(task_url: str | None = None, dataset: dict[s
     if constraints_str:
         constraints = parse_constraints_str(constraints_str)
         # Login constraints use placeholders; replaced at validation time in base_events (same as in actions).
-        constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<username>"})
-        constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<password>"})
+        constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": USERNAME_PLACEHOLDER})
+        constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": PASSWORD_PLACEHOLDER})
 
         return constraints
 
@@ -92,7 +97,7 @@ async def generate_book_details_constraints(task_url: str | None = None, dataset
     constraints = []
 
     # Fetch data if dataset is not provided or is empty
-    if dataset is None or dataset == {}:
+    if not dataset:
         seed = get_seed_from_url(task_url)
         books = await fetch_data(seed_value=seed)
         dataset = {"books": books}
@@ -107,8 +112,8 @@ async def generate_book_details_constraints(task_url: str | None = None, dataset
     # Convertir el string a la estructura de datos
     if constraints_str:
         constraints = parse_constraints_str(constraints_str)
-        constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<username>"})
-        constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<password>"})
+        constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": USERNAME_PLACEHOLDER})
+        constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": PASSWORD_PLACEHOLDER})
         return constraints
 
     return None
@@ -122,7 +127,7 @@ def generate_delete_book_constraints():
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "username equals <username> AND password equals <password> AND id equals <web_agent_id>"
+    constraints_str = f"username equals {USERNAME_PLACEHOLDER} AND password equals {PASSWORD_PLACEHOLDER} AND id equals <web_agent_id>"
 
     # Convertir el string a la estructura de datos
     if constraints_str:
@@ -138,7 +143,7 @@ async def generate_search_book_constraints(task_url: str | None = None, dataset:
     from .utils import parse_constraints_str
 
     # Fetch data if dataset is not provided or is empty
-    if dataset is None or dataset == {}:
+    if not dataset:
         seed = get_seed_from_url(task_url)
         books = await fetch_data(seed_value=seed)
         dataset = {"books": books}
@@ -150,6 +155,8 @@ async def generate_search_book_constraints(task_url: str | None = None, dataset:
 
     books_names = [book["name"] for book in books]
     operators = ["equals", "not_equals"]
+    # Security Hotspot: random.choice is used for non-security purposes (test data generation)
+    # This is safe as it's only used to generate random constraints for testing, not for security-sensitive operations
     constraints_str = f"query {choice(operators)} {choice(books_names)}"
     return parse_constraints_str(constraints_str)
 
@@ -162,9 +169,10 @@ def generate_contact_constraints() -> list:
     """
 
     def _generate_random_value_for_contact(field: str) -> str:
+        # Security Hotspot: random.choice is used for non-security purposes (test data generation)
         if field == "name":
             return random.choice(["Alice", "Bob", "John", "Maria", "TestUser", "Peter", "Susan", "Robert", "Linda", "Michael", "Jessica", "William", "Karen", "David", "Lisa"])
-        elif field == "email":
+        if field == "email":
             return random.choice(
                 [
                     "test@example.com",
@@ -184,11 +192,11 @@ def generate_contact_constraints() -> list:
                     "jane@doe.com",
                 ]
             )
-        elif field == "subject":
+        if field == "subject":
             return random.choice(
                 ["Feedback", "Inquiry", "Question", "Collaboration", "Request", "Complaint", "Suggestion", "Appointment", "Meeting", "Proposal", "Support", "Information", "Order", "Refund", "Other"]
             )
-        elif field == "message":
+        if field == "message":
             return random.choice(
                 [
                     "Hello, I'd like more info",
@@ -210,6 +218,7 @@ def generate_contact_constraints() -> list:
             )
         return "TestValue"
 
+    # Security Hotspot: random.randint and random.choice are used for non-security purposes (test data generation)
     num_constraints = random.randint(1, 4)
     # ["name", "email", "subject", "message"]
     fields = list(FIELD_OPERATORS_MAP_CONTACT.keys())
@@ -239,7 +248,7 @@ async def generate_book_filter_constraints(task_url: str | None = None, dataset:
     usando los años y géneros reales de los libros.
     """
     # Fetch data if dataset is not provided or is empty
-    if dataset is None or dataset == {}:
+    if not dataset:
         seed = get_seed_from_url(task_url)
         books = await fetch_data(seed_value=seed)
         dataset = {"books": books}
@@ -249,19 +258,22 @@ async def generate_book_filter_constraints(task_url: str | None = None, dataset:
     if not books:
         return []
 
-    existing_years = list(set(book["year"] for book in books))
-    existing_genres = list(set(genre for book in books for genre in book["genres"]))
+    existing_years = list({book["year"] for book in books})
+    existing_genres = list({genre for book in books for genre in book["genres"]})
 
+    # Security Hotspot: random.choice is used for non-security purposes (test data generation)
     generation_type = choice(["single_genre", "single_year", "genre_and_year"])
 
     constraints = []
 
     if generation_type == "single_genre":
         if existing_genres:
+            # Security Hotspot: random.choice is used for non-security purposes (test data generation)
             constraints.append({"field": "genres", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": choice(existing_genres)})
 
     elif generation_type == "single_year":
         if existing_years:
+            # Security Hotspot: random.choice is used for non-security purposes (test data generation)
             constraints.append(
                 {
                     "field": "year",
@@ -271,6 +283,7 @@ async def generate_book_filter_constraints(task_url: str | None = None, dataset:
             )
 
     elif generation_type == "genre_and_year" and existing_genres and existing_years:
+        # Security Hotspot: random.choice is used for non-security purposes (test data generation)
         constraints.extend(
             [
                 {"field": "genres", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": choice(existing_genres)},
@@ -285,203 +298,169 @@ async def generate_book_filter_constraints(task_url: str | None = None, dataset:
     return constraints
 
 
-def generate_constraint_from_solution(book: dict, field: str, operator: ComparisonOperator, books_data: list[dict]) -> dict[str, Any]:
+def _generate_string_field_constraint(book: dict, field: str, operator: ComparisonOperator, books_data: list[dict]) -> str | None:
+    """Generate constraint value for string fields (name, author, desc)."""
+    if operator == ComparisonOperator.EQUALS:
+        return book[field]
+    if operator == ComparisonOperator.NOT_EQUALS:
+        other_values = [m[field] for m in books_data if m[field] != book[field]]
+        return random.choice(other_values) if other_values else f"Other {field}"
+    if operator == ComparisonOperator.CONTAINS:
+        if len(book[field]) > 3:
+            # Security Hotspot: random.randint is used for non-security purposes (test data generation)
+            start = random.randint(0, len(book[field]) - 3)
+            length = random.randint(2, min(5, len(book[field]) - start))
+            return book[field][start : start + length]
+        return book[field]
+    if operator == ComparisonOperator.NOT_CONTAINS:
+        # Security Hotspot: random.choice is used for non-security purposes (test data generation)
+        alphabet = "abcdefghijklmnopqrstuvwxyz"
+        while True:
+            test_str = "".join(random.choice(alphabet) for _ in range(3))
+            if test_str.lower() not in book[field].lower():
+                return test_str
+    return None
+
+
+def _generate_numeric_field_constraint(book: dict, field: str, operator: ComparisonOperator, books_data: list[dict]) -> Any:
+    """Generate constraint value for numeric fields (year, page_count, price)."""
+    value = book[field]
+    if operator == ComparisonOperator.EQUALS:
+        return value
+    if operator == ComparisonOperator.NOT_EQUALS:
+        other_values = [m[field] for m in books_data if m[field] != value]
+        if other_values:
+            return random.choice(other_values)
+        # Security Hotspot: random.random is used for non-security purposes (test data generation)
+        return value + (1 if random.random() > 0.5 else -1)
+    if operator == ComparisonOperator.GREATER_THAN:
+        lower_values = [m[field] for m in books_data if m[field] < value]
+        return random.choice(lower_values) if lower_values else value - 1
+    if operator == ComparisonOperator.LESS_THAN:
+        higher_values = [m[field] for m in books_data if m[field] > value]
+        return random.choice(higher_values) if higher_values else value + 1
+    if operator == ComparisonOperator.GREATER_EQUAL:
+        valid_values = [m[field] for m in books_data if m[field] <= value]
+        return random.choice(valid_values) if valid_values else value
+    if operator == ComparisonOperator.LESS_EQUAL:
+        valid_values = [m[field] for m in books_data if m[field] >= value]
+        return random.choice(valid_values) if valid_values else value
+    if operator == ComparisonOperator.IN_LIST:
+        other_values = [m[field] for m in books_data if m[field] != value]
+        sample_size = min(2, len(other_values))
+        if other_values and sample_size > 0:
+            # Security Hotspot: random.sample is used for non-security purposes (test data generation)
+            return [value, *random.sample(other_values, sample_size)]
+        return [value]
+    if operator == ComparisonOperator.NOT_IN_LIST:
+        other_values = [m[field] for m in books_data if m[field] != value]
+        if other_values:
+            # Security Hotspot: random.sample is used for non-security purposes (test data generation)
+            return random.sample(other_values, min(3, len(other_values)))
+        return [value + 1, value + 2]
+    return None
+
+
+def _generate_rating_field_constraint(book: dict, operator: ComparisonOperator, books_data: list[dict]) -> Any:
+    """Generate constraint value for rating field."""
+    value = book["rating"]
+    if operator == ComparisonOperator.EQUALS:
+        return value
+    if operator == ComparisonOperator.NOT_EQUALS:
+        other_values = [m["rating"] for m in books_data if m["rating"] != value]
+        if other_values:
+            return random.choice(other_values)
+        # Security Hotspot: random.random is used for non-security purposes (test data generation)
+        return max(0, min(5, value + (0.1 if random.random() > 0.5 else -0.1)))
+    if operator == ComparisonOperator.GREATER_THAN:
+        lower_values = [m["rating"] for m in books_data if m["rating"] < value]
+        return random.choice(lower_values) if lower_values else max(0, value - 0.1)
+    if operator == ComparisonOperator.LESS_THAN:
+        higher_values = [m["rating"] for m in books_data if m["rating"] > value]
+        return random.choice(higher_values) if higher_values else min(5, value + 0.1)
+    if operator == ComparisonOperator.GREATER_EQUAL:
+        valid_values = [m["rating"] for m in books_data if m["rating"] <= value]
+        return random.choice(valid_values) if valid_values else value
+    if operator == ComparisonOperator.LESS_EQUAL:
+        valid_values = [m["rating"] for m in books_data if m["rating"] >= value]
+        return random.choice(valid_values) if valid_values else value
+    if operator == ComparisonOperator.IN_LIST:
+        other_values = [m["rating"] for m in books_data if m["rating"] != value]
+        sample_size = min(2, len(other_values))
+        if other_values and sample_size > 0:
+            # Security Hotspot: random.sample is used for non-security purposes (test data generation)
+            return [value, *random.sample(other_values, sample_size)]
+        return [value]
+    if operator == ComparisonOperator.NOT_IN_LIST:
+        other_values = [m["rating"] for m in books_data if m["rating"] != value]
+        if other_values:
+            # Security Hotspot: random.sample is used for non-security purposes (test data generation)
+            return random.sample(other_values, min(3, len(other_values)))
+        return [max(0, min(5, value + 0.1)), max(0, min(5, value + 0.2))]
+    return None
+
+
+def _generate_genre_field_constraint(book: dict, operator: ComparisonOperator, books_data: list[dict]) -> Any:
+    """Generate constraint value for genres field."""
+    if operator == ComparisonOperator.CONTAINS:
+        if book["genres"]:
+            # Security Hotspot: random.choice is used for non-security purposes (test data generation)
+            return random.choice(book["genres"])
+        return None
+    if operator == ComparisonOperator.NOT_CONTAINS:
+        all_genres = {genre for m in books_data for genre in m["genres"]}
+        book_genres = set(book["genres"])
+        available_genres = all_genres - book_genres
+        if available_genres:
+            # Security Hotspot: random.choice is used for non-security purposes (test data generation)
+            return random.choice(list(available_genres))
+        return "Non-existent genre"
+    if operator == ComparisonOperator.IN_LIST:
+        if book["genres"]:
+            # Security Hotspot: random.randint and random.sample are used for non-security purposes (test data generation)
+            num_genres = min(len(book["genres"]), random.randint(1, 2))
+            return random.sample(book["genres"], num_genres)
+        return None
+    if operator == ComparisonOperator.NOT_IN_LIST:
+        all_genres = {genre for m in books_data for genre in m["genres"]}
+        book_genres = set(book["genres"])
+        available_genres = all_genres - book_genres
+        if available_genres:
+            # Security Hotspot: random.randint and random.sample are used for non-security purposes (test data generation)
+            num_genres = min(len(available_genres), random.randint(1, 3))
+            return random.sample(list(available_genres), num_genres)
+        return ["Non-existent genre"]
+    return None
+
+
+def generate_constraint_from_solution(book: dict, field: str, operator: ComparisonOperator, books_data: list[dict]) -> dict[str, Any] | None:
     """
     Genera un constraint para un campo y operador específicos que la película solución satisface.
     Utiliza el conjunto completo de películas para generar constraints más realistas.
     """
     constraint = {"field": field, "operator": operator}
 
-    if field == "name" or field == "author" or field == "desc":
-        if operator == ComparisonOperator.EQUALS:
-            constraint["value"] = book[field]
-        elif operator == ComparisonOperator.NOT_EQUALS:
-            # Buscar un valor diferente de otra película
-            other_values = [m[field] for m in books_data if m[field] != book[field]]
-            if other_values:
-                constraint["value"] = random.choice(other_values)
-            else:
-                constraint["value"] = "Other " + field
-        elif operator == ComparisonOperator.CONTAINS:
-            if len(book[field]) > 3:
-                start = random.randint(0, len(book[field]) - 3)
-                length = random.randint(2, min(5, len(book[field]) - start))
-                constraint["value"] = book[field][start : start + length]
-            else:
-                constraint["value"] = book[field]
-        elif operator == ComparisonOperator.NOT_CONTAINS:
-            # Esto es más complejo - encontrar una subcadena que no esté en el campo de la película
-            alphabet = "abcdefghijklmnopqrstuvwxyz"
-            while True:
-                test_str = "".join(random.choice(alphabet) for _ in range(3))
-                if test_str.lower() not in book[field].lower():
-                    constraint["value"] = test_str
-                    break
-
-    elif field == "year" or field == "page_count" or field == "price":
-        value = book[field]
-        if operator == ComparisonOperator.EQUALS:
-            constraint["value"] = value
-        elif operator == ComparisonOperator.NOT_EQUALS:
-            # Buscar un valor diferente de otra película
-            other_values = [m[field] for m in books_data if m[field] != value]
-            if other_values:
-                constraint["value"] = random.choice(other_values)
-            else:
-                constraint["value"] = value + (1 if random.random() > 0.5 else -1)
-        elif operator == ComparisonOperator.GREATER_THAN:
-            # Encontrar un valor menor que el de la película
-            lower_values = [m[field] for m in books_data if m[field] < value]
-            if lower_values:
-                constraint["value"] = random.choice(lower_values)
-            else:
-                constraint["value"] = value - 1
-        elif operator == ComparisonOperator.LESS_THAN:
-            # Encontrar un valor mayor que el de la película
-            higher_values = [m[field] for m in books_data if m[field] > value]
-            if higher_values:
-                constraint["value"] = random.choice(higher_values)
-            else:
-                constraint["value"] = value + 1
-        elif operator == ComparisonOperator.GREATER_EQUAL:
-            # Podemos usar un valor igual o menor
-            valid_values = [m[field] for m in books_data if m[field] <= value]
-            if valid_values:
-                constraint["value"] = random.choice(valid_values)
-            else:
-                constraint["value"] = value
-        elif operator == ComparisonOperator.LESS_EQUAL:
-            # Podemos usar un valor igual o mayor
-            valid_values = [m[field] for m in books_data if m[field] >= value]
-            if valid_values:
-                constraint["value"] = random.choice(valid_values)
-            else:
-                constraint["value"] = value
-        elif operator == ComparisonOperator.IN_LIST:
-            # Incluir el valor de la película y posiblemente algunos otros valores
-            other_values = [m[field] for m in books_data if m[field] != value]
-            sample_size = min(2, len(other_values))
-            if other_values and sample_size > 0:
-                constraint["value"] = [value, *random.sample(other_values, sample_size)]
-            else:
-                constraint["value"] = [value]
-        elif operator == ComparisonOperator.NOT_IN_LIST:
-            # Encontrar valores que no incluyan el de la película
-            other_values = [m[field] for m in books_data if m[field] != value]
-            if other_values:
-                constraint["value"] = random.sample(other_values, min(3, len(other_values)))
-            else:
-                constraint["value"] = [value + 1, value + 2]
-
+    if field in ("name", "author", "desc"):
+        constraint_value = _generate_string_field_constraint(book, field, operator, books_data)
+    elif field in ("year", "page_count", "price"):
+        constraint_value = _generate_numeric_field_constraint(book, field, operator, books_data)
     elif field == "rating":
-        value = book[field]
-        if operator == ComparisonOperator.EQUALS:
-            constraint["value"] = value
-        elif operator == ComparisonOperator.NOT_EQUALS:
-            # Buscar un valor diferente de otra película
-            other_values = [m[field] for m in books_data if m[field] != value]
-            if other_values:
-                constraint["value"] = random.choice(other_values)
-            else:
-                # Asegurarse de que el valor alternativo esté en el rango 0-5
-                constraint["value"] = max(0, min(5, value + (0.1 if random.random() > 0.5 else -0.1)))
-        elif operator == ComparisonOperator.GREATER_THAN:
-            # Encontrar un valor menor que el de la película
-            lower_values = [m[field] for m in books_data if m[field] < value]
-            if lower_values:
-                constraint["value"] = random.choice(lower_values)
-            else:
-                # Asegurarse de que el valor sea positivo y menor que el original
-                constraint["value"] = max(0, value - 0.1)
-        elif operator == ComparisonOperator.LESS_THAN:
-            # Encontrar un valor mayor que el de la película
-            higher_values = [m[field] for m in books_data if m[field] > value]
-            if higher_values:
-                constraint["value"] = random.choice(higher_values)
-            else:
-                # Asegurarse de que el valor no exceda 5
-                constraint["value"] = min(5, value + 0.1)
-        elif operator == ComparisonOperator.GREATER_EQUAL:
-            # Podemos usar un valor igual o menor
-            valid_values = [m[field] for m in books_data if m[field] <= value]
-            if valid_values:
-                constraint["value"] = random.choice(valid_values)
-            else:
-                constraint["value"] = value
-        elif operator == ComparisonOperator.LESS_EQUAL:
-            # Podemos usar un valor igual o mayor
-            valid_values = [m[field] for m in books_data if m[field] >= value]
-            if valid_values:
-                constraint["value"] = random.choice(valid_values)
-            else:
-                constraint["value"] = value
-        elif operator == ComparisonOperator.IN_LIST:
-            # Incluir el valor de la película y posiblemente algunos otros valores
-            other_values = [m[field] for m in books_data if m[field] != value]
-            sample_size = min(2, len(other_values))
-            if other_values and sample_size > 0:
-                constraint["value"] = [value, *random.sample(other_values, sample_size)]
-            else:
-                constraint["value"] = [value]
-        elif operator == ComparisonOperator.NOT_IN_LIST:
-            # Encontrar valores que no incluyan el de la película
-            other_values = [m[field] for m in books_data if m[field] != value]
-            if other_values:
-                constraint["value"] = random.sample(other_values, min(3, len(other_values)))
-            else:
-                # Asegurarse de que los valores estén en el rango 0-5
-                constraint["value"] = [max(0, min(5, value + 0.1)), max(0, min(5, value + 0.2))]
-
+        constraint_value = _generate_rating_field_constraint(book, operator, books_data)
     elif field == "genres":
-        if operator == ComparisonOperator.CONTAINS:
-            if book[field]:
-                constraint["value"] = random.choice(book[field])
-            else:
-                return None  # No se puede crear este constraint
-        elif operator == ComparisonOperator.NOT_CONTAINS:
-            # Encontrar un género que no esté en los géneros de la película
-            all_genres = set()
-            for m in books_data:
-                all_genres.update(m["genres"])
-
-            book_genres = set(book[field])
-            available_genres = all_genres - book_genres
-
-            if available_genres:
-                constraint["value"] = random.choice(list(available_genres))
-            else:
-                constraint["value"] = "Non-existent genre"
-        elif operator == ComparisonOperator.IN_LIST:
-            if book[field]:
-                # Tomar uno o más géneros de la película para la lista
-                num_genres = min(len(book[field]), random.randint(1, 2))
-                constraint["value"] = random.sample(book[field], num_genres)
-            else:
-                return None  # No se puede crear este constraint
-        elif operator == ComparisonOperator.NOT_IN_LIST:
-            # Similar a NOT_CONTAINS pero creando una lista
-            all_genres = set()
-            for m in books_data:
-                all_genres.update(m["genres"])
-
-            book_genres = set(book[field])
-            available_genres = all_genres - book_genres
-
-            if available_genres:
-                num_genres = min(len(available_genres), random.randint(1, 3))
-                constraint["value"] = random.sample(list(available_genres), num_genres)
-            else:
-                constraint["value"] = ["Non-existent genre"]
-
-    if "value" not in constraint:
+        constraint_value = _generate_genre_field_constraint(book, operator, books_data)
+    else:
         return None
+
+    if constraint_value is None:
+        return None
+
+    constraint["value"] = constraint_value
 
     # Verificar que el constraint generado es válido para la película solución
     criterion = CriterionValue(value=constraint["value"], operator=operator)
     if validate_criterion(book.get(field), criterion):
         return constraint
 
-    # Si llegamos aquí, el constraint generado no es válido
     return None
 
 
@@ -490,7 +469,7 @@ async def generate_add_comment_constraints(task_url: str | None = None, dataset:
     Genera combinaciones de constraints para añadir comentarios.
     """
     # Fetch data if dataset is not provided or is empty
-    if dataset is None or dataset == {}:
+    if not dataset:
         seed = get_seed_from_url(task_url)
         books = await fetch_data(seed_value=seed)
         dataset = {"books": books}
@@ -614,11 +593,11 @@ async def generate_edit_book_constraints(task_url: str | None = None, dataset: d
     ]
 
     # Fetch data if dataset is not provided or is empty
-    if dataset is None or dataset == {}:
+    if not dataset:
         seed = get_seed_from_url(task_url)
         books = await fetch_data(seed_value=seed)
         dataset = {"books": books}
-    all_genres = list(set(genre for book in dataset.get("books", []) for genre in book["genres"]))
+    all_genres = list({genre for book in dataset.get("books", []) for genre in book["genres"]})
 
     # Generar constraints
     constraints = []
@@ -628,6 +607,7 @@ async def generate_edit_book_constraints(task_url: str | None = None, dataset: d
     constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<password>"})
 
     # Seleccionar 1, 2, 3 o 4 campos para editar
+    # Security Hotspot: random.sample and random.choice are used for non-security purposes (test data generation)
     selected_fields = sample(editable_fields, k=choice([1, 2, 3, 4]))
 
     for field in selected_fields:
@@ -640,6 +620,7 @@ async def generate_edit_book_constraints(task_url: str | None = None, dataset: d
                 }
             )
         elif field == "year":
+            # Security Hotspot: random.randint is used for non-security purposes (test data generation)
             constraints.append(
                 {
                     "field": field,
@@ -650,6 +631,7 @@ async def generate_edit_book_constraints(task_url: str | None = None, dataset: d
         elif field == "genres":
             constraints.append({"field": field, "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": choice(all_genres)})
         elif field == "rating":
+            # Security Hotspot: random.uniform is used for non-security purposes (test data generation)
             rating_value = round(uniform(0, 5), 1)
             constraints.append(
                 {
@@ -659,6 +641,7 @@ async def generate_edit_book_constraints(task_url: str | None = None, dataset: d
                 }
             )
         elif field == "page_count":
+            # Security Hotspot: random.randint is used for non-security purposes (test data generation)
             constraints.append(
                 {
                     "field": field,
@@ -713,11 +696,11 @@ async def generate_add_book_constraints(task_url: str | None = None, dataset: di
     ]
 
     # Fetch data if dataset is not provided or is empty
-    if dataset is None or dataset == {}:
+    if not dataset:
         seed = get_seed_from_url(task_url)
         books = await fetch_data(seed_value=seed)
         dataset = {"books": books}
-    all_genres = list(set(genre for book in dataset.get("books", []) for genre in book["genres"]))
+    all_genres = list({genre for book in dataset.get("books", []) for genre in book["genres"]})
 
     # Generar constraints
     constraints = []
@@ -767,6 +750,40 @@ async def generate_add_book_constraints(task_url: str | None = None, dataset: di
             )
 
     return constraints
+
+
+def _generate_edit_profile_field_constraint(
+    field: str,
+    random_names: list[str],
+    random_text_elements: list[str],
+    random_bios: list[str],
+    random_locations: list[str],
+    random_websites: list[str],
+    all_genres: list[str],
+) -> dict[str, Any] | None:
+    """Generate constraint for a single profile field."""
+    valid_operators = FIELD_OPERATORS_MAP_EDIT_USER.get(field, [])
+    if not valid_operators:
+        return None
+
+    # Security Hotspot: random.choice is used for non-security purposes (test data generation)
+    operator_str = choice(valid_operators)
+    operator = ComparisonOperator(operator_str)
+
+    if field in ("first_name", "last_name"):
+        value = choice(random_names) if operator.name in (ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS) else choice(random_text_elements)
+    elif field == "bio":
+        value = choice(random_text_elements) if operator.name in (ComparisonOperator.CONTAINS, ComparisonOperator.NOT_CONTAINS) else choice(random_bios)
+    elif field == "location":
+        value = choice(random_text_elements) if operator.name in (ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS) else choice(random_locations)
+    elif field == "website":
+        value = choice(random_websites) if operator.name in (ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS) else choice(random_text_elements)
+    elif field == "favorite_genres":
+        value = choice(all_genres)
+    else:
+        return None
+
+    return {"field": field, "operator": operator, "value": value}
 
 
 async def generate_edit_profile_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
@@ -819,49 +836,30 @@ async def generate_edit_profile_constraints(task_url: str | None = None, dataset
         "Story lover and aspiring writer.",
     ]
     # Fetch data if dataset is not provided or is empty
-    if dataset is None or dataset == {}:
+    if not dataset:
         seed = get_seed_from_url(task_url)
         books = await fetch_data(seed_value=seed)
         dataset = {"books": books}
-    all_genres = list(set(genre for book in dataset.get("books", []) for genre in book["genres"]))
+    all_genres = list({genre for book in dataset.get("books", []) for genre in book["genres"]})
 
     # Generar constraints
     constraints = []
 
     # Always add username and password constraints explicitly
-    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<username>"})
-    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<password>"})
+    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": USERNAME_PLACEHOLDER})
+    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": PASSWORD_PLACEHOLDER})
 
     # Select random fields to edit
+    # Security Hotspot: random.sample and random.choice are used for non-security purposes (test data generation)
     selected_fields = sample(editable_fields, k=choice([1, 2, 3]))
     if "website" not in selected_fields:
         selected_fields.append("website")
+    
     for field in selected_fields:
-        # Get valid operators for this field from the map
-        valid_operators = FIELD_OPERATORS_MAP_EDIT_USER.get(field, [])
-
-        if not valid_operators:
-            continue
-
-        # Convert string operator to ComparisonOperator instance
-        operator_str = choice(valid_operators)
-        operator = ComparisonOperator(operator_str)
-
-        if field == "first_name" or field == "last_name":
-            value = choice(random_names) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(random_text_elements)
-        elif field == "bio":
-            # For bio, use CONTAINS or NOT_CONTAINS with a random text element
-            value = choice(random_text_elements) if operator.name in [ComparisonOperator.CONTAINS, ComparisonOperator.NOT_CONTAINS] else choice(random_bios)
-        elif field == "location":
-            # For location, use EQUALS or NOT_EQUALS with a random location
-            value = choice(random_text_elements) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(random_locations)
-        elif field == "website":
-            # For website, use EQUALS or NOT_EQUALS with a random website
-            value = choice(random_websites) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(random_text_elements)
-        elif field == "favorite_genres":
-            # For favorite_genres, only use EQUALS with a single genre
-            value = choice(all_genres)
-
-        constraints.append({"field": field, "operator": operator, "value": value})
+        constraint = _generate_edit_profile_field_constraint(
+            field, random_names, random_text_elements, random_bios, random_locations, random_websites, all_genres
+        )
+        if constraint:
+            constraints.append(constraint)
 
     return constraints
