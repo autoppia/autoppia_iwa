@@ -16,6 +16,7 @@ AUTHOR_PLACEHOLDER = "<author>"
 #  DECADE HANDLING
 # --------------------------------------------------------------------- #
 
+
 def _extract_decades(books_data: list[dict]) -> set[int]:
     """Extract unique decades from books data."""
     decades = set()
@@ -28,17 +29,13 @@ def _extract_decades(books_data: list[dict]) -> set[int]:
 
 def _filter_books_by_decade(books_data: list[dict], selected_decade: int) -> list[dict]:
     """Filter books that belong to the selected decade."""
-    return [
-        m
-        for m in books_data
-        if m.get("year", 0) >= selected_decade and m.get("year", 0) < selected_decade + 10
-    ]
+    return [m for m in books_data if m.get("year", 0) >= selected_decade and m.get("year", 0) < selected_decade + 10]
 
 
 def _process_decade_placeholder(text: str, books_data: list[dict]) -> tuple[str, list[dict], dict[str, str]]:
     """
     Process decade placeholder and filter books if needed.
-    
+
     Returns:
         Tuple of (text, filtered_books_data, special_placeholders)
     """
@@ -67,6 +64,7 @@ def _process_decade_placeholder(text: str, books_data: list[dict]) -> tuple[str,
 #  PLACEHOLDER REPLACEMENT
 # --------------------------------------------------------------------- #
 
+
 def _replace_special_placeholders(text: str, special_placeholders: dict[str, str]) -> str:
     """Replace special placeholders (like decade) in text."""
     for placeholder, value in special_placeholders.items():
@@ -80,11 +78,8 @@ def _replace_book_field_placeholders(text: str, book: dict[str, Any]) -> str:
     for key, value in book.items():
         placeholder = f"<{key}>"
         if placeholder in text:
-            if isinstance(value, list) and value:
-                # Security Hotspot: random.choice is used for non-security purposes (test data generation)
-                text = text.replace(placeholder, random.choice(value))
-            else:
-                text = text.replace(placeholder, str(value))
+            # Security Hotspot: random.choice is used for non-security purposes (test data generation)
+            text = text.replace(placeholder, random.choice(value) if isinstance(value, list) and value else str(value))
     return text
 
 
@@ -140,6 +135,7 @@ def _replace_author_placeholder(text: str, book: dict[str, Any]) -> str:
 #                            MAIN FUNCTION
 # =============================================================================
 
+
 async def replace_book_placeholders(
     text: str,
     seed_value: int | None = None,
@@ -147,12 +143,12 @@ async def replace_book_placeholders(
 ) -> str:
     """
     Replace book-related placeholders in text with actual values from books data.
-    
+
     Args:
         text: Text containing placeholders like <book>, <author>, <genre>, etc.
         seed_value: Optional seed for fetching books data
         dataset: Optional pre-fetched books dataset
-        
+
     Returns:
         Text with placeholders replaced by actual values
     """
