@@ -37,7 +37,7 @@ def parse_constraints_str(constraints_str: str) -> list[dict[str, Any]]:
             value = value_str.strip("[]").split(", ") if "[" in value_str and "]" in value_str else value_str
         else:
             # For text fields
-            value = value_str
+            value = value_str.strip()
 
         constraints.append({"field": field, "operator": ComparisonOperator(op), "value": value})
 

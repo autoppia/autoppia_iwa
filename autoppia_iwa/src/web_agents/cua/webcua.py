@@ -87,13 +87,13 @@ SyncWebCUASession = SyncWebAgentSession
 
 
 __all__ = [
-    "WebAgentSession",
-    "WebAgentSyncSession",
     "AsyncWebAgentSession",
-    "SyncWebAgentSession",
     "AsyncWebCUASession",
     "BrowserSnapshot",
     "ScoreDetails",
     "StepResult",
+    "SyncWebAgentSession",
     "SyncWebCUASession",
+    "WebAgentSession",
+    "WebAgentSyncSession",
 ]

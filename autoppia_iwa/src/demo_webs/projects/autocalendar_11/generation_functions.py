@@ -14,12 +14,12 @@ from .data import (
     EVENT_TITLES,
     EXISTING_CALENDAR_NAMES,
     FIELD_OPERATORS_ADD_EVENT_MAP,
-    FIELD_OPERATORS_CHOOSE_CALENDAR_MAP,
     FIELD_OPERATORS_CLICK_CELL_MAP,
     FIELD_OPERATORS_CREATE_CALENDAR_MAP,
     FIELD_OPERATORS_EVENT_ATTENDEE_MAP,
     FIELD_OPERATORS_EVENT_REMINDER_MAP,
     FIELD_OPERATORS_SEARCH_SUBMIT_MAP,
+    FIELD_OPERATORS_UNSELECT_CALENDAR_MAP,
     FIELD_OPERATORS_WIZARD_OPEN,
     LOCATIONS,
     MEETING_LINKS,
@@ -205,13 +205,12 @@ def generate_create_calendar_constraints() -> list[dict[str, Any]]:
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_CREATE_CALENDAR_MAP)
 
 
-def generate_choose_calendar_constraints() -> list[dict[str, Any]]:
+def generate_unselect_calendar_constraints() -> list[dict[str, Any]]:
     """Generate constraints for selecting/deselecting a calendar."""
     field_map = {
         "calendar_name": {"values": CALENDAR_NAMES},
-        "selected": {"values": [False]},
     }
-    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_CHOOSE_CALENDAR_MAP)
+    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_UNSELECT_CALENDAR_MAP)
 
 
 def generate_cell_clicked_constraints() -> list[dict[str, Any]]:

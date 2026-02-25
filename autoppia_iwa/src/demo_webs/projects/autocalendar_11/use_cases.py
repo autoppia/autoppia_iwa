@@ -4,7 +4,6 @@ from .events import (
     AddNewCalendarEvent,
     CancelAddEventEvent,
     CellClickedEvent,
-    ChooseCalendarEvent,
     CreateCalendarEvent,
     DeleteAddedEventEvent,
     EventAddAttendeeEvent,
@@ -13,21 +12,23 @@ from .events import (
     EventRemoveReminderEvent,
     EventWizardOpenEvent,
     SearchSubmitEvent,
+    SelectCalendarEvent,
     SelectDayEvent,
     SelectFiveDaysEvent,
     SelectMonthEvent,
     SelectTodayEvent,
     SelectWeekEvent,
+    UnselectCalendarEvent,
 )
 from .generation_functions import (
     generate_add_event_constraints,
     generate_cell_clicked_constraints,
-    generate_choose_calendar_constraints,
     generate_create_calendar_constraints,
     generate_event_attendee_constraints,
     generate_event_reminder_constraints,
     generate_event_wizard_open_constraints,
     generate_search_submit_constraints,
+    generate_unselect_calendar_constraints,
 )
 
 ###############################################################################
@@ -230,45 +231,79 @@ CREATE_CALENDAR_USE_CASE = UseCase(
 )
 
 ###############################################################################
-# CHOOSE_CALENDAR_USE_CASE
+# UNSELECT_CALENDAR_USE_CASE
 ###############################################################################
 import json
 
 from .data import EXISTING_CALENDAR_NAMES
 
-CHOOSE_CALENDAR_INFO = f"""
+UNSELECT_CALENDAR_INFO = f"""
 CRITICAL REQUIREMENTS:
-1. The prompt must focus on deselecting a calendar (the 'selected' constraint is always false).
+1. The prompt must focus on unselecting a calendar.
 2. Use the calendar name exactly as provided in the constraints (e.g., `Personal`, `Fitness`).
-   Example: For {{'calendar_name': 'Personal', 'selected': False}} → "Unselect the 'Personal' calendar."
+   Example: For {{'calendar_name': 'Personal'}} → "Unselect the 'Personal' calendar."
 3. If the calendar name is not in the list of existing calendar names, or a substring of those, mention in the prompt to first create that calendar, then unselect it.
    Existing Calendar Names: {json.dumps(EXISTING_CALENDAR_NAMES)}
 4. If the constraint uses an operator (e.g., 'contains'), clearly mention it in the prompt.
-   Example: {{'calendar_name': {{'operator': 'contains', 'value': 've'}}, 'selected': False}}
+   Example: {{'calendar_name': {{'operator': 'contains', 'value': 've'}}}}
    Correct: "Unselect the calendar that contains 've' in its name."
    Incorrect: "Unselect the calendar 've' name, but first create it if it doesn't exist." (constraint not mentioned)
-5. **Do not** mention the constraint for 'selected' in the prompt.
 """
 
-CHOOSE_CALENDAR_USE_CASE = UseCase(
-    name="CHOOSE_CALENDAR",
+UNSELECT_CALENDAR_USE_CASE = UseCase(
+    name="UNSELECT_CALENDAR",
     description="Triggered when the user deselects a calendar from the sidebar.",
-    event=ChooseCalendarEvent,
-    event_source_code=ChooseCalendarEvent.get_source_code_of_class(),
-    constraints_generator=generate_choose_calendar_constraints,
-    additional_prompt_info=CHOOSE_CALENDAR_INFO,
+    event=UnselectCalendarEvent,
+    event_source_code=UnselectCalendarEvent.get_source_code_of_class(),
+    constraints_generator=generate_unselect_calendar_constraints,
+    additional_prompt_info=UNSELECT_CALENDAR_INFO,
     examples=[
-        {"prompt": "Hide the Personal calendar.", "prompt_for_task_generation": "Deselect the Personal calendar."},
+        {"prompt": "Hide the Personal calendar.", "prompt_for_task_generation": "Unselect the Personal calendar."},
         {"prompt": "I don't want to see the Fitness calendar right now.", "prompt_for_task_generation": "Hide the Fitness calendar."},
-        {"prompt": "Unselect the 'Study' calendar.", "prompt_for_task_generation": "Deselect the Study calendar."},
+        {"prompt": "Unselect the 'Study' calendar.", "prompt_for_task_generation": "Unselect the Study calendar."},
         {"prompt": "Remove the 'Travel' calendar from view.", "prompt_for_task_generation": "Hide the Travel calendar."},
-        {"prompt": "Deselect the 'Holidays' calendar.", "prompt_for_task_generation": "Deselect the Holidays calendar."},
-        {"prompt": "Unselect the calendar that contains 've' in its name.", "prompt_for_task_generation": "Deselect any calendar whose name contains 've'."},
+        {"prompt": "Unselect the 'Holidays' calendar.", "prompt_for_task_generation": "Unselect the Holidays calendar."},
+        {"prompt": "Unselect the calendar that contains 've' in its name.", "prompt_for_task_generation": "Unselect any calendar whose name contains 've'."},
         {"prompt": "First create the 'Projects' calendar, then unselect it.", "prompt_for_task_generation": "Create 'Projects' calendar if missing, then deselect it."},
         {"prompt": "If the 'Events' calendar does not exist, create it, then hide it.", "prompt_for_task_generation": "Create 'Events' calendar if needed, then hide it."},
     ],
 )
 
+###############################################################################
+# SELECT_CALENDAR_USE_CASE
+###############################################################################
+
+SELECT_CALENDAR_INFO = f"""
+CRITICAL REQUIREMENTS:
+1. The prompt must focus on selecting a calendar.
+2. Use the calendar name exactly as provided in the constraints (e.g., `Personal`, `Fitness`).
+   Example: For {{'calendar_name': 'Personal'}} → "Select the 'Personal' calendar."
+3. If the calendar name is not in the list of existing calendar names, or a substring of those, mention in the prompt to first create that calendar, then select it.
+   Existing Calendar Names: {json.dumps(EXISTING_CALENDAR_NAMES)}
+4. If the constraint uses an operator (e.g., 'contains'), clearly mention it in the prompt.
+   Example: {{'calendar_name': {{'operator': 'contains', 'value': 've'}}}}
+   Correct: "Select the calendar that contains 've' in its name."
+   Incorrect: "Select the calendar 've' name, but first create it if it doesn't exist." (constraint not mentioned)
+"""
+
+SELECT_CALENDAR_USE_CASE = UseCase(
+    name="SELECT_CALENDAR",
+    description="Triggered when the user deselects a calendar from the sidebar.",
+    event=SelectCalendarEvent,
+    event_source_code=SelectCalendarEvent.get_source_code_of_class(),
+    constraints_generator=generate_unselect_calendar_constraints,
+    additional_prompt_info=SELECT_CALENDAR_INFO,
+    examples=[
+        {"prompt": "Show the Personal calendar.", "prompt_for_task_generation": "Select the Personal calendar."},
+        {"prompt": "I want to see the Fitness calendar right now.", "prompt_for_task_generation": "Show the Fitness calendar."},
+        {"prompt": "Select the 'Study' calendar.", "prompt_for_task_generation": "Select the Study calendar."},
+        {"prompt": "Add the 'Travel' calendar from view.", "prompt_for_task_generation": "Show the Travel calendar."},
+        {"prompt": "Select the 'Holidays' calendar.", "prompt_for_task_generation": "Select the Holidays calendar."},
+        {"prompt": "Select the calendar that contains 've' in its name.", "prompt_for_task_generation": "Select any calendar whose name contains 've'."},
+        {"prompt": "First create the 'Projects' calendar, then select it.", "prompt_for_task_generation": "Create 'Projects' calendar if missing, then select it."},
+        {"prompt": "If the 'Events' calendar does not exist, create it, then show it.", "prompt_for_task_generation": "Create 'Events' calendar if needed, then show it."},
+    ],
+)
 ###############################################################################
 # ADD_EVENT_USE_CASE
 ###############################################################################
@@ -686,7 +721,8 @@ ALL_USE_CASES = [
     SELECT_TODAY_USE_CASE,
     ADD_NEW_CALENDAR_USE_CASE,
     CREATE_CALENDAR_USE_CASE,
-    CHOOSE_CALENDAR_USE_CASE,
+    UNSELECT_CALENDAR_USE_CASE,
+    SELECT_CALENDAR_USE_CASE,
     SEARCH_SUBMIT_USE_CASE,
     EVENT_WIZARD_OPEN_USE_CASE,
     CELL_CLICKED_USE_CASE,
