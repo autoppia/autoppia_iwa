@@ -15,6 +15,12 @@ from autoppia_iwa.src.llms.interfaces import ILLM
 class LLMReviewer:
     """Reviewer that uses LLM to validate task prompts against generated tests"""
 
+    # Constants for operator strings
+    STRING_OPERATORS = "[equals, not_equals, contains, not_contains]"
+    NUMERIC_OPERATORS = "[equals, not_equals, greater_than, less_than, greater_equal, less_equal]"
+    LIST_OPERATORS = "[contains, not_contains, in_list, not_in_list]"
+    BOOLEAN_OPERATORS = "[equals, not_equals]"
+
     def __init__(
         self,
         llm_service: ILLM,
@@ -80,7 +86,79 @@ class LLMReviewer:
                 "skipped": True,  # Indicate that review was skipped
             }
 
-        system_prompt = (
+        system_prompt = self._build_system_prompt()
+        user_prompt = self._build_user_prompt(use_case_name, use_case_desc, available_fields_info, constraints_str, task.prompt)
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
+
+        # Log the prompt being sent to LLM for debugging
+        logger.debug(f"LLM Review Prompt for task {task.id}:")
+        logger.debug(f"  System: {system_prompt[:200]}...")
+        logger.debug(f"  User: {user_prompt[:500]}...")
+
+        # Print temperature being used for LLM reviewer
+        print(f"🌡️  LLM Reviewer: Calling LLM with temperature={self.temperature}")
+
+        try:
+            raw_response = await asyncio.wait_for(
+                self.llm_service.async_predict(messages=messages, json_format=True, return_raw=False, temperature=self.temperature),
+                timeout=self.timeout_seconds,
+            )
+
+            result = self._parse_llm_response(raw_response)
+
+            # Deterministic sanity check to reduce LLM reviewer false positives/negatives.
+            heuristic = self._heuristic_value_presence_check(task.prompt, constraints)
+            result["heuristic"] = heuristic
+
+            # Apply heuristic corrections
+            self._apply_heuristic_corrections(result, heuristic)
+
+            # Validate and fix score consistency
+            self._validate_and_fix_score(result, task.id)
+
+            # Log review result
+            self._log_review_result(result, task.id)
+
+            return result
+
+        except TimeoutError:
+            logger.error(f"LLM review timeout for task {task.id}")
+            return {
+                "valid": False,
+                "score": 0.0,
+                "issues": ["LLM review request timed out"],
+                "reasoning": "Timeout while waiting for LLM response",
+            }
+        except Exception as e:
+            logger.error(f"LLM review error for task {task.id}: {e}")
+            return {
+                "valid": False,
+                "score": 0.0,
+                "issues": [f"LLM review error: {e!s}"],
+                "reasoning": f"Error during LLM review: {e!s}",
+            }
+
+    def _build_user_prompt(self, use_case_name: str, use_case_desc: str, available_fields_info: str, constraints_str: str, task_prompt: str) -> str:
+        """Build user prompt for LLM review."""
+        return (
+            f"Use Case: {use_case_name}\n"
+            f"Description: {use_case_desc}\n\n"
+            f"Available Fields:\n"
+            f"{available_fields_info}\n"
+            f"Constraints:\n"
+            f"{constraints_str}\n\n"
+            f"Task Prompt:\n"
+            f"{task_prompt}\n\n"
+            "Validate whether the task prompt correctly represents ALL constraints.\n"
+        )
+
+    def _build_system_prompt(self) -> str:
+        """Build system prompt for LLM review."""
+        return (
             "You are a QA validator that checks whether a task prompt correctly represents a set of constraints.\n\n"
             "Your ONLY responsibility is to verify, for EACH constraint, whether the task prompt correctly represents:\n\n"
             "1. FIELD\n"
@@ -159,101 +237,53 @@ class LLMReviewer:
             "}"
         )
 
-        user_prompt = (
-            f"Use Case: {use_case_name}\n"
-            f"Description: {use_case_desc}\n\n"
-            f"Available Fields:\n"
-            f"{available_fields_info}\n"
-            f"Constraints:\n"
-            f"{constraints_str}\n\n"
-            f"Task Prompt:\n"
-            f"{task.prompt}\n\n"
-            "Validate whether the task prompt correctly represents ALL constraints.\n"
-        )
+    def _apply_heuristic_corrections(self, result: dict[str, Any], heuristic: dict[str, Any]) -> None:
+        """Apply heuristic corrections to LLM review result."""
+        # If the LLM says it's valid but values are missing, treat it as invalid (likely false positive).
+        if result.get("valid", False) and not heuristic.get("pass", True):
+            result["valid"] = False
+            result["score"] = 0.0
+            result.setdefault("issues", [])
+            result["issues"].extend([f"Heuristic: {msg}" for msg in heuristic.get("issues", [])])
+            result["reasoning"] = (result.get("reasoning", "") + "\n\nHeuristic check failed: missing constraint value(s).").strip()
 
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ]
+        # If the LLM says it's invalid but all values are present, treat it as valid (likely false negative).
+        elif not result.get("valid", False) and heuristic.get("pass", False):
+            result["valid"] = True
+            result["score"] = 1.0
+            result["overridden_by_heuristic"] = True
+            result.setdefault("issues", [])
+            result["issues"].append("Heuristic override: all constraint values were found in the prompt.")
+            result["reasoning"] = (result.get("reasoning", "") + "\n\nHeuristic override applied: all constraint values present.").strip()
 
-        # Log the prompt being sent to LLM for debugging
-        logger.debug(f"LLM Review Prompt for task {task.id}:")
-        logger.debug(f"  System: {system_prompt[:200]}...")
-        logger.debug(f"  User: {user_prompt[:500]}...")
+    def _validate_and_fix_score(self, result: dict[str, Any], task_id: str) -> None:
+        """Validate and fix score consistency with valid field."""
+        valid = result.get("valid", False)
+        score = result.get("score", 0.0)
 
-        # Print temperature being used for LLM reviewer
-        print(f"🌡️  LLM Reviewer: Calling LLM with temperature={self.temperature}")
+        # Final validation: ensure score matches valid field
+        # Usamos tolerancia (1e-9) en lugar de == porque los números flotantes pueden tener errores de precisión
+        TOLERANCE = 1e-9
+        score_mismatch = (valid and abs(score - 1.0) >= TOLERANCE) or (not valid and abs(score - 0.0) >= TOLERANCE)
+        if score_mismatch:
+            logger.error(f"LLM review for task {task_id} has inconsistent valid/score: valid={valid}, score={score}. This should not happen after parsing correction.")
+            # Force consistency
+            result["score"] = 1.0 if valid else 0.0
 
-        try:
-            raw_response = await asyncio.wait_for(
-                self.llm_service.async_predict(messages=messages, json_format=True, return_raw=False, temperature=self.temperature),
-                timeout=self.timeout_seconds,
-            )
+    def _log_review_result(self, result: dict[str, Any], task_id: str) -> None:
+        """Log the review result."""
+        logger.info(f"LLM review completed for task {task_id}: valid={result.get('valid')}, score={result.get('score', 0.0):.1f}")
 
-            result = self._parse_llm_response(raw_response)
-
-            # Deterministic sanity check to reduce LLM reviewer false positives/negatives.
-            heuristic = self._heuristic_value_presence_check(task.prompt, constraints)
-            result["heuristic"] = heuristic
-
-            # If the LLM says it's valid but values are missing, treat it as invalid (likely false positive).
-            if result.get("valid", False) and not heuristic.get("pass", True):
-                result["valid"] = False
-                result["score"] = 0.0
-                result.setdefault("issues", [])
-                result["issues"].extend([f"Heuristic: {msg}" for msg in heuristic.get("issues", [])])
-                result["reasoning"] = (result.get("reasoning", "") + "\n\nHeuristic check failed: missing constraint value(s).").strip()
-
-            # If the LLM says it's invalid but all values are present, treat it as valid (likely false negative).
-            elif not result.get("valid", False) and heuristic.get("pass", False):
-                result["valid"] = True
-                result["score"] = 1.0
-                result["overridden_by_heuristic"] = True
-                result.setdefault("issues", [])
-                result["issues"].append("Heuristic override: all constraint values were found in the prompt.")
-                result["reasoning"] = (result.get("reasoning", "") + "\n\nHeuristic override applied: all constraint values present.").strip()
-
-            # Verify binary score
-            valid = result.get("valid", False)
-            score = result.get("score", 0.0)
-
-            # Final validation: ensure score matches valid field
-            if (valid and score != 1.0) or (not valid and score != 0.0):
-                logger.error(f"LLM review for task {task.id} has inconsistent valid/score: valid={valid}, score={score}. This should not happen after parsing correction.")
-                # Force consistency
-                result["score"] = 1.0 if valid else 0.0
-
-            logger.info(f"LLM review completed for task {task.id}: valid={result.get('valid')}, score={result.get('score', 0.0):.1f}")
-
-            # Add detailed logging for invalid reviews
-            if not result.get("valid", False):
-                issues = result.get("issues", [])
-                reasoning = result.get("reasoning", "No reasoning provided")
-                logger.warning(f"LLM review INVALID for task {task.id}")
-                logger.warning(f"  Issues found: {issues}")
-                logger.warning(f"  Reasoning: {reasoning}")
-            else:
-                # Log valid reviews at debug level
-                logger.debug(f"LLM review VALID for task {task.id}: {result.get('reasoning', 'No reasoning')[:100]}...")
-
-            return result
-
-        except TimeoutError:
-            logger.error(f"LLM review timeout for task {task.id}")
-            return {
-                "valid": False,
-                "score": 0.0,
-                "issues": ["LLM review request timed out"],
-                "reasoning": "Timeout while waiting for LLM response",
-            }
-        except Exception as e:
-            logger.error(f"LLM review error for task {task.id}: {e}")
-            return {
-                "valid": False,
-                "score": 0.0,
-                "issues": [f"LLM review error: {e!s}"],
-                "reasoning": f"Error during LLM review: {e!s}",
-            }
+        # Add detailed logging for invalid reviews
+        if not result.get("valid", False):
+            issues = result.get("issues", [])
+            reasoning = result.get("reasoning", "No reasoning provided")
+            logger.warning(f"LLM review INVALID for task {task_id}")
+            logger.warning(f"  Issues found: {issues}")
+            logger.warning(f"  Reasoning: {reasoning}")
+        else:
+            # Log valid reviews at debug level
+            logger.debug(f"LLM review VALID for task {task_id}: {result.get('reasoning', 'No reasoning')[:100]}...")
 
     def _heuristic_value_presence_check(self, prompt: str, constraints: list[dict[str, Any]] | None) -> dict[str, Any]:
         """
@@ -280,18 +310,32 @@ class LLMReviewer:
             if value is None:
                 continue
 
-            if isinstance(value, list):
-                atoms = [self._normalize_for_match(str(v)) for v in value if v is not None and str(v).strip()]
-                atoms = [a for a in atoms if a]
-                if atoms and not any(a in prompt_norm for a in atoms):
-                    issues.append(f"Missing any listed value for field '{field}'")
-                continue
-
-            atom = self._normalize_for_match(str(value))
-            if atom and atom not in prompt_norm:
-                issues.append(f"Missing value '{value}' for field '{field}'")
+            issue = self._check_constraint_value_presence(constraint, field, value, prompt_norm)
+            if issue:
+                issues.append(issue)
 
         return {"pass": len(issues) == 0, "issues": issues}
+
+    def _check_constraint_value_presence(self, constraint: dict[str, Any], field: str, value: Any, prompt_norm: str) -> str | None:
+        """Check if constraint value is present in normalized prompt. Returns issue message if missing, None otherwise."""
+        if isinstance(value, list):
+            return self._check_list_value_presence(field, value, prompt_norm)
+        return self._check_single_value_presence(field, value, prompt_norm)
+
+    def _check_list_value_presence(self, field: str, value: list[Any], prompt_norm: str) -> str | None:
+        """Check if any value in list is present in normalized prompt."""
+        atoms = [self._normalize_for_match(str(v)) for v in value if v is not None and str(v).strip()]
+        atoms = [a for a in atoms if a]
+        if atoms and not any(a in prompt_norm for a in atoms):
+            return f"Missing any listed value for field '{field}'"
+        return None
+
+    def _check_single_value_presence(self, field: str, value: Any, prompt_norm: str) -> str | None:
+        """Check if single value is present in normalized prompt."""
+        atom = self._normalize_for_match(str(value))
+        if atom and atom not in prompt_norm:
+            return f"Missing value '{value}' for field '{field}'"
+        return None
 
     @staticmethod
     def _normalize_for_match(text: str) -> str:
@@ -310,61 +354,81 @@ class LLMReviewer:
         2. The score is strictly binary (1.0 or 0.0) based on the valid field
         3. Any intermediate scores are corrected
         """
-        import json
-        import re
 
-        result = None
-
-        if isinstance(raw_response, dict):
-            result = raw_response
-        elif isinstance(raw_response, str):
-            # Try to extract JSON from response
-            cleaned = raw_response.strip()
-
-            # Remove code fences if present
-            code_fence_match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", cleaned, re.DOTALL)
-            if code_fence_match:
-                cleaned = code_fence_match.group(1)
-
-            # Try to find JSON object
-            json_match = re.search(r"\{.*\}", cleaned, re.DOTALL)
-            if json_match:
-                cleaned = json_match.group(0)
-
-            try:
-                result = json.loads(cleaned)
-            except json.JSONDecodeError:
-                # Fallback: return a default structure
-                logger.warning(f"Could not parse LLM response as JSON: {raw_response[:200]}")
-                return {
-                    "valid": False,
-                    "score": 0.0,
-                    "issues": ["Could not parse LLM response"],
-                    "reasoning": f"Raw response: {raw_response[:200]}",
-                }
-        else:
-            raise ValueError("LLM response is not a JSON string or dict")
+        result = self._extract_json_from_response(raw_response)
+        if result is None:
+            return {
+                "valid": False,
+                "score": 0.0,
+                "issues": ["Could not parse LLM response"],
+                "reasoning": f"Raw response: {str(raw_response)[:200]}",
+            }
 
         # CRITICAL: Enforce binary scores based on valid field
-        if result:
-            valid = result.get("valid", False)
-            score = result.get("score", 0.0)
-
-            # Calculate expected binary score
-            expected_score = 1.0 if valid else 0.0
-
-            # Check if score is not binary or doesn't match valid field
-            if score != expected_score:
-                original_score = score
-                result["score"] = expected_score
-                logger.warning(f"LLM Reviewer returned non-binary score. Correcting: valid={valid}, original_score={original_score:.2f}, corrected_score={expected_score:.1f}")
-
-            # Ensure score is exactly 1.0 or 0.0 (no floating point errors)
-            if result["score"] not in [0.0, 1.0]:
-                result["score"] = 1.0 if result["score"] > 0.5 else 0.0
-                logger.warning(f"Score was not exactly 0.0 or 1.0, rounded to {result['score']}")
-
+        self._enforce_binary_score(result)
         return result
+
+    def _extract_json_from_response(self, raw_response: Any) -> dict[str, Any] | None:
+        """Extract JSON dict from raw LLM response (dict, string with code fences, or plain string)."""
+        import json
+
+        if isinstance(raw_response, dict):
+            return raw_response
+
+        if not isinstance(raw_response, str):
+            raise ValueError("LLM response is not a JSON string or dict")
+
+        # Try to extract JSON from response
+        cleaned = raw_response.strip()
+
+        # Remove code fences if present
+        cleaned = self._remove_code_fences(cleaned)
+
+        # Try to find JSON object
+        cleaned = self._extract_json_object(cleaned)
+
+        try:
+            return json.loads(cleaned)
+        except json.JSONDecodeError:
+            logger.warning(f"Could not parse LLM response as JSON: {raw_response[:200]}")
+            return None
+
+    def _remove_code_fences(self, text: str) -> str:
+        """Remove code fences from text if present."""
+        import re
+
+        code_fence_match = re.search(r"```(?:json)?\s*(\{[^\}]*\})\s*```", text, re.DOTALL)
+        if code_fence_match:
+            return code_fence_match.group(1)
+        return text
+
+    def _extract_json_object(self, text: str) -> str:
+        """Extract JSON object from text."""
+        import re
+
+        json_match = re.search(r"\{.*\}", text, re.DOTALL)
+        if json_match:
+            return json_match.group(0)
+        return text
+
+    def _enforce_binary_score(self, result: dict[str, Any]) -> None:
+        """Enforce binary score (1.0 or 0.0) based on valid field."""
+        valid = result.get("valid", False)
+        score = result.get("score", 0.0)
+
+        # Calculate expected binary score
+        expected_score = 1.0 if valid else 0.0
+
+        # Check if score is not binary or doesn't match valid field
+        if score != expected_score:
+            original_score = score
+            result["score"] = expected_score
+            logger.warning(f"LLM Reviewer returned non-binary score. Correcting: valid={valid}, original_score={original_score:.2f}, corrected_score={expected_score:.1f}")
+
+        # Ensure score is exactly 1.0 or 0.0 (no floating point errors)
+        if result["score"] not in [0.0, 1.0]:
+            result["score"] = 1.0 if result["score"] > 0.5 else 0.0
+            logger.warning(f"Score was not exactly 0.0 or 1.0, rounded to {result['score']}")
 
     def _extract_available_fields(self, use_case, use_case_name: str) -> str:
         """
@@ -386,58 +450,80 @@ class LLMReviewer:
                 return "Available fields: (not available for this use case)"
 
             # Try to get ValidationCriteria from event class
-            if hasattr(event_class, "ValidationCriteria"):
-                validation_criteria = event_class.ValidationCriteria
-
-                # Get fields from ValidationCriteria
-                if hasattr(validation_criteria, "model_fields"):
-                    fields = list(validation_criteria.model_fields.keys())
-
-                    if fields:
-                        # Try to infer operators from field types
-                        field_info = []
-                        for field_name in fields:
-                            field_obj = validation_criteria.model_fields.get(field_name)
-                            if field_obj:
-                                # Get field type
-                                field_type = str(field_obj.annotation) if hasattr(field_obj, "annotation") else "unknown"
-
-                                # Infer operators based on type
-                                operators = self._infer_operators_from_type(field_type, field_name)
-
-                                field_info.append(f"  - {field_name}: {operators}")
-
-                        return "Available fields for this use case:\n" + "\n".join(field_info) + "\n"
+            fields_info = self._extract_fields_from_validation_criteria(event_class)
+            if fields_info:
+                return fields_info
 
             # Fallback: try to extract from event_source_code
             event_source = getattr(use_case, "event_source_code", "")
-            if event_source and "class ValidationCriteria" in event_source:
-                # Simple extraction of field names from source code
-                import re
-
-                criteria_section = event_source.split("class ValidationCriteria")[1].split("def _validate_criteria")[0]
-                field_matches = re.findall(r"(\w+):\s*(?:str|int|float|bool)", criteria_section)
-
-                if field_matches:
-                    # Remove duplicates and common base fields
-                    fields = [f for f in set(field_matches) if f not in ["event_name", "timestamp", "web_agent_id", "user_id"]]
-
-                    # Infer operators for each field
-                    field_info = []
-                    for field_name in fields:
-                        # Try to get type from source code
-                        type_match = re.search(rf"{field_name}:\s*(str|int|float|bool)", criteria_section)
-                        field_type = type_match.group(1) if type_match else "str"
-                        operators = self._infer_operators_from_type(field_type, field_name)
-                        field_info.append(f"  - {field_name}: {operators}")
-
-                    return "Available fields for this use case:\n" + "\n".join(field_info) + "\n"
+            fields_info = self._extract_fields_from_source_code(event_source)
+            if fields_info:
+                return fields_info
 
             return "Available fields: (could not extract from event)"
 
         except Exception as e:
             logger.debug(f"Could not extract available fields for {use_case_name}: {e}")
             return "Available fields: (extraction failed)"
+
+    def _extract_fields_from_validation_criteria(self, event_class: Any) -> str | None:
+        """Extract fields from ValidationCriteria.model_fields."""
+        if not hasattr(event_class, "ValidationCriteria"):
+            return None
+
+        validation_criteria = event_class.ValidationCriteria
+        if not hasattr(validation_criteria, "model_fields"):
+            return None
+
+        fields = list(validation_criteria.model_fields.keys())
+        if not fields:
+            return None
+
+        field_info = []
+        for field_name in fields:
+            field_obj = validation_criteria.model_fields.get(field_name)
+            if field_obj:
+                field_type = str(field_obj.annotation) if hasattr(field_obj, "annotation") else "unknown"
+                operators = self._infer_operators_from_type(field_type, field_name)
+                field_info.append(f"  - {field_name}: {operators}")
+
+        return "Available fields for this use case:\n" + "\n".join(field_info) + "\n"
+
+    def _extract_fields_from_source_code(self, event_source: str) -> str | None:
+        """Extract fields from event_source_code using regex (with security limits)."""
+        import re
+
+        if not event_source or "class ValidationCriteria" not in event_source:
+            return None
+
+        # Limit input size to prevent DoS (max 10KB for criteria section)
+        MAX_CRITERIA_SECTION_SIZE = 10000
+        criteria_section = event_source.split("class ValidationCriteria")[1].split("def _validate_criteria")[0]
+        if len(criteria_section) > MAX_CRITERIA_SECTION_SIZE:
+            logger.warning(f"Criteria section too large ({len(criteria_section)} chars), truncating to prevent DoS")
+            criteria_section = criteria_section[:MAX_CRITERIA_SECTION_SIZE]
+
+        # Use safer regex pattern - match word characters only (no special regex chars in field names)
+        field_matches = re.findall(r"(\w+):\s*(?:str|int|float|bool)", criteria_section)
+
+        if not field_matches:
+            return None
+
+        # Remove duplicates and common base fields
+        fields = [f for f in set(field_matches) if f not in ["event_name", "timestamp", "web_agent_id", "user_id"]]
+
+        # Infer operators for each field
+        field_info = []
+        for field_name in fields:
+            # Escape field_name to prevent regex injection, then use in pattern
+            # Since field_name comes from \w+ match, it's already safe, but we escape for extra safety
+            escaped_field_name = re.escape(field_name)
+            type_match = re.search(rf"{escaped_field_name}:\s*(str|int|float|bool)", criteria_section)
+            field_type = type_match.group(1) if type_match else "str"
+            operators = self._infer_operators_from_type(field_type, field_name)
+            field_info.append(f"  - {field_name}: {operators}")
+
+        return "Available fields for this use case:\n" + "\n".join(field_info) + "\n"
 
     def _infer_operators_from_type(self, field_type: str, field_name: str) -> str:
         """
@@ -453,26 +539,26 @@ class LLMReviewer:
         # List/array fields (like genres, amenities) - check first
         # Note: In ValidationCriteria, field might be 'genre' (singular) but in constraints it's 'genres' (plural)
         if "list" in field_type.lower() or any(x in field_name.lower() for x in ["genre", "amenity", "amenities", "tag", "categories", "skill"]):
-            return "[contains, not_contains, in_list, not_in_list]"
+            return self.LIST_OPERATORS
 
         # String fields
         if "str" in field_type.lower():
             # Check if it's a name/title field (usually equals/contains)
             if any(x in field_name.lower() for x in ["name", "title", "email", "username", "query", "subject", "message", "content", "body", "description", "director", "author", "cast"]):
-                return "[equals, not_equals, contains, not_contains]"
+                return self.STRING_OPERATORS
             # Generic string
-            return "[equals, not_equals, contains, not_contains]"
+            return self.STRING_OPERATORS
 
         # Numeric fields
         elif any(x in field_type.lower() for x in ["int", "float"]):
             # Check if it's a year/rating/count field
             if any(x in field_name.lower() for x in ["year", "rating", "price", "count", "duration", "quantity", "hour", "minute", "reviews", "bookings", "page"]):
-                return "[equals, not_equals, greater_than, less_than, greater_equal, less_equal]"
-            return "[equals, not_equals, greater_than, less_than, greater_equal, less_equal]"
+                return self.NUMERIC_OPERATORS
+            return self.NUMERIC_OPERATORS
 
         # Boolean fields
         elif "bool" in field_type.lower():
-            return "[equals, not_equals]"
+            return self.BOOLEAN_OPERATORS
 
         # Default
-        return "[equals, not_equals, contains, not_contains]"
+        return self.STRING_OPERATORS
