@@ -111,6 +111,25 @@ class WebVoyagerBenchmark:
             await self._update_judge_feedback_log(task, result)
         return result
 
+    @staticmethod
+    def _read_log_file_sync(log_file: Path) -> list[dict]:
+        """Synchronous helper to read log file (runs in thread pool)."""
+        entries = []
+        with log_file.open("r", encoding="utf-8") as f:
+            for line in f:
+                try:
+                    entries.append(json.loads(line.strip()))
+                except json.JSONDecodeError:
+                    logger.warning(f"Skipping invalid JSON line in {log_file}")
+        return entries
+
+    @staticmethod
+    def _write_log_file_sync(log_file: Path, entries: list[dict]) -> None:
+        """Synchronous helper to write log file (runs in thread pool)."""
+        with log_file.open("w", encoding="utf-8") as f:
+            for entry in entries:
+                f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
     async def _update_judge_feedback_log(self, task: Task, result: EvaluationResult):
         """Update the judge feedback log with evaluation feedback."""
         evaluation_feedback = result.feedback.model_dump()
@@ -123,21 +142,17 @@ class WebVoyagerBenchmark:
 
         task_prompt_hash = generate_hash(task.prompt)
         total_iterations = len(result.execution_history)
-        updated_entries = []
 
-        with log_file.open("r", encoding="utf-8") as f:
-            for line in f:
-                try:
-                    entry = json.loads(line.strip())
-                    if generate_hash(entry.get("task")) == task_prompt_hash and entry["total_iteration"] == total_iterations:
-                        entry["evaluation_feedback"] = evaluation_feedback
-                    updated_entries.append(entry)
-                except json.JSONDecodeError:
-                    logger.warning(f"Skipping invalid JSON line in {log_file}")
+        # Use asyncio.to_thread to run file I/O without blocking the event loop
+        updated_entries = await asyncio.to_thread(self._read_log_file_sync, log_file)
 
-        with log_file.open("w", encoding="utf-8") as f:
-            for entry in updated_entries:
-                f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+        # Update entries
+        for entry in updated_entries:
+            if generate_hash(entry.get("task")) == task_prompt_hash and entry["total_iteration"] == total_iterations:
+                entry["evaluation_feedback"] = evaluation_feedback
+
+        # Write back to file
+        await asyncio.to_thread(self._write_log_file_sync, log_file, updated_entries)
 
     # ------------------------------------------------------------------------
     # SOLUTION GENERATION
