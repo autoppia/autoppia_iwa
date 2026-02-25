@@ -35,21 +35,22 @@ class RealWebTaskConfig(BaseModel):
     task_indices: list = []
     num_of_urls: int = 1
 
-    def validate_payload(self):
-        errors = []
-        # Custom task mode: url and prompt must be non-empty
-        if self.url and self.prompt:
-            if not isinstance(self.url, str) or not self.url.strip():
-                errors.append("`url` must be a non-empty string.")
-            if not isinstance(self.prompt, str) or not self.prompt.strip():
-                errors.append("`prompt` must be a non-empty string.")
-        # Dataset selection mode: at least one of num_of_urls or task_indices must be set
-        else:
-            if (not self.num_of_urls or self.num_of_urls < 1) and not self.task_indices:
-                errors.append("Either `num_of_urls` must be >= 1 or `task_indices` must be a non-empty list.")
-            if self.task_indices and not all(isinstance(i, int) and i >= 0 for i in self.task_indices):
-                errors.append("All `task_indices` must be non-negative integers.")
+    def _validate_custom_task_mode(self, errors: list[str]) -> None:
+        """Validate custom task mode (url and prompt must be non-empty)."""
+        if not isinstance(self.url, str) or not self.url.strip():
+            errors.append("`url` must be a non-empty string.")
+        if not isinstance(self.prompt, str) or not self.prompt.strip():
+            errors.append("`prompt` must be a non-empty string.")
 
+    def _validate_dataset_selection_mode(self, errors: list[str]) -> None:
+        """Validate dataset selection mode (num_of_urls or task_indices must be set)."""
+        if (not self.num_of_urls or self.num_of_urls < 1) and not self.task_indices:
+            errors.append("Either `num_of_urls` must be >= 1 or `task_indices` must be a non-empty list.")
+        if self.task_indices and not all(isinstance(i, int) and i >= 0 for i in self.task_indices):
+            errors.append("All `task_indices` must be non-negative integers.")
+
+    def _validate_agent_config(self, errors: list[str]) -> None:
+        """Validate agent configuration parameters."""
         if not isinstance(self.agent_port, int) or self.agent_port <= 0:
             errors.append("`agent_port` must be a positive integer.")
         if not isinstance(self.agent_timeout, int) or self.agent_timeout <= 0:
@@ -57,11 +58,23 @@ class RealWebTaskConfig(BaseModel):
         if not isinstance(self.num_of_urls, int) or self.num_of_urls < 0:
             errors.append("`num_of_urls` must be a non-negative integer.")
 
+    def validate_payload(self):
+        """Validate the payload configuration."""
+        errors = []
+        # Custom task mode: url and prompt must be non-empty
+        if self.url and self.prompt:
+            self._validate_custom_task_mode(errors)
+        # Dataset selection mode: at least one of num_of_urls or task_indices must be set
+        else:
+            self._validate_dataset_selection_mode(errors)
+
+        self._validate_agent_config(errors)
+
         if errors:
             raise ValueError("Payload validation failed: " + "; ".join(errors))
 
 
-@app.post("/test-judge-agent")
+@app.post("/test-judge-agent", responses={500: {"description": "Internal server error - benchmark execution failed"}})
 async def run_real_web_task(config: RealWebTaskConfig):
     try:
         # Generate unique agent id and name
