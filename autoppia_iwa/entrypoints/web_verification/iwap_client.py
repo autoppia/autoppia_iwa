@@ -15,6 +15,10 @@ from loguru import logger
 class IWAPClient:
     """Client for querying IWAP service about successful task solutions"""
 
+    # Constants for repeated string literals (SonarCloud S1192)
+    MOCK_RESPONSE_GENERATED = "✓ Mock response generated!"
+    MOCK_MODE_ENABLED = "⚠️  Mock mode enabled, using mock response..."
+
     def __init__(self, base_url: str = "https://api-leaderboard.autoppia.com", api_key: str = "AIagent2025", timeout_seconds: float = 10.0, use_mock: bool = False):
         """
         Initialize IWAP client
@@ -63,37 +67,7 @@ class IWAPClient:
         base_url = "http://localhost:8004"  # Default demo webs URL
 
         # Try to get constraints from our tasks if available
-        mock_tests = []
-        mock_prompt = f"Perform {use_case_name.replace('_', ' ').lower()}"
-
-        if our_tasks and len(our_tasks) > 0:
-            first_task = our_tasks[0]
-            if first_task.use_case and first_task.use_case.constraints:
-                # Convert our constraints to API test format
-                criteria = {}
-                for constraint in first_task.use_case.constraints:
-                    field = constraint.get("field", "")
-                    operator = constraint.get("operator", "")
-                    value = constraint.get("value", "")
-
-                    # Handle Enum operators
-                    if hasattr(operator, "value"):
-                        operator = operator.value
-
-                    if field:
-                        if operator == "equals":
-                            criteria[field] = {"value": value}
-                        else:
-                            criteria[field] = {"value": value, "operator": operator}
-
-                mock_tests = [{"type": "CheckEventTest", "event_name": use_case_name, "event_criteria": criteria}]
-
-                # Use the prompt from our task
-                mock_prompt = first_task.prompt if hasattr(first_task, "prompt") else mock_prompt
-
-        # If no constraints found, use default
-        if not mock_tests:
-            mock_tests = [{"type": "CheckEventTest", "event_name": use_case_name, "event_criteria": {"status": {"value": "Active", "operator": "equals"}}}]
+        mock_tests, mock_prompt = self._extract_mock_tests_and_prompt(our_tasks, use_case_name)
 
         # Generate mock actions (sample solution)
         # mock_actions = [
@@ -198,6 +172,47 @@ class IWAPClient:
             "data": mock_data,
         }
 
+    def _extract_mock_tests_and_prompt(self, our_tasks: list[Any] | None, use_case_name: str) -> tuple[list[dict[str, Any]], str]:
+        """Extract mock tests and prompt from our tasks or use defaults."""
+        mock_prompt = f"Perform {use_case_name.replace('_', ' ').lower()}"
+
+        if not our_tasks or len(our_tasks) == 0:
+            return [{"type": "CheckEventTest", "event_name": use_case_name, "event_criteria": {"status": {"value": "Active", "operator": "equals"}}}], mock_prompt
+
+        first_task = our_tasks[0]
+        if not (first_task.use_case and first_task.use_case.constraints):
+            return [{"type": "CheckEventTest", "event_name": use_case_name, "event_criteria": {"status": {"value": "Active", "operator": "equals"}}}], mock_prompt
+
+        # Convert our constraints to API test format
+        criteria = self._convert_constraints_to_criteria(first_task.use_case.constraints)
+        mock_tests = [{"type": "CheckEventTest", "event_name": use_case_name, "event_criteria": criteria}]
+
+        # Use the prompt from our task
+        if hasattr(first_task, "prompt"):
+            mock_prompt = first_task.prompt
+
+        return mock_tests, mock_prompt
+
+    def _convert_constraints_to_criteria(self, constraints: list[dict[str, Any]]) -> dict[str, Any]:
+        """Convert our constraints to API criteria format."""
+        criteria = {}
+        for constraint in constraints:
+            field = constraint.get("field", "")
+            operator = constraint.get("operator", "")
+            value = constraint.get("value", "")
+
+            # Handle Enum operators
+            if hasattr(operator, "value"):
+                operator = operator.value
+
+            if field:
+                if operator == "equals":
+                    criteria[field] = {"value": value}
+                else:
+                    criteria[field] = {"value": value, "operator": operator}
+
+        return criteria
+
     async def get_tasks_with_solutions(
         self, project_id: str, use_case_name: str | None = None, page: int | None = None, limit: int | None = None, our_tasks: list[Any] | None = None
     ) -> dict[str, Any] | None:
@@ -219,18 +234,33 @@ class IWAPClient:
 
         # Use mock response if enabled
         if self.use_mock:
-            print("\n📡 IWAP API Request (MOCK MODE):")
-            print("   Using mock response for testing")
-            print(f"   Website: {website}")
-            print(f"   Use Case: {use_case_name}")
-            logger.info(f"Using mock IWAP API response for {website}/{use_case_name}")
-            mock_response = self._generate_mock_response(project_id, use_case_name or "", page or 1, limit or 20, our_tasks or [])
-            print("   ✓ Mock response generated!")
-            print(f"   Response: {len(mock_response.get('data', {}).get('tasks', []))} tasks returned")
-            return mock_response
+            return self._handle_mock_mode(project_id, use_case_name, website, page, limit, our_tasks)
 
         endpoint = f"{self.base_url}/api/v1/tasks/with-solutions"
+        params = self._build_api_params(website, use_case_name, page, limit)
 
+        try:
+            self._print_api_request_details(endpoint, website, use_case_name, page, limit)
+            return await self._make_api_request(endpoint, params, website, use_case_name, page, limit, project_id, our_tasks)
+        except aiohttp.ClientError as e:
+            return self._handle_client_error(e, website, use_case_name, project_id, page, limit, our_tasks)
+        except Exception as e:
+            return self._handle_unexpected_error(e, website, use_case_name, project_id, page, limit, our_tasks)
+
+    def _handle_mock_mode(self, project_id: str, use_case_name: str | None, website: str, page: int | None, limit: int | None, our_tasks: list[Any] | None) -> dict[str, Any]:
+        """Handle mock mode response."""
+        print("\n📡 IWAP API Request (MOCK MODE):")
+        print("   Using mock response for testing")
+        print(f"   Website: {website}")
+        print(f"   Use Case: {use_case_name}")
+        logger.info(f"Using mock IWAP API response for {website}/{use_case_name}")
+        mock_response = self._generate_mock_response(project_id, use_case_name or "", page or 1, limit or 20, our_tasks or [])
+        print(f"   {self.MOCK_RESPONSE_GENERATED}")
+        print(f"   Response: {len(mock_response.get('data', {}).get('tasks', []))} tasks returned")
+        return mock_response
+
+    def _build_api_params(self, website: str, use_case_name: str | None, page: int | None, limit: int | None) -> dict[str, Any]:
+        """Build API request parameters."""
         params = {
             "key": self.api_key,
             "website": website.lower() if website else None,
@@ -240,107 +270,136 @@ class IWAPClient:
             params["page"] = page
         if limit is not None:
             params["limit"] = limit
+        return params
 
-        try:
-            # Print API call details for debugging
-            print("\n📡 IWAP API Request:")
-            print(f"   URL: {endpoint}")
-            print("   Parameters:")
-            print(f"     - key: {self.api_key}")
-            print(f"     - website: {website}")
-            print(f"     - useCase: {use_case_name}")
-            if page is not None:
-                print(f"     - page: {page}")
-            if limit is not None:
-                print(f"     - limit: {limit}")
+    def _print_api_request_details(self, endpoint: str, website: str, use_case_name: str | None, page: int | None, limit: int | None) -> None:
+        """Print API request details for debugging."""
+        print("\n📡 IWAP API Request:")
+        print(f"   URL: {endpoint}")
+        print("   Parameters:")
+        print(f"     - key: {self.api_key}")
+        print(f"     - website: {website}")
+        print(f"     - useCase: {use_case_name}")
+        if page is not None:
+            print(f"     - page: {page}")
+        if limit is not None:
+            print(f"     - limit: {limit}")
 
-            async with aiohttp.ClientSession(timeout=self.timeout) as session:
-                logger.info(f"Querying IWAP API: {endpoint} with params: website={website}, useCase={use_case_name}, page={page}, limit={limit}")
+    async def _make_api_request(
+        self,
+        endpoint: str,
+        params: dict[str, Any],
+        website: str,
+        use_case_name: str | None,
+        page: int | None,
+        limit: int | None,
+        project_id: str,
+        our_tasks: list[Any] | None,
+    ) -> dict[str, Any]:
+        """Make the actual API request and handle response."""
+        async with aiohttp.ClientSession(timeout=self.timeout) as session:
+            logger.info(f"Querying IWAP API: {endpoint} with params: website={website}, useCase={use_case_name}, page={page}, limit={limit}")
 
-                print("   Making GET request...")
-                async with session.get(endpoint, params=params) as response:
-                    print(f"   Response Status: {response.status}")
+            print("   Making GET request...")
+            async with session.get(endpoint, params=params) as response:
+                print(f"   Response Status: {response.status}")
 
-                    if response.status == 200:
-                        data = await response.json()
-                        print("   ✓ API call successful!")
+                if response.status == 200:
+                    return await self._handle_successful_response(response, website, use_case_name, page, limit)
+                else:
+                    return await self._handle_error_response(response, website, use_case_name, project_id, page, limit, our_tasks)
 
-                        # Print summary of response
-                        if isinstance(data, dict):
-                            data = data.get("data", {})
-                            tasks = data.get("tasks", [])
-                            total = data.get("total", len(tasks))
-                            print(f"   Response: {len(tasks)} tasks returned (total: {total})")
-                        else:
-                            print(f"   Response: {type(data).__name__}")
+    async def _handle_successful_response(self, response: aiohttp.ClientResponse, website: str, use_case_name: str | None, page: int | None, limit: int | None) -> dict[str, Any]:
+        """Handle successful API response."""
+        data = await response.json()
+        print("   ✓ API call successful!")
 
-                        logger.info(f"IWAP API query successful for {website}/{use_case_name}")
-                        return {
-                            "success": True,
-                            "website": website,
-                            "use_case": use_case_name,
-                            "page": page,
-                            "limit": limit,
-                            "data": data,
-                        }
-                    else:
-                        # Improvement 4: Only use mock if explicitly enabled, otherwise show the actual error
-                        error_text = await response.text()
-                        print(f"   ✗ API call failed with status {response.status}")
-                        print(f"   Error: {error_text[:200]}")  # Print first 200 chars
+        # Print summary of response
+        if isinstance(data, dict):
+            data = data.get("data", {})
+            tasks = data.get("tasks", [])
+            total = data.get("total", len(tasks))
+            print(f"   Response: {len(tasks)} tasks returned (total: {total})")
+        else:
+            print(f"   Response: {type(data).__name__}")
 
-                        if self.use_mock:
-                            print("   ⚠️  Mock mode enabled, using mock response...")
-                            logger.warning(f"IWAP API returned status {response.status}: {error_text}. Using mock response (mock mode enabled).")
-                            mock_response = self._generate_mock_response(project_id, use_case_name or "", page or 1, limit or 20, our_tasks or [])
-                            print("   ✓ Mock response generated!")
-                            return mock_response
-                        else:
-                            # Return error response
-                            logger.error(f"IWAP API returned status {response.status}: {error_text}, returning error.")
-                            return {
-                                "success": False,
-                                "error": f"HTTP {response.status}: {error_text[:200]}",
-                                "status_code": response.status,
-                                "website": website,
-                                "use_case": use_case_name,
-                            }
+        logger.info(f"IWAP API query successful for {website}/{use_case_name}")
+        return {
+            "success": True,
+            "website": website,
+            "use_case": use_case_name,
+            "page": page,
+            "limit": limit,
+            "data": data,
+        }
 
-        except aiohttp.ClientError as e:
-            print(f"   ✗ Network/Client Error: {e}")
-            # Improvement 4: Only use mock if explicitly enabled
-            if self.use_mock:
-                print("   ⚠️  Mock mode enabled, using mock response...")
-                logger.warning(f"IWAP API request error: {e}. Using mock response (mock mode enabled).")
-                mock_response = self._generate_mock_response(project_id, use_case_name or "", page or 1, limit or 20, our_tasks or [])
-                print("   ✓ Mock response generated!")
-                return mock_response
-            else:
-                logger.error(f"IWAP API request error: {e}, returning error.")
-                return {
-                    "success": False,
-                    "error": f"Network/Client Error: {e!s}",
-                    "website": website,
-                    "use_case": use_case_name,
-                }
-        except Exception as e:
-            print(f"   ✗ Unexpected Error: {e}")
-            # Improvement 4: Only use mock if explicitly enabled
-            if self.use_mock:
-                print("   ⚠️  Mock mode enabled, using mock response...")
-                logger.warning(f"Error querying IWAP API: {e}. Using mock response (mock mode enabled).")
-                mock_response = self._generate_mock_response(project_id, use_case_name or "", page or 1, limit or 20, our_tasks or [])
-                print("   ✓ Mock response generated!")
-                return mock_response
-            else:
-                print("   ✗ Mock mode disabled. Returning error response.")
-                logger.error(f"Error querying IWAP API: {e}. Mock mode disabled, returning error.")
-                return {
-                    "success": False,
-                    "error": f"Unexpected Error: {e!s}",
-                    "website": website,
-                    "use_case": use_case_name,
-                }
+    async def _handle_error_response(
+        self,
+        response: aiohttp.ClientResponse,
+        website: str,
+        use_case_name: str | None,
+        project_id: str,
+        page: int | None,
+        limit: int | None,
+        our_tasks: list[Any] | None,
+    ) -> dict[str, Any]:
+        """Handle API error response."""
+        error_text = await response.text()
+        print(f"   ✗ API call failed with status {response.status}")
+        print(f"   Error: {error_text[:200]}")
+
+        if self.use_mock:
+            print(f"   {self.MOCK_MODE_ENABLED}")
+            logger.warning(f"IWAP API returned status {response.status}: {error_text}. Using mock response (mock mode enabled).")
+            mock_response = self._generate_mock_response(project_id, use_case_name or "", page or 1, limit or 20, our_tasks or [])
+            print(f"   {self.MOCK_RESPONSE_GENERATED}")
+            return mock_response
+        else:
+            logger.error(f"IWAP API returned status {response.status}: {error_text}, returning error.")
+            return {
+                "success": False,
+                "error": f"HTTP {response.status}: {error_text[:200]}",
+                "status_code": response.status,
+                "website": website,
+                "use_case": use_case_name,
+            }
+
+    def _handle_client_error(self, e: Exception, website: str, use_case_name: str | None, project_id: str, page: int | None, limit: int | None, our_tasks: list[Any] | None) -> dict[str, Any]:
+        """Handle client/network errors."""
+        print(f"   ✗ Network/Client Error: {e}")
+        if self.use_mock:
+            print(f"   {self.MOCK_MODE_ENABLED}")
+            logger.warning(f"IWAP API request error: {e}. Using mock response (mock mode enabled).")
+            mock_response = self._generate_mock_response(project_id, use_case_name or "", page or 1, limit or 20, our_tasks or [])
+            print(f"   {self.MOCK_RESPONSE_GENERATED}")
+            return mock_response
+        else:
+            logger.error(f"IWAP API request error: {e}, returning error.")
+            return {
+                "success": False,
+                "error": f"Network/Client Error: {e!s}",
+                "website": website,
+                "use_case": use_case_name,
+            }
+
+    def _handle_unexpected_error(self, e: Exception, website: str, use_case_name: str | None, project_id: str, page: int | None, limit: int | None, our_tasks: list[Any] | None) -> dict[str, Any]:
+        """Handle unexpected errors."""
+        print(f"   ✗ Unexpected Error: {e}")
+        if self.use_mock:
+            print(f"   {self.MOCK_MODE_ENABLED}")
+            logger.warning(f"Error querying IWAP API: {e}. Using mock response (mock mode enabled).")
+            mock_response = self._generate_mock_response(project_id, use_case_name or "", page or 1, limit or 20, our_tasks or [])
+            print(f"   {self.MOCK_RESPONSE_GENERATED}")
+            return mock_response
+        else:
+            print("   ✗ Mock mode disabled. Returning error response.")
+            logger.error(f"Error querying IWAP API: {e}. Mock mode disabled, returning error.")
+            return {
+                "success": False,
+                "error": f"Unexpected Error: {e!s}",
+                "website": website,
+                "use_case": use_case_name,
+            }
 
     def _normalize_string(self, s: str) -> str:
         """Normalize string for comparison (lowercase, strip whitespace)"""
@@ -357,122 +416,130 @@ class IWAPClient:
         Returns:
             True if any test matches our constraints, or if event_criteria exists but is empty (use case has no criteria)
         """
-        # Improvement 2: If no constraints on our side and API has empty event_criteria, consider it a match
-        if not our_constraints:
-            # Check if API tests have empty event_criteria (meaning use case has no criteria)
-            for test in api_tests:
-                if "event_criteria" in test:
-                    event_criteria = test.get("event_criteria", {}) or {}
-                    # If event_criteria exists but is empty, it means the use case has no criteria
-                    # This is valid - take the solution without comparing
-                    if not event_criteria or len(event_criteria) == 0:
-                        logger.info("API test has empty event_criteria (use case has no criteria). Accepting solution without comparison.")
-                        return True
+        # Check for empty event_criteria when we have no constraints
+        if not our_constraints and self._has_empty_event_criteria(api_tests):
+            return True
 
         if not api_tests or not our_constraints:
             return False
 
         # Convert our constraints to a comparable format
+        our_constraints_list = self._normalize_our_constraints(our_constraints)
 
-        # for manual testing
-        # our_constraints_list = [
-        #     {
-        #         "field": "item",
-        #         "operator": "not_contains",
-        #         "value": "patatas bravas"
-        #     },
-        #     {
-        #         "field": "price",
-        #         "operator": "less_than",
-        #         "value": 17.91
-        #     },
-        #     {
-        #         "field": "quantity",
-        #         "operator": "equals",
-        #         "value": 4
-        #     },
-        #     {
-        #         "field": "restaurant",
-        #         "operator": "not_contains",
-        #         "value": "sakura sushi"
-        #     },
-        #     {
-        #         "field": "preferences",
-        #         "operator": "in_list",
-        #         "value": ["low-carb", "seafood-free", "siy-free"]
-        #     }
-        # ]
+        # Check if any API test matches our constraints
+        for test in api_tests:
+            candidates = self._extract_test_candidates(test)
+            # Empty list signals empty event_criteria - accept
+            if candidates is None:
+                return True
+            if not candidates:
+                continue
+
+            if self._all_constraints_match(our_constraints_list, candidates):
+                return True
+
+        return False
+
+    def _has_empty_event_criteria(self, api_tests: list[dict[str, Any]]) -> bool:
+        """Check if API tests have empty event_criteria (meaning use case has no criteria)."""
+        for test in api_tests:
+            if "event_criteria" in test:
+                event_criteria = test.get("event_criteria", {}) or {}
+                if not event_criteria or len(event_criteria) == 0:
+                    logger.info("API test has empty event_criteria (use case has no criteria). Accepting solution without comparison.")
+                    return True
+        return False
+
+    def _normalize_our_constraints(self, our_constraints: list[dict[str, Any]]) -> list[dict[str, str]]:
+        """Convert our constraints to normalized format for comparison."""
         our_constraints_list = []
         for constraint in our_constraints:
             field = constraint.get("field", "")
             operator = constraint.get("operator", "")
             value = constraint.get("value", "")
+
             # Handle Enum operators
             if hasattr(operator, "value"):
                 operator = operator.value
+
             # Normalize for comparison
-            our_constraints_list.append({"field": field.lower().strip(), "operator": str(operator).lower().strip(), "value": str(value).lower().strip() if value is not None else ""})
+            our_constraints_list.append(
+                {
+                    "field": field.lower().strip(),
+                    "operator": str(operator).lower().strip(),
+                    "value": str(value).lower().strip() if value is not None else "",
+                }
+            )
+        return our_constraints_list
 
-        # Check if any API test matches our constraints
-        for test in api_tests:
-            candidates = []
+    def _extract_test_candidates(self, test: dict[str, Any]) -> list[dict[str, str]] | None:
+        """Extract normalized candidate tests from API test dictionary. Returns None if empty event_criteria found."""
+        candidates = []
 
-            # Direct test fields
-            test_field = test.get("field", "")
-            test_operator = test.get("operator", "")
-            test_value = test.get("value", "")
-            if test_field or test_operator or test_value:
-                candidates.append(
-                    {
-                        "field": test_field.lower().strip() if test_field else "",
-                        "operator": str(test_operator).lower().strip() if test_operator else "",
-                        "value": str(test_value).lower().strip() if test_value is not None else "",
-                    }
-                )
+        # Extract direct test fields
+        direct_candidate = self._extract_direct_test_fields(test)
+        if direct_candidate:
+            candidates.append(direct_candidate)
 
-            # Nested event criteria
-            if "event_criteria" in test:
-                criteria = test.get("event_criteria", {}) or {}
-                # Improvement 2: If event_criteria exists but is empty, accept solution without comparing
-                if not criteria or len(criteria) == 0:
-                    # Empty event_criteria means use case has no criteria - valid case
-                    logger.info("Test has empty event_criteria (use case has no criteria). Accepting as valid match.")
-                    return True
-                for field, rule in criteria.items():
-                    test_operator = rule.get("operator", "equals") if isinstance(rule, dict) else "equals"
-                    test_value = rule.get("value") if isinstance(rule, dict) else rule
-                    candidates.append(
-                        {
-                            "field": field.lower().strip() if field else "",
-                            "operator": str(test_operator).lower().strip() if test_operator else "",
-                            "value": str(test_value).lower().strip() if test_value is not None else "",
-                        }
-                    )
+        # Extract nested event criteria
+        event_criteria_result = self._extract_event_criteria_candidates(test)
+        if event_criteria_result is None:
+            return None  # Empty event_criteria found - signal to accept
+        candidates.extend(event_criteria_result)
 
-            # Compare all candidate tests against our constraints
-            # for normalized_test in candidates:
-            #     for our_constraint in our_constraints_list:
-            #         if normalized_test["field"] == our_constraint["field"] and normalized_test["operator"] == our_constraint["operator"] and normalized_test["value"] == our_constraint["value"]:
-            #             return True
-            # Compare all our_constraints against candidates (AND logic)
-            all_constraints_matched = True
+        return candidates
 
-            for our_constraint in our_constraints_list:
-                matched = False
+    def _extract_direct_test_fields(self, test: dict[str, Any]) -> dict[str, str] | None:
+        """Extract and normalize direct test fields from API test."""
+        test_field = test.get("field", "")
+        test_operator = test.get("operator", "")
+        test_value = test.get("value", "")
+        if not (test_field or test_operator or test_value):
+            return None
 
-                for normalized_test in candidates:
-                    if normalized_test["field"] == our_constraint["field"] and normalized_test["operator"] == our_constraint["operator"] and normalized_test["value"] == our_constraint["value"]:
-                        matched = True
-                        break
+        return {
+            "field": test_field.lower().strip() if test_field else "",
+            "operator": str(test_operator).lower().strip() if test_operator else "",
+            "value": str(test_value).lower().strip() if test_value is not None else "",
+        }
 
-                if not matched:
-                    all_constraints_matched = False
+    def _extract_event_criteria_candidates(self, test: dict[str, Any]) -> list[dict[str, str]] | None:
+        """Extract candidates from event_criteria. Returns None if empty event_criteria found."""
+        if "event_criteria" not in test:
+            return []
+
+        criteria = test.get("event_criteria", {}) or {}
+        # If event_criteria exists but is empty, accept solution without comparing
+        if not criteria or len(criteria) == 0:
+            logger.info("Test has empty event_criteria (use case has no criteria). Accepting as valid match.")
+            return None  # Signal to accept (handled by caller)
+
+        candidates = []
+        for field, rule in criteria.items():
+            test_operator = rule.get("operator", "equals") if isinstance(rule, dict) else "equals"
+            test_value = rule.get("value") if isinstance(rule, dict) else rule
+            candidates.append(
+                {
+                    "field": field.lower().strip() if field else "",
+                    "operator": str(test_operator).lower().strip() if test_operator else "",
+                    "value": str(test_value).lower().strip() if test_value is not None else "",
+                }
+            )
+        return candidates
+
+    def _all_constraints_match(self, our_constraints_list: list[dict[str, str]], candidates: list[dict[str, str]]) -> bool:
+        """Check if all our constraints match any candidate (AND logic)."""
+        for our_constraint in our_constraints_list:
+            matched = False
+            for normalized_test in candidates:
+                if normalized_test["field"] == our_constraint["field"] and normalized_test["operator"] == our_constraint["operator"] and normalized_test["value"] == our_constraint["value"]:
+                    matched = True
                     break
 
-            if all_constraints_matched:
-                return True
+            if not matched:
+                return False
 
-        return False
+        return True
 
     def _prompt_matches(self, api_prompt: str, our_prompt: str) -> bool:
         """
@@ -497,7 +564,7 @@ class IWAPClient:
         # Check if prompts are similar (simple heuristic)
         return normalized_api_prompt in normalized_our_prompt or normalized_our_prompt in normalized_api_prompt or normalized_api_prompt == normalized_our_prompt
 
-    def process_api_response_for_tasks(self, api_response: dict[str, Any], our_tasks: list[Any]) -> dict[str, Any]:
+    def process_api_response_for_tasks(self, api_response: dict[str, Any]) -> dict[str, Any]:
         """
         IWAP Use Case Doability Check
 
@@ -511,7 +578,6 @@ class IWAPClient:
 
         Args:
             api_response: Response from get_tasks_with_solutions
-            our_tasks: List of Task objects we generated (not used for matching, only for reference)
 
         Returns:
             Dictionary with doability check results:
@@ -595,7 +661,7 @@ class IWAPClient:
             "total_solutions_found": len(passed_tasks),
         }
 
-    async def check_use_case_doability(self, project_id: str, use_case_name: str, min_success_rate: float = 0.5) -> dict[str, Any]:
+    async def check_use_case_doability(self, project_id: str, use_case_name: str) -> dict[str, Any]:
         """
         Check if a use case is "doable" based on tasks with solutions from IWAP API
 
@@ -604,7 +670,6 @@ class IWAPClient:
         Args:
             project_id: The web project ID
             use_case_name: Name of the use case
-            min_success_rate: Minimum success rate to consider use case doable (not used in current implementation)
 
         Returns:
             Dictionary with doability assessment and API response
