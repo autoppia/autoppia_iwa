@@ -38,7 +38,7 @@ class PromptTestConfig:
     project_id: str
     use_case: str
     prompt_content: str
-    event_criteria: dict = None
+    event_criteria: dict | None = None
     agent_host: str = "127.0.0.1"
     agent_port: int = 5050
     agent_timeout: int = 180
@@ -61,13 +61,19 @@ def get_timestamp() -> str:
     return datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 
-async def save_file(path: Path, data: Any, is_binary: bool = False) -> None:
+def _write_file_sync(path: Path, data: Any, is_binary: bool = False) -> None:
+    """Synchronous helper function for file writing."""
     path.parent.mkdir(exist_ok=True, parents=True)
     with open(path, "wb" if is_binary else "w") as f:
         if is_binary:
             f.write(data)
         else:
             json.dump(data, f, indent=2)
+
+
+async def save_file(path: Path, data: Any, is_binary: bool = False) -> None:
+    """Save file asynchronously using thread pool to avoid blocking event loop."""
+    await asyncio.to_thread(_write_file_sync, path, data, is_binary)
     logger.info(f"Saved file: {path}")
 
 
@@ -75,7 +81,7 @@ async def save_gif(b64: str, path: Path) -> None:
     await save_file(path, base64.b64decode(b64), is_binary=True)
 
 
-async def generate_custom_task(project, use_case_name: str, prompt_content: str) -> Task | None:
+def generate_custom_task(project, use_case_name: str, prompt_content: str) -> Task | None:
     """Generate a task with custom prompt content."""
     use_case = next((uc for uc in project.use_cases if uc.name.lower() == use_case_name.lower()), None)
     if not use_case:
@@ -105,7 +111,7 @@ async def run_prompt_test():
         logger.error(f"Project '{CONFIG.project_id}' not found")
         return
 
-    task = await generate_custom_task(project, CONFIG.use_case, CONFIG.prompt_content)
+    task = generate_custom_task(project, CONFIG.use_case, CONFIG.prompt_content)
     if not task:
         logger.error("Failed to generate task")
         return
@@ -158,11 +164,13 @@ async def run_prompt_test():
 
         if eval_result:
             logger.info(f"Evaluation score: {eval_result.final_score}")
-            logger.info(f"Success: {'Yes' if eval_result.final_score == 1.0 else 'No'}")
+            # Usamos tolerancia (1e-9) en lugar de == porque los números flotantes pueden tener errores de precisión
+            is_success = abs(eval_result.final_score - 1.0) < 1e-9
+            logger.info(f"Success: {'Yes' if is_success else 'No'}")
             result_data.update(
                 {
                     "score": eval_result.final_score,
-                    "success": eval_result.final_score == 1.0,
+                    "success": is_success,
                 }
             )
             if eval_result.gif_recording and CONFIG.save_output:
