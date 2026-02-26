@@ -1,6 +1,6 @@
+import asyncio
 import json
 import re
-import time
 from typing import Any
 
 from dependency_injector.wiring import Provide
@@ -27,6 +27,10 @@ class GlobalTestGenerationPipeline:
       - Attaches them to the task
     """
 
+    # ============================================================================
+    # INITIALIZATION
+    # ============================================================================
+
     def __init__(
         self,
         web_project: WebProject,
@@ -40,6 +44,10 @@ class GlobalTestGenerationPipeline:
         self.max_retries = max_retries
         self.retry_delay = retry_delay
         self.truncate_html_chars = truncate_html_chars
+
+    # ============================================================================
+    # PUBLIC METHODS - TEST GENERATION
+    # ============================================================================
 
     async def add_tests_to_tasks(self, tasks: list[Task]) -> list[Task]:
         """
@@ -67,6 +75,10 @@ class GlobalTestGenerationPipeline:
                 continue
 
         return tasks
+
+    # ============================================================================
+    # TEST GENERATION HELPERS
+    # ============================================================================
 
     async def _generate_check_event_tests(self, task: Task) -> list[dict[str, Any]]:
         """
@@ -101,61 +113,84 @@ class GlobalTestGenerationPipeline:
                     return test_dicts
 
                 logger.warning(f"Attempt {attempt + 1}: Received empty or invalid test list for Task {task.id}. Retrying...")
-                time.sleep(self.retry_delay)
+                await asyncio.sleep(self.retry_delay)
             except Exception as e:
                 logger.warning(f"Attempt {attempt + 1} failed for Task {task.id}: {e!s}. Retrying...")
-                time.sleep(self.retry_delay)
+                await asyncio.sleep(self.retry_delay)
 
         # If we reach here, all attempts failed
         logger.error(f"All {self.max_retries} attempts to generate tests for Task {task.id} have failed.")
         return []
+
+    # ============================================================================
+    # LLM RESPONSE PARSING HELPERS
+    # ============================================================================
 
     def _parse_llm_response(self, response: Any) -> list[dict[str, Any]]:
         """
         Parse the LLM response as a JSON array of "CheckEventTest" definitions.
         Return a list of dictionaries if successful, otherwise an empty list.
         """
-        # If the LLM library already returns a Python list/dict, handle that:
         if isinstance(response, list):
             return self._validate_test_list(response)
 
         if isinstance(response, dict):
-            # Possibly a single test or a dict containing the array
-            if response.get("type") == "CheckEventTest":
-                return self._validate_test_list([response])
-            # Or search if there's a key containing the array
-            for value in response.values():
-                if isinstance(value, list):
-                    return self._validate_test_list(value)
-            return []
+            return self._parse_dict_response(response)
 
         if isinstance(response, str):
-            # Attempt JSON parsing
-            try:
-                data = json.loads(response.strip())
-                if isinstance(data, list):
-                    return self._validate_test_list(data)
-                elif isinstance(data, dict):
-                    if data.get("type") == "CheckEventTest":
-                        return self._validate_test_list([data])
-                    # Or check subfields
-                    for value in data.values():
-                        if isinstance(value, list):
-                            return self._validate_test_list(value)
-            except json.JSONDecodeError:
-                # Last-resort regex
-                match = re.search(r"\[\s*{.*}\s*\]", response, re.DOTALL)
-                if match:
-                    try:
-                        array_str = match.group(0)
-                        data = json.loads(array_str)
-                        return self._validate_test_list(data)
-                    except json.JSONDecodeError:
-                        pass
-            return []
+            return self._parse_string_response(response)
 
         logger.warning(f"Unexpected type for LLM response: {type(response)}")
         return []
+
+    def _parse_dict_response(self, response: dict[str, Any]) -> list[dict[str, Any]]:
+        """Parse a dictionary response from the LLM."""
+        if response.get("type") == "CheckEventTest":
+            return self._validate_test_list([response])
+
+        for value in response.values():
+            if isinstance(value, list):
+                return self._validate_test_list(value)
+        return []
+
+    def _parse_string_response(self, response: str) -> list[dict[str, Any]]:
+        """Parse a string response from the LLM."""
+        try:
+            data = json.loads(response.strip())
+            return self._parse_parsed_json_data(data)
+        except json.JSONDecodeError:
+            return self._parse_string_with_regex(response)
+
+    def _parse_parsed_json_data(self, data: Any) -> list[dict[str, Any]]:
+        """Parse already parsed JSON data."""
+        if isinstance(data, list):
+            return self._validate_test_list(data)
+
+        if isinstance(data, dict):
+            if data.get("type") == "CheckEventTest":
+                return self._validate_test_list([data])
+
+            for value in data.values():
+                if isinstance(value, list):
+                    return self._validate_test_list(value)
+
+        return []
+
+    def _parse_string_with_regex(self, response: str) -> list[dict[str, Any]]:
+        """Parse string response using regex as last resort."""
+        match = re.search(r"\[\s*{.*}\s*\]", response, re.DOTALL)
+        if match:
+            try:
+                array_str = match.group(0)
+                data = json.loads(array_str)
+                return self._validate_test_list(data)
+            except json.JSONDecodeError:
+                pass
+        return []
+
+    # ============================================================================
+    # TEST VALIDATION AND INSTANTIATION
+    # ============================================================================
 
     def _validate_test_list(self, test_list: list[Any]) -> list[dict[str, Any]]:
         """
