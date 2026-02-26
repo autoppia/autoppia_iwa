@@ -48,7 +48,7 @@ async def health() -> dict[str, str]:
     return {"status": "ok", "tasks": str(DATASET.size)}
 
 
-@app.post("/evaluate", response_model=EvaluateResponse)
+@app.post("/evaluate", responses={503: {"description": "Dataset not initialized yet"}, 400: {"description": "Invalid request parameters"}})
 async def evaluate(request: EvaluateRequest) -> EvaluateResponse:
     if DATASET.size == 0:
         raise HTTPException(status_code=503, detail="Dataset not initialized yet.")
