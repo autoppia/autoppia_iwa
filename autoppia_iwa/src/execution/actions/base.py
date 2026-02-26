@@ -31,16 +31,19 @@ class Selector(BaseModel):
 
     model_config = ConfigDict(use_enum_values=True)
 
-    def to_playwright_selector(self) -> str:
-        """
-        Converts the Selector model into a Playwright-compatible selector string.
+    def _format_id_selector(self) -> str:
+        """Format ID selector with sanitization."""
+        clean_value = self.value.lstrip("#")
+        return f"#{clean_value}"
 
-        Returns:
-            The selector string usable with Playwright's page methods.
+    def _format_class_selector(self) -> str:
+        """Format class selector handling multiple classes."""
+        classes = self.value.strip().split()
+        clean_classes = [cls.lstrip(".") for cls in classes]
+        return "".join(f".{cls}" for cls in clean_classes)
 
-        Raises:
-            ValueError: If the selector type is unsupported.
-        """
+    def _format_attribute_selector(self) -> str:
+        """Format attribute-based selector."""
         ATTRIBUTE_FORMATS = {
             "id": "#{value}",
             "class": ".{value}",  # Placeholder, handled specially below
@@ -57,46 +60,53 @@ class Selector(BaseModel):
             "title": "[title='{value}']",
         }
 
+        if self.attribute == "id":
+            return self._format_id_selector()
+        if self.attribute == "class":
+            return self._format_class_selector()
+        if self.attribute == "custom":
+            return self.value
+        if self.attribute in ATTRIBUTE_FORMATS:
+            return ATTRIBUTE_FORMATS[self.attribute].format(value=self.value)
+        return f"[{self.attribute}='{self.value}']"
+
+    def _format_text_selector(self) -> str:
+        """Format text selector with case sensitivity handling."""
+        options = "" if self.case_sensitive else "i"
+        quoted_value = repr(self.value)
+        return f"text={quoted_value}{' ' + options if options else ''}"
+
+    def _format_xpath_selector(self) -> str:
+        """Format XPath selector."""
+        value_stripped = self.value.strip()
+        if value_stripped.startswith("//") or value_stripped.startswith("(//"):
+            return f"xpath={self.value}"
+        return f"xpath=//{self.value}"
+
+    def to_playwright_selector(self) -> str:
+        """
+        Converts the Selector model into a Playwright-compatible selector string.
+
+        Returns:
+            The selector string usable with Playwright's page methods.
+
+        Raises:
+            ValueError: If the selector type is unsupported.
+        """
         selector_type = SelectorType(self.type)
 
         if selector_type == SelectorType.ATTRIBUTE_VALUE_SELECTOR:
             if not self.attribute:
                 raise ValueError("Attribute must be specified for ATTRIBUTE_VALUE_SELECTOR")
+            return self._format_attribute_selector()
 
-            if self.attribute == "id":
-                # Basic sanitization: remove leading '#' if present
-                clean_value = self.value.lstrip("#")
-                return f"#{clean_value}"
-            elif self.attribute == "class":
-                # Handle multiple classes by chaining '.class1.class2'
-                classes = self.value.strip().split()
-                # Basic sanitization: remove leading '.' if present
-                clean_classes = [cls.lstrip(".") for cls in classes]
-                return "".join(f".{cls}" for cls in clean_classes)
-            elif self.attribute == "custom":
-                return self.value
-            elif self.attribute in ATTRIBUTE_FORMATS:
-                # Use predefined formats for common attributes
-                return ATTRIBUTE_FORMATS[self.attribute].format(value=self.value)
-            else:
-                return f"[{self.attribute}='{self.value}']"
+        if selector_type == SelectorType.TAG_CONTAINS_SELECTOR:
+            return self._format_text_selector()
 
-        elif selector_type == SelectorType.TAG_CONTAINS_SELECTOR:
-            # Playwright's text selector: https://playwright.dev/docs/selectors#text-selector
-            # Handles case sensitivity via options
-            options = "" if self.case_sensitive else "i"  # 'i' for case-insensitive
-            # Ensure value containing quotes is handled correctly
-            quoted_value = repr(self.value)  # Uses appropriate quotes automatically
-            return f"text={quoted_value}{' ' + options if options else ''}"
+        if selector_type == SelectorType.XPATH_SELECTOR:
+            return self._format_xpath_selector()
 
-        elif selector_type == SelectorType.XPATH_SELECTOR:
-            # Prepend 'xpath=' if not already starting with '//' (common convention)
-            if self.value.strip().startswith("//") or self.value.strip().startswith("(//"):
-                return f"xpath={self.value}"
-            else:
-                return f"xpath=//{self.value}"
-        else:
-            raise ValueError(f"Unsupported selector type: {self.type}")
+        raise ValueError(f"Unsupported selector type: {self.type}")
 
 
 # ------------------------------------------------------

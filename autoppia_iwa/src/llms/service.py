@@ -20,7 +20,10 @@ class OpenAIService(ILLM):
 
     def __init__(self, config: LLMConfig, api_key: str):
         self.config = config
-        if OpenAI is None or AsyncOpenAI is None:  # pragma: no cover
+        # Check if optional dependencies are available
+        # This check handles the case where the optional 'openai' package is not installed
+        # SonarCloud may flag this as always false, but it's necessary for optional dependencies
+        if OpenAI is None or AsyncOpenAI is None:  # pragma: no cover  # NOSONAR
             raise RuntimeError("openai package is required for OpenAIService but is not installed.")
         self.sync_client = OpenAI(api_key=api_key)
         self.async_client = AsyncOpenAI(api_key=api_key)
@@ -154,7 +157,7 @@ class ChutesLLMService(ILLM):
             "temperature": temperature if temperature is not None else self.config.temperature,
         }
         system_prompt = None
-        for msg in list(messages):
+        for msg in messages:
             if msg["role"] == "system":
                 system_prompt = msg["content"]
                 payload["messages"].remove(msg)

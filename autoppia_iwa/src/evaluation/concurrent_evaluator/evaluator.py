@@ -41,6 +41,11 @@ EVALUATION_LEVEL_NAME = "EVALUATION"
 EVALUATION_LEVEL_NO = 25
 
 
+# ============================================================================
+# UTILITY FUNCTIONS
+# ============================================================================
+
+
 def _is_testing_mode() -> bool:
     return bool(SUBNET_TESTING)
 
@@ -90,6 +95,11 @@ def _log_evaluation_event(message: str, context: str = "GENERAL"):
         _log_evaluation_fallback(message if context == "GENERAL" else f"[{context}] {message}")
 
 
+# ============================================================================
+# URL VALIDATION HELPERS
+# ============================================================================
+
+
 def _url_hostname(url: str | None) -> str | None:
     if not url:
         return None
@@ -124,6 +134,401 @@ def _is_navigation_url_allowed(*, is_web_real: bool, task_url: str | None, candi
     if target_host != allowed_host:
         return False, f"NavigateAction to host '{target_host}' not allowed for task host '{allowed_host}'"
     return True, None
+
+
+# ============================================================================
+# EVALUATION RESULT BUILDERS
+# ============================================================================
+
+
+def _create_error_evaluation_result(web_agent_id: str, stats: EvaluationStats, test_results: list, evaluation_time: float = 0.0, gif_recording: str = "") -> EvaluationResult:
+    """Create an error evaluation result."""
+    return EvaluationResult(
+        web_agent_id=web_agent_id,
+        final_score=0,
+        raw_score=0,
+        test_results=test_results,
+        feedback=None,
+        execution_history=[],
+        evaluation_time=evaluation_time,
+        stats=stats,
+        gif_recording=gif_recording,
+    )
+
+
+def _create_no_actions_result(web_agent_id: str, stats: EvaluationStats, task: Task) -> EvaluationResult:
+    """Create evaluation result for no actions case."""
+    stats.had_errors = True
+    stats.error_message = "No actions provided"
+    stats.total_time = time.time() - stats.start_time
+    test_results = initialize_test_results(task)
+    return _create_error_evaluation_result(web_agent_id, stats, test_results, evaluation_time=0.1)
+
+
+# ============================================================================
+# NAVIGATION VALIDATION HELPERS
+# ============================================================================
+
+
+def _validate_navigation_actions(actions: list, task: Task, stats: EvaluationStats, web_agent_id: str) -> tuple[bool, EvaluationResult | None]:
+    """Validate NavigateAction URLs and return (is_valid, error_result)."""
+    try:
+        assigned_seed = extract_seed_from_url(task.url)
+    except Exception:
+        assigned_seed = None
+
+    for action in actions:
+        if not isinstance(action, NavigateAction):
+            continue
+        target_url = action.url
+        if not target_url:
+            continue
+
+        is_allowed, reason = _is_navigation_url_allowed(
+            is_web_real=bool(getattr(task, "is_web_real", False)),
+            task_url=task.url,
+            candidate_url=target_url,
+        )
+        if not is_allowed:
+            stats.total_time = time.time() - stats.start_time
+            stats.had_errors = False
+            stats.error_message = "NavigateAction target violates task domain constraints."
+            _log_evaluation_event(
+                f"NAVIGATE BLOCKED - {reason} | Skipping browser execution (expected host={_url_hostname(task.url)}, got={_url_hostname(target_url)})",
+                context=f"ACTION EXECUTION | agent={web_agent_id}",
+            )
+            test_results = initialize_test_results(task)
+            return False, _create_error_evaluation_result(web_agent_id, stats, test_results, evaluation_time=stats.total_time)
+
+        if assigned_seed is not None:
+            nav_seed = extract_seed_from_url(target_url)
+            if nav_seed is None or nav_seed != assigned_seed:
+                stats.total_time = time.time() - stats.start_time
+                stats.had_errors = False
+                stats.error_message = "Seed missing or mismatched in NavigateAction URL(s)."
+                _log_evaluation_event(
+                    f"SEED MISMATCH - Skipping browser execution (expected seed={assigned_seed}, received={nav_seed})",
+                    context=f"ACTION EXECUTION | agent={web_agent_id}",
+                )
+                test_results = initialize_test_results(task)
+                return False, _create_error_evaluation_result(web_agent_id, stats, test_results, evaluation_time=stats.total_time)
+
+    return True, None
+
+
+# ============================================================================
+# GIF CREATION HELPERS
+# ============================================================================
+
+
+def _create_evaluation_gif(execution_history: list, web_agent_id: str) -> str | None:
+    """Create GIF from execution history screenshots."""
+    all_screenshots = []
+    if execution_history:
+        all_screenshots.append(execution_history[0].browser_snapshot.screenshot_before)
+        for h in execution_history:
+            all_screenshots.append(h.browser_snapshot.screenshot_after)
+
+    if not all_screenshots:
+        _log_gif_creation("❌ GIF CREATION ERROR", web_agent_id=web_agent_id)
+        return None
+
+    evaluation_gif = make_gif_from_screenshots(all_screenshots)
+    if evaluation_gif:
+        _log_gif_creation("✅ GIF CREATION SUCCESS", web_agent_id=web_agent_id)
+    else:
+        _log_gif_creation("❌ GIF CREATION ERROR", web_agent_id=web_agent_id)
+    return evaluation_gif
+
+
+# ============================================================================
+# SCORE CALCULATION HELPERS
+# ============================================================================
+
+
+def _count_passed_tests(test_results: list, debug_mode: bool) -> int:
+    """Count number of passed tests."""
+    tests_passed_count = 0
+    for test_index, test_result in enumerate(test_results):
+        if debug_mode:
+            logger.debug(f"   - Test {test_index + 1}: {'✅ PASSED' if test_result.success else '❌ FAILED'}")
+        if test_result.success:
+            tests_passed_count += 1
+    return tests_passed_count
+
+
+def _calculate_raw_score(test_results: list, stats: EvaluationStats, debug_mode: bool) -> float:
+    """Calculate raw score from test results."""
+    if not test_results:
+        if debug_mode:
+            logger.warning("   ⚠️  No tests to evaluate (empty test results)")
+        return 0.0
+
+    num_tests = len(test_results)
+    stats.total_tests = num_tests
+
+    if debug_mode:
+        logger.debug(f"   - Number of tests: {num_tests}")
+
+    tests_passed_count = _count_passed_tests(test_results, debug_mode)
+    stats.tests_passed = tests_passed_count
+
+    if num_tests > 0:
+        raw_score = 1.0 if tests_passed_count > 0 else 0.0
+        if debug_mode:
+            logger.debug(f"   - Tests passed: {tests_passed_count}/{num_tests}")
+            logger.debug(f"   - Raw score (binary): {raw_score:.4f} (at least one test passed: {tests_passed_count > 0})")
+        return raw_score
+
+    return 0.0
+
+
+def _log_debug_backend_events(backend_events: list, debug_mode: bool) -> None:
+    """Log backend events in debug mode."""
+    if not debug_mode:
+        return
+    logger.debug("🔍 DEBUG - Backend Events Retrieved:")
+    logger.debug(f"   - Number of events: {len(backend_events) if backend_events else 0}")
+    if backend_events:
+        for idx, event in enumerate(backend_events, 1):
+            logger.debug(f"   - Event {idx}: {event.event_name if hasattr(event, 'event_name') else 'unknown'}")
+
+
+def _log_debug_test_results(test_results: list, debug_mode: bool) -> None:
+    """Log test results in debug mode."""
+    if not debug_mode:
+        return
+    logger.debug("🔍 DEBUG - Test Results:")
+    logger.debug(f"   - Number of tests: {len(test_results) if test_results else 0}")
+    logger.debug(f"   - Test results: {test_results}")
+
+
+def _log_debug_score_calculation(test_results: list | None, debug_mode: bool) -> None:
+    """Log score calculation details in debug mode."""
+    if not debug_mode:
+        return
+    logger.debug("🔍 DEBUG - Calculating Raw Score:")
+    logger.debug(f"   - test_results exists: {test_results is not None}")
+    logger.debug(f"   - test_results length: {len(test_results) if test_results else 0}")
+
+
+# ============================================================================
+# GROUPING HELPERS
+# ============================================================================
+
+
+def _group_solutions_by_hash(task_solutions: list[TaskSolution], enable_grouping: bool) -> dict[str, list[int]]:
+    """Group solutions by action hash."""
+    grouped_indices = defaultdict(list)
+    if enable_grouping:
+        for idx, solution in enumerate(task_solutions):
+            hash_key = hash_actions(solution.actions)
+            grouped_indices[hash_key].append(idx)
+    else:
+        for idx, solution in enumerate(task_solutions):
+            unique_hash = hash_actions(solution.actions) + f"_{idx}"
+            grouped_indices[unique_hash].append(idx)
+    return grouped_indices
+
+
+def _create_error_result_for_group(task: Task, sol: TaskSolution, error: Exception) -> EvaluationResult:
+    """Create error evaluation result for a solution in a group."""
+    error_stats = EvaluationStats(
+        web_agent_id=sol.web_agent_id or "unknown_agent",
+        task_id=task.id,
+        action_count=len(sol.actions),
+        start_time=time.time(),
+        had_errors=True,
+        error_message=str(error),
+    )
+    return _create_error_evaluation_result(
+        sol.web_agent_id or "unknown_agent",
+        error_stats,
+        initialize_test_results(task),
+        evaluation_time=0,
+    )
+
+
+# ============================================================================
+# BROWSER EXECUTION HELPERS
+# ============================================================================
+
+
+def _setup_network_debugging(page, debug_network: bool) -> dict[str, list[str]]:
+    """Setup network debugging handlers if enabled."""
+    network_log: dict[str, list[str]] = {"requests": [], "responses": []}
+    if not debug_network:
+        return network_log
+
+    def _on_request(req):
+        url = req.url
+        if "log-event" in url or ":8090" in url:
+            entry = f"{req.method} {url}"
+            network_log["requests"].append(entry)
+
+    def _on_response(res):
+        url = res.url
+        if "log-event" in url or ":8090" in url:
+            entry = f"{res.status} {url}"
+            network_log["responses"].append(entry)
+
+    page.on("request", _on_request)
+    page.on("response", _on_response)
+    return network_log
+
+
+def _create_browser_executor(
+    task: Task,
+    page,
+    backend_service: BackendDemoWebService,
+    dynamic_config,
+    web_project: WebProject,
+) -> PlaywrightBrowserExecutor | DynamicPlaywrightExecutor:
+    """Create appropriate browser executor based on configuration."""
+    browser_specifications = task.specifications or BrowserSpecification()
+    dynamic_enabled = dynamic_config.any_enabled() if dynamic_config else False
+
+    if dynamic_enabled:
+        try:
+            seed_value = extract_seed_from_url(task.url)
+        except Exception:
+            seed_value = None
+        return DynamicPlaywrightExecutor(
+            browser_specifications,
+            page,
+            backend_service,
+            dynamic_config=dynamic_config,
+            project_id=web_project.id,
+            seed=seed_value,
+        )
+    return PlaywrightBrowserExecutor(browser_specifications, page, backend_service)
+
+
+def _handle_action_failure(
+    consecutive_failures: int,
+    max_consecutive_failures: int,
+    action_index: int,
+    elapsed: float,
+    result: ActionExecutionResult,
+    web_agent_id: str,
+) -> tuple[int, str | None]:
+    """Handle action failure and check for early stop condition."""
+    consecutive_failures += 1
+    _log_action_execution(
+        f"❌ Action {action_index + 1} FAILED in {elapsed:.2f}s - Error: {getattr(result, 'error', 'unknown')} (Consecutive failures: {consecutive_failures}/{max_consecutive_failures})",
+        web_agent_id=web_agent_id,
+    )
+
+    if consecutive_failures >= max_consecutive_failures:
+        early_stop_reason = f"Task marked as failed after {consecutive_failures} consecutive action failures (limit: {max_consecutive_failures})"
+        _log_action_execution(f"🛑 Stopping execution: {early_stop_reason}", web_agent_id=web_agent_id)
+        return consecutive_failures, early_stop_reason
+
+    return consecutive_failures, None
+
+
+def _handle_action_exception(
+    consecutive_failures: int,
+    max_consecutive_failures: int,
+    action_index: int,
+    total_actions: int,
+    error: Exception,
+    web_agent_id: str,
+) -> tuple[int, str | None]:
+    """Handle exception during action execution."""
+    consecutive_failures += 1
+    _log_action_execution(
+        f"❌ Action {action_index + 1}/{total_actions} EXCEPTION: {error} (Consecutive failures: {consecutive_failures}/{max_consecutive_failures})",
+        web_agent_id=web_agent_id,
+    )
+
+    if consecutive_failures >= max_consecutive_failures:
+        early_stop_reason = f"Task marked as failed after {consecutive_failures} consecutive action failures (limit: {max_consecutive_failures})"
+        _log_action_execution(f"🛑 Stopping execution: {early_stop_reason}", web_agent_id=web_agent_id)
+        return consecutive_failures, early_stop_reason
+
+    return consecutive_failures, None
+
+
+async def _execute_single_action(
+    browser_executor: PlaywrightBrowserExecutor | DynamicPlaywrightExecutor,
+    action: BaseAction,
+    action_index: int,
+    total_actions: int,
+    web_agent_id: str,
+    is_web_real: bool,
+    should_record: bool,
+    max_consecutive_failures: int,
+    consecutive_failures: int,
+    action_type_timing: dict,
+) -> tuple[ActionExecutionResult | None, float, int, str | None]:
+    """Execute a single action and return result, elapsed time, updated consecutive failures, and stop reason."""
+    start_time_action = time.time()
+    try:
+        result = await browser_executor.execute_single_action(action, web_agent_id, iteration=action_index, is_web_real=is_web_real, should_record=should_record)
+        elapsed = time.time() - start_time_action
+
+        if result and not result.successfully_executed:
+            consecutive_failures, stop_reason = _handle_action_failure(consecutive_failures, max_consecutive_failures, action_index, elapsed, result, web_agent_id)
+            if stop_reason:
+                return result, elapsed, consecutive_failures, stop_reason
+        else:
+            consecutive_failures = 0
+
+        action_type_timing[action.type].append(elapsed)
+        return result, elapsed, consecutive_failures, None
+
+    except Exception as e:
+        elapsed = time.time() - start_time_action
+        consecutive_failures, stop_reason = _handle_action_exception(consecutive_failures, max_consecutive_failures, action_index, total_actions, e, web_agent_id)
+        return None, elapsed, consecutive_failures, stop_reason
+
+
+async def _execute_action_loop(
+    browser_executor: PlaywrightBrowserExecutor | DynamicPlaywrightExecutor,
+    actions: list[BaseAction],
+    web_agent_id: str,
+    is_web_real: bool,
+    should_record: bool,
+    task_delay: float,
+    max_consecutive_failures: int,
+    action_type_timing: dict,
+) -> tuple[list[ActionExecutionResult], list[float], str | None]:
+    """Execute all actions in a loop and track failures."""
+    action_execution_times: list[float] = []
+    action_results: list[ActionExecutionResult] = []
+    consecutive_failures = 0
+    early_stop_reason: str | None = None
+
+    _log_action_execution(f"🎬 Starting execution of {len(actions)} actions", web_agent_id=web_agent_id)
+
+    for i, action in enumerate(actions):
+        result, elapsed, consecutive_failures, stop_reason = await _execute_single_action(
+            browser_executor, action, i, len(actions), web_agent_id, is_web_real, should_record, max_consecutive_failures, consecutive_failures, action_type_timing
+        )
+
+        if result:
+            action_results.append(result)
+        action_execution_times.append(elapsed)
+
+        if stop_reason:
+            early_stop_reason = stop_reason
+            break
+
+        if i < len(actions) - 1 and task_delay > 0:
+            await asyncio.sleep(task_delay)
+
+    if early_stop_reason:
+        _log_action_execution(f"🏁 Finished executing {len(action_results)}/{len(actions)} actions (stopped early due to consecutive failures)", web_agent_id=web_agent_id)
+    else:
+        _log_action_execution(f"🏁 Finished executing {len(action_results)}/{len(actions)} actions", web_agent_id=web_agent_id)
+
+    return action_results, action_execution_times, early_stop_reason
+
+
+# ============================================================================
+# CONCURRENT EVALUATOR CLASS
+# ============================================================================
 
 
 class ConcurrentEvaluator(IEvaluator):
@@ -199,7 +604,6 @@ class ConcurrentEvaluator(IEvaluator):
         """
         Internal logic to evaluate a single TaskSolution.
         """
-
         actions = task_solution.actions
         web_agent_id = task_solution.web_agent_id or "unknown_agent"
         is_web_real = task.is_web_real
@@ -217,96 +621,22 @@ class ConcurrentEvaluator(IEvaluator):
 
         # If no actions, return an immediate error
         if not actions:
-            stats.had_errors = True
-            stats.error_message = "No actions provided"
-            stats.total_time = time.time() - stats.start_time
-            test_results = initialize_test_results(task)
-            return EvaluationResult(
-                web_agent_id=web_agent_id,
-                final_score=0,
-                raw_score=0,
-                test_results=test_results,
-                feedback=None,
-                execution_history=[],
-                evaluation_time=0.1,
-                stats=stats,
-                gif_recording="",
-            )
+            return _create_no_actions_result(web_agent_id, stats, task)
 
         # Validate NavigateAction target host and seed usage against task.url
-        try:
-            assigned_seed = extract_seed_from_url(task.url)
-        except Exception:
-            assigned_seed = None
-        for a in actions:
-            if not isinstance(a, NavigateAction):
-                continue
-            target_url = a.url
-            if not target_url:
-                continue
-
-            is_allowed, reason = _is_navigation_url_allowed(
-                is_web_real=bool(getattr(task, "is_web_real", False)),
-                task_url=task.url,
-                candidate_url=target_url,
-            )
-            if not is_allowed:
-                stats.total_time = time.time() - stats.start_time
-                stats.had_errors = False
-                stats.error_message = "NavigateAction target violates task domain constraints."
-                _log_evaluation_event(
-                    f"NAVIGATE BLOCKED - {reason} | Skipping browser execution (expected host={_url_hostname(task.url)}, got={_url_hostname(target_url)})",
-                    context=f"ACTION EXECUTION | agent={web_agent_id}",
-                )
-                test_results = initialize_test_results(task)
-                return EvaluationResult(
-                    web_agent_id=web_agent_id,
-                    final_score=0,
-                    raw_score=0,
-                    test_results=test_results,
-                    feedback=None,
-                    execution_history=[],
-                    evaluation_time=stats.total_time,
-                    stats=stats,
-                    gif_recording="",
-                )
-
-            if assigned_seed is not None:
-                nav_seed = extract_seed_from_url(target_url)
-                if nav_seed is None or nav_seed != assigned_seed:
-                    stats.total_time = time.time() - stats.start_time
-                    stats.had_errors = False
-                    stats.error_message = "Seed missing or mismatched in NavigateAction URL(s)."
-                    _log_evaluation_event(
-                        f"SEED MISMATCH - Skipping browser execution (expected seed={assigned_seed}, received={nav_seed})",
-                        context=f"ACTION EXECUTION | agent={web_agent_id}",
-                    )
-                    test_results = initialize_test_results(task)
-                    return EvaluationResult(
-                        web_agent_id=web_agent_id,
-                        final_score=0,
-                        raw_score=0,
-                        test_results=test_results,
-                        feedback=None,
-                        execution_history=[],
-                        evaluation_time=stats.total_time,
-                        stats=stats,
-                        gif_recording="",
-                    )
+        is_valid, error_result = _validate_navigation_actions(actions, task, stats, web_agent_id)
+        if not is_valid:
+            return error_result
 
         _log_evaluation_event("Executing actions in browser", context=f"ACTION EXECUTION | agent={web_agent_id}")
         evaluation_gif = ""
         try:
-            # If simulated, reset the DB first
             browser_setup_start = time.time()
-
-            # Start browser usage
             browser_execution_start = time.time()
             stats.browser_setup_time = browser_execution_start - browser_setup_start
 
             execution_history, action_execution_times, early_stop_reason = await self._evaluate_in_browser(task, web_agent_id, actions, is_web_real)
 
-            # If execution stopped early due to consecutive failures, mark task as failed
             task_failed_due_to_consecutive_failures = False
             if early_stop_reason:
                 stats.had_errors = True
@@ -316,104 +646,39 @@ class ConcurrentEvaluator(IEvaluator):
 
             if self.config.should_record_gif:
                 _log_gif_creation("🎬 GIF ENABLED", web_agent_id=web_agent_id)
-                all_screenshots = []
-                if execution_history:
-                    all_screenshots.append(execution_history[0].browser_snapshot.screenshot_before)
-
-                    for h in execution_history:
-                        all_screenshots.append(h.browser_snapshot.screenshot_after)
-
-                if all_screenshots:
-                    evaluation_gif = make_gif_from_screenshots(all_screenshots)
-                    if evaluation_gif:
-                        _log_gif_creation("✅ GIF CREATION SUCCESS", web_agent_id=web_agent_id)
-                    else:
-                        _log_gif_creation("❌ GIF CREATION ERROR", web_agent_id=web_agent_id)
-                        evaluation_gif = None
-                else:
-                    _log_gif_creation("❌ GIF CREATION ERROR", web_agent_id=web_agent_id)
-                    evaluation_gif = None
+                evaluation_gif = _create_evaluation_gif(execution_history, web_agent_id)
             else:
                 _log_evaluation_event("📷 GIF Recording disabled (should_record_gif=False)", context="GIF")
 
             stats.action_execution_times = action_execution_times
 
-            # Run tests
             test_start_time = time.time()
             backend_events = await self.backend_demo_webs_service.get_backend_events(web_agent_id)
-
-            # 🔍 DEBUG: Log backend events (simplified)
-            if self.config.debug_mode:
-                logger.debug("🔍 DEBUG - Backend Events Retrieved:")
-                logger.debug(f"   - Number of events: {len(backend_events) if backend_events else 0}")
-                if backend_events:
-                    for idx, event in enumerate(backend_events, 1):
-                        logger.debug(f"   - Event {idx}: {event.event_name if hasattr(event, 'event_name') else 'unknown'}")
+            _log_debug_backend_events(backend_events, self.config.debug_mode)
 
             test_results = await run_global_tests(task, backend_events=backend_events, web_agent_id=web_agent_id)
-
-            # 🔍 DEBUG: Log test results (simplified)
-            if self.config.debug_mode:
-                logger.debug("🔍 DEBUG - Test Results:")
-                logger.debug(f"   - Number of tests: {len(test_results) if test_results else 0}")
-                logger.debug(f"   - Test results: {test_results}")
+            _log_debug_test_results(test_results, self.config.debug_mode)
 
             stats.test_execution_time = time.time() - test_start_time
 
-            # Calculate raw score (# tests passed / total tests)
-            raw_score = 0.0
-            tests_passed_count = 0
-            num_tests = 0
-
-            # 🔍 DEBUG: Log test calculation details (simplified)
-            if self.config.debug_mode:
-                logger.debug("🔍 DEBUG - Calculating Raw Score:")
-                logger.debug(f"   - test_results exists: {test_results is not None}")
-                logger.debug(f"   - test_results length: {len(test_results) if test_results else 0}")
-
-            if test_results:
-                num_tests = len(test_results)
-                stats.total_tests = num_tests
-
-                if self.config.debug_mode:
-                    logger.debug(f"   - Number of tests: {num_tests}")
-
-                for test_index, test_result in enumerate(test_results):
-                    if self.config.debug_mode:
-                        logger.debug(f"   - Test {test_index + 1}: {'✅ PASSED' if test_result.success else '❌ FAILED'}")
-                    if test_result.success:
-                        tests_passed_count += 1
-
-                if num_tests > 0:
-                    # Binary score: 1.0 if AT LEAST ONE test passed, 0.0 otherwise
-                    raw_score = 1.0 if tests_passed_count > 0 else 0.0
-                    if self.config.debug_mode:
-                        logger.debug(f"   - Tests passed: {tests_passed_count}/{num_tests}")
-                        logger.debug(f"   - Raw score (binary): {raw_score:.4f} (at least one test passed: {tests_passed_count > 0})")
-            else:
-                if self.config.debug_mode:
-                    logger.warning("   ⚠️  No tests to evaluate (empty test results)")
-
-            stats.tests_passed = tests_passed_count
+            _log_debug_score_calculation(test_results, self.config.debug_mode)
+            raw_score = _calculate_raw_score(test_results, stats, self.config.debug_mode)
             stats.raw_score = raw_score
 
-            # If task failed due to consecutive action failures, set score to 0.0
             if task_failed_due_to_consecutive_failures:
                 final_score = 0.0
                 stats.raw_score = 0.0
             else:
-                # Adjust final score relative to random clicker
                 final_score = raw_score
 
             stats.final_score = final_score
             stats.total_time = time.time() - stats.start_time
 
-            # Generate feedback
             feedback = generate_feedback(task, execution_history, test_results)
 
             return EvaluationResult(
                 web_agent_id=web_agent_id,
-                final_score=final_score,  # Use actual score, don't artificially boost to 1.0
+                final_score=final_score,
                 raw_score=raw_score,
                 test_results=test_results,
                 feedback=feedback,
@@ -427,39 +692,19 @@ class ConcurrentEvaluator(IEvaluator):
             stats.had_errors = True
             stats.error_message = str(e)
             stats.total_time = time.time() - stats.start_time
-
-            return EvaluationResult(
-                web_agent_id=web_agent_id,
-                final_score=0,
-                raw_score=0,
-                test_results=initialize_test_results(task),
-                feedback=None,
-                execution_history=[],
-                evaluation_time=0,
-                stats=stats,
-                gif_recording=evaluation_gif,
-            )
+            test_results = initialize_test_results(task)
+            return _create_error_evaluation_result(web_agent_id, stats, test_results, evaluation_time=0, gif_recording=evaluation_gif)
 
     async def _group_and_evaluate_task_solutions(self, task: Task, task_solutions: list[TaskSolution]) -> list[EvaluationResult]:
         """
         Groups identical solutions by hashing their actions, evaluates them, and clones results.
         """
         start_time = time.time()
-        # We create a final array of results aligned with the original list
         final_results: list[EvaluationResult | None] = [None] * len(task_solutions)
 
-        # Group according to HASH of actions
-        grouped_indices = defaultdict(list)
-        if self.config.enable_grouping_tasks:
-            for idx, solution in enumerate(task_solutions):
-                hash_key = hash_actions(solution.actions)
-                grouped_indices[hash_key].append(idx)
-            if self.config.verbose_logging:
-                _log_evaluation_event(f"Grouped {len(task_solutions)} solutions into {len(grouped_indices)} groups", context="GROUPING")
-        else:
-            for idx, solution in enumerate(task_solutions):
-                unique_hash = hash_actions(solution.actions) + f"_{idx}"
-                grouped_indices[unique_hash].append(idx)
+        grouped_indices = _group_solutions_by_hash(task_solutions, self.config.enable_grouping_tasks)
+        if self.config.verbose_logging and self.config.enable_grouping_tasks:
+            _log_evaluation_event(f"Grouped {len(task_solutions)} solutions into {len(grouped_indices)} groups", context="GROUPING")
 
         for key, g_indices in grouped_indices.items():
             _log_evaluation_event(
@@ -467,7 +712,6 @@ class ConcurrentEvaluator(IEvaluator):
                 context="GROUPING TASK SOLUTIONS",
             )
 
-        # Shuffle grouped tasks for random evaluation order
         grouped_task_list = list(grouped_indices.values())
         # random.shuffle(grouped_task_list)
 
@@ -539,29 +783,9 @@ class ConcurrentEvaluator(IEvaluator):
             except Exception as e:
                 logger.error(f"Error evaluating group actions: {e}")
                 self.errors.append(str(e))
-                # Return error in final_results for each solution
                 for idx in group_indices:
                     sol = task_solutions[idx]
-                    error_stats = EvaluationStats(
-                        web_agent_id=sol.web_agent_id or "unknown_agent",
-                        task_id=task.id,
-                        action_count=len(sol.actions),
-                        start_time=time.time(),
-                        had_errors=True,
-                        error_message=str(e),
-                    )
-                    error_result = EvaluationResult(
-                        web_agent_id=sol.web_agent_id or "unknown_agent",
-                        final_score=0,
-                        raw_score=0,
-                        test_results=initialize_test_results(task),
-                        feedback=None,
-                        execution_history=[],
-                        evaluation_time=0,
-                        stats=error_stats,
-                        gif_recording="",
-                    )
-                    final_results[idx] = error_result
+                    final_results[idx] = _create_error_result_for_group(task, sol, e)
 
     async def _evaluate_in_browser(self, task: Task, web_agent_id: str, actions: list[BaseAction], is_web_real: bool) -> tuple[list[ActionExecutionResult], list[float], str | None]:
         """
@@ -573,9 +797,7 @@ class ConcurrentEvaluator(IEvaluator):
         """
         action_execution_times: list[float] = []
         action_results: list[ActionExecutionResult] = []
-        consecutive_failures = 0
         max_consecutive_failures = self.config.max_consecutive_action_failures
-        early_stop_reason: str | None = None
 
         async with async_playwright() as playwright:
             browser, context = None, None
@@ -591,94 +813,27 @@ class ConcurrentEvaluator(IEvaluator):
                 context.set_default_timeout(self.config.browser_timeout)
                 page = await context.new_page()
 
-                # Optional network debugging for log-event and webs_server traffic
                 debug_network = os.getenv("IWA_DEBUG_NETWORK", "").lower() in ("1", "true", "yes")
-                network_log: dict[str, list[str]] = {"requests": [], "responses": []}
+                _setup_network_debugging(page, debug_network)
 
-                if debug_network:
+                browser_executor = _create_browser_executor(
+                    task,
+                    page,
+                    self.backend_demo_webs_service,
+                    self.config.dynamic_phase_config,
+                    self.web_project,
+                )
 
-                    def _on_request(req):
-                        url = req.url
-                        if "log-event" in url or ":8090" in url:
-                            entry = f"{req.method} {url}"
-                            network_log["requests"].append(entry)
-
-                    def _on_response(res):
-                        url = res.url
-                        if "log-event" in url or ":8090" in url:
-                            entry = f"{res.status} {url}"
-                            network_log["responses"].append(entry)
-
-                    page.on("request", _on_request)
-                    page.on("response", _on_response)
-
-                dynamic_config = self.config.dynamic_phase_config
-                dynamic_enabled = dynamic_config.any_enabled() if dynamic_config else False
-                if dynamic_enabled:
-                    try:
-                        seed_value = extract_seed_from_url(task.url)
-                    except Exception:
-                        seed_value = None
-                    browser_executor = DynamicPlaywrightExecutor(
-                        browser_specifications,
-                        page,
-                        self.backend_demo_webs_service,
-                        dynamic_config=dynamic_config,
-                        project_id=self.web_project.id,
-                        seed=seed_value,
-                    )
-                else:
-                    browser_executor = PlaywrightBrowserExecutor(browser_specifications, page, self.backend_demo_webs_service)
-
-                _log_action_execution(f"🎬 Starting execution of {len(actions)} actions", web_agent_id=web_agent_id)
-
-                for i, action in enumerate(actions):
-                    start_time_action = time.time()
-                    try:
-                        result = await browser_executor.execute_single_action(action, web_agent_id, iteration=i, is_web_real=is_web_real, should_record=self.config.should_record_gif)
-                        action_results.append(result)
-                        elapsed = time.time() - start_time_action
-                        action_execution_times.append(elapsed)
-
-                        # Track consecutive failures
-                        if result and not result.successfully_executed:
-                            consecutive_failures += 1
-                            _log_action_execution(
-                                f"❌ Action {i + 1} FAILED in {elapsed:.2f}s - Error: {getattr(result, 'error', 'unknown')} (Consecutive failures: {consecutive_failures}/{max_consecutive_failures})",
-                                web_agent_id=web_agent_id,
-                            )
-
-                            # Check if we've reached the maximum consecutive failures
-                            if consecutive_failures >= max_consecutive_failures:
-                                early_stop_reason = f"Task marked as failed after {consecutive_failures} consecutive action failures (limit: {max_consecutive_failures})"
-                                _log_action_execution(f"🛑 Stopping execution: {early_stop_reason}", web_agent_id=web_agent_id)
-                                break
-                        else:
-                            # Reset counter on success
-                            consecutive_failures = 0
-
-                        self.action_type_timing[action.type].append(elapsed)
-
-                        # Optional pause between actions
-                        if i < len(actions) - 1 and self.config.task_delay_in_seconds > 0:
-                            await asyncio.sleep(self.config.task_delay_in_seconds)
-
-                    except Exception as e:
-                        consecutive_failures += 1
-                        _log_action_execution(f"❌ Action {i + 1}/{len(actions)} EXCEPTION: {e} (Consecutive failures: {consecutive_failures}/{max_consecutive_failures})", web_agent_id=web_agent_id)
-                        elapsed = time.time() - start_time_action
-                        action_execution_times.append(elapsed)
-
-                        # Check if exception counts as reaching the limit
-                        if consecutive_failures >= max_consecutive_failures:
-                            early_stop_reason = f"Task marked as failed after {consecutive_failures} consecutive action failures (limit: {max_consecutive_failures})"
-                            _log_action_execution(f"🛑 Stopping execution: {early_stop_reason}", web_agent_id=web_agent_id)
-                            break
-
-                if early_stop_reason:
-                    _log_action_execution(f"🏁 Finished executing {len(action_results)}/{len(actions)} actions (stopped early due to consecutive failures)", web_agent_id=web_agent_id)
-                else:
-                    _log_action_execution(f"🏁 Finished executing {len(action_results)}/{len(actions)} actions", web_agent_id=web_agent_id)
+                action_results, action_execution_times, early_stop_reason = await _execute_action_loop(
+                    browser_executor,
+                    actions,
+                    web_agent_id,
+                    is_web_real,
+                    self.config.should_record_gif,
+                    self.config.task_delay_in_seconds,
+                    max_consecutive_failures,
+                    self.action_type_timing,
+                )
 
                 return action_results, action_execution_times, early_stop_reason
 

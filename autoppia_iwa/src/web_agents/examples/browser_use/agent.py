@@ -73,7 +73,9 @@ class BrowserUseWebAgent(BaseAgent):
             )
         except asyncio.CancelledError:
             logger.warning("Task was cancelled.")
-            return TaskSolution(task_id=task.id, actions=[], web_agent_id=self.id)
+            self._current_task = None
+            await self._cleanup_resources()
+            raise
         except Exception as e:
             logger.error(f"Failed to solve task {task.id}: {e}")
             logger.debug(traceback.format_exc())
@@ -84,7 +86,7 @@ class BrowserUseWebAgent(BaseAgent):
 
     async def execute_browser_use_agent(self, task: Task) -> AgentHistoryList | None:
         """Executes the browser agent and returns the history of actions taken."""
-        vps = dict(width=task.specifications.screen_width, height=task.specifications.screen_height)
+        vps = {"width": task.specifications.screen_width, "height": task.specifications.screen_height}
         self._context = Browser(
             headless=self.isheadless,
             viewport=vps,

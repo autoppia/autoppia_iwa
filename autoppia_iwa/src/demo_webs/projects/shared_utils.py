@@ -6,6 +6,10 @@ from loguru import logger
 
 from .criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 
+# ============================================================================
+# CONSTRAINT VALIDATION FUNCTIONS
+# ============================================================================
+
 
 def constraints_exist_in_db(data: list[dict], constraints: list[dict]) -> bool:
     """
@@ -34,6 +38,11 @@ def item_matches_all_constraints(item: dict, constraints: list[dict]) -> bool:
     return True
 
 
+# ============================================================================
+# DATA PARSING FUNCTIONS
+# ============================================================================
+
+
 def parse_price(price_raw: Any) -> float | None:
     """
     Helper function to parse price data, handling strings with currency symbols
@@ -57,9 +66,19 @@ def parse_price(price_raw: Any) -> float | None:
         return None
 
 
+# ============================================================================
+# CONSTRAINT CREATION FUNCTIONS
+# ============================================================================
+
+
 def create_constraint_dict(field: str, operator: ComparisonOperator, value: Any) -> dict[str, Any]:
     """Creates a single constraint dictionary in the list[dict] format."""
     return {"field": field, "operator": operator, "value": value}
+
+
+# ============================================================================
+# MOCK DATA GENERATION FUNCTIONS
+# ============================================================================
 
 
 def generate_mock_dates():
@@ -74,7 +93,7 @@ def generate_mock_dates():
         future_date = today + datetime.timedelta(days=i)
         mock_dates_raw.append(future_date.replace(hour=19, minute=0, second=0, microsecond=0))
 
-    return sorted(list(set(mock_dates_raw)))
+    return sorted({*mock_dates_raw})
 
 
 def generate_mock_date_strings(dates: list):
@@ -85,7 +104,12 @@ def generate_mock_date_strings(dates: list):
     for d in dates:
         if isinstance(d, datetime.datetime | datetime.date):
             date_strings.append(d.strftime("%b %d"))
-    return sorted(list(set(date_strings)))
+    return sorted({*date_strings})
+
+
+# ============================================================================
+# DATETIME PARSING FUNCTIONS
+# ============================================================================
 
 
 def parse_datetime(value: str | None) -> datetime.datetime | None:
@@ -112,17 +136,32 @@ def parse_datetime(value: str | None) -> datetime.datetime | None:
         return None
 
 
-def validate_date_field(field_value, criterion):
-    """
-    Validates a date field against a criterion, independent of any class context.
-    Handles ComparisonOperator and CriterionValue, and supports string, date, and datetime inputs.
-    Returns True if the field matches the criterion, False otherwise.
-    """
+# ============================================================================
+# DATE FIELD VALIDATION HELPERS
+# ============================================================================
+
+
+def _to_date(val):
+    """Convert value to date object."""
     from datetime import date, datetime
 
-    from .criterion_helper import ComparisonOperator, CriterionValue
+    if isinstance(val, str):
+        try:
+            return datetime.fromisoformat(val).date() if "T" in val else date.fromisoformat(val)
+        except Exception:
+            return None
+    if isinstance(val, datetime):
+        return val.date()
+    if isinstance(val, date):
+        return val
+    return None
 
-    comp_table = {
+
+def _get_date_comparison_table():
+    """Get comparison table for date operations."""
+    from .criterion_helper import ComparisonOperator
+
+    return {
         ComparisonOperator.EQUALS: lambda s, c: s == c,
         ComparisonOperator.NOT_EQUALS: lambda s, c: s != c,
         ComparisonOperator.GREATER_THAN: lambda s, c: s > c,
@@ -131,44 +170,157 @@ def validate_date_field(field_value, criterion):
         ComparisonOperator.LESS_EQUAL: lambda s, c: s <= c,
     }
 
-    def to_date(val):
-        if isinstance(val, str):
-            try:
-                return datetime.fromisoformat(val).date() if "T" in val else date.fromisoformat(val)
-            except Exception:
-                return None
-        elif isinstance(val, datetime):
-            return val.date()
-        elif isinstance(val, date):
-            return val
-        return None
+
+def _validate_criterion_value_date(criterion: CriterionValue, field_value) -> bool:
+    """Validate date field with CriterionValue."""
+
+    comp_table = _get_date_comparison_table()
+    op = criterion.operator
+    comp_date = _to_date(criterion.value)
+    field_date = _to_date(field_value)
+
+    if comp_date is None or field_date is None:
+        return False
+
+    try:
+        return comp_table[op](field_date, comp_date)
+    except KeyError:
+        logger.error("Unknown comparison operator for date field: %s", op)
+        return False
+    except Exception as e:
+        logger.error(f"Error validating date field: {e}")
+        return False
+
+
+def _validate_datetime_datetime(criterion, field_value) -> bool:
+    """Validate datetime against datetime criterion."""
+
+    from .criterion_helper import ComparisonOperator
+
+    comp_table = _get_date_comparison_table()
+
+    if (field_value.tzinfo is not None) != (criterion.tzinfo is not None):
+        field_dt = field_value.replace(tzinfo=None)
+        crit_dt = criterion.replace(tzinfo=None)
+        return comp_table[ComparisonOperator.EQUALS](field_dt, crit_dt)
+    return comp_table[ComparisonOperator.EQUALS](field_value, criterion)
+
+
+def _validate_date_datetime(criterion, field_value) -> bool:
+    """Validate date against datetime criterion or vice versa."""
+    from datetime import date, datetime
+
+    from .criterion_helper import ComparisonOperator
+
+    comp_table = _get_date_comparison_table()
+
+    if isinstance(criterion, date) and isinstance(field_value, datetime):
+        return comp_table[ComparisonOperator.EQUALS](field_value.date(), criterion)
+    if isinstance(criterion, datetime) and isinstance(field_value, date):
+        return comp_table[ComparisonOperator.EQUALS](field_value, criterion.date())
+    return False
+
+
+# ============================================================================
+# DATE FIELD VALIDATION FUNCTION
+# ============================================================================
+
+
+def validate_date_field(field_value, criterion):
+    """
+    Validates a date field against a criterion, independent of any class context.
+    Handles ComparisonOperator and CriterionValue, and supports string, date, and datetime inputs.
+    Returns True if the field matches the criterion, False otherwise.
+    """
+    from datetime import date, datetime
+
+    from .criterion_helper import CriterionValue
 
     if isinstance(criterion, CriterionValue):
-        op = criterion.operator
-        comp_date = to_date(criterion.value)
-        field_date = to_date(field_value)
-        if comp_date is None or field_date is None:
-            return False
+        return _validate_criterion_value_date(criterion, field_value)
+    if isinstance(criterion, datetime) and isinstance(field_value, datetime):
+        return _validate_datetime_datetime(criterion, field_value)
+    if (isinstance(criterion, date) and isinstance(field_value, datetime)) or (isinstance(criterion, datetime) and isinstance(field_value, date)):
+        return _validate_date_datetime(criterion, field_value)
+    return criterion is None or field_value == criterion
+
+
+# ============================================================================
+# TIME FIELD VALIDATION HELPERS
+# ============================================================================
+
+
+def _to_time(val):
+    """Convert value to time object."""
+    from datetime import datetime, time
+
+    if isinstance(val, str):
         try:
-            return comp_table[op](field_date, comp_date)
-        except KeyError:
-            logger.error("Unknown comparison operator for date field: %s", op)
-            return False
-        except Exception as e:
-            logger.error(f"Error validating date field: {e}")
-            return False
-    elif isinstance(criterion, datetime) and isinstance(field_value, datetime):
-        if (field_value.tzinfo is not None) != (criterion.tzinfo is not None):
-            field_dt = field_value.replace(tzinfo=None)
-            crit_dt = criterion.replace(tzinfo=None)
-            return comp_table[ComparisonOperator.EQUALS](field_dt, crit_dt)
-        return comp_table[ComparisonOperator.EQUALS](field_value, criterion)
-    elif isinstance(criterion, date) and isinstance(field_value, datetime):
-        return comp_table[ComparisonOperator.EQUALS](field_value.date(), criterion)
-    elif isinstance(criterion, datetime) and isinstance(field_value, date):
-        return comp_table[ComparisonOperator.EQUALS](field_value, criterion.date())
-    else:
-        return criterion is None or field_value == criterion
+            # Accepts "HH:MM[:SS[.ffffff]]"
+            return time.fromisoformat(val)
+        except Exception:
+            return None
+    if isinstance(val, datetime):
+        return val.time()
+    if isinstance(val, time):
+        return val
+    return None
+
+
+def _get_time_comparison_table():
+    """Get comparison table for time operations."""
+    from .criterion_helper import ComparisonOperator
+
+    return {
+        ComparisonOperator.EQUALS: lambda s, c: s == c,
+        ComparisonOperator.NOT_EQUALS: lambda s, c: s != c,
+        ComparisonOperator.GREATER_THAN: lambda s, c: s > c,
+        ComparisonOperator.GREATER_EQUAL: lambda s, c: s >= c,
+        ComparisonOperator.LESS_THAN: lambda s, c: s < c,
+        ComparisonOperator.LESS_EQUAL: lambda s, c: s <= c,
+    }
+
+
+def _validate_criterion_value_time(criterion: CriterionValue, field_value) -> bool:
+    """Validate time field with CriterionValue."""
+    comp_table = _get_time_comparison_table()
+    op = criterion.operator
+    comp_time = _to_time(criterion.value)
+    field_time = _to_time(field_value)
+
+    if comp_time is None or field_time is None:
+        return False
+
+    try:
+        return comp_table[op](field_time, comp_time)
+    except KeyError:
+        logger.error("Unknown comparison operator for time field: %s", op)
+        return False
+    except Exception as e:
+        logger.error(f"Error validating time field: {e}")
+        return False
+
+
+def _validate_time_combinations(criterion, field_value) -> bool:
+    """Validate time combinations (datetime/datetime, time/datetime, datetime/time)."""
+    from datetime import datetime, time
+
+    from .criterion_helper import ComparisonOperator
+
+    comp_table = _get_time_comparison_table()
+
+    if isinstance(criterion, datetime) and isinstance(field_value, datetime):
+        return comp_table[ComparisonOperator.EQUALS](field_value.time(), criterion.time())
+    if isinstance(criterion, time) and isinstance(field_value, datetime):
+        return comp_table[ComparisonOperator.EQUALS](field_value.time(), criterion)
+    if isinstance(criterion, datetime) and isinstance(field_value, time):
+        return comp_table[ComparisonOperator.EQUALS](field_value, criterion.time())
+    return False
+
+
+# ============================================================================
+# TIME FIELD VALIDATION FUNCTION
+# ============================================================================
 
 
 def validate_time_field(field_value, criterion):
@@ -179,49 +331,14 @@ def validate_time_field(field_value, criterion):
     """
     from datetime import datetime, time
 
-    from .criterion_helper import ComparisonOperator, CriterionValue
-
-    comp_table = {
-        ComparisonOperator.EQUALS: lambda s, c: s == c,
-        ComparisonOperator.NOT_EQUALS: lambda s, c: s != c,
-        ComparisonOperator.GREATER_THAN: lambda s, c: s > c,
-        ComparisonOperator.GREATER_EQUAL: lambda s, c: s >= c,
-        ComparisonOperator.LESS_THAN: lambda s, c: s < c,
-        ComparisonOperator.LESS_EQUAL: lambda s, c: s <= c,
-    }
-
-    def to_time(val):
-        if isinstance(val, str):
-            try:
-                # Accepts "HH:MM[:SS[.ffffff]]"
-                return time.fromisoformat(val)
-            except Exception:
-                return None
-        elif isinstance(val, datetime):
-            return val.time()
-        elif isinstance(val, time):
-            return val
-        return None
+    from .criterion_helper import CriterionValue
 
     if isinstance(criterion, CriterionValue):
-        op = criterion.operator
-        comp_time = to_time(criterion.value)
-        field_time = to_time(field_value)
-        if comp_time is None or field_time is None:
-            return False
-        try:
-            return comp_table[op](field_time, comp_time)
-        except KeyError:
-            logger.error("Unknown comparison operator for time field: %s", op)
-            return False
-        except Exception as e:
-            logger.error(f"Error validating time field: {e}")
-            return False
-    elif isinstance(criterion, datetime) and isinstance(field_value, datetime):
-        return comp_table[ComparisonOperator.EQUALS](field_value.time(), criterion.time())
-    elif isinstance(criterion, time) and isinstance(field_value, datetime):
-        return comp_table[ComparisonOperator.EQUALS](field_value.time(), criterion)
-    elif isinstance(criterion, datetime) and isinstance(field_value, time):
-        return comp_table[ComparisonOperator.EQUALS](field_value, criterion.time())
-    else:
-        return criterion is None or field_value == criterion
+        return _validate_criterion_value_time(criterion, field_value)
+    if (
+        (isinstance(criterion, datetime) and isinstance(field_value, datetime))
+        or (isinstance(criterion, time) and isinstance(field_value, datetime))
+        or (isinstance(criterion, datetime) and isinstance(field_value, time))
+    ):
+        return _validate_time_combinations(criterion, field_value)
+    return criterion is None or field_value == criterion

@@ -47,7 +47,8 @@ _ASYNC_CACHE: dict[tuple, list[dict]] = {}
 _ASYNC_LOCK = asyncio.Lock()
 
 
-async def _get_async_session() -> "aiohttp.ClientSession":  # type: ignore
+def _get_async_session() -> "aiohttp.ClientSession":  # type: ignore
+    """Get or create the async HTTP session."""
     if aiohttp is None:
         raise RuntimeError("aiohttp is not installed but load_dataset_data was called")
     global _ASYNC_SESSION
@@ -73,7 +74,7 @@ async def load_dataset_data(
         limit: Number of items to fetch. Defaults to 50 and will be enforced to exactly 50.
     """
     # Enforce exactly 50 items
-    limit = 50
+    enforced_limit = 50
 
     # Construir URL directamente usando el backend_url proporcionado
     url = urljoin(backend_url.rstrip("/"), "datasets/load")
@@ -81,7 +82,7 @@ async def load_dataset_data(
         "project_key": project_key,
         "entity_type": entity_type,
         "seed_value": seed_value,
-        "limit": limit,
+        "limit": enforced_limit,
     }
     # Only add method, filter_key, and filter_values if they are not None
     if method is not None:
@@ -108,7 +109,7 @@ async def load_dataset_data(
             return _ASYNC_CACHE[cache_key]
 
     try:
-        session = await _get_async_session()
+        session = _get_async_session()
         async with session.get(url, params=params, timeout=10) as resp:
             resp.raise_for_status()
             body = await resp.json()

@@ -67,76 +67,66 @@ def display_single_evaluation_summary(stats: EvaluationStats, debug_mode: bool =
     logger.info(f"{'-' * 60}")
 
 
-def display_batch_evaluation_summary(
-    task_id: str,
-    evaluation_stats: list[EvaluationStats],
-    debug_mode: bool,
-    action_type_timing: dict[str, list[float]],
-    errors: list[str],
-):
-    """
-    Displays a concise summary of all evaluations for a single task (batch of solutions).
+# ============================================================================
+# BATCH EVALUATION SUMMARY HELPERS
+# ============================================================================
 
-    Args:
-        task_id (str): The ID of the task being evaluated.
-        evaluation_stats (List[EvaluationStats]): A list of all evaluation statistics.
-        debug_mode (bool): If True, skip or reduce verbosity.
-        action_type_timing (Dict[str, List[float]]): Maps action types to recorded execution times.
-        errors (List[str]): A list of errors encountered during evaluations.
-    """
-    if debug_mode or not evaluation_stats:
-        return  # Skip if debug mode is enabled or there are no stats
 
-    # Filter stats for the given task
-    task_stats = [s for s in evaluation_stats if s.task_id == task_id]
-    if not task_stats:
-        return
-
-    total_agents = len(task_stats)
-    successful_agents = sum(1 for s in task_stats if not s.had_errors)
-    avg_score = sum(s.final_score for s in task_stats) / max(1, total_agents)
-    avg_time = sum(s.total_time for s in task_stats) / max(1, total_agents)
-
-    # Group by agent "type" (prefix before '-') or by entire agent_id if no dash
+def _group_agents_by_type(task_stats: list[EvaluationStats]) -> dict[str, list[EvaluationStats]]:
+    """Group statistics by agent type (prefix before '-')."""
     agent_groups = defaultdict(list)
     for stat in task_stats:
         agent_id = stat.web_agent_id
         agent_type = agent_id.split("-")[0] if "-" in agent_id else agent_id
         agent_groups[agent_type].append(stat)
+    return agent_groups
 
+
+def _calculate_task_statistics(task_stats: list[EvaluationStats]) -> tuple[int, int, float, float]:
+    """Calculate overall task statistics."""
+    total_agents = len(task_stats)
+    successful_agents = sum(1 for s in task_stats if not s.had_errors)
+    avg_score = sum(s.final_score for s in task_stats) / max(1, total_agents)
+    avg_time = sum(s.total_time for s in task_stats) / max(1, total_agents)
+    return total_agents, successful_agents, avg_score, avg_time
+
+
+def _log_task_header(task_id: str, total_agents: int, successful_agents: int, avg_score: float, avg_time: float) -> None:
+    """Log task evaluation header."""
     logger.info(f"\n{'=' * 80}")
     logger.info(f"EVALUATION SUMMARY FOR TASK: {task_id}")
     logger.info(f"{'=' * 80}")
     logger.info(f"Total Agents: {total_agents}, Success Rate: {successful_agents}/{total_agents} ({successful_agents / total_agents * 100:.1f}%)")
     logger.info(f"Average Score: {avg_score:.4f}, Average Time: {avg_time:.2f}s")
 
-    # Per-agent-type summaries
-    for agent_type, stats_list in agent_groups.items():
-        avg_group_score = sum(s.final_score for s in stats_list) / max(1, len(stats_list))
-        avg_group_time = sum(s.total_time for s in stats_list) / max(1, len(stats_list))
 
-        logger.info(f"\n{'-' * 60}")
-        logger.info(f"Web Agent ID: {agent_type} ({len(stats_list)} solutions)")
-        logger.info(f"Average Score: {avg_group_score:.4f}, Average Time: {avg_group_time:.2f}s")
+def _log_agent_type_summary(agent_type: str, stats_list: list[EvaluationStats]) -> None:
+    """Log summary for a specific agent type."""
+    avg_group_score = sum(s.final_score for s in stats_list) / max(1, len(stats_list))
+    avg_group_time = sum(s.total_time for s in stats_list) / max(1, len(stats_list))
 
-        # Collect all action execution times in this agent_type group
-        all_action_times = []
-        for s in stats_list:
-            all_action_times.extend(s.action_execution_times)
+    logger.info(f"\n{'-' * 60}")
+    logger.info(f"Web Agent ID: {agent_type} ({len(stats_list)} solutions)")
+    logger.info(f"Average Score: {avg_group_score:.4f}, Average Time: {avg_group_time:.2f}s")
 
-        if all_action_times:
-            avg_action_time = sum(all_action_times) / len(all_action_times)
-            max_action_time = max(all_action_times)
-            logger.info(f"Actions: {sum(s.action_count for s in stats_list)}, Avg Time: {avg_action_time:.3f}s, Max: {max_action_time:.3f}s")
+    all_action_times = []
+    for s in stats_list:
+        all_action_times.extend(s.action_execution_times)
 
-        # Test results
-        total_tests = stats_list[0].total_tests if stats_list else 0
-        if total_tests > 0:
-            tests_passed = [s.tests_passed for s in stats_list]
-            avg_passed = sum(tests_passed) / len(tests_passed)
-            logger.info(f"Tests Passed: {avg_passed:.1f}/{total_tests} on average")
+    if all_action_times:
+        avg_action_time = sum(all_action_times) / len(all_action_times)
+        max_action_time = max(all_action_times)
+        logger.info(f"Actions: {sum(s.action_count for s in stats_list)}, Avg Time: {avg_action_time:.3f}s, Max: {max_action_time:.3f}s")
 
-    # Overall timing breakdown
+    total_tests = stats_list[0].total_tests if stats_list else 0
+    if total_tests > 0:
+        tests_passed = [s.tests_passed for s in stats_list]
+        avg_passed = sum(tests_passed) / len(tests_passed)
+        logger.info(f"Tests Passed: {avg_passed:.1f}/{total_tests} on average")
+
+
+def _log_timing_breakdown(task_stats: list[EvaluationStats]) -> None:
+    """Log timing breakdown across all agents."""
     all_browser_setup = sum(s.browser_setup_time for s in task_stats)
     all_action_time = sum(sum(s.action_execution_times) for s in task_stats)
     all_test_time = sum(s.test_execution_time for s in task_stats)
@@ -157,25 +147,68 @@ def display_batch_evaluation_summary(
         logger.info("Test Execution: 0.00s (0.0%)")
         logger.info("Random Evaluation: 0.00s (0.0%)")
 
-    # Action type performance
-    if action_type_timing:
-        logger.info(f"\n{'-' * 60}")
-        logger.info("ACTION TYPE PERFORMANCE")
-        for a_type, times in sorted(action_type_timing.items(), key=lambda x: sum(x[1]) / len(x[1]) if x[1] else 0, reverse=True):
-            if times:
-                avg_t = sum(times) / len(times)
-                max_t = max(times)
-                min_t = min(times)
-                logger.info(f"{a_type}: {len(times)} actions, {avg_t:.3f}s avg ({min_t:.3f}s - {max_t:.3f}s)")
 
-    # Display errors if any
-    if errors:
-        logger.info(f"\n{'-' * 60}")
-        logger.info(f"ERRORS ({len(errors)})")
-        for i, error in enumerate(errors[:5]):
-            logger.info(f"{i + 1}. {error}")
-        if len(errors) > 5:
-            logger.info(f"... and {len(errors) - 5} more errors")
+def _log_action_type_performance(action_type_timing: dict[str, list[float]]) -> None:
+    """Log action type performance statistics."""
+    if not action_type_timing:
+        return
+    logger.info(f"\n{'-' * 60}")
+    logger.info("ACTION TYPE PERFORMANCE")
+    for a_type, times in sorted(action_type_timing.items(), key=lambda x: sum(x[1]) / len(x[1]) if x[1] else 0, reverse=True):
+        if times:
+            avg_t = sum(times) / len(times)
+            max_t = max(times)
+            min_t = min(times)
+            logger.info(f"{a_type}: {len(times)} actions, {avg_t:.3f}s avg ({min_t:.3f}s - {max_t:.3f}s)")
+
+
+def _log_errors(errors: list[str]) -> None:
+    """Log evaluation errors."""
+    if not errors:
+        return
+    logger.info(f"\n{'-' * 60}")
+    logger.info(f"ERRORS ({len(errors)})")
+    for i, error in enumerate(errors[:5]):
+        logger.info(f"{i + 1}. {error}")
+    if len(errors) > 5:
+        logger.info(f"... and {len(errors) - 5} more errors")
+
+
+def display_batch_evaluation_summary(
+    task_id: str,
+    evaluation_stats: list[EvaluationStats],
+    debug_mode: bool,
+    action_type_timing: dict[str, list[float]],
+    errors: list[str],
+):
+    """
+    Displays a concise summary of all evaluations for a single task (batch of solutions).
+
+    Args:
+        task_id (str): The ID of the task being evaluated.
+        evaluation_stats (List[EvaluationStats]): A list of all evaluation statistics.
+        debug_mode (bool): If True, skip or reduce verbosity.
+        action_type_timing (Dict[str, List[float]]): Maps action types to recorded execution times.
+        errors (List[str]): A list of errors encountered during evaluations.
+    """
+    if debug_mode or not evaluation_stats:
+        return
+
+    task_stats = [s for s in evaluation_stats if s.task_id == task_id]
+    if not task_stats:
+        return
+
+    total_agents, successful_agents, avg_score, avg_time = _calculate_task_statistics(task_stats)
+    agent_groups = _group_agents_by_type(task_stats)
+
+    _log_task_header(task_id, total_agents, successful_agents, avg_score, avg_time)
+
+    for agent_type, stats_list in agent_groups.items():
+        _log_agent_type_summary(agent_type, stats_list)
+
+    _log_timing_breakdown(task_stats)
+    _log_action_type_performance(action_type_timing)
+    _log_errors(errors)
 
     logger.info(f"{'=' * 80}")
 
@@ -272,7 +305,8 @@ async def log_progress(total_groups: int, interval: int = 10):
             completed = sum(1 for t in asyncio.all_tasks() if t.done() and "evaluate_group_with_semaphore" in str(t))
             logger.info(f"Progress: {completed}/{total_groups} groups ({completed / total_groups * 100:.0f}%)")
     except asyncio.CancelledError:
-        pass
+        logger.debug("Progress logging cancelled")
+        raise
 
 
 def hash_actions(actions: list[BaseAction]) -> str:
@@ -312,6 +346,86 @@ def initialize_test_results(task: Task):
     return test_results
 
 
+# ============================================================================
+# GIF CREATION HELPERS
+# ============================================================================
+
+
+def _decode_base64_image(b64_string: str, idx: int) -> bytes | None:
+    """Decode base64 string to image bytes."""
+    try:
+        if not isinstance(b64_string, str):
+            logger.warning(f"Item at index {idx} is not a string (type: {type(b64_string)}). Skipping.")
+            return None
+        return base64.b64decode(b64_string.encode("ascii"))
+    except UnicodeEncodeError:
+        logger.warning(f"Base64 string at index {idx} contains non-ASCII characters and could not be encoded. Skipping.")
+        return None
+    except (base64.binascii.Error, ValueError) as e_b64:
+        logger.warning(f"Could not decode base64 string at index {idx}: {e_b64}. Skipping.")
+        return None
+
+
+def _convert_image_mode(img, idx: int) -> None:
+    """Convert image to GIF-compatible mode."""
+
+    if img.mode not in ("L", "P", "RGB"):
+        logger.debug(f"Converting image {idx} from mode {img.mode} to RGBA for GIF compatibility.")
+        img = img.convert("RGBA")
+    elif img.mode == "P" and "transparency" in img.info:
+        logger.debug(f"Image {idx} is in Palette mode with transparency. Converting to RGBA to preserve alpha.")
+        img = img.convert("RGBA")
+
+
+def _process_single_image(b64_string: str, idx: int):
+    """Process a single base64 image string into a PIL Image."""
+    from PIL import Image, UnidentifiedImageError
+
+    image_data_bytes = _decode_base64_image(b64_string, idx)
+    if image_data_bytes is None:
+        return None
+
+    try:
+        image_file_like = io.BytesIO(image_data_bytes)
+        img = Image.open(image_file_like)
+        _convert_image_mode(img, idx)
+        return img
+    except UnidentifiedImageError:
+        logger.warning(f"Pillow could not identify image format from base64 string at index {idx}. Skipping.")
+        return None
+    except OSError as e_pil:
+        logger.warning(f"Pillow I/O error for image from base64 string at index {idx}: {e_pil}. Skipping.")
+        return None
+    except Exception as e_general:
+        logger.error(f"Unexpected error processing base64 string at index {idx}: {e_general}.", exc_info=True)
+        return None
+
+
+def _save_gif(pil_images: list, duration_ms: int, loop_count: int) -> bytes:
+    """Save PIL images as GIF and return raw bytes."""
+    gif_buffer = io.BytesIO()
+    try:
+        pil_images[0].save(
+            gif_buffer,
+            format="GIF",
+            save_all=True,
+            append_images=pil_images[1:],
+            duration=duration_ms,
+            loop=loop_count,
+            optimize=True,
+            disposal=1,
+        )
+        return gif_buffer.getvalue()
+    except Exception as e_gif:
+        logger.error(f"❌ GIF CREATION ERROR: {e_gif}", exc_info=True)
+        return b""
+    finally:
+        for img_obj in pil_images:
+            img_obj.close()
+        if not gif_buffer.closed:
+            gif_buffer.close()
+
+
 def make_gif_from_screenshots(all_base64_strings, duration_ms=500, loop_count=0):
     """
     Creates an animated GIF from a list of base64 encoded image strings.
@@ -328,87 +442,23 @@ def make_gif_from_screenshots(all_base64_strings, duration_ms=500, loop_count=0)
         str: The base64 encoded content of the generated GIF image. Returns empty bytes (b"") if an error occurs
                or no images are processed.
     """
-    # Local import to avoid hard dependency when GIF generation is unused
-    from PIL import Image, UnidentifiedImageError  # type: ignore
-
-    pil_images: list = []
-
     if not all_base64_strings:
         return b""
 
+    pil_images = []
     for idx, b64_string in enumerate(all_base64_strings):
-        try:
-            if not isinstance(b64_string, str):
-                logger.warning(f"Item at index {idx} is not a string (type: {type(b64_string)}). Skipping.")
-                continue
-
-            # Decode the base64 string. It must be ASCII bytes for b64decode.
-            image_data_bytes = base64.b64decode(b64_string.encode("ascii"))
-
-            # Create a PIL Image object from the image bytes
-            image_file_like = io.BytesIO(image_data_bytes)
-            img = Image.open(image_file_like)
-
-            # Ensure the image is in a mode compatible with GIF.
-            # Converting to RGBA handles various input modes and alpha transparency.
-            # Pillow will convert RGBA to P (palette) mode when saving as GIF.
-            # L: Luminance (grayscale), P: Palette, RGB: Truecolor
-            if img.mode not in ("L", "P", "RGB"):
-                logger.debug(f"Converting image {idx} from mode {img.mode} to RGBA for GIF compatibility.")
-                img = img.convert("RGBA")
-            elif img.mode == "P" and "transparency" in img.info:
-                # If it's already a palette image with transparency, ensure it's handled correctly.
-                # Often, converting to RGBA and letting PIL re-palette for GIF is more robust.
-                logger.debug(f"Image {idx} is in Palette mode with transparency. Converting to RGBA to preserve alpha.")
-                img = img.convert("RGBA")
-
+        img = _process_single_image(b64_string, idx)
+        if img:
             pil_images.append(img)
-
-        except UnicodeEncodeError:
-            logger.warning(f"Base64 string at index {idx} contains non-ASCII characters and could not be encoded. Skipping.")
-            continue
-        # ValueError for incorrect padding etc.
-        except (base64.binascii.Error, ValueError) as e_b64:
-            logger.warning(f"Could not decode base64 string at index {idx}: {e_b64}. Skipping.")
-            continue
-        except UnidentifiedImageError:
-            logger.warning(f"Pillow could not identify image format from base64 string at index {idx}. Skipping.")
-            continue
-        except OSError as e_pil:
-            logger.warning(f"Pillow I/O error for image from base64 string at index {idx}: {e_pil}. Skipping.")
-            continue
-        except Exception as e_general:
-            logger.error(f"Unexpected error processing base64 string at index {idx}: {e_general}.", exc_info=True)
-            continue
 
     if not pil_images:
         return b""
-    gif_buffer = io.BytesIO()
-    try:
-        pil_images[0].save(
-            gif_buffer,
-            format="GIF",
-            save_all=True,  # Important: save all frames
-            append_images=pil_images[1:],  # Append the rest of the images
-            duration=duration_ms,  # Time per frame in milliseconds
-            loop=loop_count,  # 0 for infinite loop
-            optimize=True,  # Optimize for smaller file size (ENABLED to avoid 413 errors)
-            # 2: Graphic is to be restored to background color before rendering next frame.
-            disposal=1,
-            # Use 1 if frames should not be disposed (e.g., drawn on top of each other).
-        )
-        raw_gif_bytes = gif_buffer.getvalue()
-    except Exception as e_gif:
-        logger.error(f"❌ GIF CREATION ERROR: {e_gif}", exc_info=True)
-        return b""
-    finally:
-        for img_obj in pil_images:
-            img_obj.close()
-        if not gif_buffer.closed:
-            gif_buffer.close()
 
-    encoded_gif = base64.b64encode(raw_gif_bytes)
-    return encoded_gif
+    raw_gif_bytes = _save_gif(pil_images, duration_ms, loop_count)
+    if not raw_gif_bytes:
+        return b""
+
+    return base64.b64encode(raw_gif_bytes)
 
 
 def extract_seed_from_url(url: str) -> int | None:
