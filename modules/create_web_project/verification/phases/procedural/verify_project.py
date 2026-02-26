@@ -868,7 +868,7 @@ def _run_llm_test_generation_pipeline(
     pipeline = GlobalTestGenerationPipeline(web_project=web_project, llm_service=llm_service)
     before_counts = {task.id: len(task.tests) for task in tasks}
     try:
-        asyncio.run(pipeline.add_tests_to_tasks(tasks))
+        pipeline.add_tests_to_tasks(tasks)
     except Exception as exc:
         report.add(False, "LLM test generation pipeline execution", f"{exc}", section=section)
         return

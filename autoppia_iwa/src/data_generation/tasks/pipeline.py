@@ -68,7 +68,7 @@ class TaskGenerationPipeline:
             _log_task_generation(f"Generated {len(tasks)} tasks")
 
             # Add tests to tasks
-            tasks_with_tests = await self.global_test_pipeline.add_tests_to_tasks(tasks)
+            tasks_with_tests = self.global_test_pipeline.add_tests_to_tasks(tasks)
             all_tasks.extend(tasks_with_tests)
 
             # Log completion

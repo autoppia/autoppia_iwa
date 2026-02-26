@@ -93,7 +93,7 @@ def test_global_test_generation_attaches_event_criteria():
         assert task.use_case is use_case
 
         test_pipeline = GlobalTestGenerationPipeline()
-        enriched = await test_pipeline.add_tests_to_tasks(tasks)
+        enriched = test_pipeline.add_tests_to_tasks(tasks)
         assert enriched[0].tests, "CheckEventTest should be attached"
         check_test = enriched[0].tests[0]
         assert isinstance(check_test, CheckEventTest)
