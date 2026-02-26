@@ -10,7 +10,6 @@ from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
 async def fetch_data(
     entity_type: str,
     method: str | None = None,
-    filter_key: str | None = None,
     seed_value: int | None = None,
     count: int = 50,
 ) -> list[dict]:
@@ -25,7 +24,6 @@ async def fetch_data(
     Args:
         entity_type: Type of entity to fetch (places, rides, etc.)
         method: Selection method (select, etc.)
-        filter_key: Key to filter on
         seed_value: Seed value for deterministic selection
         count: Number of items to fetch
 
