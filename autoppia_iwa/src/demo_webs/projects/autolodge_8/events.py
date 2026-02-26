@@ -7,7 +7,9 @@ from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator, CriterionValue
 from autoppia_iwa.src.demo_webs.projects.shared_utils import parse_datetime, validate_date_field
 
-
+# ============================================================================
+# SEARCH EVENTS
+# ============================================================================
 class SearchHotelEvent(Event, BaseEventValidator):
     """Event triggered when a user searches for a hotel"""
 
@@ -67,6 +69,9 @@ class SearchHotelEvent(Event, BaseEventValidator):
         )
 
 
+# ============================================================================
+# HELPER CLASSES
+# ============================================================================
 class HotelInfo(BaseModel):
     """Hotel information used in multiple events."""
 
@@ -101,6 +106,73 @@ class HotelInfo(BaseModel):
         host_name: str | CriterionValue | None = None
         amenities: str | list | CriterionValue | None = None
 
+    def _validate_amenities_string(self, amenities: list[str], criteria_amenities: str) -> bool:
+        """Validate amenities when criteria is a string."""
+        return any(criteria_amenities.lower() in a.lower() for a in amenities)
+
+    def _validate_amenities_list(self, amenities: list[str], criteria_amenities: list) -> bool:
+        """Validate amenities when criteria is a list."""
+        return all(a in amenities for a in criteria_amenities)
+
+    def _validate_amenities_equals(self, amenities: list[str], val: str | list) -> bool:
+        """Validate amenities with EQUALS operator."""
+        if isinstance(val, str):
+            return any(val.lower() == a.lower() for a in amenities)
+        return False
+
+    def _validate_amenities_contains(self, amenities: list[str], val: str) -> bool:
+        """Validate amenities with CONTAINS operator."""
+        return any(val.lower() in a.lower() for a in amenities)
+
+    def _validate_amenities_not_contains(self, amenities: list[str], val: str) -> bool:
+        """Validate amenities with NOT_CONTAINS operator."""
+        return all(val.lower() not in a.lower() for a in amenities)
+
+    def _validate_amenities_in_list(self, amenities: list[str], val: str | list) -> bool:
+        """Validate amenities with IN_LIST operator."""
+        if isinstance(val, str):
+            return val in amenities
+        if isinstance(val, list):
+            return any(a in amenities for a in val)
+        return False
+
+    def _validate_amenities_not_in_list(self, amenities: list[str], val: str | list) -> bool:
+        """Validate amenities with NOT_IN_LIST operator."""
+        if isinstance(val, str):
+            return val not in amenities
+        if isinstance(val, list):
+            return all(a not in amenities for a in val)
+        return False
+
+    def _validate_amenities_criterion(self, amenities: list[str], criteria_amenities: CriterionValue) -> bool:
+        """Validate amenities when criteria is a CriterionValue."""
+        op = criteria_amenities.operator
+        val = criteria_amenities.value
+
+        if op == ComparisonOperator.EQUALS:
+            return self._validate_amenities_equals(amenities, val)
+        if op == ComparisonOperator.CONTAINS:
+            return self._validate_amenities_contains(amenities, val)
+        if op == ComparisonOperator.NOT_CONTAINS:
+            return self._validate_amenities_not_contains(amenities, val)
+        if op == ComparisonOperator.IN_LIST:
+            return self._validate_amenities_in_list(amenities, val)
+        if op == ComparisonOperator.NOT_IN_LIST:
+            return self._validate_amenities_not_in_list(amenities, val)
+        return True
+
+    def _validate_amenities(self, amenities: list[str], criteria_amenities: str | list | CriterionValue | None) -> bool:
+        """Validate amenities based on criteria type."""
+        if criteria_amenities is None:
+            return True
+        if isinstance(criteria_amenities, str):
+            return self._validate_amenities_string(amenities, criteria_amenities)
+        if isinstance(criteria_amenities, list):
+            return self._validate_amenities_list(amenities, criteria_amenities)
+        if hasattr(criteria_amenities, "operator"):
+            return self._validate_amenities_criterion(amenities, criteria_amenities)
+        return True
+
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
@@ -108,35 +180,7 @@ class HotelInfo(BaseModel):
         date_from_valid = validate_date_field(self.datesFrom, criteria.datesFrom)
         date_to_valid = validate_date_field(self.datesTo, criteria.datesTo)
 
-        def validate_amenities(amenities, criteria_amenities):
-            if criteria_amenities is None:
-                return True
-            if isinstance(criteria_amenities, str):
-                return any(criteria_amenities.lower() in a.lower() for a in amenities)
-            elif isinstance(criteria_amenities, list):
-                return all(a in amenities for a in criteria_amenities)
-            elif hasattr(criteria_amenities, "operator"):
-                op = criteria_amenities.operator
-                val = criteria_amenities.value
-                if op == ComparisonOperator.EQUALS:
-                    return any(val.lower() == a.lower() for a in amenities)
-                elif op == ComparisonOperator.CONTAINS:
-                    return any(val.lower() in a.lower() for a in amenities)
-                elif op == ComparisonOperator.NOT_CONTAINS:
-                    return all(val.lower() not in a.lower() for a in amenities)
-                elif op == ComparisonOperator.IN_LIST:
-                    if isinstance(val, str):
-                        return val in amenities
-                    if isinstance(val, list):
-                        return any(a in amenities for a in val)
-                elif op == ComparisonOperator.NOT_IN_LIST:
-                    if isinstance(val, str):
-                        return val not in amenities
-                    if isinstance(val, list):
-                        return all(a not in amenities for a in val)
-            return True
-
-        result = all(
+        return all(
             [
                 date_to_valid,
                 date_from_valid,
@@ -151,10 +195,9 @@ class HotelInfo(BaseModel):
                 self._validate_field(self.bedrooms, criteria.bedrooms),
                 self._validate_field(self.beds, criteria.beds),
                 self._validate_field(self.host_name, criteria.host_name),
-                validate_amenities(self.amenities, criteria.amenities),
+                self._validate_amenities(self.amenities, criteria.amenities),
             ]
         )
-        return result
 
     @classmethod
     def parse(cls, data) -> "HotelInfo":
@@ -189,6 +232,9 @@ class HotelInfo(BaseModel):
         )
 
 
+# ============================================================================
+# HOTEL VIEWING EVENTS
+# ============================================================================
 class ViewHotelEvent(Event, BaseEventValidator, HotelInfo):
     """Event triggered when a user views a hotel listing"""
 
@@ -215,6 +261,9 @@ class ViewHotelEvent(Event, BaseEventValidator, HotelInfo):
         )
 
 
+# ============================================================================
+# WISHLIST EVENTS
+# ============================================================================
 class AddToWishlistEvent(Event, BaseEventValidator, HotelInfo):
     """Event triggered when a user views a hotel listing"""
 
@@ -299,6 +348,9 @@ class ShareHotelEvent(Event, BaseEventValidator, HotelInfo):
         )
 
 
+# ============================================================================
+# HOTEL RESERVATION EVENTS
+# ============================================================================
 class EditNumberOfGuestsEvent(Event, BaseEventValidator, HotelInfo):
     event_name: str = "EDIT_NUMBER_OF_GUESTS"
     guests_to: int
@@ -328,6 +380,9 @@ class EditNumberOfGuestsEvent(Event, BaseEventValidator, HotelInfo):
         )
 
 
+# ============================================================================
+# REVIEW EVENTS
+# ============================================================================
 class SubmitHotelReviewEvent(Event, BaseEventValidator, HotelInfo):
     """Event triggered when a user submits a review/rating for a hotel"""
 
@@ -390,6 +445,9 @@ class SubmitHotelReviewEvent(Event, BaseEventValidator, HotelInfo):
         )
 
 
+# ============================================================================
+# FILTER EVENTS
+# ============================================================================
 class ApplyFilterEvent(Event, BaseEventValidator):
     """Event triggered when user filters hotels list."""
 
@@ -503,6 +561,9 @@ class EditCheckInOutDatesEvent(Event, BaseEventValidator, HotelInfo):
         )
 
 
+# ============================================================================
+# PAYMENT EVENTS
+# ============================================================================
 class ConfirmAndPayEvent(Event, BaseEventValidator, HotelInfo):
     event_name: str = "CONFIRM_AND_PAY"
     nights: int
@@ -602,6 +663,9 @@ class PaymentMethodSelectedEvent(Event, BaseEventValidator, HotelInfo):
         )
 
 
+# ============================================================================
+# COMMUNICATION EVENTS
+# ============================================================================
 class MessageHostEvent(Event, BaseEventValidator, HotelInfo):
     event_name: str = "MESSAGE_HOST"
     message: str
@@ -634,6 +698,9 @@ class MessageHostEvent(Event, BaseEventValidator, HotelInfo):
         )
 
 
+# ============================================================================
+# NAVIGATION EVENTS
+# ============================================================================
 class BackToAllHotelsEvent(Event, BaseEventValidator, HotelInfo):
     event_name: str = "BACK_TO_ALL_HOTELS"
 
@@ -712,6 +779,9 @@ class BookFromWishlistEvent(Event, BaseEventValidator):
         )
 
 
+# ============================================================================
+# PAGE VIEW EVENTS
+# ============================================================================
 class PopularHotelsViewedEvent(Event, BaseEventValidator):
     """User views popular hotels page."""
 
