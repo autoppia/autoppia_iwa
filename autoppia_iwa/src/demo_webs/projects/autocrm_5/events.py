@@ -566,50 +566,76 @@ class NewCalendarEventAdded(Event, BaseEventValidator):
             ],
         )
 
+    def _validate_string_time(self, actual: str, criterion: str) -> bool:
+        """Validate string criterion when both actual and criterion are times."""
+        try:
+            actual_time = self._parse_time(actual)
+            criterion_time = self._parse_time(criterion)
+            return actual_time == criterion_time
+        except ValueError:
+            return actual == criterion
+
+    def _validate_string_date(self, actual: str, criterion: str) -> bool:
+        """Validate string criterion when both actual and criterion are dates."""
+        try:
+            actual_date = self._parse_date(actual)
+            criterion_date = self._parse_date(criterion)
+            return actual_date == criterion_date
+        except ValueError:
+            return actual == criterion
+
+    def _validate_string_criterion(self, actual: Any, criterion: str) -> bool:
+        """Validate when criterion is a string."""
+        actual_str = str(actual)
+        if self._is_time(actual_str) and self._is_time(criterion):
+            return self._validate_string_time(actual_str, criterion)
+        if self._is_date(actual_str) and self._is_date(criterion):
+            return self._validate_string_date(actual_str, criterion)
+        return actual_str == criterion
+
+    def _validate_criterion_value_date(self, actual: Any, criterion: CriterionValue) -> bool:
+        """Validate CriterionValue when both actual and value are dates."""
+        try:
+            actual_date = self._parse_date(str(actual))
+            value_date = self._parse_date(str(criterion.value))
+            return BaseEventValidator._validate_field(
+                actual_date, CriterionValue(value=value_date, operator=criterion.operator)
+            )
+        except ValueError:
+            return False
+
+    def _validate_criterion_value_time(self, actual: Any, criterion: CriterionValue) -> bool:
+        """Validate CriterionValue when both actual and value are times."""
+        try:
+            actual_time = self._parse_time(str(actual))
+            value_time = self._parse_time(str(criterion.value))
+            return BaseEventValidator._validate_field(
+                actual_time, CriterionValue(value=value_time, operator=criterion.operator)
+            )
+        except ValueError:
+            return False
+
+    def _validate_criterion_value(self, actual: Any, criterion: CriterionValue) -> bool:
+        """Validate when criterion is a CriterionValue."""
+        if self._is_date(str(actual)) and self._is_date(str(criterion.value)):
+            result = self._validate_criterion_value_date(actual, criterion)
+            if result:
+                return True
+        if self._is_time(str(actual)) and self._is_time(str(criterion.value)):
+            result = self._validate_criterion_value_time(actual, criterion)
+            if result:
+                return True
+        return BaseEventValidator._validate_field(actual, criterion)
+
     def _validate_field(self, actual: Any, criterion: str | CriterionValue | None) -> bool:
         if criterion is None:
             return True
 
         if isinstance(criterion, str):
-            if self._is_time(str(actual)) and self._is_time(criterion):
-                try:
-                    actual_time = self._parse_time(str(actual))
-                    criterion_time = self._parse_time(criterion)
-                    return actual_time == criterion_time
-                except ValueError:
-                    return str(actual) == criterion
-
-            if self._is_date(str(actual)) and self._is_date(criterion):
-                try:
-                    actual_date = self._parse_date(str(actual))
-                    criterion_date = self._parse_date(criterion)
-                    return actual_date == criterion_date
-                except ValueError:
-                    return str(actual) == criterion
-
-            return str(actual) == criterion
+            return self._validate_string_criterion(actual, criterion)
 
         if isinstance(criterion, CriterionValue):
-            op = criterion.operator
-            value = criterion.value
-
-            if self._is_date(str(actual)) and self._is_date(str(value)):
-                try:
-                    actual_date = self._parse_date(str(actual))
-                    value_date = self._parse_date(str(value))
-                    return BaseEventValidator._validate_field(actual_date, CriterionValue(value=value_date, operator=op))
-                except ValueError:
-                    pass
-
-            if self._is_time(str(actual)) and self._is_time(str(value)):
-                try:
-                    actual_time = self._parse_time(str(actual))
-                    value_time = self._parse_time(str(value))
-                    return BaseEventValidator._validate_field(actual_time, CriterionValue(value=value_time, operator=op))
-                except ValueError:
-                    pass
-
-            return BaseEventValidator._validate_field(actual, criterion)
+            return self._validate_criterion_value(actual, criterion)
 
         return False
 
