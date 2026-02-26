@@ -1,30 +1,55 @@
+from typing import Any
+
 from ..operators import CONTAINS, EQUALS, GREATER_EQUAL, GREATER_THAN, IN_LIST, LESS_EQUAL, LESS_THAN, NOT_CONTAINS, NOT_EQUALS, NOT_IN_LIST
 from ..shared_utils import parse_datetime
 
+# ============================================================================
+# DATA TRANSFORMATION HELPERS
+# ============================================================================
+def _process_string_value(k: str, v: str) -> Any:
+    """Process string value, parsing datetime if needed."""
+    if k in ["datesFrom", "datesTo"]:
+        return parse_datetime(v)
+    return v
 
+
+def _process_dict_value(k: str, v: dict) -> dict[str, Any]:
+    """Process dict value by flattening keys with prefix."""
+    return {k + "_" + nk: nv for nk, nv in v.items()}
+
+
+def _process_list_value(k: str, v: list) -> list[str] | None:
+    """Process list value, extracting titles from amenities."""
+    if k == "amenities":
+        return [sv["title"] for sv in v if sv.get("title")]
+    return None
+
+
+def _transform_hotel_data(hotel: dict) -> dict[str, Any]:
+    """Transform a single hotel dictionary by processing each field."""
+    new_dict = {}
+    for k, v in hotel.items():
+        if isinstance(v, str):
+            new_dict[k] = _process_string_value(k, v)
+        elif isinstance(v, dict):
+            new_dict.update(_process_dict_value(k, v))
+        elif isinstance(v, list):
+            processed = _process_list_value(k, v)
+            if processed is not None:
+                new_dict[k] = processed
+        else:
+            new_dict[k] = v
+    return new_dict
+
+
+# ============================================================================
+# DATA TRANSFORMATION FUNCTIONS
+# ============================================================================
 def get_modify_data(hotels_data=None):
+    """Transform hotels data by processing nested structures and parsing dates."""
     if not hotels_data:
         return []
-    modified_data = []
-    for hotel in hotels_data:
-        new_dict = {}
-        for k, v in hotel.items():
-            if isinstance(v, str):
-                if k in ["datesFrom", "datesTo"]:
-                    new_dict[k] = parse_datetime(v)
-                else:
-                    new_dict[k] = v
-            elif isinstance(v, dict):
-                for nk, nv in v.items():
-                    new_dict[k + "_" + nk] = nv
-            elif isinstance(v, list):
-                if k == "amenities":
-                    new_dict["amenities"] = [sv["title"] for sv in v if sv.get("title")]
-            else:
-                new_dict[k] = v
-
-        modified_data.append(new_dict)
-    return modified_data
+    return [_transform_hotel_data(hotel) for hotel in hotels_data]
 
 
 LOGICAL_OPERATORS = [EQUALS, NOT_EQUALS, GREATER_EQUAL, GREATER_THAN, LESS_EQUAL, LESS_THAN]
