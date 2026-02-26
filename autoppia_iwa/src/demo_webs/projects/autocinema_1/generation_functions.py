@@ -28,6 +28,21 @@ from .data import (
 )
 from .data_utils import fetch_data
 
+# =============================================================================
+#                            CONSTANTS
+# =============================================================================
+
+# Default fallback constraint for search film
+DEFAULT_SEARCH_CONSTRAINT = "query equals The Matrix"
+
+# Core film fields for view/share/trailer/watchlist/delete use cases (DB first, semantic constraints)
+FILM_CORE_FIELDS = ["name", "director", "year", "rating", "duration", "genres"]
+
+
+# =============================================================================
+#                            DATA FETCHING HELPERS
+# =============================================================================
+
 
 async def _ensure_dataset(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None) -> dict:
     """Fetch full dataset if not provided or empty. Single source of truth for data loading."""
@@ -45,12 +60,209 @@ async def _get_films_data(task_url: str | None = None, dataset: dict[str, list[d
     return []
 
 
+# =============================================================================
+#                            AUTHENTICATION HELPERS
+# =============================================================================
+
+
 def _login_constraints() -> list[dict]:
     """Return fixed login constraints (username, password) for auth-required use cases. Aligned with login_replace_func."""
     return [
         create_constraint_dict("username", ComparisonOperator.EQUALS, "<web_agent_id>"),
         create_constraint_dict("password", ComparisonOperator.EQUALS, "password123"),
     ]
+
+
+# =============================================================================
+#                            CONSTRAINT VALUE GENERATION HELPERS
+# =============================================================================
+
+# --------------------------------------------------------------------- #
+#  EQUALS OPERATOR HELPERS
+# ---------------------------------------------------------------------
+
+
+def _handle_equals_operator(field_value: Any) -> Any:
+    """Handle EQUALS operator."""
+    if isinstance(field_value, list) and field_value:
+        return choice(field_value)
+    if isinstance(field_value, str):
+        return field_value.strip()
+    return field_value
+
+
+# --------------------------------------------------------------------- #
+#  NOT_EQUALS OPERATOR HELPERS
+# ---------------------------------------------------------------------
+
+
+def _handle_not_equals_numeric(field_value: int | float, field: str, dataset: list[dict]) -> Any:
+    """Handle NOT_EQUALS operator for numeric values."""
+    others = [d.get(field) for d in dataset if d.get(field) is not None and d.get(field) != field_value]
+    if others:
+        return choice(others)
+    return field_value + 1 if isinstance(field_value, int) else field_value + 0.1
+
+
+def _handle_not_equals_string(field_value: str, field: str, dataset: list[dict]) -> str:
+    """Handle NOT_EQUALS operator for string values."""
+    field_value = field_value.strip()
+    others = [d.get(field) for d in dataset if d.get(field) and d.get(field) != field_value]
+    if others:
+        return choice(others)
+    return field_value + "x" if field_value else "other"
+
+
+def _handle_not_equals_operator(field_value: Any, field: str, dataset: list[dict]) -> Any:
+    """Handle NOT_EQUALS operator."""
+    if isinstance(field_value, int | float):
+        return _handle_not_equals_numeric(field_value, field, dataset)
+    if isinstance(field_value, str):
+        return _handle_not_equals_string(field_value, field, dataset)
+    return field_value
+
+
+# --------------------------------------------------------------------- #
+#  CONTAINS OPERATOR HELPERS
+# ---------------------------------------------------------------------
+
+
+def _handle_contains_string(field_value: str) -> str:
+    """Handle CONTAINS operator for string values."""
+    field_value = field_value.strip()
+    # Ensure substring has at least 2 chars for meaningful constraints (avoid "i", "e", etc.)
+    min_len = 2
+    if len(field_value) >= min_len:
+        max_start = max(0, len(field_value) - min_len)
+        start = random.randint(0, max_start)
+        end = random.randint(start + min_len, len(field_value))
+        return field_value[start:end]
+    return field_value
+
+
+def _handle_contains_list(field_value: list) -> Any:
+    """Handle CONTAINS operator for list values."""
+    item = choice(field_value)
+    return item.get("name", item) if isinstance(item, dict) else item
+
+
+# --------------------------------------------------------------------- #
+#  NOT_CONTAINS OPERATOR HELPERS
+# ---------------------------------------------------------------------
+
+
+def _handle_not_contains_string(field_value: str) -> str:
+    """Handle NOT_CONTAINS operator for string values."""
+    field_value = field_value.strip()
+    for _ in range(100):
+        test_str = "".join(random.choice("abcdefghijklmnopqrstuvwxyz") for _ in range(3))
+        if test_str.lower() not in (field_value or "").lower():
+            return test_str
+    return "xyz"
+
+
+def _extract_all_values_from_dataset(field: str, dataset: list[dict]) -> list[Any]:
+    """Extract all values for a field from dataset, handling lists and dicts."""
+    all_vals = []
+    for d in dataset:
+        v = d.get(field)
+        if isinstance(v, list):
+            for x in v:
+                all_vals.append(x.get("name", x) if isinstance(x, dict) else x)
+        elif v is not None:
+            all_vals.append(v.get("name", v) if isinstance(v, dict) else v)
+    return all_vals
+
+
+def _handle_not_contains_list(field_value: list, field: str, dataset: list[dict]) -> Any:
+    """Handle NOT_CONTAINS operator for list values."""
+    all_vals = _extract_all_values_from_dataset(field, dataset)
+    field_set = {x.get("name", x) if isinstance(x, dict) else x for x in field_value}
+    remaining = [v for v in all_vals if v not in field_set]
+    return choice(remaining) if remaining else None
+
+
+# --------------------------------------------------------------------- #
+#  COMPARISON OPERATOR HELPERS
+# ---------------------------------------------------------------------
+
+
+def _handle_numeric_comparison(operator: ComparisonOperator, field_value: int | float, field: str) -> float:
+    """Handle numeric comparison operators (GREATER_THAN, LESS_THAN, GREATER_EQUAL, LESS_EQUAL)."""
+    delta = random.uniform(0.5, 2.0) if isinstance(field_value, float) else random.randint(1, 5)
+    if operator == ComparisonOperator.GREATER_THAN:
+        raw = field_value - delta
+    elif operator == ComparisonOperator.LESS_THAN:
+        raw = field_value + delta
+    else:
+        raw = field_value
+    
+    # Rating is 0-5 stars in autocinema: clamp so constraint is meaningful
+    if field == "rating":
+        raw = max(0.0, min(5.0, float(raw)))
+    # Round floats to 1 decimal for readable constraints (avoid 6.180065492855112)
+    if isinstance(raw, float):
+        raw = round(raw, 1)
+    return raw
+
+
+# --------------------------------------------------------------------- #
+#  LIST OPERATOR HELPERS
+# ---------------------------------------------------------------------
+
+
+def _handle_in_list_operator(field_value: list, field: str, dataset: list[dict]) -> list[Any]:
+    """Handle IN_LIST operator."""
+    all_vals = list({v for d in dataset for v in (d.get(field) if isinstance(d.get(field), list) else [])})
+    if not all_vals:
+        return [field_value[0]] if field_value else []
+    random.shuffle(all_vals)
+    subset = random.sample(all_vals, min(2, len(all_vals)))
+    if field_value and field_value[0] not in subset:
+        subset.append(field_value[0])
+    return list(set(subset))
+
+
+def _handle_not_in_list_operator(field_value: list, field: str, dataset: list[dict]) -> list[Any]:
+    """Handle NOT_IN_LIST operator."""
+    all_vals = list({v for d in dataset for v in (d.get(field) if isinstance(d.get(field), list) else [])})
+    if field_value:
+        all_vals = [v for v in all_vals if v not in field_value]
+    return random.sample(all_vals, min(2, len(all_vals))) if all_vals else []
+
+
+# --------------------------------------------------------------------- #
+#  MAIN CONSTRAINT VALUE GENERATOR
+# ---------------------------------------------------------------------
+
+
+def _handle_string_operators(operator: ComparisonOperator, field_value: str) -> str:
+    """Handle operators for string values."""
+    if operator == ComparisonOperator.CONTAINS:
+        return _handle_contains_string(field_value)
+    if operator == ComparisonOperator.NOT_CONTAINS:
+        return _handle_not_contains_string(field_value)
+    return field_value
+
+
+def _handle_list_operators(operator: ComparisonOperator, field_value: list, field: str, dataset: list[dict]) -> Any:
+    """Handle operators for list values."""
+    if operator == ComparisonOperator.CONTAINS and field_value:
+        return _handle_contains_list(field_value)
+    if operator == ComparisonOperator.NOT_CONTAINS:
+        return _handle_not_contains_list(field_value, field, dataset)
+    if operator == ComparisonOperator.IN_LIST:
+        return _handle_in_list_operator(field_value, field, dataset)
+    if operator == ComparisonOperator.NOT_IN_LIST:
+        return _handle_not_in_list_operator(field_value, field, dataset)
+    return None
+
+
+def _handle_comparison_operators(operator: ComparisonOperator, field_value: int | float, field: str) -> Any:
+    """Handle comparison operators for numeric values."""
+    if operator in (ComparisonOperator.GREATER_THAN, ComparisonOperator.LESS_THAN, ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL):
+        return _handle_numeric_comparison(operator, field_value, field)
+    return field_value
 
 
 def _generate_constraint_value(
@@ -64,92 +276,85 @@ def _generate_constraint_value(
     Handles str, int, float, list (genres) for film/profile/contact data.
     """
     if operator == ComparisonOperator.EQUALS:
-        if isinstance(field_value, list) and field_value:
-            return choice(field_value)
-        if isinstance(field_value, str):
-            return field_value.strip()
-        return field_value
+        return _handle_equals_operator(field_value)
 
     if operator == ComparisonOperator.NOT_EQUALS:
-        if isinstance(field_value, int | float):
-            others = [d.get(field) for d in dataset if d.get(field) is not None and d.get(field) != field_value]
-            return choice(others) if others else (field_value + 1 if isinstance(field_value, int) else field_value + 0.1)
-        if isinstance(field_value, str):
-            field_value = field_value.strip()
-            others = [d.get(field) for d in dataset if d.get(field) and d.get(field) != field_value]
-            return choice(others) if others else (field_value + "x" if field_value else "other")
-        return field_value
+        return _handle_not_equals_operator(field_value, field, dataset)
 
-    if operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
-        field_value = field_value.strip()
-        # Ensure substring has at least 2 chars for meaningful constraints (avoid "i", "e", etc.)
-        min_len = 2
-        if len(field_value) >= min_len:
-            max_start = max(0, len(field_value) - min_len)
-            start = random.randint(0, max_start)
-            end = random.randint(start + min_len, len(field_value))
-            return field_value[start:end]
-        return field_value
+    if isinstance(field_value, str):
+        return _handle_string_operators(operator, field_value)
 
-    if operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
-        field_value = field_value.strip()
-        for _ in range(100):
-            test_str = "".join(random.choice("abcdefghijklmnopqrstuvwxyz") for _ in range(3))
-            if test_str.lower() not in (field_value or "").lower():
-                return test_str
-        return "xyz"
+    if isinstance(field_value, list):
+        return _handle_list_operators(operator, field_value, field, dataset)
 
-    if operator == ComparisonOperator.CONTAINS and isinstance(field_value, list) and field_value:
-        item = choice(field_value)
-        return item.get("name", item) if isinstance(item, dict) else item
+    if isinstance(field_value, int | float):
+        return _handle_comparison_operators(operator, field_value, field)
 
-    if operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, list):
-        all_vals = []
-        for d in dataset:
-            v = d.get(field)
-            if isinstance(v, list):
-                for x in v:
-                    all_vals.append(x.get("name", x) if isinstance(x, dict) else x)
-            elif v is not None:
-                all_vals.append(v.get("name", v) if isinstance(v, dict) else v)
-        field_set = {x.get("name", x) if isinstance(x, dict) else x for x in field_value}
-        remaining = [v for v in all_vals if v not in field_set]
-        return choice(remaining) if remaining else None
+    return None
 
-    if operator in (ComparisonOperator.GREATER_THAN, ComparisonOperator.LESS_THAN, ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL):
-        if isinstance(field_value, int | float):
-            delta = random.uniform(0.5, 2.0) if isinstance(field_value, float) else random.randint(1, 5)
-            if operator == ComparisonOperator.GREATER_THAN:
-                raw = field_value - delta
-            elif operator == ComparisonOperator.LESS_THAN:
-                raw = field_value + delta
-            else:
-                raw = field_value
-            # Rating is 0-5 stars in autocinema: clamp so constraint is meaningful
-            if field == "rating":
-                raw = max(0.0, min(5.0, float(raw)))
-            # Round floats to 1 decimal for readable constraints (avoid 6.180065492855112)
-            if isinstance(raw, float):
-                raw = round(raw, 1)
-            return raw
-        return field_value
 
-    if operator == ComparisonOperator.IN_LIST and isinstance(field_value, list):
-        all_vals = list({v for d in dataset for v in (d.get(field) if isinstance(d.get(field), list) else [])})
-        if not all_vals:
-            return [field_value[0]] if field_value else []
-        random.shuffle(all_vals)
-        subset = random.sample(all_vals, min(2, len(all_vals)))
-        if field_value and field_value[0] not in subset:
-            subset.append(field_value[0])
-        return list(set(subset))
+# =============================================================================
+#                            CONSTRAINT GENERATION HELPERS
+# =============================================================================
 
-    if operator == ComparisonOperator.NOT_IN_LIST and isinstance(field_value, list):
-        all_vals = list({v for d in dataset for v in (d.get(field) if isinstance(d.get(field), list) else [])})
-        if field_value:
-            all_vals = [v for v in all_vals if v not in field_value]
-        return random.sample(all_vals, min(2, len(all_vals))) if all_vals else []
 
+def _select_possible_fields(field_operators: dict, selected_fields: list[str] | None, num_constraints: int | None) -> list[str]:
+    """Select and filter possible fields based on constraints."""
+    possible_fields = list(field_operators.keys())
+    if selected_fields:
+        possible_fields = [f for f in possible_fields if f in selected_fields]
+    if not possible_fields:
+        possible_fields = list(field_operators.keys())
+    if num_constraints is not None:
+        n = min(num_constraints, len(possible_fields))
+        possible_fields = list(random.sample(possible_fields, n))
+    return possible_fields
+
+
+def _get_field_value_from_custom_dataset(new_field: dict, field: str, op: ComparisonOperator) -> Any:
+    """Get constraint value from custom dataset."""
+    custom_dataset = new_field.get("dataset", [])
+    new_field_name = new_field.get("field", field)
+    if not custom_dataset:
+        return None
+    field_value = choice(custom_dataset).get(new_field_name)
+    if field_value is not None and new_field_name:
+        return _generate_constraint_value(op, field_value, new_field_name, custom_dataset)
+    return None
+
+
+def _get_field_value_from_sample(sample_data: dict, new_field: Any, field: str, op: ComparisonOperator, dataset: list[dict]) -> Any:
+    """Get constraint value from sample data."""
+    lookup = new_field if isinstance(new_field, str) else field
+    field_value = sample_data.get(lookup)
+    if field_value is not None:
+        return _generate_constraint_value(op, field_value, lookup, dataset)
+    return None
+
+
+def _process_field_constraint(
+    field: str,
+    field_operators: dict,
+    field_map: dict,
+    sample_data: dict,
+    dataset: list[dict],
+) -> dict[str, Any] | None:
+    """Process a single field constraint."""
+    allowed_ops = field_operators.get(field, [])
+    if not allowed_ops:
+        return None
+    
+    op = ComparisonOperator(choice(allowed_ops))
+    new_field = field_map.get(field, field)
+    constraint_value = None
+    
+    if isinstance(new_field, dict):
+        constraint_value = _get_field_value_from_custom_dataset(new_field, field, op)
+    else:
+        constraint_value = _get_field_value_from_sample(sample_data, new_field, field, op, dataset)
+    
+    if constraint_value is not None:
+        return create_constraint_dict(field, op, constraint_value)
     return None
 
 
@@ -157,7 +362,6 @@ def _generate_constraints(
     dataset: list[dict],
     field_operators: dict,
     field_map: dict | None = None,
-    min_constraints: int = 1,
     num_constraints: int | None = None,
     selected_fields: list[str] | None = None,
 ) -> list[dict[str, Any]]:
@@ -167,47 +371,56 @@ def _generate_constraints(
     """
     if not dataset:
         return []
+    
     all_constraints = []
     sample_data = choice(dataset)
-    possible_fields = list(field_operators.keys())
-    if selected_fields:
-        possible_fields = [f for f in possible_fields if f in selected_fields]
-    if not possible_fields:
-        possible_fields = list(field_operators.keys())
-    if num_constraints is not None:
-        n = min(num_constraints, len(possible_fields))
-        possible_fields = list(random.sample(possible_fields, n))
     if field_map is None:
         field_map = {}
-
+    
+    possible_fields = _select_possible_fields(field_operators, selected_fields, num_constraints)
+    
     for field in possible_fields:
-        allowed_ops = field_operators.get(field, [])
-        if not allowed_ops:
-            continue
-        op = ComparisonOperator(choice(allowed_ops))
-        new_field = field_map.get(field, field)
-        field_value = None
-        constraint_value = None
-        if isinstance(new_field, dict):
-            custom_dataset = new_field.get("dataset", [])
-            new_field = new_field.get("field", field)
-            if custom_dataset:
-                field_value = choice(custom_dataset).get(new_field)
-                if field_value is not None and new_field:
-                    constraint_value = _generate_constraint_value(op, field_value, new_field, custom_dataset)
-        else:
-            lookup = new_field if isinstance(new_field, str) else field
-            field_value = sample_data.get(lookup)
-            if field_value is not None and constraint_value is None:
-                constraint_value = _generate_constraint_value(op, field_value, lookup, dataset)
-
-        if constraint_value is not None:
-            all_constraints.append(create_constraint_dict(field, op, constraint_value))
+        constraint = _process_field_constraint(field, field_operators, field_map, sample_data, dataset)
+        if constraint:
+            all_constraints.append(constraint)
 
     return all_constraints
 
 
-def generate_registration_constraints(dataset: list[dict]):
+# =============================================================================
+#                            FILTER DATASET HELPERS
+# =============================================================================
+
+
+def _extract_genre_name(genre: Any) -> str | None:
+    """Extract genre name from genre data (handles str, dict, or other types)."""
+    if isinstance(genre, str):
+        return genre
+    if isinstance(genre, dict):
+        return genre.get("name")
+    return None
+
+
+def _build_filter_film_dataset(films: list[dict]) -> list[dict]:
+    """Build dataset for FILTER_FILM: one row per (genre_name, year) to match FilterFilmEvent payload."""
+    rows = []
+    for f in films:
+        year = f.get("year")
+        if year is None:
+            continue
+        for g in f.get("genres") or []:
+            name = _extract_genre_name(g)
+            if name:
+                rows.append({"genre_name": name, "year": year})
+    return rows if rows else [{"genre_name": "Drama", "year": 2020}]
+
+
+# =============================================================================
+#                            PUBLIC FUNCTIONS - AUTHENTICATION CONSTRAINTS
+# =============================================================================
+
+
+def generate_registration_constraints():
     """
     Generates constraints specifically for film-related use cases.
     Returns the constraints as structured data.
@@ -219,7 +432,7 @@ def generate_registration_constraints(dataset: list[dict]):
     return parse_constraints_str(constraints_str)
 
 
-def generate_login_constraints(dataset: list[dict]):
+def generate_login_constraints():
     """
     Generates constraints specifically for film-related use cases.
     Returns the constraints as structured data.
@@ -232,7 +445,7 @@ def generate_login_constraints(dataset: list[dict]):
     return parse_constraints_str(constraints_str)
 
 
-def generate_logout_constraints(dataset: list[dict]):
+def generate_logout_constraints():
     """
     Generates constraints specifically for film-related use cases.
     Returns the constraints as structured data.
@@ -242,6 +455,11 @@ def generate_logout_constraints(dataset: list[dict]):
     # Generar restricciones frescas basadas en los datos de películas
     constraints_str = "username equals <web_agent_id> AND password equals password123"
     return parse_constraints_str(constraints_str)
+
+
+# =============================================================================
+#                            PUBLIC FUNCTIONS - FILM CONSTRAINTS
+# =============================================================================
 
 
 async def generate_search_film_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
@@ -254,16 +472,12 @@ async def generate_search_film_constraints(task_url: str | None = None, dataset:
             data = await _ensure_dataset(task_url, dataset)
             films = data.get("movies", []) if data else []
             if not films:
-                return parse_constraints_str("query equals The Matrix")
+                return parse_constraints_str(DEFAULT_SEARCH_CONSTRAINT)
         search_dataset = [{"query": m["name"]} for m in films]
         constraints_list = _generate_constraints(search_dataset, FIELD_OPERATORS_MAP_SEARCH_FILM, num_constraints=1, selected_fields=["query"])
-        return constraints_list if constraints_list else parse_constraints_str("query equals The Matrix")
+        return constraints_list if constraints_list else parse_constraints_str(DEFAULT_SEARCH_CONSTRAINT)
     except Exception:
-        return parse_constraints_str("query equals The Matrix")
-
-
-# Core film fields for view/share/trailer/watchlist/delete use cases (DB first, semantic constraints)
-FILM_CORE_FIELDS = ["name", "director", "year", "rating", "duration", "genres"]
+        return parse_constraints_str(DEFAULT_SEARCH_CONSTRAINT)
 
 
 async def generate_film_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
@@ -334,34 +548,6 @@ async def generate_delete_film_constraints(task_url: str | None = None, dataset:
     return _generate_constraints(films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS)
 
 
-def generate_contact_constraints() -> list:
-    """Generate constraints for CONTACT from map and synthetic dataset (data.py pools)."""
-    contact_dataset = [
-        {
-            "name": choice(CONTACT_NAMES),
-            "email": choice(CONTACT_EMAILS),
-            "subject": choice(CONTACT_SUBJECTS),
-            "message": choice(CONTACT_MESSAGES),
-        }
-        for _ in range(15)
-    ]
-    return _generate_constraints(contact_dataset, FIELD_OPERATORS_MAP_CONTACT, num_constraints=random.randint(1, 4))
-
-
-def _build_filter_film_dataset(films: list[dict]) -> list[dict]:
-    """Build dataset for FILTER_FILM: one row per (genre_name, year) to match FilterFilmEvent payload."""
-    rows = []
-    for f in films:
-        year = f.get("year")
-        if year is None:
-            continue
-        for g in f.get("genres") or []:
-            name = g if isinstance(g, str) else (g.get("name") if isinstance(g, dict) else None)
-            if name:
-                rows.append({"genre_name": name, "year": year})
-    return rows if rows else [{"genre_name": "Drama", "year": 2020}]
-
-
 async def generate_film_filter_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
     """Generate constraints for FILTER_FILM: genre_name and/or year (aligned with FilterFilmEvent)."""
     films = await _get_films_data(task_url, dataset)
@@ -376,37 +562,9 @@ async def generate_film_filter_constraints(task_url: str | None = None, dataset:
     return _generate_constraints(filter_dataset, FIELD_OPERATORS_MAP_FILTER_FILM, num_constraints=2, selected_fields=["genre_name", "year"])
 
 
-def generate_constraint_from_solution(movie: dict, field: str, operator: ComparisonOperator, movies_data: list[dict]) -> dict[str, Any] | None:
-    """
-    Generate one constraint (field, operator, value) that the solution movie satisfies.
-    Delegates value generation to _generate_constraint_value (map-driven, no hardcoded fields).
-    """
-    field_value = movie.get(field)
-    value = _generate_constraint_value(operator, field_value, field, movies_data)
-    if value is None:
-        return None
-    constraint = {"field": field, "operator": operator, "value": value}
-    criterion = CriterionValue(value=value, operator=operator)
-    if validate_criterion(movie.get(field), criterion):
-        return constraint
-    return None
-
-
-async def generate_add_comment_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
-    """Generate constraints for ADD_COMMENT from map and dataset (movie_name from films, others from data.py pools)."""
-    films = await _get_films_data(task_url, dataset)
-    if not films:
-        return []
-    comment_dataset = [
-        {
-            "movie_name": m["name"],
-            "commenter_name": choice(COMMENTER_NAMES),
-            "content": choice(COMMENT_KEYWORDS),
-        }
-        for m in films
-    ]
-    n = min(choice([1, 2, 3]), len(FIELD_OPERATORS_MAP_ADD_COMMENT))
-    return _generate_constraints(comment_dataset, FIELD_OPERATORS_MAP_ADD_COMMENT, num_constraints=n)
+# =============================================================================
+#                            PUBLIC FUNCTIONS - EDIT/ADD FILM CONSTRAINTS
+# =============================================================================
 
 
 async def generate_edit_film_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
@@ -444,7 +602,53 @@ def generate_add_film_constraints(dataset: list[dict]):
     return [*_login_constraints(), *film_constraints]
 
 
-def generate_edit_profile_constraints(dataset: list[dict]):
+# =============================================================================
+#                            PUBLIC FUNCTIONS - COMMENT CONSTRAINTS
+# =============================================================================
+
+
+async def generate_add_comment_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
+    """Generate constraints for ADD_COMMENT from map and dataset (movie_name from films, others from data.py pools)."""
+    films = await _get_films_data(task_url, dataset)
+    if not films:
+        return []
+    comment_dataset = [
+        {
+            "movie_name": m["name"],
+            "commenter_name": choice(COMMENTER_NAMES),
+            "content": choice(COMMENT_KEYWORDS),
+        }
+        for m in films
+    ]
+    n = min(choice([1, 2, 3]), len(FIELD_OPERATORS_MAP_ADD_COMMENT))
+    return _generate_constraints(comment_dataset, FIELD_OPERATORS_MAP_ADD_COMMENT, num_constraints=n)
+
+
+# =============================================================================
+#                            PUBLIC FUNCTIONS - CONTACT CONSTRAINTS
+# =============================================================================
+
+
+def generate_contact_constraints() -> list:
+    """Generate constraints for CONTACT from map and synthetic dataset (data.py pools)."""
+    contact_dataset = [
+        {
+            "name": choice(CONTACT_NAMES),
+            "email": choice(CONTACT_EMAILS),
+            "subject": choice(CONTACT_SUBJECTS),
+            "message": choice(CONTACT_MESSAGES),
+        }
+        for _ in range(15)
+    ]
+    return _generate_constraints(contact_dataset, FIELD_OPERATORS_MAP_CONTACT, num_constraints=random.randint(1, 4))
+
+
+# =============================================================================
+#                            PUBLIC FUNCTIONS - PROFILE CONSTRAINTS
+# =============================================================================
+
+
+def generate_edit_profile_constraints():
     """Generate constraints for EDIT_USER: fixed username/password + profile fields from map (data.py pools)."""
     profile_dataset = [
         {
@@ -464,3 +668,24 @@ def generate_edit_profile_constraints(dataset: list[dict]):
         selected.append("website")
     profile_constraints = _generate_constraints(profile_dataset, FIELD_OPERATORS_MAP_EDIT_USER, num_constraints=len(selected), selected_fields=selected)
     return [create_constraint_dict("username", ComparisonOperator.EQUALS, "<web_agent_id>"), create_constraint_dict("password", ComparisonOperator.EQUALS, "password123"), *profile_constraints]
+
+
+# =============================================================================
+#                            PUBLIC FUNCTIONS - CONSTRAINT FROM SOLUTION
+# =============================================================================
+
+
+def generate_constraint_from_solution(movie: dict, field: str, operator: ComparisonOperator, movies_data: list[dict]) -> dict[str, Any] | None:
+    """
+    Generate one constraint (field, operator, value) that the solution movie satisfies.
+    Delegates value generation to _generate_constraint_value (map-driven, no hardcoded fields).
+    """
+    field_value = movie.get(field)
+    value = _generate_constraint_value(operator, field_value, field, movies_data)
+    if value is None:
+        return None
+    constraint = {"field": field, "operator": operator, "value": value}
+    criterion = CriterionValue(value=value, operator=operator)
+    if validate_criterion(movie.get(field), criterion):
+        return constraint
+    return None
