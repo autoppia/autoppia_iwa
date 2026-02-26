@@ -5,6 +5,9 @@ from typing import Any
 
 from pydantic import BaseModel, Field, ValidationError
 
+# Constants
+CONSTRAINTS_INFO_PLACEHOLDER = "<constraints_info>"
+
 
 class UseCase(BaseModel):
     """Represents a use case in the application"""
@@ -29,6 +32,10 @@ class UseCase(BaseModel):
     )
     additional_prompt_info: str | None = Field(default=None)
 
+    # ============================================================================
+    # TEXT REPLACEMENT
+    # ============================================================================
+
     def apply_replacements(self, text: str, *args, **kwargs) -> str:
         if self.replace_func and isinstance(text, str):
             kwargs_with_constraints = {**kwargs, "constraints": self.constraints}
@@ -44,8 +51,8 @@ class UseCase(BaseModel):
             return result
 
         # Also replace constraints_info if needed
-        if isinstance(text, str) and "<constraints_info>" in text and self.constraints:
-            text = text.replace("<constraints_info>", self.constraints_to_str())
+        if isinstance(text, str) and CONSTRAINTS_INFO_PLACEHOLDER in text and self.constraints:
+            text = text.replace(CONSTRAINTS_INFO_PLACEHOLDER, self.constraints_to_str())
 
         return text
 
@@ -59,10 +66,14 @@ class UseCase(BaseModel):
             return result
 
         # Also replace constraints_info if needed
-        if isinstance(text, str) and "<constraints_info>" in text and self.constraints:
-            text = text.replace("<constraints_info>", self.constraints_to_str())
+        if isinstance(text, str) and CONSTRAINTS_INFO_PLACEHOLDER in text and self.constraints:
+            text = text.replace(CONSTRAINTS_INFO_PLACEHOLDER, self.constraints_to_str())
 
         return text
+
+    # ============================================================================
+    # CONSTRAINTS GENERATION
+    # ============================================================================
 
     def generate_constraints(self):
         """
@@ -92,46 +103,53 @@ class UseCase(BaseModel):
                     to pass to the generator. Each constraint generator receives the full dataset
                     and extracts the relevant entity list it needs.
         """
-        if self.constraints_generator:
-            # Inspect the generator function signature to see what parameters it accepts
-            sig = inspect.signature(self.constraints_generator)
-            params = sig.parameters
+        if not self.constraints_generator:
+            return self.constraints_to_str() if self.constraints else ""
 
-            # Check if function accepts task_url and dataset parameters
-            has_task_url_param = "task_url" in params
-            has_dataset_param = "dataset" in params
+        sig = inspect.signature(self.constraints_generator)
+        params = sig.parameters
 
-            # Check if first parameter (excluding self) might be dataset
-            param_names = [p for p in params if p != "self"]
-            first_param_is_dataset = False
-            if param_names:
-                first_param = params[param_names[0]]
-                # If first param has no default and might be dataset (positional)
-                if first_param.default is inspect.Parameter.empty and len(param_names) == 1:
-                    first_param_is_dataset = True
+        kwargs = self._build_generator_kwargs(params, task_url, dataset)
+        first_param_is_dataset = self._check_first_param_is_dataset(params)
 
-            # Build kwargs based on what the function accepts
-            kwargs = {}
-            if has_task_url_param:
-                kwargs["task_url"] = task_url
-            if has_dataset_param:
-                kwargs["dataset"] = dataset
+        result = self._call_constraints_generator(kwargs, first_param_is_dataset, dataset)
 
-            # Call generator with appropriate parameters
-            if kwargs:
-                result = self.constraints_generator(**kwargs)
-            elif first_param_is_dataset:
-                # First positional parameter is likely dataset
-                result = self.constraints_generator(dataset)
-            else:
-                # Function doesn't accept dataset or task_url, call without arguments
-                result = self.constraints_generator()
+        if asyncio.iscoroutine(result):
+            self.constraints = await result
+        else:
+            self.constraints = result
 
-            if asyncio.iscoroutine(result):
-                self.constraints = await result
-            else:
-                self.constraints = result
         return self.constraints_to_str() if self.constraints else ""
+
+    def _build_generator_kwargs(self, params: dict, task_url: str | None, dataset: dict[str, list[dict]] | None) -> dict[str, Any]:
+        """Build kwargs for the constraints generator based on its signature."""
+        kwargs = {}
+        if "task_url" in params:
+            kwargs["task_url"] = task_url
+        if "dataset" in params:
+            kwargs["dataset"] = dataset
+        return kwargs
+
+    def _check_first_param_is_dataset(self, params: dict) -> bool:
+        """Check if the first parameter (excluding self) is likely dataset."""
+        param_names = [p for p in params if p != "self"]
+        if not param_names:
+            return False
+
+        first_param = params[param_names[0]]
+        return first_param.default is inspect.Parameter.empty and len(param_names) == 1
+
+    def _call_constraints_generator(self, kwargs: dict[str, Any], first_param_is_dataset: bool, dataset: dict[str, list[dict]] | None) -> Any:
+        """Call the constraints generator with appropriate parameters."""
+        if kwargs:
+            return self.constraints_generator(**kwargs)
+        if first_param_is_dataset:
+            return self.constraints_generator(dataset)
+        return self.constraints_generator()
+
+    # ============================================================================
+    # CONSTRAINTS FORMATTING
+    # ============================================================================
 
     def constraints_to_str(self) -> str:
         """
@@ -172,6 +190,10 @@ class UseCase(BaseModel):
 
         return " AND ".join(parts)
 
+    # ============================================================================
+    # EXAMPLES
+    # ============================================================================
+
     def get_example_prompts_from_use_case(self) -> list[str]:
         """
         Extract all prompt strings from the examples
@@ -183,6 +205,10 @@ class UseCase(BaseModel):
         Get all example prompts as a single string with the specified separator
         """
         return separator.join(self.get_example_prompts_from_use_case())
+
+    # ============================================================================
+    # SERIALIZATION
+    # ============================================================================
 
     def serialize(self) -> dict:
         """Serialize a UseCase object to a dictionary."""
