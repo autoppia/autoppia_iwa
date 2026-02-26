@@ -22,7 +22,7 @@ class GlobalTestGenerationPipeline:
     #  INIT
     # --------------------------------------------------------------------- #
 
-    async def add_tests_to_tasks(self, tasks: list[Task]) -> list[Task]:
+    def add_tests_to_tasks(self, tasks: list[Task]) -> list[Task]:
         for task in tasks:
             if not task.use_case:
                 logger.debug("Task %s has no UseCase. Skipping.", task.id)
