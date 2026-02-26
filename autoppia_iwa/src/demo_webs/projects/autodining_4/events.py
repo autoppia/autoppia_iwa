@@ -44,53 +44,59 @@ class DateDropdownOpenedEvent(Event, BaseEventValidator):
             title = "Date Dropdown Opened Validation"
             description = "Validates that the date dropdown was opened with a specific date."
 
+    def _normalize_criteria_date(self, criteria_date: datetime | CriterionValue | None) -> date | None:
+        """Normalize criteria date to date object."""
+        if isinstance(criteria_date, CriterionValue):
+            raw_value = criteria_date.value
+            if isinstance(raw_value, str):
+                return isoparse(raw_value).date()
+            if isinstance(raw_value, datetime):
+                return raw_value.date()
+            if isinstance(raw_value, date):
+                return raw_value
+            return None
+        if isinstance(criteria_date, datetime):
+            return criteria_date.date()
+        if isinstance(criteria_date, date):
+            return criteria_date
+        return None
+
+    def _normalize_event_date(self) -> date | None:
+        """Normalize event date to date object."""
+        if isinstance(self.date, datetime):
+            return self.date.date()
+        if isinstance(self.date, date):
+            return self.date
+        return None
+
+    def _compare_dates(self, event_date: date, criteria_dt: date, operator: ComparisonOperator) -> bool:
+        """Compare dates based on operator."""
+        if operator == ComparisonOperator.EQUALS:
+            return event_date == criteria_dt
+        if operator == ComparisonOperator.GREATER_THAN:
+            return event_date > criteria_dt
+        if operator == ComparisonOperator.LESS_THAN:
+            return event_date < criteria_dt
+        if operator == ComparisonOperator.GREATER_EQUAL:
+            return event_date >= criteria_dt
+        if operator == ComparisonOperator.LESS_EQUAL:
+            return event_date <= criteria_dt
+        return False
+
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria or not criteria.date:
             return True
 
-        # Normalize date to datetime if CriterionValue
-        if isinstance(criteria.date, CriterionValue):
-            raw_value = criteria.date.value
-            if isinstance(raw_value, str):
-                criteria_dt = isoparse(raw_value).date()
-            elif isinstance(raw_value, datetime):
-                criteria_dt = raw_value.date()
-            elif isinstance(raw_value, date):
-                criteria_dt = raw_value
-            else:
-                return False
-        elif isinstance(criteria.date, datetime):
-            criteria_dt = criteria.date.date()
-        elif isinstance(criteria.date, date):
-            criteria_dt = criteria.date
-        else:
+        criteria_dt = self._normalize_criteria_date(criteria.date)
+        if criteria_dt is None:
             return False
 
-            # --- Normalize event date ---
-        event_date = None
-        if isinstance(self.date, datetime):
-            event_date = self.date.date()
-        elif isinstance(self.date, date):
-            event_date = self.date
-
+        event_date = self._normalize_event_date()
         if event_date is None:
             return False
 
-        # --- Operador -------------------------------------------------------------
         op = getattr(criteria.date, "operator", ComparisonOperator.EQUALS)
-
-        if op == ComparisonOperator.EQUALS:
-            return event_date == criteria_dt
-        elif op == ComparisonOperator.GREATER_THAN:
-            return event_date > criteria_dt
-        elif op == ComparisonOperator.LESS_THAN:
-            return event_date < criteria_dt
-        elif op == ComparisonOperator.GREATER_EQUAL:
-            return event_date >= criteria_dt
-        elif op == ComparisonOperator.LESS_EQUAL:
-            return event_date <= criteria_dt
-        else:
-            return False
+        return self._compare_dates(event_date, criteria_dt, op)
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "DateDropdownOpenedEvent":
