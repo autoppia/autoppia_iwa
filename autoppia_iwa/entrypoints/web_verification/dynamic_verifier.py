@@ -25,6 +25,10 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 class DynamicVerifier:
     """Verifies that dynamic functionality works correctly with different seed values"""
 
+    # ============================================================================
+    # INITIALIZATION
+    # ============================================================================
+
     def __init__(
         self,
         web_project: WebProject,
@@ -43,6 +47,10 @@ class DynamicVerifier:
             web_project=web_project,
             llm_service=DIContainer.llm_service(),
         )
+
+    # ============================================================================
+    # PUBLIC METHODS - VERIFICATION
+    # ============================================================================
 
     async def verify_task_with_seeds(
         self,
@@ -124,6 +132,57 @@ class DynamicVerifier:
             "needs_review": all_passed and passed_count == total_count and total_count >= 3,
         }
 
+    async def verify_dataset_diversity_with_seeds(
+        self,
+        seed_values: list[int],
+    ) -> dict[str, Any]:
+        """
+        V2 Verification: Verify that datasets are different with different seeds.
+
+        Makes 3 HTTP requests (via _load_dataset) with different seeds and verifies
+        that the returned datasets are actually different, ensuring the dynamic
+        data generation is working correctly.
+
+        Args:
+            seed_values: List of seed values to test (should be 3)
+
+        Returns:
+            Dictionary with verification results:
+            {
+                "seeds_tested": List[int],
+                "all_different": bool,  # True if all datasets are different
+                "datasets_info": Dict[int, Dict],  # Info per seed
+                "comparison_results": List[Dict],  # Pairwise comparisons
+                "passed": bool,  # True if all datasets are different
+                "summary": str
+            }
+        """
+        logger.info(f"V2 Verification: Testing dataset diversity for {self.web_project.name} with seeds: {seed_values}")
+
+        # Load datasets for all seeds
+        datasets, datasets_info = await self._load_datasets_for_seeds(seed_values)
+
+        # Compare datasets pairwise
+        comparison_results, all_different = self._compare_datasets_pairwise(datasets, datasets_info)
+
+        # Generate summary
+        summary, passed = self._generate_diversity_summary(datasets, seed_values, all_different)
+
+        return {
+            "seeds_tested": seed_values,
+            "all_different": all_different,
+            "datasets_info": datasets_info,
+            "comparison_results": comparison_results,
+            "passed": passed,
+            "summary": summary,
+            "loaded_count": len(datasets),
+            "expected_count": len(seed_values),
+        }
+
+    # ============================================================================
+    # VERIFICATION HELPERS
+    # ============================================================================
+
     def _convert_solution_actions(self, solution_actions: list[dict[str, Any]]) -> list[BaseAction] | None:
         """Convert solution actions from API format to BaseAction objects."""
         if not solution_actions:
@@ -192,6 +251,188 @@ class DynamicVerifier:
             passed_count = sum(1 for r in results.values() if r.get("success", False) and r.get("llm_review", {}).get("valid", True))
             summary = f"Dynamic verification: {passed_count}/{total_count} seeds passed. Tasks can be generated and validated with {passed_count} different seed values."
         return summary, passed_count, total_count
+
+    # ============================================================================
+    # ACTION NORMALIZATION HELPERS
+    # ============================================================================
+
+    def _normalize_action(self, action: dict[str, Any]) -> dict[str, Any] | None:
+        """
+        Normalize action from API format to format expected by BaseAction.create_action()
+
+        Args:
+            action: Action dictionary from API
+
+        Returns:
+            Normalized action dictionary or None if invalid
+        """
+        normalized = action.copy()
+
+        # Handle nested 'attributes' structure: flatten it
+        if "attributes" in normalized and isinstance(normalized["attributes"], dict):
+            attributes = normalized.pop("attributes")
+            normalized.update(attributes)
+
+        # Normalize action type
+        normalized["type"] = self._normalize_action_type(normalized.get("type", ""))
+
+        # Validate and normalize specific action types
+        if normalized["type"] == "NavigateAction":
+            if not self._validate_navigate_action(normalized):
+                return None
+        elif normalized["type"] == "WaitAction":
+            self._normalize_wait_action(normalized)
+        elif normalized["type"] == "TypeAction":
+            if not self._validate_type_action(normalized):
+                return None
+        elif normalized["type"] == "SelectDropDownOptionAction":
+            if not self._validate_select_dropdown_action(normalized):
+                return None
+        elif normalized["type"] == "ClickAction" and not self._validate_click_action(normalized):
+            return None
+
+        # Normalize selector
+        if not self._normalize_selector(normalized):
+            return None
+
+        return normalized
+
+    # ============================================================================
+    # ACTION TYPE NORMALIZATION HELPERS
+    # ============================================================================
+
+    def _normalize_action_type(self, action_type: str) -> str:
+        """Normalize action type string to expected format."""
+        action_type_lower = action_type.lower()
+        type_mapping = {
+            "navigate": "NavigateAction",
+            "click": "ClickAction",
+            "input": "TypeAction",
+            "type": "TypeAction",
+            "wait": "WaitAction",
+            "selectdropdownoption": "SelectDropDownOptionAction",
+            "select": "SelectDropDownOptionAction",
+        }
+
+        if action_type_lower in type_mapping:
+            return type_mapping[action_type_lower]
+        elif not action_type_lower.endswith("action"):
+            return action_type_lower.capitalize() + "Action"
+        return action_type
+
+    # ============================================================================
+    # ACTION VALIDATION HELPERS
+    # ============================================================================
+
+    def _validate_navigate_action(self, normalized: dict[str, Any]) -> bool:
+        """Validate NavigateAction has required fields."""
+        return bool(normalized.get("url") or normalized.get("go_back") or normalized.get("go_forward"))
+
+    def _normalize_wait_action(self, normalized: dict[str, Any]) -> None:
+        """Normalize WaitAction fields."""
+        if "timeout_seconds" in normalized and "time_seconds" not in normalized:
+            normalized["time_seconds"] = normalized.pop("timeout_seconds")
+        if not normalized.get("selector") and not normalized.get("time_seconds"):
+            normalized["time_seconds"] = 1.0
+
+    def _validate_type_action(self, normalized: dict[str, Any]) -> bool:
+        """Validate TypeAction has non-empty text field."""
+        if "value" in normalized and "text" not in normalized:
+            normalized["text"] = normalized.pop("value")
+        text_value = normalized.get("text")
+        if "text" not in normalized or not text_value or (isinstance(text_value, str) and not text_value.strip()):
+            logger.warning(f"TypeAction has empty or missing 'text' field, skipping action: {normalized}")
+            return False
+        return True
+
+    def _validate_select_dropdown_action(self, normalized: dict[str, Any]) -> bool:
+        """Validate SelectDropDownOptionAction has non-empty text field."""
+        text_value = normalized.get("text")
+        if "text" not in normalized or not text_value or (isinstance(text_value, str) and not text_value.strip()):
+            logger.warning(f"SelectDropDownOptionAction has empty or missing 'text' field, skipping action: {normalized}")
+            return False
+        return True
+
+    def _validate_click_action(self, normalized: dict[str, Any]) -> bool:
+        """Validate ClickAction has selector or coordinates."""
+        has_selector = "selector" in normalized and normalized["selector"] is not None
+        has_coords = "x" in normalized and "y" in normalized and normalized.get("x") is not None and normalized.get("y") is not None
+        if not has_selector and not has_coords:
+            logger.warning(f"ClickAction missing selector or coordinates, skipping action: {normalized}")
+            return False
+        return True
+
+    # ============================================================================
+    # SELECTOR NORMALIZATION HELPERS
+    # ============================================================================
+
+    def _normalize_selector(self, normalized: dict[str, Any]) -> bool:
+        """Normalize selector format and validate. Returns False if action should be skipped."""
+        if "selector" not in normalized or normalized["selector"] is None:
+            return True
+
+        if not isinstance(normalized["selector"], dict):
+            return self._handle_non_dict_selector(normalized)
+
+        selector_dict = normalized["selector"]
+        self._normalize_selector_type(selector_dict)
+
+        return self._validate_selector_value(normalized)
+
+    def _handle_non_dict_selector(self, normalized: dict[str, Any]) -> bool:
+        """Handle selector that is not a dictionary."""
+        if normalized["type"] in ["ClickAction", "TypeAction", "SelectDropDownOptionAction"]:
+            logger.warning(f"{normalized['type']} has invalid selector type, skipping action")
+            return False
+        return True
+
+    def _normalize_selector_type(self, selector_dict: dict[str, Any]) -> None:
+        """Normalize selector type to expected format."""
+        selector_type_str = selector_dict.get("type", "").lower()
+
+        if selector_type_str in ["xpathselector", "xpath"]:
+            selector_dict["type"] = "xpathSelector"
+        elif selector_type_str in ["attributevalueselector", "attribute"]:
+            selector_dict["type"] = "attributeValueSelector"
+        elif not selector_type_str:
+            selector_dict["type"] = self._infer_selector_type_from_value(selector_dict)
+
+    def _infer_selector_type_from_value(self, selector_dict: dict[str, Any]) -> str:
+        """Infer selector type from its value."""
+        selector_value = selector_dict.get("value", "")
+        if selector_value and (selector_value.startswith("//") or selector_value.startswith("(//")):
+            return "xpathSelector"
+        return "attributeValueSelector"
+
+    def _validate_selector_value(self, normalized: dict[str, Any]) -> bool:
+        """Validate selector value. Returns False if action should be skipped."""
+        selector_value = normalized["selector"].get("value")
+        if not selector_value or (isinstance(selector_value, str) and not selector_value.strip()):
+            if normalized["type"] in ["ClickAction", "TypeAction", "SelectDropDownOptionAction"]:
+                logger.warning(f"{normalized['type']} has invalid selector (empty value), skipping action")
+                return False
+            normalized.pop("selector", None)
+        return True
+
+    # ============================================================================
+    # URL AND SEED HELPERS
+    # ============================================================================
+
+    def _extract_seed_from_url(self, url: str) -> int | None:
+        """Extract seed parameter from URL query string"""
+        try:
+            parsed = urlparse(url)
+            query = parse_qs(parsed.query)
+            if query.get("seed"):
+                value = int(str(query["seed"][0]).strip())
+                return value
+        except Exception:
+            pass
+        return None
+
+    # ============================================================================
+    # TASK GENERATION AND EVALUATION HELPERS
+    # ============================================================================
 
     async def _generate_and_review_task_with_seed(self, use_case, seed: int) -> dict[str, Any]:
         """
@@ -272,153 +513,6 @@ class DynamicVerifier:
                 "tasks_generated": 0,
                 "error": str(e),
             }
-
-    def _normalize_action(self, action: dict[str, Any]) -> dict[str, Any] | None:
-        """
-        Normalize action from API format to format expected by BaseAction.create_action()
-
-        Args:
-            action: Action dictionary from API
-
-        Returns:
-            Normalized action dictionary or None if invalid
-        """
-        normalized = action.copy()
-
-        # Handle nested 'attributes' structure: flatten it
-        if "attributes" in normalized and isinstance(normalized["attributes"], dict):
-            attributes = normalized.pop("attributes")
-            normalized.update(attributes)
-
-        # Normalize action type
-        normalized["type"] = self._normalize_action_type(normalized.get("type", ""))
-
-        # Validate and normalize specific action types
-        if normalized["type"] == "NavigateAction":
-            if not self._validate_navigate_action(normalized):
-                return None
-        elif normalized["type"] == "WaitAction":
-            self._normalize_wait_action(normalized)
-        elif normalized["type"] == "TypeAction":
-            if not self._validate_type_action(normalized):
-                return None
-        elif normalized["type"] == "SelectDropDownOptionAction":
-            if not self._validate_select_dropdown_action(normalized):
-                return None
-        elif normalized["type"] == "ClickAction" and not self._validate_click_action(normalized):
-            return None
-
-        # Normalize selector
-        if not self._normalize_selector(normalized):
-            return None
-
-        return normalized
-
-    def _normalize_action_type(self, action_type: str) -> str:
-        """Normalize action type string to expected format."""
-        action_type_lower = action_type.lower()
-        type_mapping = {
-            "navigate": "NavigateAction",
-            "click": "ClickAction",
-            "input": "TypeAction",
-            "type": "TypeAction",
-            "wait": "WaitAction",
-            "selectdropdownoption": "SelectDropDownOptionAction",
-            "select": "SelectDropDownOptionAction",
-        }
-
-        if action_type_lower in type_mapping:
-            return type_mapping[action_type_lower]
-        elif not action_type_lower.endswith("action"):
-            return action_type_lower.capitalize() + "Action"
-        return action_type
-
-    def _validate_navigate_action(self, normalized: dict[str, Any]) -> bool:
-        """Validate NavigateAction has required fields."""
-        return bool(normalized.get("url") or normalized.get("go_back") or normalized.get("go_forward"))
-
-    def _normalize_wait_action(self, normalized: dict[str, Any]) -> None:
-        """Normalize WaitAction fields."""
-        if "timeout_seconds" in normalized and "time_seconds" not in normalized:
-            normalized["time_seconds"] = normalized.pop("timeout_seconds")
-        if not normalized.get("selector") and not normalized.get("time_seconds"):
-            normalized["time_seconds"] = 1.0
-
-    def _validate_type_action(self, normalized: dict[str, Any]) -> bool:
-        """Validate TypeAction has non-empty text field."""
-        if "value" in normalized and "text" not in normalized:
-            normalized["text"] = normalized.pop("value")
-        text_value = normalized.get("text")
-        if "text" not in normalized or not text_value or (isinstance(text_value, str) and not text_value.strip()):
-            logger.warning(f"TypeAction has empty or missing 'text' field, skipping action: {normalized}")
-            return False
-        return True
-
-    def _validate_select_dropdown_action(self, normalized: dict[str, Any]) -> bool:
-        """Validate SelectDropDownOptionAction has non-empty text field."""
-        text_value = normalized.get("text")
-        if "text" not in normalized or not text_value or (isinstance(text_value, str) and not text_value.strip()):
-            logger.warning(f"SelectDropDownOptionAction has empty or missing 'text' field, skipping action: {normalized}")
-            return False
-        return True
-
-    def _validate_click_action(self, normalized: dict[str, Any]) -> bool:
-        """Validate ClickAction has selector or coordinates."""
-        has_selector = "selector" in normalized and normalized["selector"] is not None
-        has_coords = "x" in normalized and "y" in normalized and normalized.get("x") is not None and normalized.get("y") is not None
-        if not has_selector and not has_coords:
-            logger.warning(f"ClickAction missing selector or coordinates, skipping action: {normalized}")
-            return False
-        return True
-
-    def _normalize_selector(self, normalized: dict[str, Any]) -> bool:
-        """Normalize selector format and validate. Returns False if action should be skipped."""
-        if "selector" not in normalized or normalized["selector"] is None:
-            return True
-
-        if not isinstance(normalized["selector"], dict):
-            if normalized["type"] in ["ClickAction", "TypeAction", "SelectDropDownOptionAction"]:
-                logger.warning(f"{normalized['type']} has invalid selector type, skipping action")
-                return False
-            return True
-
-        selector_dict = normalized["selector"]
-        selector_type_str = selector_dict.get("type", "").lower()
-
-        # Map selector types to expected format
-        if selector_type_str in ["xpathselector", "xpath"]:
-            normalized["selector"]["type"] = "xpathSelector"
-        elif selector_type_str in ["attributevalueselector", "attribute"]:
-            normalized["selector"]["type"] = "attributeValueSelector"
-        elif not selector_type_str:
-            # Infer type from value
-            selector_value = selector_dict.get("value", "")
-            if selector_value and (selector_value.startswith("//") or selector_value.startswith("(//")):
-                normalized["selector"]["type"] = "xpathSelector"
-            else:
-                normalized["selector"]["type"] = "attributeValueSelector"
-
-        # Validate selector value
-        selector_value = normalized["selector"].get("value")
-        if not selector_value or (isinstance(selector_value, str) and not selector_value.strip()):
-            if normalized["type"] in ["ClickAction", "TypeAction", "SelectDropDownOptionAction"]:
-                logger.warning(f"{normalized['type']} has invalid selector (empty value), skipping action")
-                return False
-            normalized.pop("selector", None)
-
-        return True
-
-    def _extract_seed_from_url(self, url: str) -> int | None:
-        """Extract seed parameter from URL query string"""
-        try:
-            parsed = urlparse(url)
-            query = parse_qs(parsed.query)
-            if query.get("seed"):
-                value = int(str(query["seed"][0]).strip())
-                return value
-        except Exception:
-            pass
-        return None
 
     def _print_task_details_for_review(self, task: Task, seed: int | None, constraints_str: str, is_dynamic: bool = False):
         """
@@ -585,18 +679,6 @@ class DynamicVerifier:
             web_project_id=self.web_project.id,
         )
 
-    def _print_evaluation_task_details(self, task: Task, use_case: Any, seed_value: int | None, constraints_str: str, num_actions: int, seed: int) -> None:
-        """Print task details before evaluation."""
-        print("\n" + "=" * 80)
-        print(f"🔄 STEP 4: DYNAMIC VERIFICATION (Seed: {seed})")
-        print("=" * 80)
-        print(f"Task ID: {task.id}")
-        print(f"Use Case: {use_case.name}")
-        print(f"Seed: {seed_value}")
-        print(f"Constraints: {constraints_str}")
-        print(f"Solution Actions: {num_actions}")
-        print("-" * 80)
-
     def _update_navigate_actions_with_seed(self, base_actions: list[BaseAction], task_url: str) -> list[BaseAction]:
         """Update NavigateAction URLs to match the task seed."""
         from autoppia_iwa.src.execution.actions.actions import NavigateAction
@@ -623,6 +705,22 @@ class DynamicVerifier:
 
         return updated_actions
 
+    # ============================================================================
+    # PRINTING/DISPLAY HELPERS
+    # ============================================================================
+
+    def _print_evaluation_task_details(self, task: Task, use_case: Any, seed_value: int | None, constraints_str: str, num_actions: int, seed: int) -> None:
+        """Print task details before evaluation."""
+        print("\n" + "=" * 80)
+        print(f"🔄 STEP 4: DYNAMIC VERIFICATION (Seed: {seed})")
+        print("=" * 80)
+        print(f"Task ID: {task.id}")
+        print(f"Use Case: {use_case.name}")
+        print(f"Seed: {seed_value}")
+        print(f"Constraints: {constraints_str}")
+        print(f"Solution Actions: {num_actions}")
+        print("-" * 80)
+
     def _print_evaluation_results(self, evaluation_result: Any, score: float) -> None:
         """Print evaluation results to console."""
         tests_passed = evaluation_result.stats.tests_passed if evaluation_result.stats else 0
@@ -637,6 +735,10 @@ class DynamicVerifier:
         if evaluation_result.stats and evaluation_result.stats.error_message:
             print(f"  Error: {evaluation_result.stats.error_message}")
         print("=" * 80 + "\n")
+
+    # ============================================================================
+    # SERIALIZATION HELPERS
+    # ============================================================================
 
     def _serialize_constraints(self, constraints: list[dict]) -> list[dict]:
         """
@@ -718,52 +820,9 @@ class DynamicVerifier:
                     cleaned_dict[key] = value
         return cleaned_dict
 
-    async def verify_dataset_diversity_with_seeds(
-        self,
-        seed_values: list[int],
-    ) -> dict[str, Any]:
-        """
-        V2 Verification: Verify that datasets are different with different seeds.
-
-        Makes 3 HTTP requests (via _load_dataset) with different seeds and verifies
-        that the returned datasets are actually different, ensuring the dynamic
-        data generation is working correctly.
-
-        Args:
-            seed_values: List of seed values to test (should be 3)
-
-        Returns:
-            Dictionary with verification results:
-            {
-                "seeds_tested": List[int],
-                "all_different": bool,  # True if all datasets are different
-                "datasets_info": Dict[int, Dict],  # Info per seed
-                "comparison_results": List[Dict],  # Pairwise comparisons
-                "passed": bool,  # True if all datasets are different
-                "summary": str
-            }
-        """
-        logger.info(f"V2 Verification: Testing dataset diversity for {self.web_project.name} with seeds: {seed_values}")
-
-        # Load datasets for all seeds
-        datasets, datasets_info = await self._load_datasets_for_seeds(seed_values)
-
-        # Compare datasets pairwise
-        comparison_results, all_different = self._compare_datasets_pairwise(datasets, datasets_info)
-
-        # Generate summary
-        summary, passed = self._generate_diversity_summary(datasets, seed_values, all_different)
-
-        return {
-            "seeds_tested": seed_values,
-            "all_different": all_different,
-            "datasets_info": datasets_info,
-            "comparison_results": comparison_results,
-            "passed": passed,
-            "summary": summary,
-            "loaded_count": len(datasets),
-            "expected_count": len(seed_values),
-        }
+    # ============================================================================
+    # DATASET DIVERSITY VERIFICATION HELPERS
+    # ============================================================================
 
     async def _load_datasets_for_seeds(self, seed_values: list[int]) -> tuple[dict[int, dict], dict[int, dict[str, Any]]]:
         """Load datasets for all seed values and return datasets and info dictionaries."""
@@ -831,49 +890,58 @@ class DynamicVerifier:
         for i in range(len(seed_list)):
             for j in range(i + 1, len(seed_list)):
                 seed1, seed2 = seed_list[i], seed_list[j]
-                hash1 = datasets_info[seed1].get("hash")
-                hash2 = datasets_info[seed2].get("hash")
-
-                if hash1 is None or hash2 is None:
-                    comparison_results.append(
-                        {
-                            "seed1": seed1,
-                            "seed2": seed2,
-                            "different": None,
-                            "reason": "One or both datasets failed to load",
-                        }
-                    )
+                result, pair_different = self._compare_dataset_pair(seed1, seed2, datasets_info)
+                comparison_results.append(result)
+                if not pair_different:
                     all_different = False
-                    continue
-
-                are_different = hash1 != hash2
-                entities1 = set(datasets_info[seed1].get("entities", []))
-                entities2 = set(datasets_info[seed2].get("entities", []))
-                entities_differ = entities1 != entities2
-
-                comparison_results.append(
-                    {
-                        "seed1": seed1,
-                        "seed2": seed2,
-                        "different": are_different,
-                        "hash1": hash1[:8],
-                        "hash2": hash2[:8],
-                        "entities_differ": entities_differ,
-                        "entities1": list(entities1),
-                        "entities2": list(entities2),
-                    }
-                )
-
-                if not are_different:
-                    all_different = False
-                    logger.warning(f"  ⚠️  Datasets for seeds {seed1} and {seed2} are IDENTICAL (hash: {hash1[:8]})")
-                else:
-                    if entities_differ:
-                        logger.info(f"  ✓ Datasets for seeds {seed1} and {seed2} are different (different entities)")
-                    else:
-                        logger.info(f"  ✓ Datasets for seeds {seed1} and {seed2} are different (same entities, different data)")
 
         return comparison_results, all_different
+
+    def _compare_dataset_pair(self, seed1: int, seed2: int, datasets_info: dict[int, dict[str, Any]]) -> tuple[dict[str, Any], bool]:
+        """Compare a pair of datasets and return comparison result and different flag."""
+        hash1 = datasets_info[seed1].get("hash")
+        hash2 = datasets_info[seed2].get("hash")
+
+        if hash1 is None or hash2 is None:
+            return self._create_failed_comparison_result(seed1, seed2), False
+
+        are_different = hash1 != hash2
+        entities1 = set(datasets_info[seed1].get("entities", []))
+        entities2 = set(datasets_info[seed2].get("entities", []))
+        entities_differ = entities1 != entities2
+
+        result = {
+            "seed1": seed1,
+            "seed2": seed2,
+            "different": are_different,
+            "hash1": hash1[:8],
+            "hash2": hash2[:8],
+            "entities_differ": entities_differ,
+            "entities1": list(entities1),
+            "entities2": list(entities2),
+        }
+
+        self._log_dataset_comparison(seed1, seed2, are_different, entities_differ, hash1)
+
+        return result, are_different
+
+    def _create_failed_comparison_result(self, seed1: int, seed2: int) -> dict[str, Any]:
+        """Create comparison result for failed dataset load."""
+        return {
+            "seed1": seed1,
+            "seed2": seed2,
+            "different": None,
+            "reason": "One or both datasets failed to load",
+        }
+
+    def _log_dataset_comparison(self, seed1: int, seed2: int, are_different: bool, entities_differ: bool, hash1: str) -> None:
+        """Log dataset comparison result."""
+        if not are_different:
+            logger.warning(f"  ⚠️  Datasets for seeds {seed1} and {seed2} are IDENTICAL (hash: {hash1[:8]})")
+        elif entities_differ:
+            logger.info(f"  ✓ Datasets for seeds {seed1} and {seed2} are different (different entities)")
+        else:
+            logger.info(f"  ✓ Datasets for seeds {seed1} and {seed2} are different (same entities, different data)")
 
     def _generate_diversity_summary(self, datasets: dict[int, dict], seed_values: list[int], all_different: bool) -> tuple[str, bool]:
         """Generate summary string and passed flag for diversity verification."""
