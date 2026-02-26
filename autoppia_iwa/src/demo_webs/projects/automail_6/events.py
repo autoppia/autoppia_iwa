@@ -231,20 +231,36 @@ class AddLabelEvent(Event, BaseEventValidator):
         subject: str | CriterionValue | None = None
         body: str | CriterionValue | None = None
 
+    def _should_validate_emails(self, criteria: ValidationCriteria) -> bool:
+        """Check if email validation is needed."""
+        return bool((criteria.subject or criteria.body) and self.emails)
+
+    def _validate_email_fields(self, email: Email, criteria: ValidationCriteria) -> bool:
+        """Validate subject and body fields for a single email."""
+        if criteria.subject and not self._validate_field(email.subject, criteria.subject):
+            return False
+        if criteria.body and not self._validate_field(email.body, criteria.body):
+            return False
+        return True
+
+    def _validate_all_emails(self, criteria: ValidationCriteria) -> bool:
+        """Validate all emails in the list."""
+        if not self.emails:
+            return True
+        for email in self.emails:
+            if not isinstance(email, Email):
+                continue
+            if not self._validate_email_fields(email, criteria):
+                return False
+        return True
+
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         if not self._validate_field(self.label_name, criteria.label_name):
             return False
-        if (criteria.subject or criteria.body) and self.emails:
-            for email in self.emails:
-                if not isinstance(email, Email):
-                    continue
-                if criteria.subject and not self._validate_field(email.subject, criteria.subject):
-                    return False
-                if criteria.body and not self._validate_field(email.body, criteria.body):
-                    return False
-
+        if self._should_validate_emails(criteria):
+            return self._validate_all_emails(criteria)
         return True
 
     @classmethod
