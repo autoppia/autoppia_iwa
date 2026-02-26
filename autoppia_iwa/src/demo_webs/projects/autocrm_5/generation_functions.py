@@ -22,7 +22,15 @@ from .data import (
     FIELD_OPERATORS_MAP_NEW_LOG,
 )
 
+# ============================================================================
+# CONSTANTS
+# ============================================================================
+ERROR_NO_DATASET = "[ERROR] No dataset provided"
 
+
+# ============================================================================
+# DATA FETCHING HELPERS
+# ============================================================================
 def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]] | None:
     if dataset is None:
         return None
@@ -37,7 +45,6 @@ def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, An
 
 async def _ensure_crm_dataset(
     task_url: str | None,
-    dataset: dict[str, list[dict[str, Any]]] | None,
     *,
     entity_type: str,
     method: str | None = None,
@@ -65,6 +72,9 @@ async def _ensure_crm_dataset(
     return {entity_type: fetched_dataset}
 
 
+# ============================================================================
+# UTILITY FUNCTIONS
+# ============================================================================
 def _to_float_safe(value: Any) -> float | None:
     if isinstance(value, int | float):
         return float(value)
@@ -76,76 +86,118 @@ def _to_float_safe(value: Any) -> float | None:
     return None
 
 
+# ============================================================================
+# CONSTRAINT VALUE GENERATION HELPERS
+# ============================================================================
+def _handle_equals_operator(field_value: Any) -> Any:
+    """Handle EQUALS operator."""
+    return field_value
+
+
+def _handle_not_equals_operator(field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
+    """Handle NOT_EQUALS operator."""
+    valid = [v[field] for v in dataset if v.get(field) != field_value and v.get(field) is not None]
+    return random.choice(valid) if valid else None
+
+
+def _handle_contains_operator(field_value: str) -> str:
+    """Handle CONTAINS operator for strings."""
+    if len(field_value) > 2:
+        start = random.randint(0, max(0, len(field_value) - 2))
+        end = random.randint(start + 1, len(field_value))
+        return field_value[start:end]
+    return field_value
+
+
+def _handle_not_contains_operator(field_value: str, field: str, dataset: list[dict[str, Any]]) -> Any:
+    """Handle NOT_CONTAINS operator for strings."""
+    valid = [v[field] for v in dataset if isinstance(v.get(field), str) and field_value not in v.get(field, "")]
+    return random.choice(valid) if valid else None
+
+
+def _handle_in_list_operator(field_value: Any, field: str, dataset: list[dict[str, Any]]) -> list[Any]:
+    """Handle IN_LIST operator."""
+    all_values = [v.get(field) for v in dataset if field in v and v.get(field) is not None]
+    all_values = list(set(all_values))
+    if not all_values:
+        return [field_value]
+    random.shuffle(all_values)
+    subset = random.sample(all_values, min(2, len(all_values)))
+    if field_value not in subset:
+        subset.append(field_value)
+    return list(set(subset))
+
+
+def _handle_not_in_list_operator(field_value: Any, field: str, dataset: list[dict[str, Any]]) -> list[Any]:
+    """Handle NOT_IN_LIST operator."""
+    all_values = [v.get(field) for v in dataset if field in v and v.get(field) is not None]
+    all_values = list(set(all_values))
+    if field_value in all_values:
+        with contextlib.suppress(ValueError):
+            all_values.remove(field_value)
+    return random.sample(all_values, min(2, len(all_values))) if all_values else []
+
+
+def _handle_numeric_comparison(operator: ComparisonOperator, field_value: Any) -> float | None:
+    """Handle numeric comparison operators (GREATER_THAN, LESS_THAN, etc.)."""
+    base = _to_float_safe(field_value)
+    if base is None:
+        return None
+    delta = random.uniform(1, 3)
+    if operator == ComparisonOperator.GREATER_THAN:
+        return round(base - delta, 2)
+    if operator == ComparisonOperator.LESS_THAN:
+        return round(base + delta, 2)
+    if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+        return round(base, 2)
+    return None
+
+
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
     if operator == ComparisonOperator.EQUALS:
-        return field_value
+        return _handle_equals_operator(field_value)
 
-    elif operator == ComparisonOperator.NOT_EQUALS:
-        valid = [v[field] for v in dataset if v.get(field) != field_value and v.get(field) is not None]
-        return random.choice(valid) if valid else None
+    if operator == ComparisonOperator.NOT_EQUALS:
+        return _handle_not_equals_operator(field_value, field, dataset)
 
-    elif operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
-        if len(field_value) > 2:
-            start = random.randint(0, max(0, len(field_value) - 2))
-            end = random.randint(start + 1, len(field_value))
-            return field_value[start:end]
-        return field_value
+    if operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
+        return _handle_contains_operator(field_value)
 
-    elif operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
-        valid = [v[field] for v in dataset if isinstance(v.get(field), str) and field_value not in v.get(field, "")]
-        return random.choice(valid) if valid else None
+    if operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
+        return _handle_not_contains_operator(field_value, field, dataset)
 
-    elif operator == ComparisonOperator.IN_LIST:
-        all_values = [v.get(field) for v in dataset if field in v and v.get(field) is not None]
-        all_values = list({v for v in all_values})
-        if not all_values:
-            return [field_value]
-        random.shuffle(all_values)
-        subset = random.sample(all_values, min(2, len(all_values)))
-        if field_value not in subset:
-            subset.append(field_value)
-        return list(set(subset))
+    if operator == ComparisonOperator.IN_LIST:
+        return _handle_in_list_operator(field_value, field, dataset)
 
-    elif operator == ComparisonOperator.NOT_IN_LIST:
-        all_values = [v.get(field) for v in dataset if field in v and v.get(field) is not None]
-        all_values = list({v for v in all_values})
-        if field_value in all_values:
-            with contextlib.suppress(ValueError):
-                all_values.remove(field_value)
-        return random.sample(all_values, min(2, len(all_values))) if all_values else []
+    if operator == ComparisonOperator.NOT_IN_LIST:
+        return _handle_not_in_list_operator(field_value, field, dataset)
 
-    elif operator in {
+    if operator in {
         ComparisonOperator.GREATER_THAN,
         ComparisonOperator.LESS_THAN,
         ComparisonOperator.GREATER_EQUAL,
         ComparisonOperator.LESS_EQUAL,
     }:
-        base = _to_float_safe(field_value)
-        if base is None:
-            return None
-        delta = random.uniform(1, 3)
-        if operator == ComparisonOperator.GREATER_THAN:
-            return round(base - delta, 2)
-        elif operator == ComparisonOperator.LESS_THAN:
-            return round(base + delta, 2)
-        elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
-            return round(base, 2)
+        return _handle_numeric_comparison(operator, field_value)
 
     return None
 
 
-async def generate_view_matter_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+# ============================================================================
+# MATTER CONSTRAINTS
+# ============================================================================
+async def generate_view_matter_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-    dataset_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="matters", method="distribute", filter_key="status")
-    dataset = dataset_dict.get("matters", [])
-    if not dataset:
-        print("[ERROR] No dataset provided")
+    dataset_dict = await _ensure_crm_dataset(task_url, entity_type="matters", method="distribute", filter_key="status")
+    matters_data = dataset_dict.get("matters", [])
+    if not matters_data:
+        print(ERROR_NO_DATASET)
         return constraints_list
     possible_fields = ["name", "client", "status", "updated"]
     num_constraints = random.randint(2, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
 
-    matter_data = random.choice(dataset)
+    matter_data = random.choice(matters_data)
 
     for field in selected_fields:
         allowed_ops = FIELD_OPERATORS_MAP_CLIENT_VIEW_MATTER.get(field, [])
@@ -155,7 +207,7 @@ async def generate_view_matter_constraints(task_url: str | None = None, dataset:
         operator = ComparisonOperator(random.choice(allowed_ops))
 
         field_value = matter_data.get(field)
-        value = _generate_constraint_value(operator, field_value, field, dataset=dataset)
+        value = _generate_constraint_value(operator, field_value, field, dataset=matters_data)
 
         if value is not None:
             constraint = create_constraint_dict(field, operator, value)
@@ -216,12 +268,15 @@ def generate_add_matter_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_view_client_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+# ============================================================================
+# CLIENT CONSTRAINTS
+# ============================================================================
+async def generate_view_client_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list = []
-    client_data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="clients", method="distribute", filter_key="status")
+    client_data_dict = await _ensure_crm_dataset(task_url, entity_type="clients", method="distribute", filter_key="status")
     client_data = client_data_dict.get("clients", [])
     if not client_data:
-        print("[ERROR] No dataset provided")
+        print(ERROR_NO_DATASET)
         return constraints_list
     possible_fields = ["name", "email", "status", "matters"]
     num_constraints = random.randint(1, len(possible_fields))
@@ -246,12 +301,12 @@ async def generate_view_client_constraints(task_url: str | None = None, dataset:
     return constraints_list
 
 
-async def generate_search_client_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_search_client_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list = []
-    client_data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="clients", method="distribute", filter_key="status")
+    client_data_dict = await _ensure_crm_dataset(task_url, entity_type="clients", method="distribute", filter_key="status")
     client_data = client_data_dict.get("clients", [])
     if not client_data:
-        print("[ERROR] No dataset provided")
+        print(ERROR_NO_DATASET)
         return constraints_list
     field_map = {"name": "query"}
     field = "name"
@@ -269,12 +324,12 @@ async def generate_search_client_constraints(task_url: str | None = None, datase
     return constraints_list
 
 
-async def generate_search_matter_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_search_matter_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-    matter_data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="matters", method="distribute", filter_key="status")
+    matter_data_dict = await _ensure_crm_dataset(task_url, entity_type="matters", method="distribute", filter_key="status")
     matter_data = matter_data_dict.get("matters", [])
     if not matter_data:
-        print("[ERROR] No dataset provided")
+        print(ERROR_NO_DATASET)
         return constraints_list
 
     field = "name"
@@ -292,6 +347,67 @@ async def generate_search_matter_constraints(task_url: str | None = None, datase
     return constraints_list
 
 
+# ============================================================================
+# DOCUMENT FIELD VALUE GENERATION HELPERS
+# ============================================================================
+def _parse_size_value(field_value: str | int | float) -> tuple[float | None, str]:
+    """Parse size value and return (base_kb, unit)."""
+    if isinstance(field_value, int | float):
+        return float(field_value), "KB"
+    if isinstance(field_value, str):
+        fv = field_value.strip().upper()
+        try:
+            if fv.endswith("KB"):
+                return float(fv.replace("KB", "").strip()), "KB"
+            if fv.endswith("MB"):
+                return float(fv.replace("MB", "").strip()) * 1024, "MB"
+            return float(fv), "KB"
+        except Exception:
+            return None, "KB"
+    return None, "KB"
+
+
+def _calculate_size_comparison(operator: ComparisonOperator, base_kb: float) -> float:
+    """Calculate new size value based on comparison operator."""
+    delta = random.randint(1, 20)
+    if operator == ComparisonOperator.GREATER_THAN:
+        return base_kb - delta
+    if operator == ComparisonOperator.GREATER_EQUAL:
+        return base_kb - random.randint(0, delta)
+    if operator == ComparisonOperator.LESS_THAN:
+        return base_kb + delta
+    if operator == ComparisonOperator.LESS_EQUAL:
+        return base_kb + random.randint(0, delta)
+    return base_kb
+
+
+def _format_size_value(new_kb: float, unit: str) -> str:
+    """Format size value with appropriate unit."""
+    if unit == "MB":
+        return f"{round(new_kb / 1024, 2)} MB"
+    return f"{round(new_kb)} KB"
+
+
+def _handle_document_size_operator(operator: ComparisonOperator, field_value: str | int | float) -> str | None:
+    """Handle size comparison operators for document fields."""
+    base_kb, unit = _parse_size_value(field_value)
+    if base_kb is None:
+        return None
+    new_kb = _calculate_size_comparison(operator, base_kb)
+    return _format_size_value(new_kb, unit)
+
+
+def _handle_document_equals(field_value: str) -> str:
+    """Handle EQUALS operator for document fields."""
+    return field_value
+
+
+def _handle_document_not_equals(field_value: str, field: str, all_documents: list[dict[str, Any]], values: list[Any]) -> Any:
+    """Handle NOT_EQUALS operator for document fields."""
+    valid = [d[field] for d in all_documents if d.get(field) != field_value and d.get(field) is not None]
+    return random.choice(valid) if valid else random.choice(values)
+
+
 def _generate_value_for_document_field(field: str, field_value: str, operator: ComparisonOperator, all_documents: list[dict[str, Any]]) -> Any:
     values = [d[field] for d in all_documents if field in d and d.get(field) is not None]
     values = list(set(values))
@@ -300,13 +416,12 @@ def _generate_value_for_document_field(field: str, field_value: str, operator: C
         return None
 
     if operator == ComparisonOperator.EQUALS:
-        return field_value
+        return _handle_document_equals(field_value)
 
-    elif operator == ComparisonOperator.NOT_EQUALS:
-        valid = [d[field] for d in all_documents if d.get(field) != field_value and d.get(field) is not None]
-        return random.choice(valid) if valid else random.choice(values)
+    if operator == ComparisonOperator.NOT_EQUALS:
+        return _handle_document_not_equals(field_value, field, all_documents, values)
 
-    elif (
+    if (
         operator
         in [
             ComparisonOperator.GREATER_THAN,
@@ -316,60 +431,22 @@ def _generate_value_for_document_field(field: str, field_value: str, operator: C
         ]
         and field == "size"
     ):
-        base_kb: float | None = None
-        unit = "KB"
-        if isinstance(field_value, int | float):
-            base_kb = float(field_value)
-            unit = "KB"
-        elif isinstance(field_value, str):
-            fv = field_value.strip().upper()
-            try:
-                if fv.endswith("KB"):
-                    base_kb = float(fv.replace("KB", "").strip())
-                    unit = "KB"
-                elif fv.endswith("MB"):
-                    base_kb = float(fv.replace("MB", "").strip()) * 1024
-                    unit = "MB"
-                else:
-                    base_kb = float(fv)
-                    unit = "KB"
-            except Exception:
-                base_kb = None
-
-        if base_kb is None:
-            return None
-
-        delta = random.randint(1, 20)
-
-        if operator == ComparisonOperator.GREATER_THAN:
-            new_kb = base_kb - delta
-        elif operator == ComparisonOperator.GREATER_EQUAL:
-            new_kb = base_kb - random.randint(0, delta)
-        elif operator == ComparisonOperator.LESS_THAN:
-            new_kb = base_kb + delta
-        elif operator == ComparisonOperator.LESS_EQUAL:
-            new_kb = base_kb + random.randint(0, delta)
-        else:
-            new_kb = base_kb
-
-        # Format consistently with original unit
-        if unit == "MB":
-            return f"{round(new_kb / 1024, 2)} MB"
-        else:
-            # Keep KB as integer for readability
-            return f"{round(new_kb)} KB"
+        return _handle_document_size_operator(operator, field_value)
 
     return random.choice(values)
 
 
-async def generate_document_deleted_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+# ============================================================================
+# DOCUMENT CONSTRAINTS
+# ============================================================================
+async def generate_document_deleted_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
 
     possible_fields = ["name", "size", "version", "status"]  # , "updated"]
-    data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="files", method="", filter_key="")
+    data_dict = await _ensure_crm_dataset(task_url, entity_type="files", method="", filter_key="")
     data = data_dict.get("files", [])
     if not data:
-        print("[ERROR] No dataset provided")
+        print(ERROR_NO_DATASET)
         return constraints_list
     document_data = random.choice(data)
     # document_data = random.choice(DOCUMENT_DATA)
@@ -394,9 +471,9 @@ async def generate_document_deleted_constraints(task_url: str | None = None, dat
     return constraints_list
 
 
-async def generate_document_renamed_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_document_renamed_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints: list[dict[str, Any]] = []
-    docs_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="files")
+    docs_dict = await _ensure_crm_dataset(task_url, entity_type="files")
     docs = docs_dict.get("files", [])
     NEW_DOCUMENT_NAMES = [
         "Report-102.pdf",
@@ -442,9 +519,12 @@ async def generate_document_renamed_constraints(task_url: str | None = None, dat
     return constraints
 
 
-async def generate_billing_search_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+# ============================================================================
+# BILLING CONSTRAINTS
+# ============================================================================
+async def generate_billing_search_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints: list[dict[str, Any]] = []
-    logs_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="logs")
+    logs_dict = await _ensure_crm_dataset(task_url, entity_type="logs")
     logs = logs_dict.get("logs", [])
     sample = random.choice(logs) if logs else {"matter": "Review", "description": "Review"}
     fields = ["query", "date_filter"]
@@ -466,8 +546,8 @@ async def generate_billing_search_constraints(task_url: str | None = None, datas
     return constraints
 
 
-async def generate_add_client_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    clients_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="clients")
+async def generate_add_client_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
+    clients_dict = await _ensure_crm_dataset(task_url, entity_type="clients")
     clients = clients_dict.get("clients", [])
     if not clients:
         clients = [{"name": "New Client", "email": "new@example.com", "matters": 1, "status": "Active", "last": "Today"}]
@@ -482,13 +562,13 @@ async def generate_add_client_constraints(task_url: str | None = None, dataset: 
     return constraints
 
 
-async def generate_delete_client_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    return await generate_add_client_constraints(task_url, dataset)
+async def generate_delete_client_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
+    return await generate_add_client_constraints(task_url)
 
 
-async def generate_filter_clients_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_filter_clients_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints: list[dict[str, Any]] = []
-    clients_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="clients")
+    clients_dict = await _ensure_crm_dataset(task_url, entity_type="clients")
     clients = clients_dict.get("clients", [])
     sample = random.choice(clients) if clients else {"status": "Active", "matters": 2}
     for field in ["status", "matters"]:
@@ -501,6 +581,9 @@ async def generate_filter_clients_constraints(task_url: str | None = None, datas
     return constraints
 
 
+# ============================================================================
+# CALENDAR CONSTRAINTS
+# ============================================================================
 def generate_new_calendar_event_constraints() -> list[dict[str, Any]]:
     fields = ["label", "time", "date", "event_type"]
     ALLOWED_EVENT_LABELS = [
@@ -585,13 +668,16 @@ def generate_new_calendar_event_constraints() -> list[dict[str, Any]]:
     return constraints
 
 
-async def generate_new_log_added_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+# ============================================================================
+# LOG CONSTRAINTS
+# ============================================================================
+async def generate_new_log_added_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     fields = ["matter", "hours", "description"]
     constraints: list[dict[str, Any]] = []
-    data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="logs")
+    data_dict = await _ensure_crm_dataset(task_url, entity_type="logs")
     data = data_dict.get("logs", [])
     if not data:
-        print("[ERROR] No dataset provided")
+        print(ERROR_NO_DATASET)
         return constraints
     log_data = random.choice(data)
 
@@ -612,13 +698,13 @@ async def generate_new_log_added_constraints(task_url: str | None = None, datase
     return constraints
 
 
-async def generate_log_edited_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_log_edited_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     fields = ["matter", "hours", "description", "client", "status"]
     constraints: list[dict[str, Any]] = []
-    data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="logs", method="", filter_key="")
+    data_dict = await _ensure_crm_dataset(task_url, entity_type="logs", method="", filter_key="")
     data = data_dict.get("logs", [])
     if not data:
-        print("[ERROR] No dataset provided")
+        print(ERROR_NO_DATASET)
         return constraints
 
     log_data = random.choice(data)
@@ -639,13 +725,13 @@ async def generate_log_edited_constraints(task_url: str | None = None, dataset: 
     return constraints
 
 
-async def generate_delete_log_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_delete_log_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     fields = ["matter", "hours", "client", "status"]
     constraints: list[dict[str, Any]] = []
-    data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="logs", method="", filter_key="")
+    data_dict = await _ensure_crm_dataset(task_url, entity_type="logs", method="", filter_key="")
     data = data_dict.get("logs", [])
     if not data:
-        print("[ERROR] No dataset provided")
+        print(ERROR_NO_DATASET)
         return constraints
     log_data = random.choice(data)
     for field in fields:
@@ -665,12 +751,12 @@ async def generate_delete_log_constraints(task_url: str | None = None, dataset: 
     return constraints
 
 
-async def generate_filter_matter_status_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_filter_matter_status_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints: list[dict[str, Any]] = []
-    matter_data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="matters", method="distribute", filter_key="status")
+    matter_data_dict = await _ensure_crm_dataset(task_url, entity_type="matters", method="distribute", filter_key="status")
     matter_data = matter_data_dict.get("matters", [])
     if not matter_data:
-        print("[ERROR] No dataset provided")
+        print(ERROR_NO_DATASET)
         return constraints
 
     statuses = [m.get("status") for m in matter_data if m.get("status")]
@@ -695,12 +781,12 @@ def generate_sort_matter_constraints() -> list[dict[str, Any]]:
     return [create_constraint_dict("direction", operator, direction)]
 
 
-async def generate_update_matter_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_update_matter_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints: list[dict[str, Any]] = []
-    matter_data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="matters", method="distribute", filter_key="status")
+    matter_data_dict = await _ensure_crm_dataset(task_url, entity_type="matters", method="distribute", filter_key="status")
     matter_data = matter_data_dict.get("matters", [])
     if not matter_data:
-        print("[ERROR] No dataset provided")
+        print(ERROR_NO_DATASET)
         return constraints
 
     fields = ["name", "client", "status", "updated"]
@@ -720,12 +806,12 @@ async def generate_update_matter_constraints(task_url: str | None = None, datase
     return constraints
 
 
-async def generate_view_pending_events_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_view_pending_events_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints: list[dict[str, Any]] = []
-    events_data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="events", method="", filter_key="")
+    events_data_dict = await _ensure_crm_dataset(task_url, entity_type="events", method="", filter_key="")
     events_data = events_data_dict.get("events", [])
     if not events_data:
-        print("[ERROR] No dataset provided")
+        print(ERROR_NO_DATASET)
         return constraints
 
     sorted_events = sorted(events_data, key=lambda e: e.get("date", ""))
@@ -738,6 +824,9 @@ async def generate_view_pending_events_constraints(task_url: str | None = None, 
     return constraints
 
 
+# ============================================================================
+# USER CONSTRAINTS
+# ============================================================================
 SAMPLE_USER_NAMES: list[str] = [
     "John Doe",
     "Jane Smith",
