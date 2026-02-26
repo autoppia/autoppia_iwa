@@ -27,130 +27,16 @@ from .data import (
 from .data_utils import fetch_data
 
 
-# ============================================================================
-# DATA FETCHING HELPERS
-# ============================================================================
-async def _ensure_hotel_dataset(task_url: str | None = None) -> list[dict[str, Any]]:
+async def _ensure_hotel_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     seed = get_seed_from_url(task_url)
     hotels = await fetch_data(seed_value=seed)
-    hotels_dataset = {"hotels": hotels}
+    dataset = {"hotels": hotels}
 
-    if hotels_dataset and "hotels" in hotels_dataset:
-        return hotels_dataset["hotels"]
-    if hotels_dataset:
-        return hotels_dataset
+    if dataset and "hotels" in dataset:
+        return dataset["hotels"]
+    if dataset:
+        return dataset
     return []
-
-
-# ============================================================================
-# CONSTRAINT VALUE GENERATION HELPERS
-# ============================================================================
-def _handle_datetime_constraint(operator: ComparisonOperator, field_value: datetime) -> datetime:
-    """Handle constraint value generation for datetime types."""
-    delta_days = random.randint(1, 5)
-    if operator == ComparisonOperator.GREATER_THAN:
-        return field_value - timedelta(days=delta_days)
-    if operator == ComparisonOperator.LESS_THAN:
-        return field_value + timedelta(days=delta_days)
-    if operator in {
-        ComparisonOperator.GREATER_EQUAL,
-        ComparisonOperator.LESS_EQUAL,
-        ComparisonOperator.EQUALS,
-    }:
-        return field_value
-    if operator == ComparisonOperator.NOT_EQUALS:
-        return field_value + timedelta(days=delta_days + 1)
-    return field_value
-
-
-def _handle_equals_operator(field_value: Any) -> Any:
-    """Handle EQUALS operator."""
-    return field_value
-
-
-def _handle_not_equals_string(field_value: str, field: str, dataset: list[dict[str, Any]]) -> Any:
-    """Handle NOT_EQUALS operator for strings."""
-    valid = [v[field] for v in dataset if v.get(field) and v.get(field) != field_value]
-    return random.choice(valid) if valid else None
-
-
-def _handle_not_equals_list(field_value: list, field: str, dataset: list[dict[str, Any]]) -> Any:
-    """Handle NOT_EQUALS operator for lists."""
-    valid = []
-    for v in dataset:
-        val = v.get(field)
-        if val and val != field_value:
-            if isinstance(val, list):
-                valid.extend([item for item in val if item not in field_value])
-            else:
-                valid.append(val)
-    return random.choice(valid) if valid else None
-
-
-def _handle_contains_operator(field_value: str) -> str:
-    """Handle CONTAINS operator for strings."""
-    if len(field_value) > 2:
-        start = random.randint(0, max(0, len(field_value) - 2))
-        end = random.randint(start + 1, len(field_value))
-        return field_value[start:end]
-    return field_value
-
-
-def _handle_not_contains_operator(field_value: str) -> str:
-    """Handle NOT_CONTAINS operator for strings."""
-    alphabet = "abcdefghijklmnopqrstuvwxyz"
-    for _ in range(100):
-        test_str = "".join(random.choice(alphabet) for _ in range(3))
-        if test_str.lower() not in field_value.lower():
-            return test_str
-    return "xyz"  # fallback
-
-
-def _extract_all_values_from_dataset(field: str, dataset: list[dict[str, Any]]) -> list[Any]:
-    """Extract all values for a given field from dataset, handling lists."""
-    all_values = []
-    for v in dataset:
-        if field in v:
-            val = v.get(field)
-            if isinstance(val, list):
-                all_values.extend(val)
-            elif val is not None:
-                all_values.append(val)
-    return list(set(all_values))
-
-
-def _handle_in_list_operator(field_value: Any, field: str, dataset: list[dict[str, Any]]) -> list[Any]:
-    """Handle IN_LIST operator."""
-    all_values = _extract_all_values_from_dataset(field, dataset)
-
-    if not all_values:
-        return [field_value]
-    random.shuffle(all_values)
-    subset = random.sample(all_values, min(2, len(all_values)))
-    if field_value not in subset:
-        subset.append(field_value)
-    return list(set(subset))
-
-
-def _handle_not_in_list_operator(field_value: Any, field: str, dataset: list[dict[str, Any]]) -> list[Any]:
-    """Handle NOT_IN_LIST operator."""
-    all_values = _extract_all_values_from_dataset(field, dataset)
-
-    if field_value in all_values:
-        all_values.remove(field_value)
-    return random.sample(all_values, min(2, len(all_values))) if all_values else []
-
-
-def _handle_numeric_comparison(operator: ComparisonOperator, base: int | float) -> int | float | None:
-    """Handle numeric comparison operators."""
-    delta = random.uniform(0.5, 2.0) if isinstance(base, float) else random.randint(1, 5)
-    if operator == ComparisonOperator.GREATER_THAN:
-        return round(base - delta, 2)
-    if operator == ComparisonOperator.LESS_THAN:
-        return round(base + delta, 2)
-    if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
-        return base
-    return None
 
 
 def _generate_constraint_value(
@@ -167,52 +53,113 @@ def _generate_constraint_value(
     if field == "amenities" and isinstance(field_value, list):
         field_value = random.choice(field_value) if field_value else ""
 
+    # Handle datetime comparisons
     if isinstance(field_value, datetime):
-        return _handle_datetime_constraint(operator, field_value)
+        delta_days = random.randint(1, 5)
+        if operator == ComparisonOperator.GREATER_THAN:
+            return field_value - timedelta(days=delta_days)
+        elif operator == ComparisonOperator.LESS_THAN:
+            return field_value + timedelta(days=delta_days)
+        elif operator in {
+            ComparisonOperator.GREATER_EQUAL,
+            ComparisonOperator.LESS_EQUAL,
+            ComparisonOperator.EQUALS,
+        }:
+            return field_value
+        elif operator == ComparisonOperator.NOT_EQUALS:
+            return field_value + timedelta(days=delta_days + 1)
 
     if operator == ComparisonOperator.EQUALS:
-        return _handle_equals_operator(field_value)
+        return field_value
 
-    if operator == ComparisonOperator.NOT_EQUALS:
-        return _handle_not_equals_operator(field_value, field, dataset)
+    elif operator == ComparisonOperator.NOT_EQUALS:
+        if isinstance(field_value, str):
+            valid = [v[field] for v in dataset if v.get(field) and v.get(field) != field_value]
+            return random.choice(valid) if valid else None
+        elif isinstance(field_value, list):
+            # For lists, find a value in dataset that is not equal to the list
+            valid = []
+            for v in dataset:
+                val = v.get(field)
+                if val and val != field_value:
+                    if isinstance(val, list):
+                        valid.extend([item for item in val if item not in field_value])
+                    else:
+                        valid.append(val)
+            return random.choice(valid) if valid else None
 
-    if operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
-        return _handle_contains_operator(field_value)
+    elif operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
+        if len(field_value) > 2:
+            start = random.randint(0, max(0, len(field_value) - 2))
+            end = random.randint(start + 1, len(field_value))
+            return field_value[start:end]
+        return field_value
 
-    if operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
-        return _handle_not_contains_operator(field_value)
+    elif operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
+        alphabet = "abcdefghijklmnopqrstuvwxyz"
+        for _ in range(100):
+            test_str = "".join(random.choice(alphabet) for _ in range(3))
+            if test_str.lower() not in field_value.lower():
+                return test_str
+        return "xyz"  # fallback
 
-    if operator == ComparisonOperator.IN_LIST:
-        return _handle_in_list_operator(field_value, field, dataset)
+    elif operator == ComparisonOperator.IN_LIST:
+        all_values = []
+        for v in dataset:
+            if field in v:
+                val = v.get(field)
+                if isinstance(val, list):
+                    all_values.extend(val)
+                elif val is not None:
+                    all_values.append(val)
+        all_values = list(set(all_values))
 
-    if operator == ComparisonOperator.NOT_IN_LIST:
-        return _handle_not_in_list_operator(field_value, field, dataset)
+        if not all_values:
+            return [field_value]
+        random.shuffle(all_values)
+        subset = random.sample(all_values, min(2, len(all_values)))
+        if field_value not in subset:
+            subset.append(field_value)
+        return list(set(subset))
 
-    if operator in {
+    elif operator == ComparisonOperator.NOT_IN_LIST:
+        all_values = []
+        for v in dataset:
+            if field in v:
+                val = v.get(field)
+                if isinstance(val, list):
+                    all_values.extend(val)
+                elif val is not None:
+                    all_values.append(val)
+        all_values = list(set(all_values))
+
+        if field_value in all_values:
+            all_values.remove(field_value)
+        return random.sample(all_values, min(2, len(all_values))) if all_values else []
+
+    elif operator in {
         ComparisonOperator.GREATER_THAN,
         ComparisonOperator.LESS_THAN,
         ComparisonOperator.GREATER_EQUAL,
         ComparisonOperator.LESS_EQUAL,
-    } and isinstance(field_value, int | float):
-        return _handle_numeric_comparison(operator, field_value)
+    }:
+        base = field_value
+        if isinstance(base, int | float):
+            delta = random.uniform(0.5, 2.0) if isinstance(base, float) else random.randint(1, 5)
+            if operator == ComparisonOperator.GREATER_THAN:
+                return round(base - delta, 2)
+            elif operator == ComparisonOperator.LESS_THAN:
+                return round(base + delta, 2)
+            elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+                return base
 
+    # Fallback: return None
     return None
 
 
-def _handle_not_equals_operator(field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
-    """Handle NOT_EQUALS operator for different types."""
-    if isinstance(field_value, str):
-        return _handle_not_equals_string(field_value, field, dataset)
-    if isinstance(field_value, list):
-        return _handle_not_equals_list(field_value, field, dataset)
-    return None
-
-
-# ============================================================================
-# SEARCH HOTEL CONSTRAINT HELPERS
-# ============================================================================
-def _select_search_fields() -> list[str]:
-    """Select fields for search hotel constraints."""
+async def generate_search_hotel_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraints_list: list[dict[str, Any]] = []
+    data = await _ensure_hotel_dataset(task_url, dataset)
     possible_fields = [
         "search_term",
         "datesFrom",
@@ -222,132 +169,29 @@ def _select_search_fields() -> list[str]:
         "infants",
         "pets",
     ]
+
     num_constraints = random.randint(1, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
 
     # Ensure if 'datesTo' is selected, 'datesFrom' is also selected
     if "datesTo" in selected_fields and "datesFrom" not in selected_fields:
         selected_fields.append("datesFrom")
-    return selected_fields
+    if not data:
+        logger.warning("No hotel data available for generating search hotel constraints")
+        return []
+    sample_hotel = random.choice(data)
+    max_guests = sample_hotel.get("maxGuests", 2)
 
-
-def _generate_sample_guests(max_guests: int) -> dict[str, int]:
-    """Generate sample guests data."""
+    # Generate adults and children such that their sum <= max_guests
     adults = random.randint(0, max_guests)
     children = random.randint(0, max_guests - adults)
-    return {
+
+    sample_guests = {
         "adults": adults,
         "children": children,
         "infants": random.randint(0, 5),
         "pets": random.randint(0, 5),
     }
-
-
-def _process_search_term_field(sample_hotel: dict[str, Any], operator: ComparisonOperator, data: list[dict[str, Any]]) -> Any:
-    """Process search_term field constraint."""
-    if sample_hotel.get("location"):
-        new_field = "location"
-        value = sample_hotel.get("location")
-    else:
-        new_field = "title"
-        value = sample_hotel.get("title")
-    if not value:
-        return None
-    return _generate_constraint_value(operator, value, new_field, data)
-
-
-def _process_date_field(sample_hotel: dict[str, Any], field: str, operator: ComparisonOperator, data: list[dict[str, Any]]) -> Any:
-    """Process date field constraint."""
-    value = sample_hotel.get(field)
-    if not value:
-        logger.warning(f"Field {field} is empty!")
-        return None
-    return _generate_constraint_value(operator, value, field, data)
-
-
-def _process_guests_field(field: str, sample_guests: dict[str, int], max_guests: int, operator: ComparisonOperator) -> int:
-    """Process guests field constraint (adults, children)."""
-    actual_value = sample_guests.get(field, 0)
-    other_field = "children" if field == "adults" else "adults"
-    other_value = sample_guests.get(other_field, 0)
-    return _generate_num_of_guests_field_value(operator=operator, actual_value=actual_value, max_value=max_guests - other_value)
-
-
-# ============================================================================
-# GUESTS FIELD VALUE GENERATION HELPERS
-# ============================================================================
-def _handle_guests_equals(actual_value: int) -> int:
-    """Handle EQUALS operator for guests."""
-    return actual_value
-
-
-def _handle_guests_not_equals(actual_value: int, max_value: int) -> int:
-    """Handle NOT_EQUALS operator for guests."""
-    choices = [val for val in range(1, max_value + 1) if val != actual_value]
-    return random.choice(choices) if choices else actual_value + 1
-
-
-def _handle_guests_less_than(actual_value: int, max_value: int) -> int:
-    """Handle LESS_THAN operator for guests."""
-    if actual_value < max_value:
-        return random.randint(actual_value + 1, max_value)
-    return max_value + 1
-
-
-def _handle_guests_less_equal(actual_value: int, max_value: int) -> int:
-    """Handle LESS_EQUAL operator for guests."""
-    if actual_value < max_value:
-        return random.randint(actual_value, max_value)
-    return max_value
-
-
-def _handle_guests_greater_than(actual_value: int) -> int:
-    """Handle GREATER_THAN operator for guests."""
-    if actual_value > 1:
-        return random.randint(1, actual_value - 1)
-    return 1
-
-
-def _handle_guests_greater_equal(actual_value: int) -> int:
-    """Handle GREATER_EQUAL operator for guests."""
-    if actual_value > 1:
-        return random.randint(1, actual_value)
-    return 1
-
-
-def _generate_num_of_guests_field_value(operator: str, actual_value: int, max_value: int) -> int:
-    """Generate a value for number of guests field based on operator."""
-    if operator == ComparisonOperator.EQUALS:
-        return _handle_guests_equals(actual_value)
-    if operator == ComparisonOperator.NOT_EQUALS:
-        return _handle_guests_not_equals(actual_value, max_value)
-    if operator == ComparisonOperator.LESS_THAN:
-        return _handle_guests_less_than(actual_value, max_value)
-    if operator == ComparisonOperator.LESS_EQUAL:
-        return _handle_guests_less_equal(actual_value, max_value)
-    if operator == ComparisonOperator.GREATER_THAN:
-        return _handle_guests_greater_than(actual_value)
-    if operator == ComparisonOperator.GREATER_EQUAL:
-        return _handle_guests_greater_equal(actual_value)
-    return max(1, min(actual_value, max_value))
-
-
-# ============================================================================
-# CONSTRAINT GENERATION FUNCTIONS
-# ============================================================================
-# SEARCH CONSTRAINTS
-async def generate_search_hotel_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
-    constraints_list: list[dict[str, Any]] = []
-    data = await _ensure_hotel_dataset(task_url)
-    selected_fields = _select_search_fields()
-
-    if not data:
-        logger.warning("No hotel data available for generating search hotel constraints")
-        return []
-
-    sample_hotel = random.choice(data)
-    max_guests = sample_hotel.get("maxGuests", 2)
-    sample_guests = _generate_sample_guests(max_guests)
 
     for field in selected_fields:
         allowed_ops = FIELD_OPERATORS_SEARCH_HOTEL_MAP.get(field, [])
@@ -358,11 +202,30 @@ async def generate_search_hotel_constraints(task_url: str | None = None) -> list
         operator = ComparisonOperator(op_str)
 
         if field == "search_term":
-            value = _process_search_term_field(sample_hotel, operator, data)
+            if sample_hotel.get("location"):
+                new_field = "location"
+                value = sample_hotel.get("location")
+            else:
+                new_field = "title"
+                value = sample_hotel.get("title")
+            if not value:
+                continue
+            value = _generate_constraint_value(operator, value, new_field, data)
+
         elif field in ["datesFrom", "datesTo"]:
-            value = _process_date_field(sample_hotel, field, operator, data)
+            value = sample_hotel.get(field)
+            if not value:
+                logger.warning(f"Field {field} is empty!")
+            value = _generate_constraint_value(operator, value, field, data)
+
         elif field in ["adults", "children"]:
-            value = _process_guests_field(field, sample_guests, max_guests, operator)
+            actual_value = sample_guests.get(field, 0)
+            other_field = "children" if field == "adults" else "adults"
+            other_value = sample_guests.get(other_field, 0)
+
+            # Ensure sum of adults + children ≤ maxGuests
+            value = _generate_num_of_guests_field_value(operator=operator, actual_value=actual_value, max_value=max_guests - other_value)
+
         else:  # infants, pets
             value = sample_guests.get(field)
             value = _generate_num_of_guests_field_value(operator, value, max_guests)
@@ -375,27 +238,46 @@ async def generate_search_hotel_constraints(task_url: str | None = None) -> list
 
 
 def _generate_num_of_guests_field_value(operator: str, actual_value: int, max_value: int) -> int:
-    """Generate a value for number of guests field based on operator."""
     if operator == ComparisonOperator.EQUALS:
-        return _handle_guests_equals(actual_value)
-    if operator == ComparisonOperator.NOT_EQUALS:
-        return _handle_guests_not_equals(actual_value, max_value)
-    if operator == ComparisonOperator.LESS_THAN:
-        return _handle_guests_less_than(actual_value, max_value)
-    if operator == ComparisonOperator.LESS_EQUAL:
-        return _handle_guests_less_equal(actual_value, max_value)
-    if operator == ComparisonOperator.GREATER_THAN:
-        return _handle_guests_greater_than(actual_value)
-    if operator == ComparisonOperator.GREATER_EQUAL:
-        return _handle_guests_greater_equal(actual_value)
-    return max(1, min(actual_value, max_value))
+        return actual_value
+    elif operator == ComparisonOperator.NOT_EQUALS:
+        # Pick any value except the actual one
+        choices = [val for val in range(1, max_value + 1) if val != actual_value]
+        return random.choice(choices) if choices else actual_value + 1
+    elif operator == ComparisonOperator.LESS_THAN:
+        # actual_value < generated_value
+        if actual_value < max_value:
+            val = random.randint(actual_value + 1, max_value)
+            return val
+        else:
+            return max_value + 1
+    elif operator == ComparisonOperator.LESS_EQUAL:
+        # actual_value <= generated_value
+        if actual_value < max_value:
+            val = random.randint(actual_value, max_value)
+            return val
+        else:
+            return max_value
+    elif operator == ComparisonOperator.GREATER_THAN:
+        # actual_value > generated_value
+        if actual_value > 1:
+            val = random.randint(1, actual_value - 1)
+            return val
+        else:
+            return 1
+    elif operator == ComparisonOperator.GREATER_EQUAL:
+        # actual_value >= generated_value
+        if actual_value > 1:
+            val = random.randint(1, actual_value)
+            return val
+        else:
+            return 1
+    else:
+        return max(1, min(actual_value, max_value))
 
 
-# ============================================================================
-# VIEW HOTEL CONSTRAINT HELPERS
-# ============================================================================
-def _select_view_hotel_fields() -> list[str]:
-    """Select fields for view hotel constraints."""
+async def __generate_view_hotel_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    constraints_list: list[dict[str, Any]] = []
     possible_fields = list(FIELD_OPERATORS_VIEW_HOTEL_MAP.keys())
     num_constraints = random.randint(3, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
@@ -405,147 +287,81 @@ def _select_view_hotel_fields() -> list[str]:
         selected_fields.append("datesTo")
     elif "datesTo" in selected_fields and "datesFrom" not in selected_fields:
         selected_fields.append("datesFrom")
-    return selected_fields
-
-
-def _get_all_amenities_from_data(data: list[dict[str, Any]]) -> set[str]:
-    """Get all unique amenities from hotel data."""
-    all_amenities = set()
-    for h in data:
-        all_amenities.update(h.get("amenities", []))
-    return all_amenities
-
-
-def _process_amenities_contains(hotel_amenities: list[str]) -> str | None:
-    """Process amenities field with CONTAINS operator."""
-    if hotel_amenities:
-        return random.choice(hotel_amenities)
-    return None
-
-
-def _process_amenities_not_contains(available_amenities: list[str]) -> str:
-    """Process amenities field with NOT_CONTAINS operator."""
-    return random.choice(available_amenities) if available_amenities else "Non-existent amenity"
-
-
-def _process_amenities_in_list(hotel_amenities: list[str]) -> list[str] | None:
-    """Process amenities field with IN_LIST operator."""
-    if hotel_amenities:
-        num_amenities = min(len(hotel_amenities), random.randint(1, 2))
-        return random.sample(hotel_amenities, num_amenities)
-    return None
-
-
-def _process_amenities_not_in_list(available_amenities: list[str]) -> list[str]:
-    """Process amenities field with NOT_IN_LIST operator."""
-    if available_amenities:
-        num_amenities = min(len(available_amenities), random.randint(1, 3))
-        return random.sample(available_amenities, num_amenities)
-    return ["Non-existent amenity"]
-
-
-def _process_amenities_field(operator: ComparisonOperator, hotel_amenities: list[str], all_amenities: set[str]) -> Any:
-    """Process amenities field constraint."""
-    hotel_amenities_set = set(hotel_amenities)
-    available_amenities = list(all_amenities - hotel_amenities_set)
-
-    if operator == ComparisonOperator.CONTAINS:
-        return _process_amenities_contains(hotel_amenities)
-    if operator == ComparisonOperator.NOT_CONTAINS:
-        return _process_amenities_not_contains(available_amenities)
-    if operator == ComparisonOperator.IN_LIST:
-        return _process_amenities_in_list(hotel_amenities)
-    if operator == ComparisonOperator.NOT_IN_LIST:
-        return _process_amenities_not_in_list(available_amenities)
-    return hotel_amenities
-
-
-def _process_view_hotel_field(field: str, hotel: dict[str, Any], operator: ComparisonOperator, data: list[dict[str, Any]], all_amenities: set[str]) -> Any:
-    """Process a single field for view hotel constraints."""
-    field_value = hotel.get(field)
-    if field_value is None:
-        return None
-
-    if field == "guests":
-        max_guests = hotel.get("maxGuests") or hotel.get("guests") or 1
-        return _generate_num_of_guests_field_value(operator, field_value, max_guests)
-
-    if field == "amenities":
-        hotel_amenities = hotel.get("amenities", [])
-        return _process_amenities_field(operator, hotel_amenities, all_amenities)
-
-    return _generate_constraint_value(operator, field_value, field, data)
-
-
-async def __generate_view_hotel_constraints(task_url: str | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    constraints_list: list[dict[str, Any]] = []
-    selected_fields = _select_view_hotel_fields()
-    data = await _ensure_hotel_dataset(task_url)
+    data = await _ensure_hotel_dataset(task_url, dataset)
     if not data:
         logger.warning("No hotel data available for generating view hotel constraints")
         return [], {}
     hotel = random.choice(data)
-    all_amenities = _get_all_amenities_from_data(data)
+    # hotel = random.choice(HOTELS_DATA_MODIFIED)
 
     for field in selected_fields:
         operator = ComparisonOperator(random.choice(FIELD_OPERATORS_VIEW_HOTEL_MAP[field]))
-        field_value = _process_view_hotel_field(field, hotel, operator, data, all_amenities)
-
+        field_value = hotel.get(field)
         if field_value is None:
             continue
+        if field == "guests":
+            max_guests = hotel.get("maxGuests") or hotel.get("guests") or 1
+            field_value = _generate_num_of_guests_field_value(operator, field_value, max_guests)
+        elif field == "amenities":
+            hotel_amenities = hotel.get("amenities", [])
+            all_amenities = set()
+            for h in data:
+                all_amenities.update(h.get("amenities", []))
+            hotel_amenities_set = set(hotel_amenities)
+            available_amenities = list(all_amenities - hotel_amenities_set)
+
+            if operator == ComparisonOperator.CONTAINS:
+                if hotel_amenities:
+                    field_value = random.choice(hotel_amenities)
+                else:
+                    continue  # Cannot create this constraint
+            elif operator == ComparisonOperator.NOT_CONTAINS:
+                field_value = random.choice(available_amenities) if available_amenities else "Non-existent amenity"
+            elif operator == ComparisonOperator.IN_LIST:
+                if hotel_amenities:
+                    num_amenities = min(len(hotel_amenities), random.randint(1, 2))
+                    field_value = random.sample(hotel_amenities, num_amenities)
+                else:
+                    continue  # Cannot create this constraint
+            elif operator == ComparisonOperator.NOT_IN_LIST:
+                if available_amenities:
+                    num_amenities = min(len(available_amenities), random.randint(1, 3))
+                    field_value = random.sample(available_amenities, num_amenities)
+                else:
+                    field_value = ["Non-existent amenity"]
+            else:
+                field_value = hotel_amenities
+        else:
+            field_value = _generate_constraint_value(operator, field_value, field, data)
+            if field_value is None:
+                continue
 
         constraint = create_constraint_dict(field, operator, field_value)
         constraints_list.append(constraint)
     return constraints_list, hotel
 
 
-# VIEW HOTEL CONSTRAINTS
-async def generate_view_hotel_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
-    constraints_list, _ = await __generate_view_hotel_constraints(task_url)
+async def generate_view_hotel_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraints_list, _ = await __generate_view_hotel_constraints(task_url, dataset=dataset)
 
     return constraints_list
 
 
-# ============================================================================
-# RESERVE HOTEL CONSTRAINT HELPERS
-# ============================================================================
-def _select_reserve_hotel_fields(view_fields: set[str]) -> list[str]:
-    """Select fields for reserve hotel constraints."""
+async def _generate_reserve_hotel_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    constraints_list: list[dict[str, Any]] = []
+    data = await _ensure_hotel_dataset(task_url, dataset)
+    if not data:
+        logger.warning("No hotel data available for generating reserve hotel constraints")
+        return [], {}
+    view_hotel_constraints, sample_hotel = await __generate_view_hotel_constraints(task_url, dataset=data)
+    view_hotel_constraints = [c for c in view_hotel_constraints if c.get("field") != "guests"]
+
+    view_fields = {f.get("field") for f in view_hotel_constraints}
     selected_fields = ["guests_set"]
     if "datesTo" not in view_fields:
         selected_fields.append("datesTo")
     if "datesFrom" not in view_fields:
         selected_fields.append("datesFrom")
-    return selected_fields
-
-
-def _process_reserve_hotel_field(field: str, sample_hotel: dict[str, Any], operator: ComparisonOperator, max_guests: int, data: list[dict[str, Any]]) -> dict[str, Any] | None:
-    """Process a single field for reserve hotel constraints."""
-    if field == "guests_set":
-        value = random.randint(1, max_guests)
-        field_value = _generate_num_of_guests_field_value(operator, value, max_guests)
-        return create_constraint_dict(field, operator, field_value)
-
-    field_value = sample_hotel.get(field)
-    if field_value is None:
-        return None
-    value = _generate_constraint_value(operator, field_value, field, data)
-    if value is None:
-        return None
-    return create_constraint_dict(field, operator, value)
-
-
-async def _generate_reserve_hotel_constraints(task_url: str | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    constraints_list: list[dict[str, Any]] = []
-    data = await _ensure_hotel_dataset(task_url)
-    if not data:
-        logger.warning("No hotel data available for generating reserve hotel constraints")
-        return [], {}
-    view_hotel_constraints, sample_hotel = await __generate_view_hotel_constraints(task_url)
-    view_hotel_constraints = [c for c in view_hotel_constraints if c.get("field") != "guests"]
-
-    view_fields = {f.get("field") for f in view_hotel_constraints}
-    selected_fields = _select_reserve_hotel_fields(view_fields)
 
     max_guests = sample_hotel.get("maxGuests") or sample_hotel.get("guests") or 1
 
@@ -555,22 +371,34 @@ async def _generate_reserve_hotel_constraints(task_url: str | None = None) -> tu
             continue
 
         operator = ComparisonOperator(random.choice(allowed_ops))
-        constraint = _process_reserve_hotel_field(field, sample_hotel, operator, max_guests, data)
-        if constraint:
+
+        if field == "guests_set":
+            value = random.randint(1, max_guests)
+            field_value = _generate_num_of_guests_field_value(operator, value, max_guests)
+            constraint = create_constraint_dict(field, operator, field_value)
+            constraints_list.append(constraint)
+        else:
+            field_value = sample_hotel.get(field)
+            if field_value is None:
+                continue
+            value = _generate_constraint_value(operator, field_value, field, data)
+            if value is None:
+                continue
+            constraint = create_constraint_dict(field, operator, value)
             constraints_list.append(constraint)
 
     constraints_list.extend(view_hotel_constraints)
     return constraints_list, sample_hotel
 
 
-async def generate_reserve_hotel_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
-    constraints_list, _ = await _generate_reserve_hotel_constraints(task_url)
+async def generate_reserve_hotel_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraints_list, sample_hotel = await _generate_reserve_hotel_constraints(task_url, dataset=dataset)
     return constraints_list
 
 
-async def generate_edit_guests_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
+async def generate_edit_guests_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-    data = await _ensure_hotel_dataset(task_url)
+    data = await _ensure_hotel_dataset(task_url, dataset)
     # Prefer hotels that allow increasing guests (capacity >= 2). If none, bail out early.
     capacity_hotels = [h for h in data if (h.get("maxGuests") or h.get("guests") or 0) >= 2]
     if not capacity_hotels:
@@ -610,9 +438,9 @@ async def generate_edit_guests_constraints(task_url: str | None = None) -> list[
     return constraints_list
 
 
-async def generate_edit_checkin_checkout_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
+async def generate_edit_checkin_checkout_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-    reserve_constraints_list, sample_hotel = await _generate_reserve_hotel_constraints(task_url)
+    reserve_constraints_list, sample_hotel = await _generate_reserve_hotel_constraints(task_url, dataset=dataset)
 
     possible_fields = list(FIELD_OPERATORS_EDIT_CHECKIN_OUT_MAP.keys())
     possible_fields = [field for field in possible_fields if field not in ["checkin", "checkout"]]
@@ -673,8 +501,8 @@ async def generate_edit_checkin_checkout_constraints(task_url: str | None = None
     return constraints_list
 
 
-async def generate_confirm_and_pay_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
-    reserve_constraints, sample_hotel = await _generate_reserve_hotel_constraints(task_url)
+async def generate_confirm_and_pay_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    reserve_constraints, sample_hotel = await _generate_reserve_hotel_constraints(task_url, dataset=dataset)
 
     # Payment specific fields
     payment_fields = ["card_number", "expiration", "cvv", "zipcode", "country"]
@@ -728,9 +556,9 @@ async def generate_confirm_and_pay_constraints(task_url: str | None = None) -> l
     return constraints_list
 
 
-async def generate_message_host_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
+async def generate_message_host_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-    data = await _ensure_hotel_dataset(task_url)
+    data = await _ensure_hotel_dataset(task_url, dataset)
     if not data:
         logger.warning("No hotel data available for generating message host constraints")
         return []
@@ -746,7 +574,7 @@ async def generate_message_host_constraints(task_url: str | None = None) -> list
         "How far is the property from the city center?",
         "Is there a washing machine available for guests?",
     ]
-    constraint_list_for_view, hotel_dict = await __generate_view_hotel_constraints(task_url)
+    constraint_list_for_view, hotel_dict = await __generate_view_hotel_constraints(task_url, dataset=data)
 
     selected_fields = ["message", "host_name"]
     sample_data = {"host_name": hotel_dict.get("host_name", ""), "message": random.choice(msgs_list)}
@@ -767,9 +595,9 @@ async def generate_message_host_constraints(task_url: str | None = None) -> list
     return constraints_list
 
 
-async def generate_share_hotel_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
+async def generate_share_hotel_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-    data = await _ensure_hotel_dataset(task_url)
+    data = await _ensure_hotel_dataset(task_url, dataset)
     if not data:
         logger.warning("No hotel data available for generating share hotel constraints")
         return []
@@ -801,7 +629,7 @@ async def generate_share_hotel_constraints(task_url: str | None = None) -> list[
         "charlotte.cox@musicstream.fm",
     ]
 
-    constraint_list_for_view, _ = await __generate_view_hotel_constraints(task_url)
+    constraint_list_for_view, hotel_dict = await __generate_view_hotel_constraints(task_url, dataset=data)
 
     field = "email"
     email_dataset = [{"email": email} for email in emails_list]
@@ -816,8 +644,8 @@ async def generate_share_hotel_constraints(task_url: str | None = None) -> list[
     return constraints_list
 
 
-async def generate_apply_filter_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
-    await _ensure_hotel_dataset(task_url)
+async def generate_apply_filter_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    await _ensure_hotel_dataset(task_url, dataset)
     rating_sample = [0, 4, 4.5, 4.7]
     region_sample = [
         "USA",
@@ -868,12 +696,12 @@ async def generate_apply_filter_constraints(task_url: str | None = None) -> list
     return constraint_list
 
 
-async def generate_submit_hotel_review_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
-    data = await _ensure_hotel_dataset(task_url)
+async def generate_submit_hotel_review_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    data = await _ensure_hotel_dataset(task_url, dataset)
     if not data:
         logger.warning("No hotel data available for generating submit review constraints")
         return []
-    constraint_list_for_view, _ = await __generate_view_hotel_constraints(task_url)
+    constraint_list_for_view, hotel_dict = await __generate_view_hotel_constraints(task_url, dataset=data)
     selected_fields = [random.choice(["name", "comment", "rating"])]
     constraints_list = []
     for field in selected_fields:
@@ -905,36 +733,8 @@ async def generate_submit_hotel_review_constraints(task_url: str | None = None) 
     return complete_constraint_list
 
 
-# REVIEW CONSTRAINTS
-async def generate_submit_hotel_review_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
-    data = await _ensure_hotel_dataset(task_url)
-    if not data:
-        logger.warning("No hotel data available for generating submit review constraints")
-        return []
-    constraint_list_for_view, _ = await __generate_view_hotel_constraints(task_url)
-    selected_fields = [random.choice(["name", "comment", "rating"])]
-    constraints_list = []
-    for field in selected_fields:
-        allowed_ops = FIELD_OPERATORS_SUBMIT_REVIEW_MAP.get(field, [])
-        operator = ComparisonOperator(random.choice(allowed_ops))
-        if field == "rating":
-            sample_rating = [3, 3.5, 4, 4.5, 5]
-            rating = random.choice(sample_rating)
-            constraints_list.append(create_constraint_dict("rating", operator, rating))
-        elif field == "comment":
-            sample_comment = ["great stay!", "good environment"]
-            comment = random.choice(sample_comment)
-            constraints_list.append(create_constraint_dict("comment", operator, comment))
-        elif field == "name":
-            sample_name = ["Emily", "John", "Alex"]
-            name = random.choice(sample_name)
-            constraints_list.append(create_constraint_dict("name", operator, name))
-    complete_constraint_list = constraint_list_for_view + constraints_list
-    return complete_constraint_list
-
-
-async def generate_payment_method_selected_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
-    data = await _ensure_hotel_dataset(task_url)
+async def generate_payment_method_selected_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    data = await _ensure_hotel_dataset(task_url, dataset)
     if not data:
         logger.warning("No hotel data available for generating payment method selected constraints")
         return []
@@ -949,18 +749,13 @@ async def generate_payment_method_selected_constraints(task_url: str | None = No
         if not allowed_ops:
             continue
         op = ComparisonOperator(random.choice(allowed_ops))
-        if field == "method":
-            value = random.choice(["card", "cash_on_arrival"])
-        elif field == "hotel_id":
-            value = sample.get("id", 0)
-        else:
-            value = (sample.get("title") or "")[:5]
+        value = random.choice(["card", "cash_on_arrival"]) if field == "method" else sample.get("id", 0) if field == "hotel_id" else (sample.get("title") or "")[:5]
         constraints.append(create_constraint_dict(field, op, value))
     return constraints
 
 
-async def generate_book_from_wishlist_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
-    data = await _ensure_hotel_dataset(task_url)
+async def generate_book_from_wishlist_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    data = await _ensure_hotel_dataset(task_url, dataset)
     if not data:
         logger.warning("No hotel data available for generating book from wishlist constraints")
         return []
@@ -971,15 +766,12 @@ async def generate_book_from_wishlist_constraints(task_url: str | None = None) -
         if not allowed_ops:
             continue
         op = ComparisonOperator(random.choice(allowed_ops))
-        if field == "hotel_id":
-            value = sample.get("id", 0)
-        else:
-            value = (sample.get("title") or "")[:5]
+        value = sample.get("id", 0) if field == "hotel_id" else (sample.get("title") or "")[:5]
         constraints.append(create_constraint_dict(field, op, value))
     return constraints
 
 
-def generate_faq_opened_constraints() -> list[dict[str, Any]]:
+async def generate_faq_opened_constraints() -> list[dict[str, Any]]:
     sample_questions = [
         "How do I change or cancel my reservation?",
         "What payment options are available?",

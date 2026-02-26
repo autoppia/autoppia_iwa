@@ -103,49 +103,46 @@ class UseCase(BaseModel):
                     to pass to the generator. Each constraint generator receives the full dataset
                     and extracts the relevant entity list it needs.
         """
-        if not self.constraints_generator:
-            return self.constraints_to_str() if self.constraints else ""
+        if self.constraints_generator:
+            # Inspect the generator function signature to see what parameters it accepts
+            sig = inspect.signature(self.constraints_generator)
+            params = sig.parameters
 
-        sig = inspect.signature(self.constraints_generator)
-        params = sig.parameters
+            # Check if function accepts task_url and dataset parameters
+            has_task_url_param = "task_url" in params
+            has_dataset_param = "dataset" in params
 
-        kwargs = self._build_generator_kwargs(params, task_url, dataset)
-        first_param_is_dataset = self._check_first_param_is_dataset(params)
+            # Check if first parameter (excluding self) might be dataset
+            param_names = [p for p in params if p != "self"]
+            first_param_is_dataset = False
+            if param_names:
+                first_param = params[param_names[0]]
+                # If first param has no default and might be dataset (positional)
+                if first_param.default is inspect.Parameter.empty and len(param_names) == 1:
+                    first_param_is_dataset = True
 
-        result = self._call_constraints_generator(kwargs, first_param_is_dataset, dataset)
+            # Build kwargs based on what the function accepts
+            kwargs = {}
+            if has_task_url_param:
+                kwargs["task_url"] = task_url
+            if has_dataset_param:
+                kwargs["dataset"] = dataset
 
-        if asyncio.iscoroutine(result):
-            self.constraints = await result
-        else:
-            self.constraints = result
+            # Call generator with appropriate parameters
+            if kwargs:
+                result = self.constraints_generator(**kwargs)
+            elif first_param_is_dataset:
+                # First positional parameter is likely dataset
+                result = self.constraints_generator(dataset)
+            else:
+                # Function doesn't accept dataset or task_url, call without arguments
+                result = self.constraints_generator()
 
+            if asyncio.iscoroutine(result):
+                self.constraints = await result
+            else:
+                self.constraints = result
         return self.constraints_to_str() if self.constraints else ""
-
-    def _build_generator_kwargs(self, params: dict, task_url: str | None, dataset: dict[str, list[dict]] | None) -> dict[str, Any]:
-        """Build kwargs for the constraints generator based on its signature."""
-        kwargs = {}
-        if "task_url" in params:
-            kwargs["task_url"] = task_url
-        if "dataset" in params:
-            kwargs["dataset"] = dataset
-        return kwargs
-
-    def _check_first_param_is_dataset(self, params: dict) -> bool:
-        """Check if the first parameter (excluding self) is likely dataset."""
-        param_names = [p for p in params if p != "self"]
-        if not param_names:
-            return False
-
-        first_param = params[param_names[0]]
-        return first_param.default is inspect.Parameter.empty and len(param_names) == 1
-
-    def _call_constraints_generator(self, kwargs: dict[str, Any], first_param_is_dataset: bool, dataset: dict[str, list[dict]] | None) -> Any:
-        """Call the constraints generator with appropriate parameters."""
-        if kwargs:
-            return self.constraints_generator(**kwargs)
-        if first_param_is_dataset:
-            return self.constraints_generator(dataset)
-        return self.constraints_generator()
 
     # ============================================================================
     # CONSTRAINTS FORMATTING

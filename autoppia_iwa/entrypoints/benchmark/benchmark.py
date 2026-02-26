@@ -94,58 +94,6 @@ class Benchmark:
         logger.debug(f"Creating ConcurrentEvaluator for project {project.id}")
         return ConcurrentEvaluator(web_project=project, config=evaluator_config)
 
-    def _validate_agent_has_act_method(self, agent: IWebAgent) -> None:
-        """Validate that the agent implements the act() method."""
-        if not hasattr(agent, "act") or not callable(getattr(agent, "act", None)):
-            raise ValueError(
-                f"❌ El agente '{agent.name}' no implementa IWebAgent correctamente.\n"
-                f"Debe tener el método act() que recibe el estado del browser.\n"
-                f"Usa: ApifiedIterativeWebAgent(base_url='http://localhost:PORT')"
-            )
-
-    async def _call_agent_act(self, agent: IWebAgent, task: Task, snapshot_html: str, current_url: str, step_index: int) -> list:
-        """Call the agent's act() method and handle errors."""
-        try:
-            return await agent.act(
-                task=task,
-                snapshot_html=snapshot_html,
-                url=current_url,
-                step_index=step_index,
-            )
-        except Exception as exc:
-            logger.warning(f"[stateful_eval] agent {agent.name} /act failed: {exc}")
-            return []
-
-    async def _execute_actions_batch(
-        self,
-        evaluator: AsyncStatefulEvaluator,
-        actions_to_execute: list,
-        agent: IWebAgent,
-        total_actions_executed: int,
-    ) -> tuple:
-        """Execute a batch of actions and return updated state."""
-        final_score = 0.0
-        tests_passed = 0
-        total_tests = 0
-        execution_history = []
-        step_result = None
-
-        for action in actions_to_execute:
-            step_result = await evaluator.step(action)
-            final_score = step_result.score.raw_score
-            tests_passed = step_result.score.tests_passed
-            total_tests = step_result.score.total_tests
-            total_actions_executed += 1
-
-            if step_result.action_result:
-                execution_history.append(step_result.action_result)
-
-            if step_result.score.success:
-                logger.info(f"[stateful_eval] agent {agent.name} completed task!")
-                break
-
-        return final_score, tests_passed, total_tests, execution_history, step_result, total_actions_executed
-
     async def _evaluate_with_stateful_evaluator(
         self,
         task: Task,
@@ -162,7 +110,13 @@ class Benchmark:
         POST /act con: {task, snapshot_html, url, step_index}
         Responde: {actions: [...]}
         """
-        self._validate_agent_has_act_method(agent)
+        # Verificar que el agente tenga método act()
+        if not hasattr(agent, "act") or not callable(getattr(agent, "act", None)):
+            raise ValueError(
+                f"❌ El agente '{agent.name}' no implementa IWebAgent correctamente.\n"
+                f"Debe tener el método act() que recibe el estado del browser.\n"
+                f"Usa: ApifiedIterativeWebAgent(base_url='http://localhost:PORT')"
+            )
 
         evaluator = AsyncStatefulEvaluator(
             task=task,
@@ -179,34 +133,61 @@ class Benchmark:
         execution_history = []
 
         try:
-            step_index = 0
-            total_actions_executed = 0
+            step_index = 0  # Número de LLAMADAS al agente
+            total_actions_executed = 0  # Número de ACCIONES ejecutadas
 
             step_result = await evaluator.reset()
             final_score = step_result.score.raw_score
             tests_passed = step_result.score.tests_passed
             total_tests = step_result.score.total_tests
 
+            # Usar total_actions_executed como límite (igual que la subnet)
             while total_actions_executed < max_steps and not bool(step_result.score.success):
                 snapshot = step_result.snapshot
                 html = sanitize_snapshot_html(snapshot.html or "", agent.id)
                 current_url = snapshot.url or task.url
 
-                actions = await self._call_agent_act(agent, task, html, current_url, step_index)
+                try:
+                    # ✅ Llamar al endpoint /act del agente HTTP (IGUAL que la subnet con miners)
+                    actions = await agent.act(
+                        task=task,
+                        snapshot_html=html,
+                        url=current_url,
+                        step_index=step_index,
+                    )
+                except Exception as exc:
+                    logger.warning(f"[stateful_eval] agent {agent.name} /act failed: {exc}")
+                    actions = []
 
                 if not actions:
+                    # Sin acciones = agente terminó o error
                     logger.debug(f"[stateful_eval] agent {agent.name} returned no actions, terminating")
                     break
 
+                # Calcular límite con total_actions_executed (como en subnet)
                 actions_to_execute = actions[: min(len(actions), max_steps - total_actions_executed)]
+
                 logger.debug(f"[stateful_eval] agent {agent.name} returned {len(actions)} actions, executing {len(actions_to_execute)}")
 
-                final_score, tests_passed, total_tests, new_history, step_result, total_actions_executed = await self._execute_actions_batch(
-                    evaluator, actions_to_execute, agent, total_actions_executed
-                )
-                execution_history.extend(new_history)
+                # Ejecutar TODAS las acciones en batch (el evaluator reemplaza placeholders internamente)
+                for action in actions_to_execute:
+                    step_result = await evaluator.step(action)
+                    final_score = step_result.score.raw_score
+                    tests_passed = step_result.score.tests_passed
+                    total_tests = step_result.score.total_tests
+                    total_actions_executed += 1
 
-                if step_result and step_result.score.success:
+                    # Guardar el resultado de la acción
+                    if step_result.action_result:
+                        execution_history.append(step_result.action_result)
+
+                    # Si completó la tarea, terminar
+                    if step_result.score.success:
+                        logger.info(f"[stateful_eval] agent {agent.name} completed task!")
+                        break
+
+                # Si completó, salir del loop principal
+                if step_result.score.success:
                     break
 
                 step_index += 1
@@ -220,6 +201,7 @@ class Benchmark:
 
         elapsed = time.time() - start_ts
 
+        # Construir EvaluationResult compatible con el resto del benchmark
         return EvaluationResult(
             final_score=max(0.0, min(final_score, 1.0)),
             raw_score=final_score,
@@ -536,72 +518,6 @@ class Benchmark:
         filename.write_text(json.dumps(consolidated_data, indent=2))
         logger.info(f"Consolidated results saved to {filename}")
 
-    def _collect_run_data(
-        self,
-        project_run_results: list[dict],
-        per_agent_scores_flat: dict[str, list[float]],
-        per_agent_times_flat: dict[str, list[float]],
-        per_agent_usecase_scores: dict[str, dict[str, list[float]]],
-        per_agent_usecase_times: dict[str, dict[str, list[float]]],
-        per_agent_usecase_prompt: dict[str, dict[str, list[str]]],
-        per_agent_usecase_actions: dict[str, dict[str, list[list]]],
-        per_agent_usecase_task_ids: dict[str, dict[str, list[str]]],
-        per_agent_usecase_gifs: dict[str, dict[str, list[str | None]]],
-    ) -> None:
-        """Collect data from all runs into the provided dictionaries."""
-        for run_result in project_run_results:
-            for agent in self.config.agents:
-                a_id = agent.id
-                a_name = agent.name
-                if a_id not in run_result:
-                    continue
-
-                for task_id, res in run_result[a_id].items():
-                    use_case = res.get("task_use_case", "Unknown")
-                    score = float(res.get("score", 0.0))
-                    t = self._timing_metrics.solution_times.get(a_id, {}).get(task_id, 0.0)
-
-                    per_agent_scores_flat[a_name].append(score)
-                    per_agent_times_flat[a_name].append(t)
-                    per_agent_usecase_scores[a_name][use_case].append(score)
-                    per_agent_usecase_times[a_name][use_case].append(t)
-                    per_agent_usecase_prompt[a_name][use_case].append(res.get("prompt", ""))
-                    per_agent_usecase_actions[a_name][use_case].append(res.get("actions", []))
-                    per_agent_usecase_task_ids[a_name][use_case].append(task_id)
-                    per_agent_usecase_gifs[a_name][use_case].append(res.get("base64_gif", None))
-
-    def _build_use_case_block(
-        self,
-        a_name: str,
-        per_agent_usecase_task_ids: dict[str, dict[str, list[str]]],
-        per_agent_usecase_prompt: dict[str, dict[str, list[str]]],
-        per_agent_usecase_actions: dict[str, dict[str, list[list]]],
-        per_agent_usecase_times: dict[str, dict[str, list[float]]],
-        per_agent_usecase_scores: dict[str, dict[str, list[float]]],
-        per_agent_usecase_gifs: dict[str, dict[str, list[str | None]]],
-    ) -> dict[str, dict]:
-        """Build the use case block for an agent."""
-        new_uc_block: dict[str, dict] = {}
-        for uc, _scores in per_agent_usecase_scores[a_name].items():
-            new_uc_block[uc] = {}
-            for task_id, prompt, action, t, score, gif in zip(
-                per_agent_usecase_task_ids[a_name][uc],
-                per_agent_usecase_prompt[a_name][uc],
-                per_agent_usecase_actions[a_name][uc],
-                per_agent_usecase_times[a_name][uc],
-                per_agent_usecase_scores[a_name][uc],
-                per_agent_usecase_gifs[a_name][uc],
-                strict=False,
-            ):
-                new_uc_block[uc][task_id] = {
-                    "success": score,
-                    "time": round(t, 3),
-                    "prompt": prompt,
-                    "actions": action,
-                    "base64_gif": gif,
-                }
-        return new_uc_block
-
     def _accumulate_project_stats(self, project: WebProject, project_run_results: list[dict]) -> None:
         """
         Accumulate per-agent statistics for a project.
@@ -626,42 +542,69 @@ class Benchmark:
         per_agent_usecase_task_ids: dict[str, dict[str, list[str]]] = defaultdict(lambda: defaultdict(list))
         per_agent_usecase_gifs: dict[str, dict[str, list[str | None]]] = defaultdict(lambda: defaultdict(list))
 
-        self._collect_run_data(
-            project_run_results,
-            per_agent_scores_flat,
-            per_agent_times_flat,
-            per_agent_usecase_scores,
-            per_agent_usecase_times,
-            per_agent_usecase_prompt,
-            per_agent_usecase_actions,
-            per_agent_usecase_task_ids,
-            per_agent_usecase_gifs,
-        )
+        # Collect data from all runs
+        for run_result in project_run_results:
+            for agent in self.config.agents:
+                a_id = agent.id
+                a_name = agent.name
+                if a_id not in run_result:
+                    continue
+
+                for task_id, res in run_result[a_id].items():
+                    use_case = res.get("task_use_case", "Unknown")
+                    score = float(res.get("score", 0.0))
+
+                    # Timing per (agent, task) recorded by TimingMetrics
+                    t = self._timing_metrics.solution_times.get(a_id, {}).get(task_id, 0.0)
+
+                    # Flat rolls (for logging + global)
+                    per_agent_scores_flat[a_name].append(score)
+                    per_agent_times_flat[a_name].append(t)
+
+                    # Use-case rolls (for JSON)
+                    per_agent_usecase_scores[a_name][use_case].append(score)
+                    per_agent_usecase_times[a_name][use_case].append(t)
+
+                    per_agent_usecase_prompt[a_name][use_case].append(res.get("prompt", ""))
+                    per_agent_usecase_actions[a_name][use_case].append(res.get("actions", []))
+                    per_agent_usecase_task_ids[a_name][use_case].append(task_id)
+                    per_agent_usecase_gifs[a_name][use_case].append(res.get("base64_gif", None))
 
         # Build per-project stats
         project_stats: dict = {}
 
         for agent in self.config.agents:
             a_name = agent.name
+
             all_scores: list[float] = []
             all_times: list[float] = []
-
-            new_uc_block = self._build_use_case_block(
-                a_name,
-                per_agent_usecase_task_ids,
-                per_agent_usecase_prompt,
-                per_agent_usecase_actions,
-                per_agent_usecase_times,
-                per_agent_usecase_scores,
-                per_agent_usecase_gifs,
-            )
+            new_uc_block: dict[str, dict] = {}
 
             for uc, scores in per_agent_usecase_scores[a_name].items():
-                all_scores.extend(scores)
-                all_times.extend(per_agent_usecase_times[a_name][uc])
+                times = per_agent_usecase_times[a_name][uc]
 
-            # Use tolerance for floating point comparison (SonarCloud S1244)
-            succ_all = sum(1 for s in all_scores if abs(s - 1.0) < 1e-9)
+                new_uc_block[uc] = {}
+                for task_id, prompt, action, t, score, gif in zip(
+                    per_agent_usecase_task_ids[a_name][uc],
+                    per_agent_usecase_prompt[a_name][uc],
+                    per_agent_usecase_actions[a_name][uc],
+                    per_agent_usecase_times[a_name][uc],
+                    per_agent_usecase_scores[a_name][uc],
+                    per_agent_usecase_gifs[a_name][uc],
+                    strict=False,
+                ):
+                    new_uc_block[uc][task_id] = {
+                        "success": score,
+                        "time": round(t, 3),
+                        "prompt": prompt,
+                        "actions": action,
+                        "base64_gif": gif,
+                    }
+
+                all_scores.extend(scores)
+                all_times.extend(times)
+
+            succ_all = sum(1 for s in all_scores if s == 1.0)
             tot_all = len(all_scores)
             avg_all_time = (sum(all_times) / len(all_times)) if all_times else 0.0
             rate_all = (succ_all / tot_all) if tot_all else 0.0
@@ -685,36 +628,6 @@ class Benchmark:
     # Public API
     # ---------------------------------------------------------------------
 
-    async def _execute_project_runs(self, project: WebProject) -> list[dict]:
-        """Execute all runs for a single project and return results."""
-        project_run_results: list[dict] = []
-        for run_index in range(1, self.config.runs + 1):
-            logger.info(f"Run {run_index}/{self.config.runs}")
-            try:
-                run_result = await self._execute_single_project_run(project, run_index)
-                if run_result:
-                    project_run_results.append(run_result)
-                else:
-                    logger.warning(f"Run {run_index} for project {project.name} returned no results")
-            except Exception as e:
-                logger.error(f"Run {run_index} for project {project.name} failed: {e}", exc_info=True)
-                continue
-        return project_run_results
-
-    async def _process_single_project(self, project: WebProject, project_index: int, total_projects: int) -> bool:
-        """Process a single project and return True if successful."""
-        logger.info(f"\n=== Project {project_index}/{total_projects}: {project.name} ===")
-        try:
-            project_run_results = await self._execute_project_runs(project)
-            if project_run_results:
-                self._accumulate_project_stats(project, project_run_results)
-                return True
-            logger.warning(f"No successful runs for project {project.name}")
-            return False
-        except Exception as e:
-            logger.error(f"Project {project.name} failed completely: {e}", exc_info=True)
-            return False
-
     async def run(self) -> dict:
         """
         Execute the complete benchmark across all configured projects and runs.
@@ -728,8 +641,33 @@ class Benchmark:
 
         try:
             for project_index, project in enumerate(self.config.projects, 1):
-                if await self._process_single_project(project, project_index, total_projects):
-                    successful_projects += 1
+                logger.info(f"\n=== Project {project_index}/{total_projects}: {project.name} ===")
+                project_run_results: list[dict] = []
+
+                try:
+                    for run_index in range(1, self.config.runs + 1):
+                        logger.info(f"Run {run_index}/{self.config.runs}")
+                        try:
+                            run_result = await self._execute_single_project_run(project, run_index)
+                            if run_result:
+                                project_run_results.append(run_result)
+                            else:
+                                logger.warning(f"Run {run_index} for project {project.name} returned no results")
+                        except Exception as e:
+                            logger.error(f"Run {run_index} for project {project.name} failed: {e}", exc_info=True)
+                            continue
+
+                    if project_run_results:
+                        # Accumulate stats for this project
+                        self._accumulate_project_stats(project, project_run_results)
+                        successful_projects += 1
+                    else:
+                        logger.warning(f"No successful runs for project {project.name}")
+
+                except Exception as e:
+                    logger.error(f"Project {project.name} failed completely: {e}", exc_info=True)
+                    continue
+
         except Exception as e:
             logger.error(f"Critical error during benchmark execution: {e}", exc_info=True)
             raise

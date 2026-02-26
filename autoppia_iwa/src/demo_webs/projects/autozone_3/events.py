@@ -449,77 +449,47 @@ class OrderCompletedEvent(Event, BaseEventValidator):
 
         items: list[ProductSummary] | CriterionValue | None = None
 
-    def _matches_product_criteria(self, product: ProductSummary, expected: dict, operator: ComparisonOperator) -> bool:
-        """Check if a product matches the expected criteria."""
-        for key, expected_val in expected.items():
-            actual_val = getattr(product, key, None)
-            if not validate_criterion(actual_val, CriterionValue(value=expected_val, operator=operator)):
-                return False
-        return True
-
-    def _validate_list_items(self, expected_items: list[ProductSummary]) -> bool:
-        """Validate that all expected items are present in self.items."""
-        for expected_item in expected_items:
-            match_found = any(i.title == expected_item.title and i.quantity == expected_item.quantity for i in self.items)
-            if not match_found:
-                return False
-        return True
-
-    def _validate_contains_operator(self, expected: dict, operator: ComparisonOperator) -> bool:
-        """Validate CONTAINS operator."""
-        return any(self._matches_product_criteria(item, expected, operator) for item in self.items)
-
-    def _validate_not_contains_operator(self, expected: dict, operator: ComparisonOperator) -> bool:
-        """Validate NOT_CONTAINS operator."""
-        return all(self._matches_product_criteria(item, expected, operator) for item in self.items)
-
-    def _validate_in_list_operator(self, expected: dict, operator: ComparisonOperator) -> bool:
-        """Validate IN_LIST operator."""
-        return any(self._matches_product_criteria(item, expected, operator) for item in self.items)
-
-    def _validate_not_in_list_operator(self, expected: dict, operator: ComparisonOperator) -> bool:
-        """Validate NOT_IN_LIST operator."""
-        return all(self._matches_product_criteria(item, expected, operator) for item in self.items)
-
-    def _validate_equals_operator(self, expected: dict, operator: ComparisonOperator) -> bool:
-        """Validate EQUALS operator."""
-        return all(self._matches_product_criteria(item, expected, operator) for item in self.items)
-
-    def _validate_not_equals_operator(self, expected: dict, operator: ComparisonOperator) -> bool:
-        """Validate NOT_EQUALS operator."""
-        return all(self._matches_product_criteria(item, expected, operator) for item in self.items)
-
-    def _validate_criterion_value(self, criterion_value: CriterionValue) -> bool:
-        """Validate items using a CriterionValue."""
-        expected = criterion_value.value
-        operator = criterion_value.operator
-
-        if operator == ComparisonOperator.CONTAINS:
-            return self._validate_contains_operator(expected, operator)
-        if operator == ComparisonOperator.NOT_CONTAINS:
-            return self._validate_not_contains_operator(expected, operator)
-        if operator == ComparisonOperator.IN_LIST:
-            return self._validate_in_list_operator(expected, operator)
-        if operator == ComparisonOperator.NOT_IN_LIST:
-            return self._validate_not_in_list_operator(expected, operator)
-        if operator == ComparisonOperator.EQUALS:
-            return self._validate_equals_operator(expected, operator)
-        if operator == ComparisonOperator.NOT_EQUALS:
-            return self._validate_not_equals_operator(expected, operator)
-
-        return False
-
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria or criteria.items is None:
             return True
 
+        # Case 1: Explicit list of ProductSummary items to match exactly
         if isinstance(criteria.items, list):
-            return self._validate_list_items(criteria.items)
+            for expected_item in criteria.items:
+                match_found = any(i.title == expected_item.title and i.quantity == expected_item.quantity for i in self.items)
+                if not match_found:
+                    return False
+            return True
 
-        if isinstance(criteria.items, CriterionValue):
-            return self._validate_criterion_value(criteria.items)
+        # Case 2: Flexible criterion (e.g. item with title="Watch", quantity > 1)
+        elif isinstance(criteria.items, CriterionValue):
+            expected = criteria.items.value
+            operator = criteria.items.operator
 
-        return False
+            def matches(product: ProductSummary, operator: ComparisonOperator) -> bool:
+                for key, expected_val in expected.items():
+                    actual_val = getattr(product, key, None)
+                    if not validate_criterion(actual_val, CriterionValue(value=expected_val, operator=operator)):
+                        return False
+                return True
+
+            if operator == ComparisonOperator.CONTAINS:
+                return any(matches(item, ComparisonOperator.CONTAINS) for item in self.items)
+            elif operator == ComparisonOperator.NOT_CONTAINS:
+                return all(matches(item, ComparisonOperator.NOT_CONTAINS) for item in self.items)
+            elif operator == ComparisonOperator.IN_LIST:
+                return any(matches(item, ComparisonOperator.IN_LIST) for item in self.items)
+            elif operator == ComparisonOperator.NOT_IN_LIST:
+                return all(matches(item, ComparisonOperator.NOT_IN_LIST) for item in self.items)
+            elif operator == ComparisonOperator.EQUALS:
+                # all items should match exactly once (used rarely)
+                return all(matches(item, ComparisonOperator.EQUALS) for item in self.items)
+            elif operator == ComparisonOperator.NOT_EQUALS:
+                return all(matches(item, ComparisonOperator.NOT_EQUALS) for item in self.items)
+            else:
+                return False
+
+        return False  # fallback
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "OrderCompletedEvent":

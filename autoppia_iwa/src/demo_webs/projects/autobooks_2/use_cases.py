@@ -38,7 +38,7 @@ from .generation_functions import (
     generate_registration_constraints,
     generate_search_book_constraints,
 )
-from .replace_functions import register_replace_func, replace_book_placeholders
+from .replace_functions import replace_book_placeholders
 
 
 async def _get_books_data_for_prompts(seed_value: int | None = None, count: int = 50) -> list[dict]:
@@ -57,7 +57,7 @@ def _generate_allowed_years_list(books_data: list[dict]) -> list[int]:
     """Generate a list of unique years from books data."""
     if not books_data:
         return []
-    return sorted({book.get("year") for book in books_data if book.get("year") is not None})
+    return sorted(list(set(book.get("year") for book in books_data if book.get("year") is not None)))
 
 
 def _generate_allowed_genres_list(books_data: list[dict]) -> list[str]:
@@ -71,7 +71,7 @@ def _generate_allowed_genres_list(books_data: list[dict]) -> list[str]:
             genres.update(book_genres)
         elif isinstance(book_genres, str):
             genres.add(book_genres)
-    return sorted(genres)
+    return sorted(list(genres))
 
 
 ###############################################################################
@@ -91,7 +91,7 @@ REGISTRATION_USE_CASE = UseCase(
     description="The user fills out the registration form and successfully creates a new account.",
     event=RegistrationEvent,
     event_source_code=RegistrationEvent.get_source_code_of_class(),
-    replace_func=register_replace_func,
+    # replace_func not needed - credentials remain as placeholders until evaluation
     constraints_generator=generate_registration_constraints,
     additional_prompt_info=REGISTRATION_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -189,12 +189,8 @@ def _get_book_detail_info(books_data: list[dict]) -> str:
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above - not just some of them
 2. Include ONLY the constraints mentioned above - do not add any other criteria
-3. Be phrased as a request to **view details** of a book (use phrases like "Show details for...", "Navigate to the details page for...", etc.).
-4. Begin with a creative instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
-5. Use the word 'NOT' if the constraint is 'not_equals' or 'not_contains'.
-6. Use terms like 'greater than', 'less than', 'at least', 'no more than' to explicitly represent numeric operators (greater_than, less_than, greater_equal, less_equal).
-7. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal'. If it is 'not_equals', use 'not equal'.
-8. Only use the books name defined below.
+3. Be phrased as a request to **view details** of a movie (use phrases like "Show details for...", "Navigate to the details page for...", etc.).
+4. Only use the books name defined below.
 
 BOOKS NAMES:
 {book_names}
@@ -212,12 +208,8 @@ BOOK_DETAIL_INFO_TEMPLATE = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above - not just some of them
 2. Include ONLY the constraints mentioned above - do not add any other criteria
-3. Be phrased as a request to **view details** of a book (use phrases like "Show details for...", "Navigate to the details page for...", etc.).
-4. Begin with a creative instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
-5. Use the word 'NOT' if the constraint is 'not_equals' or 'not_contains'.
-6. Use terms like 'greater than', 'less than', 'at least', 'no more than' to explicitly represent numeric operators (greater_than, less_than, greater_equal, less_equal).
-7. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal'. If it is 'not_equals', use 'not equal'.
-8. Only use the books name defined below.
+3. Be phrased as a request to **view details** of a movie (use phrases like "Show details for...", "Navigate to the details page for...", etc.).
+4. Only use the books name defined below.
 
 BOOKS NAMES:
 {BOOKS_NAMES_PLACEHOLDER}
@@ -240,16 +232,16 @@ BOOK_DETAIL_USE_CASE = UseCase(
     constraints_generator=generate_book_details_constraints,
     examples=[
         {
-            "prompt": "First, authenticate with username '<username>' and password '<password>'. Then, navigate to the book details page where the name is equal to 'The Housemaid Is Watching'.",
-            "prompt_for_task_generation": "First, authenticate with username '<username>' and password '<password>'. Then, navigate to the book details page where the name is equal to <book>.",
+            "prompt": "Navigate to 'The Housemaid Is Watching' book page",
+            "prompt_for_task_generation": "Navigate to <book> book page",
         },
         {
-            "prompt": "Login with username '<username>' and password '<password>'. Go to the book details page for the book where the author is equal to 'Donald Knuth'.",
-            "prompt_for_task_generation": "Login with username '<username>' and password '<password>'. Go to the book details page for the book where the author is equal to <author>.",
+            "prompt": "Go to the book details page for 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
+            "prompt_for_task_generation": "Go to the book details page for <book> by <author>",
         },
         {
-            "prompt": "Sign in as '<username>' with password '<password>'. Navigate directly to a Science book page where the year is equal to 2022.",
-            "prompt_for_task_generation": "Sign in as '<username>' with password '<password>'. Navigate directly to a <genre> book page where the year is equal to <year>.",
+            "prompt": "Navigate directly to a Science book page from 2022",
+            "prompt_for_task_generation": "Navigate directly to a <genre> book page from <year>",
         },
         {
             "prompt": "Go directly to a book page with rating above 4.5",
@@ -286,20 +278,16 @@ def _get_share_book_info(books_data: list[dict]) -> str:
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above - not just some of them
 2. Include ONLY the constraints mentioned above - do not add any other criteria
-3. Be phrased as a request to **share** a book (use phrases like "Share details for...", "Share the book...", etc.).
-4. Begin with a creative instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
-5. Use the word 'NOT' if the constraint is 'not_equals' or 'not_contains'.
-6. Use terms like 'greater than', 'less than', 'at least', 'no more than' to explicitly represent numeric operators (greater_than, less_than, greater_equal, less_equal).
-7. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal'. If it is 'not_equals', use 'not equal'.
-8. Only use the books name defined below.
+3. Be phrased as a request to **view details** of a movie (use phrases like "Share details for..." etc.).
+4. Only use the books name defined below.
 
 BOOKS NAMES:
 {book_names}
 
 For example, if the constraints are "author not_equals Diana Gabaldon AND year greater_than 2004":
-- CORRECT: "Share details about a book not written by Diana Gabaldon that was published after 2004"
-- INCORRECT: "Share details about a book written by Christopher Nolan" (you added a random author, and missed the year constraint)
-- INCORRECT: "Share details about a book not written by Diana Gabaldon that was published after 2004 with a high rating" (adding an extra constraint about rating)
+- CORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004"
+- INCORRECT: "Show me details about a book written by Christopher Nolan" (you added a random author, and missed the year constraint)
+- INCORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004 with a high rating" (adding an extra constraint about rating)
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
 """
@@ -309,20 +297,16 @@ SHARE_BOOK_INFO_TEMPLATE = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above - not just some of them
 2. Include ONLY the constraints mentioned above - do not add any other criteria
-3. Be phrased as a request to **share** a book (use phrases like "Share details for...", "Share the book...", etc.).
-4. Begin with a creative instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
-5. Use the word 'NOT' if the constraint is 'not_equals' or 'not_contains'.
-6. Use terms like 'greater than', 'less than', 'at least', 'no more than' to explicitly represent numeric operators (greater_than, less_than, greater_equal, less_equal).
-7. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal'. If it is 'not_equals', use 'not equal'.
-8. Only use the books name defined below.
+3. Be phrased as a request to **view details** of a movie (use phrases like "Share details for..." etc.).
+4. Only use the books name defined below.
 
 BOOKS NAMES:
 {BOOKS_NAMES_PLACEHOLDER}
 
 For example, if the constraints are "author not_equals Diana Gabaldon AND year greater_than 2004":
-- CORRECT: "Share details about a book not written by Diana Gabaldon that was published after 2004"
-- INCORRECT: "Share details about a book written by Christopher Nolan" (you added a random author, and missed the year constraint)
-- INCORRECT: "Share details about a book not written by Diana Gabaldon that was published after 2004 with a high rating" (adding an extra constraint about rating)
+- CORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004"
+- INCORRECT: "Show me details about a book written by Christopher Nolan" (you added a random author, and missed the year constraint)
+- INCORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004 with a high rating" (adding an extra constraint about rating)
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
 """
@@ -337,16 +321,16 @@ SHARE_BOOK_USE_CASE = UseCase(
     constraints_generator=generate_book_details_constraints,
     examples=[
         {
-            "prompt": "First, authenticate with username '<username>' and password '<password>'. Then, share the book where the title is equal to 'The Housemaid Is Watching'.",
-            "prompt_for_task_generation": "First, authenticate with username '<username>' and password '<password>'. Then, share the book where the title is equal to <book>.",
+            "prompt": "Share 'The Housemaid Is Watching' book",
+            "prompt_for_task_generation": "Share <book> book",
         },
         {
-            "prompt": "Login with username '<username>' and password '<password>'. Share book details for the book where the author is equal to 'Donald Knuth'.",
-            "prompt_for_task_generation": "Login with username '<username>' and password '<password>'. Share book details for the book where the author is equal to <author>.",
+            "prompt": "Share book details for 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
+            "prompt_for_task_generation": "Share book details for <book> by <author>",
         },
         {
-            "prompt": "Sign in as '<username>' with password '<password>'. Share the Science book where the year is equal to 2022.",
-            "prompt_for_task_generation": "Sign in as '<username>' with password '<password>'. Share the <genre> book where the year is equal to <year>.",
+            "prompt": "Share Science book from 2022",
+            "prompt_for_task_generation": "Share <genre> book from <year>",
         },
         {
             "prompt": "Share book with rating above 4.5",
@@ -383,20 +367,16 @@ def _get_open_preview_info(books_data: list[dict]) -> str:
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above - not just some of them
 2. Include ONLY the constraints mentioned above - do not add any other criteria
-3. Be phrased as a request to **open preview** of a book (use phrases like "Open preview of...", "Show preview for...", etc.).
-4. Begin with a creative instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
-5. Use the word 'NOT' if the constraint is 'not_equals' or 'not_contains'.
-6. Use terms like 'greater than', 'less than', 'at least', 'no more than' to explicitly represent numeric operators (greater_than, less_than, greater_equal, less_equal).
-7. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal'. If it is 'not_equals', use 'not equal'.
-8. Only use the books name defined below.
+3. Be phrased as a request to **view details** of a movie (use phrases like "Open preview..." etc.).
+4. Only use the books name defined below.
 
 BOOKS NAMES:
 {book_names}
 
 For example, if the constraints are "author not_equals Diana Gabaldon AND year greater_than 2004":
-- CORRECT: "Open preview for a book not written by Diana Gabaldon that was published after 2004"
-- INCORRECT: "Open preview for a book written by Christopher Nolan" (you added a random author, and missed the year constraint)
-- INCORRECT: "Open preview for a book not written by Diana Gabaldon that was published after 2004 with a high rating" (adding an extra constraint about rating)
+- CORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004"
+- INCORRECT: "Show me details about a book written by Christopher Nolan" (you added a random author, and missed the year constraint)
+- INCORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004 with a high rating" (adding an extra constraint about rating)
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
 """
@@ -406,20 +386,16 @@ OPEN_PREVIEW_INFO_TEMPLATE = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above - not just some of them
 2. Include ONLY the constraints mentioned above - do not add any other criteria
-3. Be phrased as a request to **open preview** of a book (use phrases like "Open preview of...", "Show preview for...", etc.).
-4. Begin with a creative instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
-5. Use the word 'NOT' if the constraint is 'not_equals' or 'not_contains'.
-6. Use terms like 'greater than', 'less than', 'at least', 'no more than' to explicitly represent numeric operators (greater_than, less_than, greater_equal, less_equal).
-7. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal'. If it is 'not_equals', use 'not equal'.
-8. Only use the books name defined below.
+3. Be phrased as a request to **view details** of a movie (use phrases like "Open preview..." etc.).
+4. Only use the books name defined below.
 
 BOOKS NAMES:
 {BOOKS_NAMES_PLACEHOLDER}
 
 For example, if the constraints are "author not_equals Diana Gabaldon AND year greater_than 2004":
-- CORRECT: "Open preview for a book not written by Diana Gabaldon that was published after 2004"
-- INCORRECT: "Open preview for a book written by Christopher Nolan" (you added a random author, and missed the year constraint)
-- INCORRECT: "Open preview for a book not written by Diana Gabaldon that was published after 2004 with a high rating" (adding an extra constraint about rating)
+- CORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004"
+- INCORRECT: "Show me details about a book written by Christopher Nolan" (you added a random author, and missed the year constraint)
+- INCORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004 with a high rating" (adding an extra constraint about rating)
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
 """
@@ -434,16 +410,16 @@ OPEN_PREVIEW_USE_CASE = UseCase(
     constraints_generator=generate_book_details_constraints,
     examples=[
         {
-            "prompt": "First, authenticate with username '<username>' and password '<password>'. Then, open preview of the book where the title is equal to 'The Housemaid Is Watching'.",
-            "prompt_for_task_generation": "First, authenticate with username '<username>' and password '<password>'. Then, open preview of the book where the title is equal to <book>.",
+            "prompt": "Open preview of 'The Housemaid Is Watching' book",
+            "prompt_for_task_generation": "Open preview of <book> book",
         },
         {
-            "prompt": "Login with username '<username>' and password '<password>'. Open preview for the book where the author is equal to 'Donald Knuth'.",
-            "prompt_for_task_generation": "Login with username '<username>' and password '<password>'. Open preview for the book where the author is equal to <author>.",
+            "prompt": "Open preview of book for 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
+            "prompt_for_task_generation": "Open preview of book for <book> by <author>",
         },
         {
-            "prompt": "Sign in as '<username>' with password '<password>'. Open preview of the Science book where the year is equal to 2022.",
-            "prompt_for_task_generation": "Sign in as '<username>' with password '<password>'. Open preview of the <genre> book where the year is equal to <year>.",
+            "prompt": "Open preview of Science book from 2022",
+            "prompt_for_task_generation": "Open preview of <genre> book from <year>",
         },
         {
             "prompt": "Open preview of book with rating above 4.5",
@@ -480,12 +456,8 @@ def _get_add_to_reading_list_info(books_data: list[dict]) -> str:
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above - not just some of them
 2. Include ONLY the constraints mentioned above - do not add any other criteria
-3. Be phrased as a request to **add to reading list** (use phrases like "Add to reading list...", "Add the book to my list...", etc.).
-4. Begin with a creative instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
-5. Use the word 'NOT' if the constraint is 'not_equals' or 'not_contains'.
-6. Use terms like 'greater than', 'less than', 'at least', 'no more than' to explicitly represent numeric operators (greater_than, less_than, greater_equal, less_equal).
-7. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal'. If it is 'not_equals', use 'not equal'.
-8. Only use the books name defined below.
+3. Be phrased as a request to **view details** of a movie (use phrases like "Add to reading list..." etc.).
+4. Only use the books name defined below.
 
 BOOKS NAMES:
 {book_names}
@@ -503,12 +475,8 @@ ADD_TO_READING_LIST_INFO_TEMPLATE = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above - not just some of them
 2. Include ONLY the constraints mentioned above - do not add any other criteria
-3. Be phrased as a request to **add to reading list** (use phrases like "Add to reading list...", "Add the book to my list...", etc.).
-4. Begin with a creative instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
-5. Use the word 'NOT' if the constraint is 'not_equals' or 'not_contains'.
-6. Use terms like 'greater than', 'less than', 'at least', 'no more than' to explicitly represent numeric operators (greater_than, less_than, greater_equal, less_equal).
-7. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal'. If it is 'not_equals', use 'not equal'.
-8. Only use the books name defined below.
+3. Be phrased as a request to **view details** of a movie (use phrases like "Add to reading list..." etc.).
+4. Only use the books name defined below.
 
 BOOKS NAMES:
 {BOOKS_NAMES_PLACEHOLDER}
@@ -531,16 +499,16 @@ ADD_TO_READING_LIST_USE_CASE = UseCase(
     constraints_generator=generate_book_details_constraints,
     examples=[
         {
-            "prompt": "First, authenticate with username '<username>' and password '<password>'. Then, add to reading list the book where the title is equal to 'The Housemaid Is Watching'.",
-            "prompt_for_task_generation": "First, authenticate with username '<username>' and password '<password>'. Then, add to reading list the book where the title is equal to <book>.",
+            "prompt": "Add to reading list 'The Housemaid Is Watching' book",
+            "prompt_for_task_generation": "Add to reading list <book> book",
         },
         {
-            "prompt": "Login with username '<username>' and password '<password>'. Add to reading list the book where the author is equal to 'Donald Knuth'.",
-            "prompt_for_task_generation": "Login with username '<username>' and password '<password>'. Add to reading list the book where the author is equal to <author>.",
+            "prompt": "Add to reading list a book 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
+            "prompt_for_task_generation": "Add to reading list a book <book> by <author>",
         },
         {
-            "prompt": "Sign in as '<username>' with password '<password>'. Add to reading list a Science book where the year is equal to 2022.",
-            "prompt_for_task_generation": "Sign in as '<username>' with password '<password>'. Add to reading list a <genre> book where the year is equal to <year>.",
+            "prompt": "Add to reading list a Science book from 2022",
+            "prompt_for_task_generation": "Add to reading list a <genre> book from <year>",
         },
         {
             "prompt": "Add to reading list a book with rating above 4.5",
@@ -578,11 +546,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above - not just some of them
 2. Include ONLY the constraints mentioned above - do not add any other criteria
 3. Be phrased as a request to **remove from reading list** (use phrases like "Remove from reading list...", "Delete from reading list..." etc.).
-4. Begin with a creative instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
-5. Use the word 'NOT' if the constraint is 'not_equals' or 'not_contains'.
-6. Use terms like 'greater than', 'less than', 'at least', 'no more than' to explicitly represent numeric operators (greater_than, less_than, greater_equal, less_equal).
-7. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal'. If it is 'not_equals', use 'not equal'.
-8. Only use the books name defined below.
+4. Only use the books name defined below.
 
 BOOKS NAMES:
 {book_names}
@@ -605,20 +569,20 @@ REMOVE_FROM_READING_LIST_USE_CASE = UseCase(
     constraints_generator=generate_book_details_constraints,
     examples=[
         {
-            "prompt": "First, authenticate with username '<username>' and password '<password>'. Then, remove from reading list the book where the title is equal to 'The Housemaid Is Watching'.",
-            "prompt_for_task_generation": "First, authenticate with username '<username>' and password '<password>'. Then, remove from reading list the book where the title is equal to <book>.",
+            "prompt": "Remove from reading list 'The Housemaid Is Watching' book",
+            "prompt_for_task_generation": "Remove from reading list <book> book",
         },
         {
-            "prompt": "Login with username '<username>' and password '<password>'. Remove from reading list the book where the author is equal to 'Donald Knuth'.",
-            "prompt_for_task_generation": "Login with username '<username>' and password '<password>'. Remove from reading list the book where the author is equal to <author>.",
+            "prompt": "Remove from reading list a book 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
+            "prompt_for_task_generation": "Remove from reading list a book <book> by <author>",
         },
         {
-            "prompt": "Sign in as '<username>' with password '<password>'. Remove from reading list a Science book where the year is equal to 2022.",
-            "prompt_for_task_generation": "Sign in as '<username>' with password '<password>'. Remove from reading list a <genre> book where the year is equal to <year>.",
+            "prompt": "Remove from reading list a Science book from 2022",
+            "prompt_for_task_generation": "Remove from reading list a <genre> book from <year>",
         },
         {
-            "prompt": "Login with username '<username>' and password '<password>'. Remove from reading list a book with rating above 4.5",
-            "prompt_for_task_generation": "Login with username '<username>' and password '<password>'. Remove from reading list a book with rating above <rating>",
+            "prompt": "Remove from reading list a book with rating above 4.5",
+            "prompt_for_task_generation": "Remove from reading list a book with rating above <rating>",
         },
     ],
 )
@@ -633,16 +597,17 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
    - "Find a book..."
    - "Look up a book..."
 2. Avoid ambiguous phrases like "Show details" or "Give me information" that could be confused with other actions
-3. Include ONLY the book title as part of the search. Use the value EXACTLY as it appears in the constraints.
+3. Include ONLY the book title as part of the search with corresponding OPERATOR.
 4. DO NOT include ANY constraints or conditions like author, year, genre, etc.
-5. PAY ATTENTION to the operators. Use the word 'NOT' if the constraint is 'not_equals'.
+5. PAY ATTENTION to the constraints, especially when referring to EQUALS or NOT EQUALS.
 For example:
 - CORRECT: "Search for the book 'A Breath of Snow and Ashes' in the database"
-- CORRECT: "Look for a book that is NOT 'Fourth Wing'" (if constraint is query not_equals Fourth Wing)
+- CORRECT: "Look for the book 'Fourth Wing'"
 - CORRECT: "Find books called The 'The Housemaid Is Watching'"
 - INCORRECT: "Show me details about 'Fourth Wing'" (doesn't specify it's a search)
 - INCORRECT: "Give me information on 'The Housemaid Is Watching'" (ambiguous, doesn't clearly indicate search)
-- INCORRECT: "Search for 'A Breath of Snow and Ashes' NOT written by James Cameron" (includes constraints from other fields)
+- INCORRECT: "Search for 'A Breath of Snow and Ashes' NOT written by James Cameron" (includes constraints)
+- INCORRECT: "Find a book called 'Dark Nights: Metal: Dark Knights Rising' released after 2018" (includes constraints)
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL clearly indicating that it is a simple SEARCH with NO additional constraints.
 """
@@ -688,9 +653,22 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
 3. Be phrased as a request to add or insert a book (use phrases like "Add...", "Insert...", "Register...", etc.).
-4. Begin with a creative instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
-Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
-5. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal'.
+4. Begin with a creative instruction to log in using username '<username>' and password '<password>' (this MUST strictly contain the EXACT provided username and EXACT provided password values in the constraints— do NOT replace, modify, infer, suggest alternatives, or use placeholder substitutions).
+
+ABSOLUTE FIELD VALUE RULE:
+- Every field value provided in the constraints MUST be written EXACTLY as given.
+- Do NOT replace values with synonyms, suggestions, examples, placeholders, or inferred alternatives.
+- Do NOT generalize values.
+- Do NOT rewrite or transform field values.
+- The username and password MUST appear exactly as provided.
+- If a field value is given, it must be copied verbatim into the prompt.
+
+Examples include login phrases such as:
+"First, authenticate with..."
+"Initiate session using..."
+"After successful login with..."
+"Once logged in as..."
+etc.
 
 For example, if the constraints are "year equals 2014 AND author equals 'Wes Anderson'":
 
@@ -759,9 +737,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL edit constraints mentioned above — not just some of them.
 2. Include ONLY the edit constraints mentioned above — do not add any other criteria or filters.
 3. Be phrased as a request to edit or modify a book (use phrases like "Edit...", "Modify...", "Update...", "Change...", etc.).
-4. Begin with a creative instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
-Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
-5. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal'.
+4. Begin with a creative instruction to log in using username '<username>' and password '<password>'.
 
 STRICT FIELD USAGE RULE:
 
@@ -938,7 +914,6 @@ For example, if the constraints are "name not_equals John AND message contains '
 - INCORRECT: "Fill out the form and mention your budget" (agrega un constraint que NO está en la lista)
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
-4. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal'.
 """
 CONTACT_USE_CASE = UseCase(
     name="CONTACT_BOOK",
@@ -993,7 +968,6 @@ For example, if the constraints are "username equals 'bookfan' AND password equa
 - INCORRECT: "Edit a profile to change the website" (missing login information and specific constraints).
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
-5. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal'.
 """
 
 EDIT_USER_PROFILE_USE_CASE = UseCase(
@@ -1005,20 +979,20 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
     additional_prompt_info=EDIT_PROFILE_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Login for the following username equal to user1 and password equal to pass123. Update your first name so it is equal to John.",
-            "prompt_for_task_generation": "Login for the following username equal to <username> and password equal to <password>. Update your first name so it is equal to <first_name>.",
+            "prompt": "Login for the following username:user1 and password:pass123. Update your first name to John.",
+            "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Update your first name to <first_name>.",
         },
         {
             "prompt": "Login for the following username:user1 and password:pass123.Modify your profile to include the word 'cinema' in your first name and ensure that your website does NOT contain 'https://cinephileworld.example.org'.",
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Modify your profile to include the word 'cinema' in your <first_name> and ensure that your website does NOT contain <website>.",
         },
         {
-            "prompt": "Login for the following username equal to bookfan and password equal to pass456. Modify your bio to include your passion for bookworm.",
-            "prompt_for_task_generation": "Login for the following username equal to <username> and password equal to <password>. Modify your bio to include <bio_content>.",
+            "prompt": "Login for the following username:bookfan and password:pass456. Modify your bio to include your passion for bookworm.",
+            "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Modify your bio to include <bio_content>.",
         },
         {
-            "prompt": "Login for the following username equal to booklover and password equal to pass789. Change your location so it is equal to New York, USA.",
-            "prompt_for_task_generation": "Login for the following username equal to <username> and password equal to <password>. Change your location so it is equal to <location>.",
+            "prompt": "Login for the following username:booklover and password:pass789. Change your location to New York, USA.",
+            "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Change your location to <location>.",
         },
         {
             "prompt": "Login for the following username:cinephile and password:pass321. Edit your website to https://mybookblog.example.com.",
@@ -1064,7 +1038,6 @@ For example, if the constraints are "genre_name equals 'Culture' AND year equals
 - INCORRECT: "Filter for Mystery books" (Mystery is not in the allowed genre list).
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
-6. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal'.
 """
 
 
@@ -1089,7 +1062,6 @@ For example, if the constraints are "genre_name equals 'Culture' AND year equals
 - INCORRECT: "Filter for Mystery books" (Mystery is not in the allowed genre list).
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
-6. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal'.
 """
 
 FILTER_BOOK_USE_CASE = UseCase(
@@ -1261,7 +1233,6 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 5. If constraints include book_name or quantity, they MUST be referenced directly in the prompt.
 6. Begin with a creative instruction to log in using username '<username>' and password '<password>' (**strictly** containing both the username and password placeholders).
 Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
-7. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal'.
 
 For example, if the constraints are "book_name equals 'Inception' AND quantity equals 2":
 - CORRECT: "Add 2 copies of Inception to the shopping cart."
@@ -1282,12 +1253,12 @@ ADD_TO_CART_BOOK_USE_CASE = UseCase(
     replace_func=replace_book_placeholders,
     examples=[
         {
-            "prompt": "Login with the username equal to <username> and password equal to <password>. After logging in, add the book where the title is equal to 'Fourth Win' to your shopping cart.",
-            "prompt_for_task_generation": "Login with the username equal to <username> and password equal to <password>. After logging in, add the book where the title is equal to <book> to your shopping cart.",
+            "prompt": "Login with username: <username> and password: <password>. After logging in, add 'Fourth Win' to your shopping cart.",
+            "prompt_for_task_generation": "Login with username: <username> and password: <password>. After logging in, add '<book>' to your shopping cart.",
         },
         {
-            "prompt": "First sign in using username equal to <username> and password equal to <password>. Then place a book with page count greater than or equal to 704, with genre equal to 'Education' into your shopping cart.",
-            "prompt_for_task_generation": "First sign in using username equal to <username> and password equal to <password>. Then place a book with page_count greater than or equal to <page_count>, with genre equal to <genre> into your shopping cart.",
+            "prompt": "First sign in with username: <username> and password: <password>. Then place a book with page count greater than or equal to 704, with genre 'Education' into your shopping cart.",
+            "prompt_for_task_generation": "First sign in with username: <username> and password: <password>. Then place a book with page_count greater than or equal to <page_count>, with genre '<genre>' into your shopping cart.",
         },
     ],
 )
@@ -1302,7 +1273,6 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 5. If constraints include book_name, they MUST be referenced directly in the prompt.
 6. Begin with a creative instruction to log in using username '<username>' and password '<password>' (**strictly** containing both the username and password placeholders).
 Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the removal request.
-7. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal'.
 
 For example, if the constraints are "book_name equals 'Inception'":
 - CORRECT: "Remove Inception from the shopping cart."
@@ -1323,12 +1293,12 @@ REMOVE_FROM_CART_BOOK_USE_CASE = UseCase(
     replace_func=replace_book_placeholders,
     examples=[
         {
-            "prompt": "Login with the username equal to <username> and password equal to <password>. After logging in, remove the book where the title is equal to 'Fourth Win' from your shopping cart.",
-            "prompt_for_task_generation": "Login with the username equal to <username> and password equal to <password>. After logging in, remove the book where the title is equal to <book> from your shopping cart.",
+            "prompt": "Login with username: <username> and password: <password>. After logging in, remove 'Fourth Win' from your shopping cart.",
+            "prompt_for_task_generation": "Login with username: <username> and password: <password>. After logging in, remove '<book>' from your shopping cart.",
         },
         {
-            "prompt": "First sign in using username equal to <username> and password equal to <password>. Then remove the book with genre equal to 'Education' from your shopping cart.",
-            "prompt_for_task_generation": "First sign in using username equal to <username> and password equal to <password>. Then remove the book with genre equal to <genre> from your shopping cart.",
+            "prompt": "First sign in with username: <username> and password: <password>. Then remove a book with genre 'Education' from your shopping cart.",
+            "prompt_for_task_generation": "First sign in with username: <username> and password: <password>. Then remove a book with genre '<genre>' from your shopping cart.",
         },
     ],
 )
@@ -1336,14 +1306,6 @@ REMOVE_FROM_CART_BOOK_USE_CASE = UseCase(
 
 PURCHASE_BOOK_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above — not just some of them.
-2. Include ONLY the constraints mentioned above — do not add any other fields or conditions. Use the values EXACTLY as they appear (do not shorten or modify them).
-3. Be phrased as a request to purchase books (e.g., "Purchase...", "Buy...").
-4. Explicitly mention the purchase/checkout action in the prompt.
-5. If constraints include payment_method or shipping_address, they MUST be referenced directly.
-6. Begin with a creative instruction to log in using username '<username>' and password '<password>' (**strictly** containing both the username and password placeholders).
-Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
-7. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal'.
 
 1. Include ALL purchase constraints mentioned above — not just some of them.
 2. Include ONLY the purchase constraints mentioned above — do not add any other fields, filters, or conditions.
@@ -1394,16 +1356,20 @@ PURCHASE_BOOK_USE_CASE = UseCase(
     additional_prompt_info=PURCHASE_BOOK_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "First, authenticate with username equal to <username> and password equal to <password>. After successful login, purchase the book where the title is equal to 'The Housemaid Is Watching' and the year is equal to 2024.",
-            "prompt_for_task_generation": "First, authenticate with username equal to <username> and password equal to <password>. After successful login, purchase the book where the title is equal to <book> and the year is equal to <year>.",
+            "prompt": "First, authenticate with username: <username> and password: <password>. After successful login, purchase the book titled 'Klara and the Sun' from the year 2021.",
+            "prompt_for_task_generation": "First, authenticate with username: <username> and password: <password>. After successful login, purchase the book titled <book> from the year <year>.",
         },
         {
-            "prompt": "Initiate session using username equal to <username> and password equal to <password>. Once logged in, checkout with the book where the title is equal to 'Elementary Statistics' and its price is less than $100.",
-            "prompt_for_task_generation": "Initiate session using username equal to <username> and password equal to <password>. Once logged in, checkout with the book where the title is equal to <book> and its price is less than <price>.",
+            "prompt": "Initiate session using username: <username> and password: <password>. Once logged in, checkout with the 'Elementary Statistics' book priced below $100.",
+            "prompt_for_task_generation": "Initiate session using username: <username> and password: <password>. Once logged in, checkout with the <book> book priced below <price>.",
         },
         {
-            "prompt": "Sign in with username equal to <username> and password equal to <password>. Then complete buying the order for a book where the genre is equal to 'History' and it was released in 2019.",
-            "prompt_for_task_generation": "Sign in with username equal to <username> and password equal to <password>. Then complete the order for a book where the genre is equal to <genre> and it was released in <year>.",
+            "prompt": "Sign in with username: <username> and password: <password>. Then complete buying the order for a 'History' genre book released in 2019.",
+            "prompt_for_task_generation": "Sign in with username: <username> and password: <password>. Then complete the order for a '<genre>' genre book released in <year>.",
+        },
+        {
+            "prompt": "Log in with username: <username> and password: <password>. Then proceed to buy a book in the 'Education' genre with more than 700 pages.",
+            "prompt_for_task_generation": "Log in with username: <username> and password: <password>. Then proceed to buy a book in the '<genre>' genre with more than <page_count> pages.",
         },
     ],
 )

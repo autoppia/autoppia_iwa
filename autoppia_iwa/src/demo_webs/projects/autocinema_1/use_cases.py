@@ -61,7 +61,7 @@ def _generate_allowed_years_list(movies_data: list[dict]) -> list[int]:
     """Generate a list of unique years from movies data."""
     if not movies_data:
         return []
-    return sorted({movie.get("year") for movie in movies_data if movie.get("year") is not None})
+    return sorted(list(set(movie.get("year") for movie in movies_data if movie.get("year") is not None)))
 
 
 def _generate_allowed_genres_list(movies_data: list[dict]) -> list[str]:
@@ -75,7 +75,7 @@ def _generate_allowed_genres_list(movies_data: list[dict]) -> list[str]:
             genres.update(movie_genres)
         elif isinstance(movie_genres, str):
             genres.add(movie_genres)
-    return sorted(genres)
+    return sorted(list(genres))
 
 
 ###############################################################################
@@ -272,7 +272,7 @@ FILM_DETAIL_USE_CASE = UseCase(
 )
 
 
-def _get_add_to_watchlist_info() -> str:
+def _get_add_to_watchlist_info(movies_data: list[dict]) -> str:
     """Generate add to watchlist / remove from watchlist info dynamically from API data (auth required)."""
     return f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
@@ -385,7 +385,7 @@ REMOVE_FROM_WATCHLIST_USE_CASE = UseCase(
 )
 
 
-def _get_share_film_info() -> str:
+def _get_share_film_info(movies_data: list[dict]) -> str:
     """Generate share film info dynamically from API data."""
     return f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
@@ -450,7 +450,7 @@ SHARE_FILM_USE_CASE = UseCase(
 )
 
 
-def _get_watch_trailer_info() -> str:
+def _get_watch_trailer_info(movies_data: list[dict]) -> str:
     """Generate watch trailer info dynamically from API data."""
     return f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
@@ -856,7 +856,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
 ###############################################################################
 # FILTER_FILM_USE_CASE
 ###############################################################################
-def _get_filter_film_info() -> str:
+def _get_filter_film_info(movies_data: list[dict]) -> str:
     """Generate filter film info dynamically from API data."""
     return f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
@@ -975,11 +975,11 @@ async def update_use_cases_prompt_info(
 
     # Update use cases that need movie data
     FILM_DETAIL_USE_CASE.additional_prompt_info = _get_film_detail_info(movies_data)
-    ADD_TO_WATCHLIST_USE_CASE.additional_prompt_info = _get_add_to_watchlist_info()
-    REMOVE_FROM_WATCHLIST_USE_CASE.additional_prompt_info = _get_add_to_watchlist_info()
-    SHARE_FILM_USE_CASE.additional_prompt_info = _get_share_film_info()
-    WATCH_TRAILER_USE_CASE.additional_prompt_info = _get_watch_trailer_info()
-    FILTER_FILM_USE_CASE.additional_prompt_info = _get_filter_film_info()
+    ADD_TO_WATCHLIST_USE_CASE.additional_prompt_info = _get_add_to_watchlist_info(movies_data)
+    REMOVE_FROM_WATCHLIST_USE_CASE.additional_prompt_info = _get_add_to_watchlist_info(movies_data)
+    SHARE_FILM_USE_CASE.additional_prompt_info = _get_share_film_info(movies_data)
+    WATCH_TRAILER_USE_CASE.additional_prompt_info = _get_watch_trailer_info(movies_data)
+    FILTER_FILM_USE_CASE.additional_prompt_info = _get_filter_film_info(movies_data)
 
 
 ###############################################################################

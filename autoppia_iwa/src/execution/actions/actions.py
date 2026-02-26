@@ -13,12 +13,6 @@ action_logger = logger.bind(action="autoppia_action")
 # Disable logging for agent actions execution as its so annoying
 logger.disable("autoppia_action")
 
-# ============================================================================
-# CONSTANTS
-# ============================================================================
-
-SELECTOR_OR_COORDS_REQUIRED_MSG = "Either a selector or (x, y) must be provided."
-
 
 def log_action(action_name: str):
     """Decorator to log action execution around the `execute` call."""
@@ -29,13 +23,11 @@ def log_action(action_name: str):
             action_logger.debug(f"Executing {action_name} with data: {self.model_dump()}")
             try:
                 return await func(self, page, backend_service, web_agent_id)
-            except Exception:
+            except Exception as e:
                 # error_details = traceback.format_exc()
                 # action_logger.error(f"{action_name} failed: {e}\n\n Traceback: {error_details}")
                 # action_logger.error(f"{action_name} failed: {e}")
-                # Log and re-raise exception to propagate error
-                action_logger.debug(f"{action_name} execution failed")
-                raise
+                raise e
 
         return wrapper
 
@@ -80,7 +72,7 @@ async def _move_mouse_to(page: Page, selector: str | None, x: int | None, y: int
     if x is not None and y is not None:
         await page.mouse.move(x, y, steps=steps)
         return
-    raise ValueError(SELECTOR_OR_COORDS_REQUIRED_MSG)
+    raise ValueError("Either a selector or (x, y) must be provided.")
 
 
 # -------------------------------------------------------------------
@@ -131,7 +123,7 @@ class ClickAction(BaseClickAction):
             await page.mouse.click(self.x, self.y)
             return
 
-        raise ValueError(SELECTOR_OR_COORDS_REQUIRED_MSG)
+        raise ValueError("Either a selector or (x, y) must be provided.")
 
 
 class DoubleClickAction(BaseClickAction):
@@ -153,7 +145,7 @@ class DoubleClickAction(BaseClickAction):
             await page.mouse.dblclick(x=self.x, y=self.y)
             return
 
-        raise ValueError(SELECTOR_OR_COORDS_REQUIRED_MSG)
+        raise ValueError("Either a selector or (x, y) must be provided.")
 
 
 class RightClickAction(BaseClickAction):
@@ -175,7 +167,7 @@ class RightClickAction(BaseClickAction):
             await page.mouse.click(self.x, self.y, button="right")
             return
 
-        raise ValueError(SELECTOR_OR_COORDS_REQUIRED_MSG)
+        raise ValueError("Either a selector or (x, y) must be provided.")
 
 
 class MiddleClickAction(BaseClickAction):
@@ -197,7 +189,7 @@ class MiddleClickAction(BaseClickAction):
             await page.mouse.click(self.x, self.y, button="middle")
             return
 
-        raise ValueError(SELECTOR_OR_COORDS_REQUIRED_MSG)
+        raise ValueError("Either a selector or (x, y) must be provided.")
 
 
 class TripleClickAction(BaseClickAction):
@@ -218,7 +210,7 @@ class TripleClickAction(BaseClickAction):
             await page.mouse.click(self.x, self.y, click_count=3)
             return
 
-        raise ValueError(SELECTOR_OR_COORDS_REQUIRED_MSG)
+        raise ValueError("Either a selector or (x, y) must be provided.")
 
 
 class MouseDownAction(BaseClickAction):
@@ -271,7 +263,7 @@ class MouseMoveAction(BaseClickAction):
             await page.mouse.move(self.x, self.y, steps=self.steps)
             return
 
-        raise ValueError(SELECTOR_OR_COORDS_REQUIRED_MSG)
+        raise ValueError("Either a selector or (x, y) must be provided.")
 
 
 class NavigateAction(BaseAction):
@@ -476,65 +468,61 @@ class ScrollAction(BaseAction):
         """
         await page.evaluate(script, {"axis": axis, "end": end})
 
-    async def _handle_string_value_scroll(self, page: Page, value: str) -> None:
-        """Handle scrolling when value is a directive string."""
-        v = value.strip().lower()
-        if v in {"top", "start"}:
-            await self._scroll_to_edge(page, axis="y", end="start")
-        elif v in {"bottom", "max", "end"}:
-            await self._scroll_to_edge(page, axis="y", end="end")
-        elif v == "left":
-            await self._scroll_to_edge(page, axis="x", end="start")
-        elif v == "right":
-            await self._scroll_to_edge(page, axis="x", end="end")
-        else:
-            await self._scroll_to_text(page, value)
-
-    async def _calculate_scroll_amount(self, page: Page, axis: str, value: int | None) -> int:
-        """Calculate scroll amount based on value or viewport size."""
-        if isinstance(value, int):
-            return abs(value)
-        if axis == "y":
-            inner = await page.evaluate("() => window.innerHeight")
-        else:
-            inner = await page.evaluate("() => window.innerWidth")
-        return int(inner) if inner else 600
-
-    async def _perform_numeric_scroll(self, page: Page) -> None:
-        """Perform scrolling by numeric amount or viewport size."""
-        axis = "y" if (self.up or self.down) else "x"
-        positive = self.down or self.right
-        sign = 1 if positive else -1
-        amount = await self._calculate_scroll_amount(page, axis, self.value)
-        dx, dy = (sign * amount, 0) if axis == "x" else (0, sign * amount)
-        await self._scroll_by_value(page, dx=dx, dy=dy)
-
-    async def _handle_keyboard_fallback(self, page: Page, original_error: Exception) -> None:
-        """Handle keyboard fallback when JS scrolling fails."""
-        value_str = self.value.strip().lower() if isinstance(self.value, str) else ""
-        if self.left or value_str == "left":
-            await page.keyboard.press("ArrowLeft")
-        elif self.right or value_str == "right":
-            await page.keyboard.press("ArrowRight")
-        elif self.up or value_str in {"top", "start"}:
-            await page.keyboard.press("PageUp")
-        else:
-            await page.keyboard.press("PageDown")
-
     @log_action("ScrollAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
         page = _ensure_page(page, "ScrollAction")
 
+        # If value is a directive string, handle it first.
         if isinstance(self.value, str):
-            await self._handle_string_value_scroll(page, self.value)
+            v = self.value.strip().lower()
+            if v in {"top", "start"}:
+                await self._scroll_to_edge(page, axis="y", end="start")
+                return
+            if v in {"bottom", "max", "end"}:
+                await self._scroll_to_edge(page, axis="y", end="end")
+                return
+            if v in {"left"}:
+                await self._scroll_to_edge(page, axis="x", end="start")
+                return
+            if v in {"right"}:
+                await self._scroll_to_edge(page, axis="x", end="end")
+                return
+
+            # Otherwise treat it as text to scroll to.
+            await self._scroll_to_text(page, self.value)
             return
 
+        # Otherwise, we are scrolling by a numeric amount or by viewport size with a single direction flag.
         try:
-            await self._perform_numeric_scroll(page)
+            # Determine axis and sign.
+            axis = "y" if (self.up or self.down) else "x"
+            positive = self.down or self.right  # positive increases scrollTop/scrollLeft
+            sign = 1 if positive else -1
+
+            if isinstance(self.value, int):
+                amount = abs(self.value)
+            else:
+                # Default step is viewport size on the chosen axis.
+                if axis == "y":
+                    inner = await page.evaluate("() => window.innerHeight")
+                else:
+                    inner = await page.evaluate("() => window.innerWidth")
+                amount = int(inner) if inner else 600  # fallback
+
+            dx, dy = (sign * amount, 0) if axis == "x" else (0, sign * amount)
+            await self._scroll_by_value(page, dx=dx, dy=dy)
         except Exception as e:
+            # Fallback to keyboard scroll if JS scrolling fails.
             action_logger.warning(f"ScrollAction failed with JS scrolling: {e}. Using keyboard fallback.")
             try:
-                await self._handle_keyboard_fallback(page, e)
+                if self.left or (isinstance(self.value, str) and self.value.strip().lower() == "left"):
+                    await page.keyboard.press("ArrowLeft")
+                elif self.right or (isinstance(self.value, str) and self.value.strip().lower() == "right"):
+                    await page.keyboard.press("ArrowRight")
+                elif self.up or (isinstance(self.value, str) and self.value.strip().lower() in {"top", "start"}):
+                    await page.keyboard.press("PageUp")
+                else:
+                    await page.keyboard.press("PageDown")
             except Exception as kb_error:
                 raise ValueError(f"ScrollAction completely failed: {e}") from kb_error
 
@@ -721,85 +709,6 @@ class GetDropDownOptionsAction(BaseActionWithSelector):
 
     type: Literal["GetDropDownOptionsAction"] = "GetDropDownOptionsAction"
 
-    def _extract_xpath_from_selector(self, playwright_selector: str) -> str | None:
-        """Extract raw XPath from Playwright selector if it's an XPath selector."""
-        if playwright_selector.startswith("xpath="):
-            return playwright_selector[6:]
-        if playwright_selector.startswith("//") or playwright_selector.startswith("(//"):
-            return playwright_selector
-        return None
-
-    async def _evaluate_dropdown_with_xpath(self, frame, raw_xpath: str) -> dict | None:
-        """Evaluate dropdown options using XPath."""
-        return await frame.evaluate(
-            """
-            (xpath) => {
-                try {
-                    const select = document.evaluate(xpath, document, null,
-                        XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-                    if (!select) return null;
-                    if (select.tagName.toLowerCase() !== 'select') return null;
-                    return {
-                        options: Array.from(select.options).map(opt => ({
-                            text: opt.text.trim(),
-                            value: opt.value,
-                            index: opt.index
-                        })),
-                        id: select.id || null,
-                        name: select.name || null
-                    };
-                } catch (e) {
-                    return { error: e.toString() };
-                }
-            }
-            """,
-            raw_xpath,
-        )
-
-    async def _evaluate_dropdown_with_playwright(self, frame, playwright_selector: str, frame_idx: int) -> dict | None:
-        """Evaluate dropdown options using Playwright selector."""
-        try:
-            select_element = await frame.wait_for_selector(
-                playwright_selector,
-                state="attached",
-                timeout=2000,
-                strict=False,
-            )
-            if not select_element:
-                return None
-            return await select_element.evaluate(
-                """
-                (select) => {
-                    if (select.tagName.toLowerCase() !== 'select') return null;
-                    return {
-                        options: Array.from(select.options).map(opt => ({
-                            text: opt.text.trim(),
-                            value: opt.value,
-                            index: opt.index
-                        })),
-                        id: select.id || null,
-                        name: select.name || null
-                    };
-                }
-                """
-            )
-        except Exception as e:
-            action_logger.debug(f"Frame {frame_idx} Playwright selector evaluation failed: {e!s}")
-            return None
-
-    def _process_dropdown_options(self, options: dict, frame_idx: int, all_options: list) -> bool:
-        """Process dropdown options and add to all_options list. Returns True if dropdown found."""
-        if options and "error" not in options and options.get("options"):
-            action_logger.debug(f"Dropdown found in frame {frame_idx} (ID: {options.get('id')}, Name: {options.get('name')})")
-            formatted_options = [f"{opt['index']}: text={json.dumps(opt['text'])}" for opt in options["options"]]
-            all_options.extend(formatted_options)
-            return True
-        if options and "error" in options:
-            action_logger.debug(f"Frame {frame_idx} evaluation error: {options['error']}")
-        elif options and not options.get("options"):
-            action_logger.debug(f"Frame {frame_idx}: Element found but has no options or is not a select element")
-        return False
-
     @log_action("GetDropDownOptionsAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
         """
@@ -810,20 +719,91 @@ class GetDropDownOptionsAction(BaseActionWithSelector):
         all_options = []
         found_dropdown = False
 
-        raw_xpath = self._extract_xpath_from_selector(playwright_selector)
-        if not raw_xpath:
+        # Extract raw XPath from Playwright selector if it's an XPath selector
+        # Playwright selectors can be: "xpath=//select[@id='x']", "#id", ".class", etc.
+        raw_xpath = None
+        if playwright_selector.startswith("xpath="):
+            raw_xpath = playwright_selector[6:]  # Remove "xpath=" prefix
+        elif playwright_selector.startswith("//") or playwright_selector.startswith("(//"):
+            raw_xpath = playwright_selector
+        else:
+            # For non-XPath selectors (ID, class, etc.), try using Playwright's selector evaluation
+            # Convert to XPath or use Playwright's querySelector
             action_logger.debug(f"Non-XPath selector detected: {playwright_selector}, attempting conversion")
 
         for i, frame in enumerate(page.frames):
             try:
+                # If we have a raw XPath, use document.evaluate
                 if raw_xpath:
-                    options = await self._evaluate_dropdown_with_xpath(frame, raw_xpath)
+                    options = await frame.evaluate(
+                        """
+                        (xpath) => {
+                            try {
+                                const select = document.evaluate(xpath, document, null,
+                                    XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+                                if (!select) return null;
+                                if (select.tagName.toLowerCase() !== 'select') return null;
+                                return {
+                                    options: Array.from(select.options).map(opt => ({
+                                        text: opt.text.trim(),
+                                        value: opt.value,
+                                        index: opt.index
+                                    })),
+                                    id: select.id || null,
+                                    name: select.name || null
+                                };
+                            } catch (e) {
+                                return { error: e.toString() };
+                            }
+                        }
+                        """,
+                        raw_xpath,
+                    )
                 else:
-                    options = await self._evaluate_dropdown_with_playwright(frame, playwright_selector, i)
+                    # For non-XPath selectors, use Playwright's selector evaluation
+                    try:
+                        select_element = await frame.wait_for_selector(
+                            playwright_selector,
+                            state="attached",
+                            timeout=2000,
+                            strict=False,
+                        )
+                        if select_element:
+                            options = await select_element.evaluate(
+                                """
+                                (select) => {
+                                    if (select.tagName.toLowerCase() !== 'select') return null;
+                                    return {
+                                        options: Array.from(select.options).map(opt => ({
+                                            text: opt.text.trim(),
+                                            value: opt.value,
+                                            index: opt.index
+                                        })),
+                                        id: select.id || null,
+                                        name: select.name || null
+                                    };
+                                }
+                                """
+                            )
+                        else:
+                            options = None
+                    except Exception as e:
+                        action_logger.debug(f"Frame {i} Playwright selector evaluation failed: {e!s}")
+                        options = None
 
-                if self._process_dropdown_options(options, i, all_options):
+                if options and "error" not in options and options.get("options"):
                     found_dropdown = True
+                    action_logger.debug(f"Dropdown found in frame {i} (ID: {options.get('id')}, Name: {options.get('name')})")
+
+                    formatted_options = [f"{opt['index']}: text={json.dumps(opt['text'])}" for opt in options["options"]]
+                    all_options.extend(formatted_options)
+
+                    # Stop searching after finding the first dropdown with options
                     break
+                elif options and "error" in options:
+                    action_logger.debug(f"Frame {i} evaluation error: {options['error']}")
+                elif options and not options.get("options"):
+                    action_logger.debug(f"Frame {i}: Element found but has no options or is not a select element")
 
             except Exception as e:
                 action_logger.debug(f"Frame {i} evaluate error: {e!s}")
@@ -842,52 +822,6 @@ class SelectDropDownOptionAction(BaseActionWithSelector):
     text: str = Field(..., description="The exact visible text of the option to select.")
     timeout_ms: int = Field(1000, description="Maximum time in milliseconds to wait for the element and option.")
 
-    async def _try_select_in_frame(self, frame, frame_idx: str | int, xpath: str) -> tuple[bool, str | None]:
-        """Try to select option in a specific frame. Returns (success, error_message)."""
-        try:
-            select_element = await frame.wait_for_selector(
-                xpath,
-                state="attached",
-                timeout=self.timeout_ms,
-                strict=True,
-            )
-
-            tag_name = await select_element.evaluate("el => el.tagName.toLowerCase()")
-            if tag_name != "select":
-                action_logger.debug(f"Element at {xpath} is {tag_name}, not SELECT (frame {frame_idx})")
-                return False, None
-
-            selection_strategies = [
-                {"label": self.text},
-                {"value": self.text},
-                {"index": await self._find_option_index(select_element, self.text)},
-            ]
-
-            for strategy in selection_strategies:
-                try:
-                    await select_element.select_option(**strategy, timeout=self.timeout_ms)
-                    return True, None
-                except Exception as e:
-                    action_logger.debug(f"Selection failed with {strategy}: {e!s}")
-                    continue
-
-            return False, None
-
-        except Exception as e:
-            return False, str(e)
-
-    async def _try_fallback_click_method(self, page: Page, xpath: str) -> bool:
-        """Try fallback method by clicking dropdown and option."""
-        try:
-            element = await page.wait_for_selector(xpath, timeout=self.timeout_ms)
-            await element.click()
-            await page.wait_for_timeout(300)
-            option = await page.wait_for_selector(f"//*[normalize-space(text())={self.text.strip()}]", timeout=self.timeout_ms)
-            await option.click()
-            return True
-        except Exception:
-            return False
-
     @log_action("SelectDropDownOptionAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str) -> bool:
         """
@@ -898,25 +832,68 @@ class SelectDropDownOptionAction(BaseActionWithSelector):
         """
         page = _ensure_page(page, "SelectDropDownOptionAction")
         xpath = self.get_playwright_selector()
+        found = False
         last_error = None
 
-        found, error = await self._try_select_in_frame(page.main_frame, "main", xpath)
-        if found:
-            return True
-        if error:
-            last_error = error
+        async def try_select(frame, frame_idx):
+            nonlocal found, last_error
+            try:
+                # Wait for element with more tolerance
+                select_element = await frame.wait_for_selector(
+                    xpath,
+                    state="attached",
+                    timeout=self.timeout_ms,
+                    strict=True,
+                )
 
+                # Verify element type
+                tag_name = await select_element.evaluate("el => el.tagName.toLowerCase()")
+                if tag_name != "select":
+                    action_logger.debug(f"Element at {xpath} is {tag_name}, not SELECT (frame {frame_idx})")
+                    return False
+
+                # Try multiple selection strategies
+                selection_strategies = [{"label": self.text}, {"value": self.text}, {"index": await self._find_option_index(select_element, self.text)}]
+
+                for strategy in selection_strategies:
+                    try:
+                        await select_element.select_option(**strategy, timeout=self.timeout_ms)
+                        return True
+                    except Exception as e:
+                        action_logger.debug(f"Selection failed with {strategy}: {e!s}")
+                        last_error = str(e)
+                        continue
+
+                return False
+
+            except Exception as e:
+                last_error = str(e)
+                return False
+
+        # Try main frame first (most common case)
+        if await try_select(page.main_frame, "main"):
+            return True
+
+        # Try other frames if needed
         for i, frame in enumerate(page.frames):
             if frame == page.main_frame:
-                continue
-            found, error = await self._try_select_in_frame(frame, i, xpath)
-            if found:
+                continue  # Already tried
+            if await try_select(frame, i):
                 return True
-            if error:
-                last_error = error
 
-        found = await self._try_fallback_click_method(page, xpath)
-        if not found and last_error:
+        # Fallback: Try clicking the dropdown first
+        if not found:
+            try:
+                element = await page.wait_for_selector(xpath, timeout=self.timeout_ms)
+                await element.click()
+                await page.wait_for_timeout(300)  # Allow dropdown to open
+                option = await page.wait_for_selector(f"//*[normalize-space(text())={self.text.strip()}]", timeout=self.timeout_ms)
+                await option.click()
+                found = True
+            except Exception as e:
+                last_error = str(e)
+
+        if not found:
             action_logger.error(f"Failed to select option '{self.text}'. Last error: {last_error}")
 
         return found
@@ -939,7 +916,6 @@ class UndefinedAction(BaseAction):
 
     @log_action("UndefinedAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
-        # Intentionally empty: UndefinedAction represents a placeholder action that does nothing
         pass
 
 
@@ -950,5 +926,4 @@ class IdleAction(BaseAction):
 
     @log_action("IdleAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
-        # Intentionally empty: IdleAction represents an intentional pause that does nothing
         pass

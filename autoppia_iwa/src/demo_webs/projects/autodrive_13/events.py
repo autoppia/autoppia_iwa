@@ -448,64 +448,31 @@ class CancelReservationEvent(ReserveRideEvent):
     event_name: str = "CANCEL_RESERVATION"
 
 
-def _parse_time_string(value: str) -> dt_time | None:
-    """Parse time string in HH:MM format."""
-    if ":" not in value:
-        return None
-    time_parts = value.split(":")
-    if len(time_parts) > 1:
-        try:
-            return dt_time(int(time_parts[0]), int(time_parts[1]))
-        except (ValueError, TypeError):
-            return None
-    return None
-
-
-def _parse_date_with_separators(value: str) -> datetime | None:
-    """Parse date string with T or space separators."""
-    for sep in ("T", " "):
-        if sep in value:
-            date_part = value.split(sep)[0]
-            try:
-                return datetime.fromisoformat(date_part)
-            except ValueError:
-                continue
-    return None
-
-
-def _parse_string_value(value: str) -> datetime | dt_time | None:
-    """Parse string value to datetime or time."""
-    try:
-        return datetime.fromisoformat(value)
-    except ValueError:
-        pass
-
-    time_result = _parse_time_string(value)
-    if time_result is not None:
-        return time_result
-
-    date_result = _parse_date_with_separators(value)
-    if date_result is not None:
-        return date_result
-
-    try:
-        return parser.isoparse(value)
-    except (ValueError, TypeError):
-        return None
-
-
 def parse_datetime(value: str | None) -> datetime | dt_time | None:
-    """Parse a value to datetime or time object."""
     if not value:
         return None
-
-    if isinstance(value, datetime):
-        return value
-
-    if isinstance(value, str):
-        return _parse_string_value(value)
-
-    return None
+    try:
+        if isinstance(value, datetime):
+            return value
+        if isinstance(value, str):
+            try:
+                return datetime.fromisoformat(value)
+            except ValueError:
+                if ":" in value:  # updated for time
+                    t = value.split(":")  # updated for time
+                    if len(t) > 1:  # updated for time
+                        return dt_time(int(t[0]), int(t[1]))  # updated for time
+            for sep in ("T", " "):
+                if sep in value:
+                    date_part = value.split(sep)[0]
+                    try:
+                        return datetime.fromisoformat(date_part)
+                    except ValueError:
+                        pass
+            return parser.isoparse(value)
+        return None
+    except (ValueError, TypeError):
+        return None
 
 
 EVENTS = [

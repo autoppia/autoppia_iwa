@@ -8,18 +8,9 @@ from ..criterion_helper import ComparisonOperator, CriterionValue, validate_crit
 from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
 from .data_utils import fetch_data
 
-# =============================================================================
-#                            CONSTANTS
-# =============================================================================
-
 # Constants for constraint placeholders
 USERNAME_PLACEHOLDER = "<username>"
 PASSWORD_PLACEHOLDER = "<password>"
-
-
-# =============================================================================
-#                            AUTHENTICATION CONSTRAINTS
-# =============================================================================
 
 
 def generate_registration_constraints():
@@ -61,25 +52,6 @@ def generate_logout_constraints():
     # Generar restricciones frescas basadas en los datos de películas
     constraints_str = f"username equals {USERNAME_PLACEHOLDER} AND password equals {PASSWORD_PLACEHOLDER}"
     return parse_constraints_str(constraints_str)
-
-
-def generate_delete_book_constraints():
-    """
-    Generates constraints specifically for book-related use cases.
-    Returns the constraints as structured data.
-    """
-    from .utils import parse_constraints_str
-
-    # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = f"username equals {USERNAME_PLACEHOLDER} AND password equals {PASSWORD_PLACEHOLDER} AND id equals <web_agent_id>"
-
-    # Convertir el string a la estructura de datos
-    return parse_constraints_str(constraints_str)
-
-
-# =============================================================================
-#                            BOOK CONSTRAINTS
-# =============================================================================
 
 
 async def generate_book_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
@@ -148,6 +120,22 @@ async def generate_book_details_constraints(task_url: str | None = None, dataset
     return None
 
 
+def generate_delete_book_constraints():
+    """
+    Generates constraints specifically for book-related use cases.
+    Returns the constraints as structured data.
+    """
+    from .utils import parse_constraints_str
+
+    # Generar restricciones frescas basadas en los datos de películas
+    constraints_str = f"username equals {USERNAME_PLACEHOLDER} AND password equals {PASSWORD_PLACEHOLDER} AND id equals <web_agent_id>"
+
+    # Convertir el string a la estructura de datos
+    if constraints_str:
+        return parse_constraints_str(constraints_str)
+    return None
+
+
 async def generate_search_book_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
     """
     Generates constraints specifically for book-related use cases.
@@ -172,6 +160,87 @@ async def generate_search_book_constraints(task_url: str | None = None, dataset:
     # This is safe as it's only used to generate random constraints for testing, not for security-sensitive operations
     constraints_str = f"query {choice(operators)} {choice(books_names)}"
     return parse_constraints_str(constraints_str)
+
+
+def generate_contact_constraints() -> list:
+    """
+    Genera una lista de constraints estructurados para el formulario de contacto.
+    Cada constraint es un diccionario con la forma:
+       {"field": <campo>, "operator": <ComparisonOperator>, "value": <valor>}
+    """
+
+    def _generate_random_value_for_contact(field: str) -> str:
+        # Security Hotspot: random.choice is used for non-security purposes (test data generation)
+        if field == "name":
+            return random.choice(["Alice", "Bob", "John", "Maria", "TestUser", "Peter", "Susan", "Robert", "Linda", "Michael", "Jessica", "William", "Karen", "David", "Lisa"])
+        if field == "email":
+            return random.choice(
+                [
+                    "test@example.com",
+                    "info@example.org",
+                    "user@yahoo.com",
+                    "admin@domain.com",
+                    "contact@site.com",
+                    "noreply@domain.com",
+                    "service@provider.com",
+                    "hello@world.com",
+                    "support@company.com",
+                    "sales@business.com",
+                    "user1@site.com",
+                    "example@mail.com",
+                    "foo@bar.com",
+                    "john@doe.com",
+                    "jane@doe.com",
+                ]
+            )
+        if field == "subject":
+            return random.choice(
+                ["Feedback", "Inquiry", "Question", "Collaboration", "Request", "Complaint", "Suggestion", "Appointment", "Meeting", "Proposal", "Support", "Information", "Order", "Refund", "Other"]
+            )
+        if field == "message":
+            return random.choice(
+                [
+                    "Hello, I'd like more info",
+                    "Need further details please",
+                    "Just a quick question",
+                    "Hello, I'm interested in your services",
+                    "I have a query regarding your service",
+                    "Could you provide more details?",
+                    "I need assistance with my order",
+                    "I'm having an issue with the product",
+                    "Please contact me regarding my inquiry",
+                    "I want to learn more about your services",
+                    "Could you help me with my account?",
+                    "I'm writing to request support",
+                    "Please provide me with more information",
+                    "I would like to discuss a potential project",
+                    "I am interested in collaborating with you",
+                ]
+            )
+        return "TestValue"
+
+    # Security Hotspot: random.randint and random.choice are used for non-security purposes (test data generation)
+    num_constraints = random.randint(1, 4)
+    # ["name", "email", "subject", "message"]
+    fields = list(FIELD_OPERATORS_MAP_CONTACT.keys())
+    constraints_list = []
+
+    for _ in range(num_constraints):
+        if not fields:
+            break
+        field = random.choice(fields)
+        fields.remove(field)
+
+        # Convertimos el operador de string a instancia de ComparisonOperator
+        possible_ops = FIELD_OPERATORS_MAP_CONTACT[field]
+        operator_str = random.choice(possible_ops)
+        operator = ComparisonOperator(operator_str)
+
+        value = _generate_random_value_for_contact(field)
+        constraint = {"field": field, "operator": operator, "value": value}
+        constraints_list.append(constraint)
+
+    return constraints_list
 
 
 async def generate_book_filter_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
@@ -230,11 +299,6 @@ async def generate_book_filter_constraints(task_url: str | None = None, dataset:
     return constraints
 
 
-# =============================================================================
-#                            FIELD CONSTRAINT GENERATORS - HELPERS
-# =============================================================================
-
-
 def _generate_string_field_constraint(book: dict, field: str, operator: ComparisonOperator, books_data: list[dict]) -> str | None:
     """Generate constraint value for string fields (name, author, desc)."""
     if operator == ComparisonOperator.EQUALS:
@@ -259,147 +323,81 @@ def _generate_string_field_constraint(book: dict, field: str, operator: Comparis
     return None
 
 
-def _handle_numeric_equals(value: Any) -> Any:
-    """Handle EQUALS operator for numeric fields."""
-    return value
-
-
-def _handle_numeric_not_equals(field: str, value: Any, books_data: list[dict]) -> Any:
-    """Handle NOT_EQUALS operator for numeric fields."""
-    other_values = [m[field] for m in books_data if m[field] != value]
-    if other_values:
-        return random.choice(other_values)
-    # Security Hotspot: random.random is used for non-security purposes (test data generation)
-    return value + (1 if random.random() > 0.5 else -1)
-
-
-def _handle_numeric_comparison(field: str, value: Any, books_data: list[dict], comparison_op: str) -> Any:
-    """Handle comparison operators (GREATER_THAN, LESS_THAN, GREATER_EQUAL, LESS_EQUAL) for numeric fields."""
-    if comparison_op == "GREATER_THAN":
-        lower_values = [m[field] for m in books_data if m[field] < value]
-        return random.choice(lower_values) if lower_values else value - 1
-    if comparison_op == "LESS_THAN":
-        higher_values = [m[field] for m in books_data if m[field] > value]
-        return random.choice(higher_values) if higher_values else value + 1
-    if comparison_op == "GREATER_EQUAL":
-        valid_values = [m[field] for m in books_data if m[field] <= value]
-        return random.choice(valid_values) if valid_values else value
-    if comparison_op == "LESS_EQUAL":
-        valid_values = [m[field] for m in books_data if m[field] >= value]
-        return random.choice(valid_values) if valid_values else value
-    return None
-
-
-def _handle_numeric_in_list(field: str, value: Any, books_data: list[dict]) -> list[Any]:
-    """Handle IN_LIST operator for numeric fields."""
-    other_values = [m[field] for m in books_data if m[field] != value]
-    sample_size = min(2, len(other_values))
-    if other_values and sample_size > 0:
-        # Security Hotspot: random.sample is used for non-security purposes (test data generation)
-        return [value, *random.sample(other_values, sample_size)]
-    return [value]
-
-
-def _handle_numeric_not_in_list(field: str, value: Any, books_data: list[dict]) -> list[Any]:
-    """Handle NOT_IN_LIST operator for numeric fields."""
-    other_values = [m[field] for m in books_data if m[field] != value]
-    if other_values:
-        # Security Hotspot: random.sample is used for non-security purposes (test data generation)
-        return random.sample(other_values, min(3, len(other_values)))
-    return [value + 1, value + 2]
-
-
 def _generate_numeric_field_constraint(book: dict, field: str, operator: ComparisonOperator, books_data: list[dict]) -> Any:
     """Generate constraint value for numeric fields (year, page_count, price)."""
     value = book[field]
     if operator == ComparisonOperator.EQUALS:
-        return _handle_numeric_equals(value)
+        return value
     if operator == ComparisonOperator.NOT_EQUALS:
-        return _handle_numeric_not_equals(field, value, books_data)
+        other_values = [m[field] for m in books_data if m[field] != value]
+        if other_values:
+            return random.choice(other_values)
+        # Security Hotspot: random.random is used for non-security purposes (test data generation)
+        return value + (1 if random.random() > 0.5 else -1)
     if operator == ComparisonOperator.GREATER_THAN:
-        return _handle_numeric_comparison(field, value, books_data, "GREATER_THAN")
+        lower_values = [m[field] for m in books_data if m[field] < value]
+        return random.choice(lower_values) if lower_values else value - 1
     if operator == ComparisonOperator.LESS_THAN:
-        return _handle_numeric_comparison(field, value, books_data, "LESS_THAN")
+        higher_values = [m[field] for m in books_data if m[field] > value]
+        return random.choice(higher_values) if higher_values else value + 1
     if operator == ComparisonOperator.GREATER_EQUAL:
-        return _handle_numeric_comparison(field, value, books_data, "GREATER_EQUAL")
+        valid_values = [m[field] for m in books_data if m[field] <= value]
+        return random.choice(valid_values) if valid_values else value
     if operator == ComparisonOperator.LESS_EQUAL:
-        return _handle_numeric_comparison(field, value, books_data, "LESS_EQUAL")
+        valid_values = [m[field] for m in books_data if m[field] >= value]
+        return random.choice(valid_values) if valid_values else value
     if operator == ComparisonOperator.IN_LIST:
-        return _handle_numeric_in_list(field, value, books_data)
+        other_values = [m[field] for m in books_data if m[field] != value]
+        sample_size = min(2, len(other_values))
+        if other_values and sample_size > 0:
+            # Security Hotspot: random.sample is used for non-security purposes (test data generation)
+            return [value, *random.sample(other_values, sample_size)]
+        return [value]
     if operator == ComparisonOperator.NOT_IN_LIST:
-        return _handle_numeric_not_in_list(field, value, books_data)
+        other_values = [m[field] for m in books_data if m[field] != value]
+        if other_values:
+            # Security Hotspot: random.sample is used for non-security purposes (test data generation)
+            return random.sample(other_values, min(3, len(other_values)))
+        return [value + 1, value + 2]
     return None
-
-
-def _handle_rating_equals(value: float) -> float:
-    """Handle EQUALS operator for rating field."""
-    return value
-
-
-def _handle_rating_not_equals(value: float, books_data: list[dict]) -> float:
-    """Handle NOT_EQUALS operator for rating field."""
-    other_values = [m["rating"] for m in books_data if m["rating"] != value]
-    if other_values:
-        return random.choice(other_values)
-    # Security Hotspot: random.random is used for non-security purposes (test data generation)
-    return max(0, min(5, value + (0.1 if random.random() > 0.5 else -0.1)))
-
-
-def _handle_rating_comparison(value: float, books_data: list[dict], comparison_op: str) -> float:
-    """Handle comparison operators (GREATER_THAN, LESS_THAN, GREATER_EQUAL, LESS_EQUAL) for rating field."""
-    if comparison_op == "GREATER_THAN":
-        lower_values = [m["rating"] for m in books_data if m["rating"] < value]
-        return random.choice(lower_values) if lower_values else max(0, value - 0.1)
-    if comparison_op == "LESS_THAN":
-        higher_values = [m["rating"] for m in books_data if m["rating"] > value]
-        return random.choice(higher_values) if higher_values else min(5, value + 0.1)
-    if comparison_op == "GREATER_EQUAL":
-        valid_values = [m["rating"] for m in books_data if m["rating"] <= value]
-        return random.choice(valid_values) if valid_values else value
-    if comparison_op == "LESS_EQUAL":
-        valid_values = [m["rating"] for m in books_data if m["rating"] >= value]
-        return random.choice(valid_values) if valid_values else value
-    return value
-
-
-def _handle_rating_in_list(value: float, books_data: list[dict]) -> list[float]:
-    """Handle IN_LIST operator for rating field."""
-    other_values = [m["rating"] for m in books_data if m["rating"] != value]
-    sample_size = min(2, len(other_values))
-    if other_values and sample_size > 0:
-        # Security Hotspot: random.sample is used for non-security purposes (test data generation)
-        return [value, *random.sample(other_values, sample_size)]
-    return [value]
-
-
-def _handle_rating_not_in_list(value: float, books_data: list[dict]) -> list[float]:
-    """Handle NOT_IN_LIST operator for rating field."""
-    other_values = [m["rating"] for m in books_data if m["rating"] != value]
-    if other_values:
-        # Security Hotspot: random.sample is used for non-security purposes (test data generation)
-        return random.sample(other_values, min(3, len(other_values)))
-    return [max(0, min(5, value + 0.1)), max(0, min(5, value + 0.2))]
 
 
 def _generate_rating_field_constraint(book: dict, operator: ComparisonOperator, books_data: list[dict]) -> Any:
     """Generate constraint value for rating field."""
     value = book["rating"]
     if operator == ComparisonOperator.EQUALS:
-        return _handle_rating_equals(value)
+        return value
     if operator == ComparisonOperator.NOT_EQUALS:
-        return _handle_rating_not_equals(value, books_data)
+        other_values = [m["rating"] for m in books_data if m["rating"] != value]
+        if other_values:
+            return random.choice(other_values)
+        # Security Hotspot: random.random is used for non-security purposes (test data generation)
+        return max(0, min(5, value + (0.1 if random.random() > 0.5 else -0.1)))
     if operator == ComparisonOperator.GREATER_THAN:
-        return _handle_rating_comparison(value, books_data, "GREATER_THAN")
+        lower_values = [m["rating"] for m in books_data if m["rating"] < value]
+        return random.choice(lower_values) if lower_values else max(0, value - 0.1)
     if operator == ComparisonOperator.LESS_THAN:
-        return _handle_rating_comparison(value, books_data, "LESS_THAN")
+        higher_values = [m["rating"] for m in books_data if m["rating"] > value]
+        return random.choice(higher_values) if higher_values else min(5, value + 0.1)
     if operator == ComparisonOperator.GREATER_EQUAL:
-        return _handle_rating_comparison(value, books_data, "GREATER_EQUAL")
+        valid_values = [m["rating"] for m in books_data if m["rating"] <= value]
+        return random.choice(valid_values) if valid_values else value
     if operator == ComparisonOperator.LESS_EQUAL:
-        return _handle_rating_comparison(value, books_data, "LESS_EQUAL")
+        valid_values = [m["rating"] for m in books_data if m["rating"] >= value]
+        return random.choice(valid_values) if valid_values else value
     if operator == ComparisonOperator.IN_LIST:
-        return _handle_rating_in_list(value, books_data)
+        other_values = [m["rating"] for m in books_data if m["rating"] != value]
+        sample_size = min(2, len(other_values))
+        if other_values and sample_size > 0:
+            # Security Hotspot: random.sample is used for non-security purposes (test data generation)
+            return [value, *random.sample(other_values, sample_size)]
+        return [value]
     if operator == ComparisonOperator.NOT_IN_LIST:
-        return _handle_rating_not_in_list(value, books_data)
+        other_values = [m["rating"] for m in books_data if m["rating"] != value]
+        if other_values:
+            # Security Hotspot: random.sample is used for non-security purposes (test data generation)
+            return random.sample(other_values, min(3, len(other_values)))
+        return [max(0, min(5, value + 0.1)), max(0, min(5, value + 0.2))]
     return None
 
 
@@ -436,11 +434,6 @@ def _generate_genre_field_constraint(book: dict, operator: ComparisonOperator, b
     return None
 
 
-# =============================================================================
-#                            CONSTRAINT GENERATION FROM SOLUTION
-# =============================================================================
-
-
 def generate_constraint_from_solution(book: dict, field: str, operator: ComparisonOperator, books_data: list[dict]) -> dict[str, Any] | None:
     """
     Genera un constraint para un campo y operador específicos que la película solución satisface.
@@ -470,11 +463,6 @@ def generate_constraint_from_solution(book: dict, field: str, operator: Comparis
         return constraint
 
     return None
-
-
-# =============================================================================
-#                            COMMENT CONSTRAINTS
-# =============================================================================
 
 
 async def generate_add_comment_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
@@ -562,11 +550,6 @@ async def generate_add_comment_constraints(task_url: str | None = None, dataset:
     return constraints
 
 
-# =============================================================================
-#                            EDIT/ADD BOOK CONSTRAINTS
-# =============================================================================
-
-
 async def generate_edit_book_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
     """
     Generates constraints specifically for editing book-related use cases.
@@ -621,8 +604,8 @@ async def generate_edit_book_constraints(task_url: str | None = None, dataset: d
     constraints = []
 
     # Always add username and password constraints explicitly
-    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": USERNAME_PLACEHOLDER})
-    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": PASSWORD_PLACEHOLDER})
+    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<username>"})
+    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<password>"})
 
     # Seleccionar 1, 2, 3 o 4 campos para editar
     # Security Hotspot: random.sample and random.choice are used for non-security purposes (test data generation)
@@ -724,8 +707,8 @@ async def generate_add_book_constraints(task_url: str | None = None, dataset: di
     constraints = []
 
     # Always add username and password constraints explicitly
-    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": USERNAME_PLACEHOLDER})
-    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": PASSWORD_PLACEHOLDER})
+    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<username>"})
+    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<password>"})
 
     # Seleccionar 1, 2, 3 o 4 campos para editar
     selected_fields = sample(editable_fields, k=choice([1, 2, 3, 4]))
@@ -768,11 +751,6 @@ async def generate_add_book_constraints(task_url: str | None = None, dataset: di
             )
 
     return constraints
-
-
-# =============================================================================
-#                            PROFILE CONSTRAINTS
-# =============================================================================
 
 
 def _generate_edit_profile_field_constraint(
@@ -884,89 +862,3 @@ async def generate_edit_profile_constraints(task_url: str | None = None, dataset
             constraints.append(constraint)
 
     return constraints
-
-
-# =============================================================================
-#                            CONTACT CONSTRAINTS
-# =============================================================================
-
-
-def generate_contact_constraints() -> list:
-    """
-    Genera una lista de constraints estructurados para el formulario de contacto.
-    Cada constraint es un diccionario con la forma:
-       {"field": <campo>, "operator": <ComparisonOperator>, "value": <valor>}
-    """
-
-    def _generate_random_value_for_contact(field: str) -> str:
-        # Security Hotspot: random.choice is used for non-security purposes (test data generation)
-        if field == "name":
-            return random.choice(["Alice", "Bob", "John", "Maria", "TestUser", "Peter", "Susan", "Robert", "Linda", "Michael", "Jessica", "William", "Karen", "David", "Lisa"])
-        if field == "email":
-            return random.choice(
-                [
-                    "test@example.com",
-                    "info@example.org",
-                    "user@yahoo.com",
-                    "admin@domain.com",
-                    "contact@site.com",
-                    "noreply@domain.com",
-                    "service@provider.com",
-                    "hello@world.com",
-                    "support@company.com",
-                    "sales@business.com",
-                    "user1@site.com",
-                    "example@mail.com",
-                    "foo@bar.com",
-                    "john@doe.com",
-                    "jane@doe.com",
-                ]
-            )
-        if field == "subject":
-            return random.choice(
-                ["Feedback", "Inquiry", "Question", "Collaboration", "Request", "Complaint", "Suggestion", "Appointment", "Meeting", "Proposal", "Support", "Information", "Order", "Refund", "Other"]
-            )
-        if field == "message":
-            return random.choice(
-                [
-                    "Hello, I'd like more info",
-                    "Need further details please",
-                    "Just a quick question",
-                    "Hello, I'm interested in your services",
-                    "I have a query regarding your service",
-                    "Could you provide more details?",
-                    "I need assistance with my order",
-                    "I'm having an issue with the product",
-                    "Please contact me regarding my inquiry",
-                    "I want to learn more about your services",
-                    "Could you help me with my account?",
-                    "I'm writing to request support",
-                    "Please provide me with more information",
-                    "I would like to discuss a potential project",
-                    "I am interested in collaborating with you",
-                ]
-            )
-        return "TestValue"
-
-    # Security Hotspot: random.randint and random.choice are used for non-security purposes (test data generation)
-    num_constraints = random.randint(1, 4)
-    # ["name", "email", "subject", "message"]
-    fields = list(FIELD_OPERATORS_MAP_CONTACT.keys())
-    constraints_list = []
-
-    for _ in range(num_constraints):
-        if not fields:
-            break
-        field = random.choice(fields)
-        fields.remove(field)
-
-        # Convertimos el operador de string a instancia de ComparisonOperator
-        possible_ops = FIELD_OPERATORS_MAP_CONTACT[field]
-        operator_str = random.choice(possible_ops)
-        operator = ComparisonOperator(operator_str)
-
-        value = _generate_random_value_for_contact(field)
-        constraint = {"field": field, "operator": operator, "value": value}
-        constraints_list.append(constraint)
-
-    return constraints_list

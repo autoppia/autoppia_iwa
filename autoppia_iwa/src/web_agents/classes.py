@@ -18,11 +18,6 @@ from autoppia_iwa.src.execution.actions.base import BaseAction
 DEFAULT_PASSWORD = "Passw0rd!"  # NOSONAR - test password for placeholder replacement, not a real credential
 
 
-# ============================================================================
-# CREDENTIAL REPLACEMENT HELPERS
-# ============================================================================
-
-
 def replace_credential_placeholders_in_string(s: str, web_agent_id: str) -> str:
     """
     Replace credential placeholders in a string with actual values.
@@ -38,32 +33,6 @@ def replace_credential_placeholders_in_string(s: str, web_agent_id: str) -> str:
     return s
 
 
-def _replace_field_value(action: BaseAction, field_name: str, web_agent_id: str) -> None:
-    """Replace credential placeholders in a specific action field."""
-    if not hasattr(action, field_name):
-        return
-    value = getattr(action, field_name)
-    if not isinstance(value, str):
-        return
-    new_value = replace_credential_placeholders_in_string(value, web_agent_id)
-    if new_value != value:
-        setattr(action, field_name, new_value)
-
-
-def _replace_selector_value(action: BaseAction, web_agent_id: str) -> None:
-    """Replace credential placeholders in action selector value if it exists."""
-    if not hasattr(action, "selector") or not action.selector:
-        return
-    if not hasattr(action.selector, "value"):
-        return
-    selector_value = action.selector.value
-    if not isinstance(selector_value, str):
-        return
-    new_selector_value = replace_credential_placeholders_in_string(selector_value, web_agent_id)
-    if new_selector_value != selector_value:
-        action.selector.value = new_selector_value
-
-
 def replace_credentials_in_action(action: BaseAction, web_agent_id: str) -> None:
     """
     Replace credential placeholders in a single action with actual values.
@@ -76,15 +45,25 @@ def replace_credentials_in_action(action: BaseAction, web_agent_id: str) -> None
     - <signup_email> → newuser{web_agent_id}@gmail.com
     - <signup_password> → Passw0rd!
     """
+    # Common fields in actions that may contain credential placeholders
     credential_fields = ["text", "value", "url", "email", "username", "password"]
+
+    # Check common fields first (more efficient)
     for field_name in credential_fields:
-        _replace_field_value(action, field_name, web_agent_id)
-    _replace_selector_value(action, web_agent_id)
+        if hasattr(action, field_name):
+            value = getattr(action, field_name)
+            if isinstance(value, str):
+                new_value = replace_credential_placeholders_in_string(value, web_agent_id)
+                if new_value != value:
+                    setattr(action, field_name, new_value)
 
-
-# ============================================================================
-# HTML SANITIZATION FUNCTION
-# ============================================================================
+    # Also check selector.value if it exists (for actions with selectors)
+    if hasattr(action, "selector") and action.selector and hasattr(action.selector, "value"):
+        selector_value = action.selector.value
+        if isinstance(selector_value, str):
+            new_selector_value = replace_credential_placeholders_in_string(selector_value, web_agent_id)
+            if new_selector_value != selector_value:
+                action.selector.value = new_selector_value
 
 
 def sanitize_snapshot_html(snapshot_html: str, web_agent_id: str) -> str:
@@ -106,11 +85,6 @@ def sanitize_snapshot_html(snapshot_html: str, web_agent_id: str) -> str:
     sanitized = sanitized.replace(f"user{web_agent_id}", "<username>")
     sanitized = sanitized.replace(DEFAULT_PASSWORD, "<password>")
     return sanitized
-
-
-# ============================================================================
-# INTERFACES AND BASE CLASSES
-# ============================================================================
 
 
 class IWebAgent(ABC):

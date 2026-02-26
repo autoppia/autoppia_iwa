@@ -117,69 +117,39 @@ class ApifiedOneShotWebAgent(IWebAgent):
         return urlunparse(rewritten)
 
     @staticmethod
-    def _build_remote_base_url() -> str:
-        """Build the remote base URL with proper scheme."""
-        if DEMO_WEBS_ENDPOINT.startswith("http"):
-            return DEMO_WEBS_ENDPOINT
-        return f"http://{DEMO_WEBS_ENDPOINT}"
-
-    @staticmethod
-    def _handle_relative_url(original_url: str, remote_parsed) -> str:
-        """Handle relative URLs by anchoring them to the remote host."""
-        return f"{remote_parsed.scheme}://{remote_parsed.netloc}{original_url}"
-
-    @staticmethod
-    def _handle_path_like_url(original_url: str, remote_parsed) -> str:
-        """Handle URLs without scheme/netloc by treating them as paths."""
-        cleaned_path = original_url if original_url.startswith("/") else f"/{original_url}"
-        return f"{remote_parsed.scheme}://{remote_parsed.netloc}{cleaned_path}"
-
-    @staticmethod
-    def _is_remote_ip(host: str | None) -> bool:
-        """Check if the remote host is an IP address."""
-        if not host:
-            return False
-        try:
-            ipaddress.ip_address(host)
-            return True
-        except ValueError:
-            return False
-
-    @staticmethod
-    def _is_loopback_host(host: str) -> bool:
-        """Check if the parsed host is a loopback address."""
-        return host in {"localhost", "127.0.0.1"}
-
-    @staticmethod
-    def _build_netloc_with_port(remote_parsed, parsed, host: str) -> str:
-        """Build netloc with port if conditions are met."""
-        parsed_host = parsed.hostname or ""
-        remote_is_ip = ApifiedOneShotWebAgent._is_remote_ip(host)
-        parsed_is_loopback = ApifiedOneShotWebAgent._is_loopback_host(parsed_host)
-
-        if parsed.port and (parsed_is_loopback or (not remote_parsed.port and remote_is_ip)):
-            return f"{host}:{parsed.port}"
-        return remote_parsed.netloc
-
-    @staticmethod
     def _rewrite_to_remote(original_url: str | None) -> str | None:
         """Rewrite agent-produced URLs to point at the configured remote demo webs endpoint."""
+
         if not original_url:
             return original_url
 
-        remote = ApifiedOneShotWebAgent._build_remote_base_url()
+        remote = DEMO_WEBS_ENDPOINT if DEMO_WEBS_ENDPOINT.startswith("http") else f"http://{DEMO_WEBS_ENDPOINT}"
         remote_parsed = urlparse(remote)
 
+        # Relative paths from the agent should be anchored to the remote host
         if original_url.startswith("/"):
-            return ApifiedOneShotWebAgent._handle_relative_url(original_url, remote_parsed)
+            return f"{remote_parsed.scheme}://{remote_parsed.netloc}{original_url}"
 
         parsed = urlparse(original_url)
 
+        # If agent sent something like "localhost:8001" without scheme, treat it as path
         if not parsed.scheme and not parsed.netloc:
-            return ApifiedOneShotWebAgent._handle_path_like_url(original_url, remote_parsed)
+            cleaned_path = original_url if original_url.startswith("/") else f"/{original_url}"
+            return f"{remote_parsed.scheme}://{remote_parsed.netloc}{cleaned_path}"
 
+        # Keep the remote host; preserve original port when the agent points to localhost/loopback,
+        # otherwise only carry over the port if the remote host is an IP and has no explicit port.
+        netloc = remote_parsed.netloc
         host = remote_parsed.hostname or remote_parsed.netloc
-        netloc = ApifiedOneShotWebAgent._build_netloc_with_port(remote_parsed, parsed, host)
+        parsed_host = parsed.hostname or ""
+        try:
+            remote_is_ip = bool(host and ipaddress.ip_address(host))
+        except ValueError:
+            remote_is_ip = False
+        parsed_is_loopback = parsed_host in {"localhost", "127.0.0.1"}
+
+        if parsed.port and (parsed_is_loopback or (not remote_parsed.port and remote_is_ip)):
+            netloc = f"{host}:{parsed.port}"
 
         new_url = parsed._replace(scheme=remote_parsed.scheme or parsed.scheme, netloc=netloc)
         return urlunparse(new_url)

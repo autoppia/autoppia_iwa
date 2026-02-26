@@ -49,36 +49,6 @@ def save_results_to_json(results, agents, timing_metrics: TimingMetrics, output_
     return output_data
 
 
-def _collect_agent_scores(results, agent_id: str) -> list[float]:
-    """Collect all scores for a given agent."""
-    agent_scores = []
-    if agent_id in results:
-        for _task_id, data in results[agent_id].items():
-            agent_scores.append(data["score"])
-    return agent_scores
-
-
-def _print_score_statistics(stats: dict) -> None:
-    """Print score statistics in a formatted way."""
-    print("  Score Statistics:")
-    for key, value in stats.items():
-        if value is not None:
-            if isinstance(value, float):
-                print(f"    {key}: {value:.2f}")
-            else:
-                print(f"    {key}: {value}")
-        else:
-            print(f"    {key}: N/A")
-
-
-def _print_agent_timing_stats(timing_metrics: TimingMetrics, agent_id: str) -> None:
-    """Print timing statistics for an agent."""
-    avg_solution = timing_metrics.get_avg_solution_time(agent_id)
-    avg_evaluation = timing_metrics.get_avg_evaluation_time(agent_id)
-    print(f"  Average solution generation time: {avg_solution:.2f} seconds")
-    print(f"  Average evaluation time: {avg_evaluation:.2f} seconds")
-
-
 def print_performance_statistics(results, agents, timing_metrics: TimingMetrics):
     """
     Print performance stats (scores, timings) for each agent.
@@ -92,10 +62,28 @@ def print_performance_statistics(results, agents, timing_metrics: TimingMetrics)
     for agent in agents:
         print(f"\n== Agent: {agent.name} ({agent.id}) ==")
 
-        agent_scores = _collect_agent_scores(results, agent.id)
+        agent_scores = []
+        if agent.id in results:
+            for _task_id, data in results[agent.id].items():
+                agent_scores.append(data["score"])
+
         stats = compute_statistics(agent_scores)
-        _print_score_statistics(stats)
-        _print_agent_timing_stats(timing_metrics, agent.id)
+
+        print("  Score Statistics:")
+        for key, value in stats.items():
+            if value is not None:
+                if isinstance(value, float):
+                    print(f"    {key}: {value:.2f}")
+                else:
+                    print(f"    {key}: {value}")
+            else:
+                print(f"    {key}: N/A")
+
+        avg_solution = timing_metrics.get_avg_solution_time(agent.id)
+        avg_evaluation = timing_metrics.get_avg_evaluation_time(agent.id)
+
+        print(f"  Average solution generation time: {avg_solution:.2f} seconds")
+        print(f"  Average evaluation time: {avg_evaluation:.2f} seconds")
 
 
 def _has_zero_score(results: dict) -> bool:
@@ -103,14 +91,8 @@ def _has_zero_score(results: dict) -> bool:
     Devuelve True si en el diccionario results hay al menos
     una entrada con score == 0.0, en cualquier agente o tarea.
     """
-    # Use tolerance for floating point comparison (SonarCloud S1244)
-    # Los números de punto flotante tienen errores de precisión, por lo que
-    # comparar directamente con == puede fallar. Usamos abs(score - 0.0) < TOLERANCE
-    # para detectar valores muy cercanos a 0.0 (dentro de 1e-9).
-    TOLERANCE = 1e-9
     for agent_dict in results.values():
         for task_data in agent_dict.values():
-            score = task_data.get("score")
-            if score is not None and abs(float(score) - 0.0) < TOLERANCE:
+            if task_data.get("score") == 0.0:
                 return True
     return False

@@ -135,57 +135,34 @@ def transform_appointments_to_modified(appointments: list[dict]) -> list[dict]:
     return modified
 
 
-def _transform_doctor_field_names(new_data: dict) -> None:
-    """Transform field names from camelCase to snake_case."""
-    if "name" in new_data:
-        new_data["doctor_name"] = new_data.pop("name")
-    if "specialty" in new_data:
-        new_data["speciality"] = new_data.pop("specialty")
-    if "consultationFee" in new_data:
-        new_data["consultation_fee"] = new_data.pop("consultationFee")
-
-
-def _calculate_pricing_from_fee(fee: float | None) -> str | None:
-    """Calculate pricing category from consultation fee."""
-    if fee is None:
-        return None
-    if fee < 150:
-        return "under150"
-    if fee <= 250:
-        return "150-250"
-    return "250+"
-
-
-def _normalize_rating(new_data: dict) -> None:
-    """Normalize rating to be between 0.0 and 5.0, rounded to 1 decimal."""
-    if "rating" not in new_data or new_data.get("rating") is None:
-        return
-    try:
-        rating = float(new_data["rating"])
-        rating = max(0.0, min(5.0, rating))
-        new_data["rating"] = round(rating, 1)
-    except (TypeError, ValueError):
-        pass
-
-
-def _extract_primary_language(new_data: dict) -> None:
-    """Extract primary language from languages list."""
-    langs = new_data.get("languages") or []
-    new_data["primary_language"] = langs[0] if langs else None
-
-
 def transform_doctors_to_modified(doctors: list[dict]) -> list[dict]:
     """Transform doctors from backend format (camelCase) to MODIFIED format (snake_case)."""
     modified = []
     for data in doctors:
         new_data = data.copy()
-        _transform_doctor_field_names(new_data)
+        if "name" in new_data:
+            new_data["doctor_name"] = new_data.pop("name")
+        if "specialty" in new_data:
+            new_data["speciality"] = new_data.pop("specialty")
+        if "consultationFee" in new_data:
+            new_data["consultation_fee"] = new_data.pop("consultationFee")
         fee = new_data.get("consultation_fee")
-        pricing = _calculate_pricing_from_fee(fee)
-        if pricing:
-            new_data["pricing"] = pricing
-        _normalize_rating(new_data)
-        _extract_primary_language(new_data)
+        if fee is not None:
+            if fee < 150:
+                new_data["pricing"] = "under150"
+            elif fee <= 250:
+                new_data["pricing"] = "150-250"
+            else:
+                new_data["pricing"] = "250+"
+        if "rating" in new_data and new_data.get("rating") is not None:
+            try:
+                rating = float(new_data["rating"])
+                rating = max(0.0, min(5.0, rating))
+                new_data["rating"] = round(rating, 1)
+            except (TypeError, ValueError):
+                pass
+        langs = new_data.get("languages") or []
+        new_data["primary_language"] = langs[0] if langs else None
         modified.append(new_data)
     return modified
 

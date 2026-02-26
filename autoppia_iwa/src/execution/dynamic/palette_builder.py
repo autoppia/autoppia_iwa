@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import html
 from collections import Counter
-from collections.abc import Callable, Iterable
+from collections.abc import Iterable
 from dataclasses import dataclass
 from urllib.parse import urlsplit
 
@@ -256,75 +256,9 @@ def _make_d4_templates(path: str, idx: int) -> list[MutationTemplate]:
     ]
 
 
-def _create_template_key(template: MutationTemplate, use_overlay_type: bool = False) -> tuple:
-    """Create a deduplication key for a template."""
-    if use_overlay_type:
-        return (template.phase, template.selector, template.overlay_type, template.url_pattern)
-    return (template.phase, template.selector, template.operation, template.url_pattern)
-
-
-def _add_template_if_unique(
-    template: MutationTemplate,
-    templates: list[MutationTemplate],
-    seen_keys: set[tuple],
-    use_overlay_type: bool = False,
-) -> bool:
-    """Add template if it's unique. Returns True if added, False if duplicate."""
-    key = _create_template_key(template, use_overlay_type)
-    if key in seen_keys:
-        return False
-    seen_keys.add(key)
-    templates.append(template)
-    return True
-
-
-def _process_phase_templates(
-    templates: list[MutationTemplate],
-    seen_keys: set[tuple],
-    per_phase_counts: dict[str, int],
-    phase: str,
-    max_templates_per_phase: int,
-    selectors: list[str],
-    path: str,
-    template_maker: Callable[[str, str, int], list[MutationTemplate]],
-) -> bool:
-    """Process templates for a phase. Returns True if phase limit reached."""
-    for idx, selector in enumerate(selectors):
-        for template in template_maker(selector, path, idx):
-            if per_phase_counts[phase] >= max_templates_per_phase:
-                return True
-            if _add_template_if_unique(template, templates, seen_keys):
-                per_phase_counts[phase] += 1
-            if per_phase_counts[phase] >= max_templates_per_phase:
-                return True
-    return False
-
-
-def _process_d4_templates(
-    templates: list[MutationTemplate],
-    seen_keys: set[tuple],
-    per_phase_counts: dict[str, int],
-    max_templates_per_phase: int,
-    path: str,
-) -> None:
-    """Process d4 overlay templates."""
-    if per_phase_counts["d4"] >= max_templates_per_phase:
-        return
-
-    remaining = max_templates_per_phase - per_phase_counts["d4"]
-    for idx in range(min(3, remaining)):
-        for template in _make_d4_templates(path, idx + per_phase_counts["d4"]):
-            if per_phase_counts["d4"] >= max_templates_per_phase:
-                return
-            if _add_template_if_unique(template, templates, seen_keys, use_overlay_type=True):
-                per_phase_counts["d4"] += 1
-            if per_phase_counts["d4"] >= max_templates_per_phase:
-                return
-
-
 def build_palette(project_id: str, snapshots: list[PageSnapshot], *, generated_by: str = "palette-builder", max_templates_per_phase: int = 60) -> MutationPalette:
     templates: list[MutationTemplate] = []
-    seen_keys: set[tuple] = set()
+    seen_keys: set[tuple[str, str, str]] = set()
     per_phase_counts = {"d1": 0, "d3": 0, "d4": 0}
 
     for snapshot in snapshots:
@@ -332,12 +266,45 @@ def build_palette(project_id: str, snapshots: list[PageSnapshot], *, generated_b
         selectors = _candidate_selectors(soup)
         if not selectors:
             continue
-
         path = urlsplit(snapshot.url).path or "/"
+        for idx, selector in enumerate(selectors):
+            for template in _make_d1_templates(selector, path, idx):
+                if per_phase_counts["d1"] >= max_templates_per_phase:
+                    break
+                key = (template.phase, template.selector, template.operation, template.url_pattern)
+                if key in seen_keys:
+                    continue
+                seen_keys.add(key)
+                templates.append(template)
+                per_phase_counts["d1"] += 1
+            if per_phase_counts["d1"] >= max_templates_per_phase:
+                break
+        for idx, selector in enumerate(selectors):
+            for template in _make_d3_templates(selector, path, idx):
+                if per_phase_counts["d3"] >= max_templates_per_phase:
+                    break
+                key = (template.phase, template.selector, template.operation, template.url_pattern)
+                if key in seen_keys:
+                    continue
+                seen_keys.add(key)
+                templates.append(template)
+                per_phase_counts["d3"] += 1
+            if per_phase_counts["d3"] >= max_templates_per_phase:
+                break
 
-        _process_phase_templates(templates, seen_keys, per_phase_counts, "d1", max_templates_per_phase, selectors, path, _make_d1_templates)
-        _process_phase_templates(templates, seen_keys, per_phase_counts, "d3", max_templates_per_phase, selectors, path, _make_d3_templates)
-        _process_d4_templates(templates, seen_keys, per_phase_counts, max_templates_per_phase, path)
+        if per_phase_counts["d4"] < max_templates_per_phase:
+            for idx in range(min(3, max_templates_per_phase - per_phase_counts["d4"])):
+                for template in _make_d4_templates(path, idx + per_phase_counts["d4"]):
+                    key = (template.phase, template.selector, template.overlay_type, template.url_pattern)
+                    if key in seen_keys:
+                        continue
+                    seen_keys.add(key)
+                    templates.append(template)
+                    per_phase_counts["d4"] += 1
+                    if per_phase_counts["d4"] >= max_templates_per_phase:
+                        break
+                if per_phase_counts["d4"] >= max_templates_per_phase:
+                    break
 
     return MutationPalette(project_id=project_id, generated_by=generated_by, templates=templates)
 

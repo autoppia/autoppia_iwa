@@ -372,46 +372,35 @@ class DynamicVerifier:
             return True
 
         if not isinstance(normalized["selector"], dict):
-            return self._handle_non_dict_selector(normalized)
+            if normalized["type"] in ["ClickAction", "TypeAction", "SelectDropDownOptionAction"]:
+                logger.warning(f"{normalized['type']} has invalid selector type, skipping action")
+                return False
+            return True
 
         selector_dict = normalized["selector"]
-        self._normalize_selector_type(selector_dict)
-
-        return self._validate_selector_value(normalized)
-
-    def _handle_non_dict_selector(self, normalized: dict[str, Any]) -> bool:
-        """Handle selector that is not a dictionary."""
-        if normalized["type"] in ["ClickAction", "TypeAction", "SelectDropDownOptionAction"]:
-            logger.warning(f"{normalized['type']} has invalid selector type, skipping action")
-            return False
-        return True
-
-    def _normalize_selector_type(self, selector_dict: dict[str, Any]) -> None:
-        """Normalize selector type to expected format."""
         selector_type_str = selector_dict.get("type", "").lower()
 
+        # Map selector types to expected format
         if selector_type_str in ["xpathselector", "xpath"]:
-            selector_dict["type"] = "xpathSelector"
+            normalized["selector"]["type"] = "xpathSelector"
         elif selector_type_str in ["attributevalueselector", "attribute"]:
-            selector_dict["type"] = "attributeValueSelector"
+            normalized["selector"]["type"] = "attributeValueSelector"
         elif not selector_type_str:
-            selector_dict["type"] = self._infer_selector_type_from_value(selector_dict)
+            # Infer type from value
+            selector_value = selector_dict.get("value", "")
+            if selector_value and (selector_value.startswith("//") or selector_value.startswith("(//")):
+                normalized["selector"]["type"] = "xpathSelector"
+            else:
+                normalized["selector"]["type"] = "attributeValueSelector"
 
-    def _infer_selector_type_from_value(self, selector_dict: dict[str, Any]) -> str:
-        """Infer selector type from its value."""
-        selector_value = selector_dict.get("value", "")
-        if selector_value and (selector_value.startswith("//") or selector_value.startswith("(//")):
-            return "xpathSelector"
-        return "attributeValueSelector"
-
-    def _validate_selector_value(self, normalized: dict[str, Any]) -> bool:
-        """Validate selector value. Returns False if action should be skipped."""
+        # Validate selector value
         selector_value = normalized["selector"].get("value")
         if not selector_value or (isinstance(selector_value, str) and not selector_value.strip()):
             if normalized["type"] in ["ClickAction", "TypeAction", "SelectDropDownOptionAction"]:
                 logger.warning(f"{normalized['type']} has invalid selector (empty value), skipping action")
                 return False
             normalized.pop("selector", None)
+
         return True
 
     # ============================================================================
@@ -890,58 +879,49 @@ class DynamicVerifier:
         for i in range(len(seed_list)):
             for j in range(i + 1, len(seed_list)):
                 seed1, seed2 = seed_list[i], seed_list[j]
-                result, pair_different = self._compare_dataset_pair(seed1, seed2, datasets_info)
-                comparison_results.append(result)
-                if not pair_different:
+                hash1 = datasets_info[seed1].get("hash")
+                hash2 = datasets_info[seed2].get("hash")
+
+                if hash1 is None or hash2 is None:
+                    comparison_results.append(
+                        {
+                            "seed1": seed1,
+                            "seed2": seed2,
+                            "different": None,
+                            "reason": "One or both datasets failed to load",
+                        }
+                    )
                     all_different = False
+                    continue
+
+                are_different = hash1 != hash2
+                entities1 = set(datasets_info[seed1].get("entities", []))
+                entities2 = set(datasets_info[seed2].get("entities", []))
+                entities_differ = entities1 != entities2
+
+                comparison_results.append(
+                    {
+                        "seed1": seed1,
+                        "seed2": seed2,
+                        "different": are_different,
+                        "hash1": hash1[:8],
+                        "hash2": hash2[:8],
+                        "entities_differ": entities_differ,
+                        "entities1": list(entities1),
+                        "entities2": list(entities2),
+                    }
+                )
+
+                if not are_different:
+                    all_different = False
+                    logger.warning(f"  ⚠️  Datasets for seeds {seed1} and {seed2} are IDENTICAL (hash: {hash1[:8]})")
+                else:
+                    if entities_differ:
+                        logger.info(f"  ✓ Datasets for seeds {seed1} and {seed2} are different (different entities)")
+                    else:
+                        logger.info(f"  ✓ Datasets for seeds {seed1} and {seed2} are different (same entities, different data)")
 
         return comparison_results, all_different
-
-    def _compare_dataset_pair(self, seed1: int, seed2: int, datasets_info: dict[int, dict[str, Any]]) -> tuple[dict[str, Any], bool]:
-        """Compare a pair of datasets and return comparison result and different flag."""
-        hash1 = datasets_info[seed1].get("hash")
-        hash2 = datasets_info[seed2].get("hash")
-
-        if hash1 is None or hash2 is None:
-            return self._create_failed_comparison_result(seed1, seed2), False
-
-        are_different = hash1 != hash2
-        entities1 = set(datasets_info[seed1].get("entities", []))
-        entities2 = set(datasets_info[seed2].get("entities", []))
-        entities_differ = entities1 != entities2
-
-        result = {
-            "seed1": seed1,
-            "seed2": seed2,
-            "different": are_different,
-            "hash1": hash1[:8],
-            "hash2": hash2[:8],
-            "entities_differ": entities_differ,
-            "entities1": list(entities1),
-            "entities2": list(entities2),
-        }
-
-        self._log_dataset_comparison(seed1, seed2, are_different, entities_differ, hash1)
-
-        return result, are_different
-
-    def _create_failed_comparison_result(self, seed1: int, seed2: int) -> dict[str, Any]:
-        """Create comparison result for failed dataset load."""
-        return {
-            "seed1": seed1,
-            "seed2": seed2,
-            "different": None,
-            "reason": "One or both datasets failed to load",
-        }
-
-    def _log_dataset_comparison(self, seed1: int, seed2: int, are_different: bool, entities_differ: bool, hash1: str) -> None:
-        """Log dataset comparison result."""
-        if not are_different:
-            logger.warning(f"  ⚠️  Datasets for seeds {seed1} and {seed2} are IDENTICAL (hash: {hash1[:8]})")
-        elif entities_differ:
-            logger.info(f"  ✓ Datasets for seeds {seed1} and {seed2} are different (different entities)")
-        else:
-            logger.info(f"  ✓ Datasets for seeds {seed1} and {seed2} are different (same entities, different data)")
 
     def _generate_diversity_summary(self, datasets: dict[int, dict], seed_values: list[int], all_different: bool) -> tuple[str, bool]:
         """Generate summary string and passed flag for diversity verification."""

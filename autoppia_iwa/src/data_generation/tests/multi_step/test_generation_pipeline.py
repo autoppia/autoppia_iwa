@@ -122,70 +122,51 @@ class GlobalTestGenerationPipeline:
         logger.error(f"All {self.max_retries} attempts to generate tests for Task {task.id} have failed.")
         return []
 
-    # ============================================================================
-    # LLM RESPONSE PARSING HELPERS
-    # ============================================================================
-
     def _parse_llm_response(self, response: Any) -> list[dict[str, Any]]:
         """
         Parse the LLM response as a JSON array of "CheckEventTest" definitions.
         Return a list of dictionaries if successful, otherwise an empty list.
         """
+        # If the LLM library already returns a Python list/dict, handle that:
         if isinstance(response, list):
             return self._validate_test_list(response)
 
         if isinstance(response, dict):
-            return self._parse_dict_response(response)
-
-        if isinstance(response, str):
-            return self._parse_string_response(response)
-
-        logger.warning(f"Unexpected type for LLM response: {type(response)}")
-        return []
-
-    def _parse_dict_response(self, response: dict[str, Any]) -> list[dict[str, Any]]:
-        """Parse a dictionary response from the LLM."""
-        if response.get("type") == "CheckEventTest":
-            return self._validate_test_list([response])
-
-        for value in response.values():
-            if isinstance(value, list):
-                return self._validate_test_list(value)
-        return []
-
-    def _parse_string_response(self, response: str) -> list[dict[str, Any]]:
-        """Parse a string response from the LLM."""
-        try:
-            data = json.loads(response.strip())
-            return self._parse_parsed_json_data(data)
-        except json.JSONDecodeError:
-            return self._parse_string_with_regex(response)
-
-    def _parse_parsed_json_data(self, data: Any) -> list[dict[str, Any]]:
-        """Parse already parsed JSON data."""
-        if isinstance(data, list):
-            return self._validate_test_list(data)
-
-        if isinstance(data, dict):
-            if data.get("type") == "CheckEventTest":
-                return self._validate_test_list([data])
-
-            for value in data.values():
+            # Possibly a single test or a dict containing the array
+            if response.get("type") == "CheckEventTest":
+                return self._validate_test_list([response])
+            # Or search if there's a key containing the array
+            for value in response.values():
                 if isinstance(value, list):
                     return self._validate_test_list(value)
+            return []
 
-        return []
-
-    def _parse_string_with_regex(self, response: str) -> list[dict[str, Any]]:
-        """Parse string response using regex as last resort."""
-        match = re.search(r"\[\s*{.*}\s*\]", response, re.DOTALL)
-        if match:
+        if isinstance(response, str):
+            # Attempt JSON parsing
             try:
-                array_str = match.group(0)
-                data = json.loads(array_str)
-                return self._validate_test_list(data)
+                data = json.loads(response.strip())
+                if isinstance(data, list):
+                    return self._validate_test_list(data)
+                elif isinstance(data, dict):
+                    if data.get("type") == "CheckEventTest":
+                        return self._validate_test_list([data])
+                    # Or check subfields
+                    for value in data.values():
+                        if isinstance(value, list):
+                            return self._validate_test_list(value)
             except json.JSONDecodeError:
-                pass
+                # Last-resort regex
+                match = re.search(r"\[\s*{.*}\s*\]", response, re.DOTALL)
+                if match:
+                    try:
+                        array_str = match.group(0)
+                        data = json.loads(array_str)
+                        return self._validate_test_list(data)
+                    except json.JSONDecodeError:
+                        pass
+            return []
+
+        logger.warning(f"Unexpected type for LLM response: {type(response)}")
         return []
 
     # ============================================================================

@@ -27,7 +27,7 @@ AGENT_TIMEOUT = 120
 CONTACT_PROMPT = "Fill the contact form with a subject equal to 'Job Position' and message contains 'I am the best developer'"
 
 
-def create_contact_task(project) -> Task:
+async def create_contact_task(project) -> Task:
     """Create a contact form task with specific criteria."""
     # Find the CONTACT use case
     contact_use_case = next((uc for uc in project.use_cases if uc.name == "CONTACT"), None)
@@ -71,7 +71,7 @@ async def test_contact_task():
     logger.info(f"Frontend URL: {project.frontend_url}")
 
     # Create task
-    task = create_contact_task(project)
+    task = await create_contact_task(project)
     logger.info(f"Task created with ID: {task.id}")
     logger.info(f"Task URL: {task.url}")
 
@@ -111,14 +111,11 @@ async def test_contact_task():
         logger.info("RESULTS")
         logger.info("=" * 80)
         logger.info(f"Final Score: {eval_result.final_score}")
-        # Usamos tolerancia (1e-9) en lugar de == porque los números flotantes pueden tener errores de precisión
-        # Ejemplo: 0.1 + 0.2 != 0.3 exactamente, sino 0.30000000000000004
-        is_success = abs(eval_result.final_score - 1.0) < 1e-9
-        logger.info(f"Success: {'✅ YES' if is_success else '❌ NO'}")
+        logger.info(f"Success: {'✅ YES' if eval_result.final_score == 1.0 else '❌ NO'}")
         logger.info(f"Number of actions: {len(task_solution.actions)}")
         logger.info("")
 
-        if is_success:
+        if eval_result.final_score == 1.0:
             logger.info("🎉 SUCCESS! The agent successfully completed the contact form task.")
         else:
             logger.warning("⚠️  The agent did not complete the task successfully.")
@@ -128,10 +125,8 @@ async def test_contact_task():
 
         logger.info("=" * 80)
 
-        # Usamos tolerancia (1e-9) en lugar de == porque los números flotantes pueden tener errores de precisión
-        success = abs(eval_result.final_score - 1.0) < 1e-9
         return {
-            "success": success,
+            "success": eval_result.final_score == 1.0,
             "score": eval_result.final_score,
             "num_actions": len(task_solution.actions),
             "test_results": [{"success": tr.success, "extra_data": tr.extra_data} for tr in eval_result.test_results],

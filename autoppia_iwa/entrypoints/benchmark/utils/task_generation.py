@@ -1,6 +1,5 @@
 """Task generation utilities for benchmark projects."""
 
-import asyncio
 import json
 import os
 from datetime import datetime
@@ -22,12 +21,6 @@ def get_cache_filename(project: WebProject, task_cache_dir: str) -> str:
     return os.path.join(task_cache_dir, f"{safe_name}_tasks.json")
 
 
-def _write_json_file_sync(filename: str, data: dict) -> None:
-    """Synchronous helper to write JSON file (runs in thread pool)."""
-    with open(filename, "w") as f:
-        json.dump(data, f, indent=2)
-
-
 async def save_tasks_to_json(tasks: list[Task], project: WebProject, task_cache_dir: str) -> bool:
     """Save tasks to a project-specific JSON file."""
     filename = get_cache_filename(project, task_cache_dir)
@@ -41,20 +34,14 @@ async def save_tasks_to_json(tasks: list[Task], project: WebProject, task_cache_
         # Compose cache data
         cache_data = {"project_id": project.id, "project_name": project.name, "timestamp": datetime.now().isoformat(), "tasks": serialized_tasks}
 
-        # Use asyncio.to_thread to run file I/O without blocking the event loop
-        await asyncio.to_thread(_write_json_file_sync, filename, cache_data)
+        with open(filename, "w") as f:
+            json.dump(cache_data, f, indent=2)
 
         print(f"Tasks for project '{project.name}' saved to {filename}")
         return True
     except Exception as e:
         print(f"Error saving tasks to {filename}: {e!s}")
         return False
-
-
-def _read_json_file_sync(filename: str) -> dict:
-    """Synchronous helper to read JSON file (runs in thread pool)."""
-    with open(filename) as f:
-        return json.load(f)
 
 
 async def load_tasks_from_json(project: WebProject, task_cache_dir: str) -> list[Task] | None:
@@ -64,8 +51,8 @@ async def load_tasks_from_json(project: WebProject, task_cache_dir: str) -> list
         if not Path(filename).exists():
             return None
 
-        # Use asyncio.to_thread to run file I/O without blocking the event loop
-        data = await asyncio.to_thread(_read_json_file_sync, filename)
+        with open(filename) as f:
+            data = json.load(f)
 
         tasks_data = data.get("tasks", [])
         if not tasks_data:

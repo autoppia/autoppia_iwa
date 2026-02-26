@@ -60,105 +60,60 @@ class GenerateTaskConfig(BaseModel):
     runs: int = Field(1, description="Number of runs for each task generation")
     dynamic: bool = Field(False, description="If True, tasks will include random seeds for dynamic content generation")
 
-    def get_validated_runs(self, max_runs: int = 100) -> int:
-        """
-        Get validated number of runs with security bounds.
-
-        Args:
-            max_runs: Maximum allowed runs to prevent DoS attacks
-
-        Returns:
-            Validated number of runs (clamped to [1, max_runs])
-        """
-        return max(1, min(self.runs, max_runs))
-
 
 # =====================
 # API Endpoint
 # =====================
-async def _process_project_tasks(project, config: GenerateTaskConfig, all_results: dict) -> None:
-    """Process tasks for a single project and add to results."""
-    tasks = await generate_tasks_for_project(
-        project=project,
-        prompts_per_use_case=config.prompts_per_use_case,
-        use_cases=config.selective_use_cases if config.selective_use_cases else None,
-        dynamic=config.dynamic,
-    )
-
-    # Initialize project entry if not already present
-    if project.id not in all_results:
-        all_results[project.id] = {}
-
-    # Group and merge prompts by use case name
-    for task in tasks:
-        use_case = task.use_case.name
-        prompt = task.prompt
-
-        # Initialize use case if not present
-        if use_case not in all_results[project.id]:
-            all_results[project.id][use_case] = []
-
-        # Append the new prompt
-        all_results[project.id][use_case].append(prompt)
-
-
-def _format_final_result(all_results: dict) -> list:
-    """Format the results dictionary into the final API response format."""
-    final_result = []
-    for project_id, usecases in all_results.items():
-        final_result.append({"project_id": project_id, "tasks": usecases})
-    return final_result
-
-
 @router.post("/generate-tasks")
 async def generate_tasks(config: GenerateTaskConfig) -> Any:
     """
     Generate benchmark tasks for the given projects.
     """
+
     # Get project objects based on the provided IDs
     web_projects = get_projects_by_ids(demo_web_projects, config.projects)
 
-    # Validate and limit runs to prevent DoS attacks (security: pythonsecurity:S6680)
-    validated_runs = config.get_validated_runs(max_runs=100)
-    if config.runs != validated_runs:
-        logger.warning(f"Runs value {config.runs} was clamped to {validated_runs} for security")
-
     all_results = {}
 
-    for run_index in range(1, validated_runs + 1):
-        print(f"▶️ Run {run_index}/{validated_runs}")
+    for run_index in range(1, config.runs + 1):
+        print(f"▶️ Run {run_index}/{config.runs}")
 
         # Generate tasks per project
         for project in web_projects:
-            await _process_project_tasks(project, config, all_results)
+            tasks = await generate_tasks_for_project(
+                project=project,
+                prompts_per_use_case=config.prompts_per_use_case,
+                use_cases=config.selective_use_cases if config.selective_use_cases else None,
+                dynamic=config.dynamic,
+            )
 
-    # Format and return final result
-    final_result = _format_final_result(all_results)
+            # Initialize project entry if not already present
+            if project.id not in all_results:
+                all_results[project.id] = {}
+
+            # Group and merge prompts by use case name
+            for task in tasks:
+                use_case = task.use_case.name
+                prompt = task.prompt
+
+                # Initialize use case if not present
+                if use_case not in all_results[project.id]:
+                    all_results[project.id][use_case] = []
+
+                # Append the new prompt
+                all_results[project.id][use_case].append(prompt)
+
+    # ✅ Final formatted result
+    final_result = []
+    for project_id, usecases in all_results.items():
+        final_result.append({"project_id": project_id, "tasks": usecases})
+
     return {"generated_tasks": final_result}
 
 
 # =====================
 # CLI Mode
 # =====================
-def _filter_tasks_by_use_cases(tasks: list, use_case_names: list[str] | None) -> list:
-    """Filter tasks by use case names if provided."""
-    if use_case_names is None:
-        return tasks
-    return [task for task in tasks if task.use_case and task.use_case.name in use_case_names]
-
-
-def _log_tasks_summary(filtered_tasks: list) -> None:
-    """Log summary of generated tasks grouped by use case."""
-    tasks_by_use_case = defaultdict(list)
-    for task in filtered_tasks:
-        if task.use_case:
-            tasks_by_use_case[task.use_case.name].append(task)
-
-    logger.info(f"Generated {len(filtered_tasks)} total tasks:")
-    for uc_name, uc_tasks in sorted(tasks_by_use_case.items()):
-        logger.info(f"  - {uc_name}: {len(uc_tasks)} tasks")
-
-
 async def cli_main():
     """Generate tasks for one or more use cases and save to JSON (CLI mode)."""
     # Get project
@@ -191,7 +146,7 @@ async def cli_main():
         return
 
     # Filter tasks for the specific use cases (if USE_CASE_NAMES is provided)
-    filtered_tasks = _filter_tasks_by_use_cases(tasks, USE_CASE_NAMES)
+    filtered_tasks = [task for task in tasks if task.use_case and task.use_case.name in USE_CASE_NAMES] if USE_CASE_NAMES is not None else tasks
 
     if not filtered_tasks:
         if USE_CASE_NAMES:
@@ -201,7 +156,14 @@ async def cli_main():
         return
 
     # Log summary by use case
-    _log_tasks_summary(filtered_tasks)
+    tasks_by_use_case = defaultdict(list)
+    for task in filtered_tasks:
+        if task.use_case:
+            tasks_by_use_case[task.use_case.name].append(task)
+
+    logger.info(f"Generated {len(filtered_tasks)} total tasks:")
+    for uc_name, uc_tasks in sorted(tasks_by_use_case.items()):
+        logger.info(f"  - {uc_name}: {len(uc_tasks)} tasks")
 
     # Save to JSON
     success = await save_tasks_to_json(filtered_tasks, project, CACHE_DIR)

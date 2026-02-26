@@ -252,109 +252,85 @@ class AsyncStatefulEvaluator(AsyncWebAgentSession):
 
         self._executor = PlaywrightBrowserExecutor(specs, self._page, self._backend)
 
-    def _get_current_url_and_seed(self) -> tuple[str, int | None]:
-        """Get current URL and assigned seed from task."""
-        current_url = ""
-        with contextlib.suppress(Exception):
-            if self._page:
-                current_url = self._page.url
-
-        assigned_seed = None
-        with contextlib.suppress(Exception):
-            if isinstance(self.task.url, str):
-                assigned_seed = extract_seed_from_url(self.task.url)
-
-        return current_url, assigned_seed
-
-    def _create_failure_snapshot(self, action: BaseAction, current_url: str) -> ExecutionBrowserSnapshot:
-        """Create a failure snapshot for an action."""
-        return ExecutionBrowserSnapshot(
-            iteration=len(self._history),
-            action=action,
-            prev_html="",
-            current_html="",
-            screenshot_before="",
-            screenshot_after="",
-            backend_events=[],
-            timestamp=datetime.now(UTC),
-            current_url=current_url,
-        )
-
-    def _validate_navigate_action(self, action: NavigateAction, assigned_seed: int | None, failure_snapshot: ExecutionBrowserSnapshot) -> ActionExecutionResult | None:
-        """Validate NavigateAction URL and seed, return error result if invalid."""
-        if not isinstance(action.url, str):
-            return None
-
-        is_allowed, reason = _is_navigation_url_allowed(
-            is_web_real=bool(getattr(self.task, "is_web_real", False)),
-            task_url=str(getattr(self.task, "url", "") or ""),
-            candidate_url=action.url,
-        )
-        if not is_allowed:
-            return ActionExecutionResult(
-                successfully_executed=False,
-                error=reason or "NavigateAction blocked",
-                action=action,
-                action_event=action.type,
-                browser_snapshot=failure_snapshot,
-                execution_time=0.0,
-            )
-
-        if assigned_seed is not None:
-            nav_seed = extract_seed_from_url(action.url)
-            if nav_seed is None or nav_seed != assigned_seed:
-                return ActionExecutionResult(
-                    successfully_executed=False,
-                    error=f"Seed mismatch in NavigateAction (expected={assigned_seed}, got={nav_seed})",
-                    action=action,
-                    action_event=action.type,
-                    browser_snapshot=failure_snapshot,
-                    execution_time=0.0,
-                )
-
-        return None
-
-    async def _execute_action_with_timeout(self, action: BaseAction, failure_snapshot: ExecutionBrowserSnapshot) -> ActionExecutionResult:
-        """Execute action with timeout handling."""
-        replace_credentials_in_action(action, self.web_agent_id)
-        idx = len(self._history)
-        try:
-            return await asyncio.wait_for(
-                self._executor.execute_single_action(
-                    action,
-                    self.web_agent_id,
-                    iteration=idx,
-                    is_web_real=self.task.is_web_real,
-                    should_record=self.should_record_gif,
-                ),
-                timeout=self.config.action_timeout_s,
-            )
-        except TimeoutError:
-            logger.warning("[AsyncStatefulEvaluator] execute timeout")
-            return ActionExecutionResult(
-                successfully_executed=False,
-                error="timeout",
-                action=action,
-                action_event=action.type,
-                browser_snapshot=failure_snapshot,
-                execution_time=0.0,
-            )
-
     async def _step_async(self, action: BaseAction | None) -> StepResult:
         action_result: ActionExecutionResult | None = None
         if action is not None:
             if not self._executor:
                 raise RuntimeError("AsyncStatefulEvaluator: not initialized. Call reset() first.")
 
-            current_url, assigned_seed = self._get_current_url_and_seed()
-            failure_snapshot = self._create_failure_snapshot(action, current_url)
+            current_url = ""
+            with contextlib.suppress(Exception):
+                if self._page:
+                    current_url = self._page.url
 
-            if isinstance(action, NavigateAction):
-                action_result = self._validate_navigate_action(action, assigned_seed, failure_snapshot)
+            assigned_seed = None
+            with contextlib.suppress(Exception):
+                if isinstance(self.task.url, str):
+                    assigned_seed = extract_seed_from_url(self.task.url)
+
+            failure_snapshot = ExecutionBrowserSnapshot(
+                iteration=len(self._history),
+                action=action,
+                prev_html="",
+                current_html="",
+                screenshot_before="",
+                screenshot_after="",
+                backend_events=[],
+                timestamp=datetime.now(UTC),
+                current_url=current_url,
+            )
+
+            if isinstance(action, NavigateAction) and isinstance(action.url, str):
+                is_allowed, reason = _is_navigation_url_allowed(
+                    is_web_real=bool(getattr(self.task, "is_web_real", False)),
+                    task_url=str(getattr(self.task, "url", "") or ""),
+                    candidate_url=action.url,
+                )
+                if not is_allowed:
+                    action_result = ActionExecutionResult(
+                        successfully_executed=False,
+                        error=reason or "NavigateAction blocked",
+                        action=action,
+                        action_event=action.type,
+                        browser_snapshot=failure_snapshot,
+                        execution_time=0.0,
+                    )
+                elif assigned_seed is not None:
+                    nav_seed = extract_seed_from_url(action.url)
+                    if nav_seed is None or nav_seed != assigned_seed:
+                        action_result = ActionExecutionResult(
+                            successfully_executed=False,
+                            error=f"Seed mismatch in NavigateAction (expected={assigned_seed}, got={nav_seed})",
+                            action=action,
+                            action_event=action.type,
+                            browser_snapshot=failure_snapshot,
+                            execution_time=0.0,
+                        )
 
             if action_result is None:
-                action_result = await self._execute_action_with_timeout(action, failure_snapshot)
-
+                replace_credentials_in_action(action, self.web_agent_id)
+                idx = len(self._history)
+                try:
+                    action_result = await asyncio.wait_for(
+                        self._executor.execute_single_action(
+                            action,
+                            self.web_agent_id,
+                            iteration=idx,
+                            is_web_real=self.task.is_web_real,
+                            should_record=self.should_record_gif,
+                        ),
+                        timeout=self.config.action_timeout_s,
+                    )
+                except TimeoutError:
+                    logger.warning("[AsyncStatefulEvaluator] execute timeout")
+                    action_result = ActionExecutionResult(
+                        successfully_executed=False,
+                        error="timeout",
+                        action=action,
+                        action_event=action.type,
+                        browser_snapshot=failure_snapshot,
+                        execution_time=0.0,
+                    )
             self._history.append(action_result)
 
         score = await self._score_async()

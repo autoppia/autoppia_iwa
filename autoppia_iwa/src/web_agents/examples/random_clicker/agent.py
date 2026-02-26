@@ -47,14 +47,14 @@ class RandomClickerWebAgent(BaseAgent):
         """
         # actions = [NavigateAction(url=task.url)]
         actions = []
-        for _ in range(1):  # Generate 1 random click action
+        for _ in range(1):  # Generate 10 random click actions
             if self.is_random:
-                # Random x coordinate - using random for non-security test data generation
-                x = random.randint(0, task.specifications.screen_width - 1)  # NOSONAR - non-security use
-                # Random y coordinate - using random for non-security test data generation
-                y = random.randint(0, task.specifications.screen_height - 1)  # NOSONAR - non-security use
+                # Random x coordinate
+                x = random.randint(0, task.specifications.screen_width - 1)
+                # Random y coordinate
+                y = random.randint(0, task.specifications.screen_height - 1)
             else:
-                # This reduces overhead on evaluator.
+                # This reduce overhead on evaluator.
                 x = 0
                 y = 0
 

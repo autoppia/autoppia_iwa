@@ -45,33 +45,6 @@ def _normalize_url(base_url: str, href: str) -> str:
     return urljoin(base_url, href)
 
 
-def _is_same_origin(parsed_url, origin_netloc: str) -> bool:
-    """Check if parsed URL belongs to the same origin."""
-    return not parsed_url.netloc or parsed_url.netloc == origin_netloc
-
-
-def _build_normalized_url(origin, parsed) -> str:
-    """Build normalized URL using origin scheme and netloc."""
-    return urlunsplit((origin.scheme, origin.netloc, parsed.path, parsed.query, parsed.fragment))
-
-
-def _should_add_url(normalized: str, seen: set[str], pending: list[str], discovered: list[str], max_pages: int) -> bool:
-    """Check if URL should be added to pending list."""
-    if normalized in seen or normalized in pending:
-        return False
-    return not len(discovered) + len(pending) >= max_pages
-
-
-async def _process_url_and_get_links(page: Page, url: str) -> list[str] | None:
-    """Navigate to URL and extract all anchor hrefs. Returns None if navigation fails."""
-    try:
-        await page.goto(url, wait_until="networkidle", timeout=60000)
-        anchors = await page.eval_on_selector_all("a[href]", "els => els.map(a => a.href)")
-        return anchors
-    except Exception:
-        return None
-
-
 async def _discover_routes(page: Page, start_url: str, max_pages: int) -> list[str]:
     origin = urlsplit(start_url)
     origin_netloc = origin.netloc
@@ -84,25 +57,23 @@ async def _discover_routes(page: Page, start_url: str, max_pages: int) -> list[s
         if url in seen:
             continue
         seen.add(url)
-
-        anchors = await _process_url_and_get_links(page, url)
-        if anchors is None:
+        try:
+            await page.goto(url, wait_until="networkidle", timeout=60000)
+        except Exception:
             continue
-
         discovered.append(url)
-
+        anchors = await page.eval_on_selector_all("a[href]", "els => els.map(a => a.href)")
         for href in anchors:
             normalized = _normalize_url(start_url, href)
             parsed = urlsplit(normalized)
-            if not _is_same_origin(parsed, origin_netloc):
+            if parsed.netloc and parsed.netloc != origin_netloc:
                 continue
-
-            normalized = _build_normalized_url(origin, parsed)
-            if not _should_add_url(normalized, seen, pending, discovered, max_pages):
+            normalized = urlunsplit((origin.scheme, origin.netloc, parsed.path, parsed.query, parsed.fragment))
+            if normalized in seen or normalized in pending:
                 continue
-
+            if len(discovered) + len(pending) >= max_pages:
+                continue
             pending.append(normalized)
-
     return discovered
 
 

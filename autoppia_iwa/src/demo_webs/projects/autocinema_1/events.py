@@ -450,24 +450,6 @@ class EditFilmEvent(FilmEvent):
         movie_id: int | CriterionValue | None = None
         changed_field: str | CriterionValue | None = None
 
-    def _validate_changed_field_criteria(self, criteria: ValidationCriteria) -> bool:
-        """Validate changed_field criteria."""
-        if criteria.changed_field is None:
-            return True
-
-        if isinstance(criteria.changed_field, str):
-            return criteria.changed_field in self.changed_fields
-
-        if criteria.changed_field.operator == ComparisonOperator.IN_LIST:
-            if not isinstance(criteria.changed_field.value, list):
-                return False
-            return any(field in criteria.changed_field.value for field in self.changed_fields)
-
-        if criteria.changed_field.operator == ComparisonOperator.EQUALS:
-            return criteria.changed_field.value in self.changed_fields
-
-        return False
-
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """Validate if this edit film event meets the criteria."""
         if not criteria:
@@ -482,7 +464,21 @@ class EditFilmEvent(FilmEvent):
             return False
 
         # Validate changed_field
-        return self._validate_changed_field_criteria(criteria)
+        if criteria.changed_field is not None:
+            if isinstance(criteria.changed_field, str):
+                if criteria.changed_field not in self.changed_fields:
+                    return False
+            else:
+                if criteria.changed_field.operator == ComparisonOperator.IN_LIST:
+                    if not isinstance(criteria.changed_field.value, list):
+                        return False
+                    if not any(field in criteria.changed_field.value for field in self.changed_fields):
+                        return False
+                elif criteria.changed_field.operator == ComparisonOperator.EQUALS:
+                    if criteria.changed_field.value not in self.changed_fields:
+                        return False
+
+        return True
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "EditFilmEvent":
