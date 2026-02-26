@@ -22,7 +22,25 @@ from .data import (
 )
 from .data_utils import fetch_data
 
+# ============================================================================
+# CONSTANTS
+# ============================================================================
+ADDRESSES = [
+    "123 Maple Street, Springfield",
+    "456 Oak Avenue, Metropolis",
+    "789 Pine Road, Riverdale",
+    "101 Elm Drive, Centerville",
+    "202 Birch Lane, Lakeview",
+    "303 Cedar Court, Hilltown",
+    "404 Walnut Blvd, Brookside",
+    "505 Cherry Circle, Fairview",
+    "606 Aspen Way, Greenfield",
+    "707 Willow Place, Sunnyvale",
+]
 
+# ============================================================================
+# DATA FETCHING HELPERS
+# ============================================================================
 def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]] | None:
     if dataset is None:
         return None
@@ -51,85 +69,281 @@ async def _ensure_restaurant_dataset(
     return []
 
 
+# ============================================================================
+# CONSTRAINT VALUE GENERATION HELPERS
+# ============================================================================
+def _handle_equals_operator(field_value: Any) -> Any:
+    """Handle EQUALS operator."""
+    return field_value
+
+
+def _handle_not_equals_operator(field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
+    """Handle NOT_EQUALS operator."""
+    valid = [v.get(field) for v in dataset if isinstance(v, dict) and field in v and v.get(field) != field_value]
+    valid = [x for x in valid if x is not None]
+    return random.choice(valid) if valid else None
+
+
+def _handle_contains_operator(field_value: str) -> str:
+    """Handle CONTAINS operator for strings."""
+    if len(field_value) > 2:
+        start = random.randint(0, max(0, len(field_value) - 2))
+        end = random.randint(start + 1, len(field_value))
+        return field_value[start:end]
+    return field_value
+
+
+def _handle_not_contains_operator(field_value: str, field: str, dataset: list[dict[str, Any]]) -> Any:
+    """Handle NOT_CONTAINS operator for strings."""
+    valid = [v.get(field) for v in dataset if isinstance(v, dict) and field in v and isinstance(v.get(field), str) and field_value not in v.get(field, "")]
+    valid = [x for x in valid if x is not None]
+    return random.choice(valid) if valid else None
+
+
+def _handle_in_list_operator(field_value: Any, field: str, dataset: list[dict[str, Any]]) -> list[Any]:
+    """Handle IN_LIST operator."""
+    all_values = list({v.get(field) for v in dataset if isinstance(v, dict) and field in v and v.get(field) is not None})
+    if not all_values:
+        return [field_value]
+    random.shuffle(all_values)
+    subset = random.sample(all_values, min(2, len(all_values)))
+    if field_value not in subset:
+        subset.append(field_value)
+    return list(set(subset))
+
+
+def _handle_not_in_list_operator(field_value: Any, field: str, dataset: list[dict[str, Any]]) -> list[Any]:
+    """Handle NOT_IN_LIST operator."""
+    all_values = list({v.get(field) for v in dataset if isinstance(v, dict) and field in v and v.get(field) is not None})
+    if field_value in all_values:
+        all_values.remove(field_value)
+    return random.sample(all_values, min(2, len(all_values))) if all_values else []
+
+
+def _handle_rating_greater_than(base: float, dataset: list[dict[str, Any]], field: str) -> float:
+    """Handle GREATER_THAN operator for rating field."""
+    min_val = 0.0
+    if base > min_val:
+        min_dataset = min((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=min_val)
+        return round(random.uniform(min_dataset, max(base - 0.5, min_dataset)), 2)
+    return min((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=min_val)
+
+
+def _handle_rating_less_than(base: float, dataset: list[dict[str, Any]], field: str) -> float:
+    """Handle LESS_THAN operator for rating field."""
+    max_val = 5.0
+    if base < max_val:
+        max_dataset = max((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=max_val)
+        return round(random.uniform(min(base + 0.1, max_dataset), max_dataset), 2)
+    return max((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=max_val)
+
+
+def _handle_rating_comparison(operator: ComparisonOperator, base: float, dataset: list[dict[str, Any]], field: str) -> float:
+    """Handle comparison operators for rating field."""
+    if operator == ComparisonOperator.GREATER_THAN:
+        return _handle_rating_greater_than(base, dataset, field)
+    if operator == ComparisonOperator.LESS_THAN:
+        return _handle_rating_less_than(base, dataset, field)
+    if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+        return round(base, 2)
+    return base
+
+
+def _handle_generic_numeric_comparison(operator: ComparisonOperator, base: int | float) -> int | float:
+    """Handle numeric comparison operators for generic numeric fields."""
+    delta = random.uniform(0.5, 2.0) if isinstance(base, float) else random.randint(1, 5)
+    if operator == ComparisonOperator.GREATER_THAN:
+        return round(base - delta, 2)
+    if operator == ComparisonOperator.LESS_THAN:
+        return round(base + delta, 2)
+    if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+        return base
+    return base
+
+
+def _handle_numeric_comparison(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
+    """Handle numeric comparison operators."""
+    if not isinstance(field_value, int | float):
+        return None
+    if field == "rating":
+        return _handle_rating_comparison(operator, float(field_value), dataset, field)
+    return _handle_generic_numeric_comparison(operator, field_value)
+
+
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
-    value = None
-
     if operator == ComparisonOperator.EQUALS:
-        return field_value
+        return _handle_equals_operator(field_value)
 
-    elif operator == ComparisonOperator.NOT_EQUALS:
-        # Only consider entries that actually include the field to avoid KeyError
-        valid = [v.get(field) for v in dataset if isinstance(v, dict) and field in v and v.get(field) != field_value]
-        valid = [x for x in valid if x is not None]
-        return random.choice(valid) if valid else None
+    if operator == ComparisonOperator.NOT_EQUALS:
+        return _handle_not_equals_operator(field_value, field, dataset)
 
-    elif operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
-        if len(field_value) > 2:
-            start = random.randint(0, max(0, len(field_value) - 2))
-            end = random.randint(start + 1, len(field_value))
-            return field_value[start:end]
-        return field_value
+    if operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
+        return _handle_contains_operator(field_value)
 
-    elif operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
-        valid = [v.get(field) for v in dataset if isinstance(v, dict) and field in v and isinstance(v.get(field), str) and field_value not in v.get(field, "")]
-        valid = [x for x in valid if x is not None]
-        return random.choice(valid) if valid else None
+    if operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
+        return _handle_not_contains_operator(field_value, field, dataset)
 
-    elif operator == ComparisonOperator.IN_LIST:
-        # Use get() and guard for missing fields to avoid KeyError
-        all_values = list({v.get(field) for v in dataset if isinstance(v, dict) and field in v and v.get(field) is not None})
-        if not all_values:
-            return [field_value]
-        random.shuffle(all_values)
-        subset = random.sample(all_values, min(2, len(all_values)))
-        if field_value not in subset:
-            subset.append(field_value)
-        return list(set(subset))
+    if operator == ComparisonOperator.IN_LIST:
+        return _handle_in_list_operator(field_value, field, dataset)
 
-    elif operator == ComparisonOperator.NOT_IN_LIST:
-        # Use get() and guard for missing fields to avoid KeyError
-        all_values = list({v.get(field) for v in dataset if isinstance(v, dict) and field in v and v.get(field) is not None})
-        if field_value in all_values:
-            all_values.remove(field_value)
-        return random.sample(all_values, min(2, len(all_values))) if all_values else []
+    if operator == ComparisonOperator.NOT_IN_LIST:
+        return _handle_not_in_list_operator(field_value, field, dataset)
 
-    elif operator in {
+    if operator in {
         ComparisonOperator.GREATER_THAN,
         ComparisonOperator.LESS_THAN,
         ComparisonOperator.GREATER_EQUAL,
         ComparisonOperator.LESS_EQUAL,
     }:
-        base = field_value
+        return _handle_numeric_comparison(operator, field_value, field, dataset)
 
-        if isinstance(base, int | float):
-            if field == "rating":
-                min_val, max_val = 0.0, 5.0
-                if operator == ComparisonOperator.GREATER_THAN:
-                    if base > min_val:
-                        min_dataset = min((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=min_val)
-                        return round(random.uniform(min_dataset, max(base - 0.5, min_dataset)), 2)
-                    else:
-                        return min((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=min_val)
-                elif operator == ComparisonOperator.LESS_THAN:
-                    if base < max_val:
-                        max_dataset = max((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=max_val)
-                        return round(random.uniform(min(base + 0.1, max_dataset), max_dataset), 2)
-                    else:
-                        return max((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=max_val)
-                elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
-                    return round(base, 2)
-            else:
-                # Generic numeric logic
-                delta = random.uniform(0.5, 2.0) if isinstance(base, float) else random.randint(1, 5)
-                if operator == ComparisonOperator.GREATER_THAN:
-                    return round(base - delta, 2)
-                elif operator == ComparisonOperator.LESS_THAN:
-                    return round(base + delta, 2)
-                elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
-                    return base
+    return None
+
+
+# ============================================================================
+# MENU HELPERS
+# ============================================================================
+async def _get_menu_items(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    menu_items = []
+    restaurant_data = await _ensure_restaurant_dataset(task_url, dataset)
+    for restaurant in restaurant_data:
+        for menu_item in restaurant.get("menu", []):
+            menu_items.append(
+                {
+                    "item": menu_item.get("name"),
+                    "price": menu_item.get("price"),
+                    "size": menu_item.get("size"),
+                    "quantity": random.randint(1, 5),
+                    "restaurant": restaurant.get("name"),
+                }
+            )
+    return menu_items
+
+
+def _get_menu_items_for_restaurant(restaurant: dict) -> list[dict[str, Any]]:
+    return [
+        {
+            "item": menu_item.get("name"),
+            "price": menu_item.get("price"),
+            "size": menu_item.get("size"),
+            "quantity": random.randint(1, 5),
+            "restaurant": restaurant.get("name"),
+        }
+        for menu_item in restaurant.get("menu", [])
+    ]
+
+
+def _build_menu_items_dataset(restaurants: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Build dataset of menu items from all restaurants."""
+    all_menu_items = []
+    for r in restaurants:
+        r_menu = r.get("menu", [])
+        for item in r_menu:
+            if item.get("name"):
+                all_menu_items.append({"item": item.get("name")})
+    return all_menu_items
+
+
+# ============================================================================
+# CART MODAL HELPERS
+# ============================================================================
+def _handle_item_contains_retry(field_value: str, field: str, menu_dataset: list[dict[str, Any]]) -> Any:
+    """Handle CONTAINS operator for item field with retry logic to avoid '&'."""
+    retries = 0
+    value = _generate_constraint_value(ComparisonOperator.CONTAINS, field_value, field, dataset=menu_dataset)
+    while value is not None and value.strip() == "&" and retries < 5:
+        value = _generate_constraint_value(ComparisonOperator.CONTAINS, field_value, field, dataset=menu_dataset)
+        retries += 1
+    if value is not None and value.strip() == "&":
+        return None
     return value
 
 
+def _process_cart_modal_field(field: str, field_value: Any, menu_dataset: list[dict[str, Any]]) -> tuple[ComparisonOperator, Any] | None:
+    """Process a field for cart modal constraints."""
+    allowed_ops = FIELD_OPERATORS_ADD_TO_CART_MODAL_OPEN_MAP.get(field, [])
+    if not allowed_ops:
+        return None
+    operator = ComparisonOperator(random.choice(allowed_ops))
+    if field == "item" and operator == ComparisonOperator.CONTAINS:
+        value = _handle_item_contains_retry(field_value, field, menu_dataset)
+    else:
+        value = _generate_constraint_value(operator, field_value, field, dataset=menu_dataset)
+    return operator, value
+
+
+# ============================================================================
+# QUANTITY HELPERS
+# ============================================================================
+def _get_new_quantity_value(operator: ComparisonOperator) -> int:
+    # new_quantity must be between 2 and 10 (inclusive), can't be 0 or 1
+    if operator == ComparisonOperator.EQUALS:
+        return random.randint(2, 10)
+    elif operator == ComparisonOperator.NOT_EQUALS:
+        # Pick a value not equal to a randomly chosen forbidden value (2-10)
+        forbidden = random.randint(2, 10)
+        choices = [v for v in range(2, 11) if v != forbidden]
+        return random.choice(choices)
+    elif operator == ComparisonOperator.GREATER_THAN:
+        # Must be at least 3 (since can't be 1 or 2)
+        return random.randint(3, 9)
+    elif operator == ComparisonOperator.LESS_THAN:
+        # Must be at most 9 (since can't be 1)
+        return random.randint(2, 9)
+    elif operator == ComparisonOperator.GREATER_EQUAL or operator == ComparisonOperator.LESS_EQUAL:
+        return random.randint(2, 10)
+    else:
+        return random.randint(2, 10)
+
+
+# ============================================================================
+# REVIEW HELPERS
+# ============================================================================
+def __get_delete_review_fields(restaurants):
+    result = []
+    for r in restaurants:
+        base = {
+            "name": r.get("name"),
+            "cuisine": r.get("cuisine"),
+            "rating": r.get("rating"),
+            "description": r.get("description"),
+        }
+        for review in r.get("reviews", []):
+            entry = base.copy()
+            entry.update(
+                {
+                    "review_rating": review.get("rating"),
+                    "author": review.get("author"),
+                    "date": review.get("date"),
+                    "comment": review.get("comment"),
+                }
+            )
+            result.append(entry)
+    return result
+
+
+# ============================================================================
+# ADDRESS HELPERS
+# ============================================================================
+def _get_address_dataset():
+    return [{"address": addr} for addr in ADDRESSES]
+
+
+# ============================================================================
+# QUICK REORDER HELPERS
+# ============================================================================
+def _get_field_dataset_for_quick_reorder(field: str, restaurants: list[dict[str, Any]], all_menu_items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Get appropriate dataset for quick reorder field."""
+    if field == "item":
+        return all_menu_items
+    if field == "restaurant":
+        return [{"restaurant": r.get("name")} for r in restaurants if r.get("name")]
+    return restaurants
+
+
+# ============================================================================
+# RESTAURANT CONSTRAINTS
+# ============================================================================
 async def generate_search_restaurant_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
 
@@ -190,36 +404,6 @@ async def generate_view_restaurant_constraints(task_url: str | None = None, data
     return constraints_list
 
 
-async def _get_menu_items(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    menu_items = []
-    restaurant_data = await _ensure_restaurant_dataset(task_url, dataset)
-    for restaurant in restaurant_data:
-        for menu_item in restaurant.get("menu", []):
-            menu_items.append(
-                {
-                    "item": menu_item.get("name"),
-                    "price": menu_item.get("price"),
-                    "size": menu_item.get("size"),
-                    "quantity": random.randint(1, 5),
-                    "restaurant": restaurant.get("name"),
-                }
-            )
-    return menu_items
-
-
-def _get_menu_items_for_restaurant(restaurant: dict) -> list[dict[str, Any]]:
-    return [
-        {
-            "item": menu_item.get("name"),
-            "price": menu_item.get("price"),
-            "size": menu_item.get("size"),
-            "quantity": random.randint(1, 5),
-            "restaurant": restaurant.get("name"),
-        }
-        for menu_item in restaurant.get("menu", [])
-    ]
-
-
 async def __generate_add_to_cart_modal_open_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     constraints_list = []
     restaurant_data = await _ensure_restaurant_dataset(task_url, dataset)
@@ -237,23 +421,11 @@ async def __generate_add_to_cart_modal_open_constraints(task_url: str | None = N
     selected_fields.append("restaurant")
     for field in selected_fields:
         field_value = item.get(field)
-        allowed_ops = FIELD_OPERATORS_ADD_TO_CART_MODAL_OPEN_MAP.get(field, [])
-        if not allowed_ops:
-            continue
-        operator = ComparisonOperator(random.choice(allowed_ops))
-        if field == "item" and operator == ComparisonOperator.CONTAINS:
-            retries = 0
-            value = _generate_constraint_value(operator, field_value, field, dataset=menu_dataset)
-            while value is not None and value.strip() == "&" and retries < 5:
-                value = _generate_constraint_value(operator, field_value, field, dataset=menu_dataset)
-                retries += 1
-            if value is not None and value.strip() == "&":
-                value = None
-        else:
-            value = _generate_constraint_value(operator, field_value, field, dataset=menu_dataset)
-
-        if value is not None:
-            constraints_list.append(create_constraint_dict(field, operator, value))
+        result = _process_cart_modal_field(field, field_value, menu_dataset)
+        if result is not None:
+            operator, value = result
+            if value is not None:
+                constraints_list.append(create_constraint_dict(field, operator, value))
     return constraints_list, item
 
 
@@ -262,27 +434,9 @@ async def generate_add_to_cart_modal_open_constraints(task_url: str | None = Non
     return constraints_list
 
 
-def _get_new_quantity_value(operator: ComparisonOperator) -> int:
-    # new_quantity must be between 2 and 10 (inclusive), can't be 0 or 1
-    if operator == ComparisonOperator.EQUALS:
-        return random.randint(2, 10)
-    elif operator == ComparisonOperator.NOT_EQUALS:
-        # Pick a value not equal to a randomly chosen forbidden value (2-10)
-        forbidden = random.randint(2, 10)
-        choices = [v for v in range(2, 11) if v != forbidden]
-        return random.choice(choices)
-    elif operator == ComparisonOperator.GREATER_THAN:
-        # Must be at least 3 (since can't be 1 or 2)
-        return random.randint(3, 9)
-    elif operator == ComparisonOperator.LESS_THAN:
-        # Must be at most 9 (since can't be 1)
-        return random.randint(2, 9)
-    elif operator == ComparisonOperator.GREATER_EQUAL or operator == ComparisonOperator.LESS_EQUAL:
-        return random.randint(2, 10)
-    else:
-        return random.randint(2, 10)
-
-
+# ============================================================================
+# CART CONSTRAINTS
+# ============================================================================
 async def __generate_add_to_cart_options_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints_list = []
     model_constraints, _ = await __generate_add_to_cart_modal_open_constraints(task_url, dataset=dataset)
@@ -303,29 +457,9 @@ async def generate_increment_item_restaurant_constraints(task_url: str | None = 
     return constraints_list
 
 
-def __get_delete_review_fields(restaurants):
-    result = []
-    for r in restaurants:
-        base = {
-            "name": r.get("name"),
-            "cuisine": r.get("cuisine"),
-            "rating": r.get("rating"),
-            "description": r.get("description"),
-        }
-        for review in r.get("reviews", []):
-            entry = base.copy()
-            entry.update(
-                {
-                    "review_rating": review.get("rating"),
-                    "author": review.get("author"),
-                    "date": review.get("date"),
-                    "comment": review.get("comment"),
-                }
-            )
-            result.append(entry)
-    return result
-
-
+# ============================================================================
+# REVIEW CONSTRAINTS
+# ============================================================================
 async def generate_delete_review_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict]:
     constraints_list, restaurant = await __generate_view_restaurant_constraints(task_url, dataset=dataset)
     delete_review_dict = __get_delete_review_fields([restaurant])
@@ -406,36 +540,21 @@ async def generate_add_to_cart_constraints(task_url: str | None = None, dataset:
 
 async def generate_dropoff_option_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict]:
     constraints_list = await __generate_add_to_cart_options_constraints(task_url, dataset=dataset)
-    dropoffOptions = ["Leave it at my door", "Hand it to me", "Meet outside", "Meet in the lobby", "Call upon arrival", "Text when arriving"]
+    dropoff_options = ["Leave it at my door", "Hand it to me", "Meet outside", "Meet in the lobby", "Call upon arrival", "Text when arriving"]
 
     field = "delivery_preference"
     allowed_ops = FIELD_OPERATORS_DROPOFF_OPTION_MAP[field]
     operator = ComparisonOperator(random.choice(allowed_ops))
-    field_value = random.choice(dropoffOptions)
-    dataset = [{"delivery_preference": opt} for opt in dropoffOptions]
+    field_value = random.choice(dropoff_options)
+    dataset = [{"delivery_preference": opt} for opt in dropoff_options]
     value = _generate_constraint_value(operator, field_value, field, dataset)
     constraints_list.append(create_constraint_dict(field, operator, value))
     return constraints_list
 
 
-ADDRESSES = [
-    "123 Maple Street, Springfield",
-    "456 Oak Avenue, Metropolis",
-    "789 Pine Road, Riverdale",
-    "101 Elm Drive, Centerville",
-    "202 Birch Lane, Lakeview",
-    "303 Cedar Court, Hilltown",
-    "404 Walnut Blvd, Brookside",
-    "505 Cherry Circle, Fairview",
-    "606 Aspen Way, Greenfield",
-    "707 Willow Place, Sunnyvale",
-]
-
-
-def _get_address_dataset():
-    return [{"address": addr} for addr in ADDRESSES]
-
-
+# ============================================================================
+# ORDER CONSTRAINTS
+# ============================================================================
 async def generate_address_added_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict]:
     constraints_list = []
     add_to_cart_constraint = await generate_add_to_cart_constraints(task_url, dataset=dataset)
@@ -544,13 +663,7 @@ async def generate_quick_reorder_constraints(task_url: str | None = None, datase
         return constraints_list
     menu_item = random.choice(menu)
 
-    # Build dataset of menu items from all restaurants for "item" field
-    all_menu_items = []
-    for r in restaurants:
-        r_menu = r.get("menu", [])
-        for item in r_menu:
-            if item.get("name"):
-                all_menu_items.append({"item": item.get("name")})
+    all_menu_items = _build_menu_items_dataset(restaurants)
 
     for field in ["item", "restaurant"]:
         allowed_ops = FIELD_OPERATORS_QUICK_REORDER_MAP.get(field, [])
@@ -558,13 +671,7 @@ async def generate_quick_reorder_constraints(task_url: str | None = None, datase
             continue
         operator = ComparisonOperator(random.choice(allowed_ops))
         value_source = menu_item.get("name") if field == "item" else restaurant.get("name")
-        # Use menu items dataset for "item" field, and normalized restaurant-name dataset for "restaurant" field
-        if field == "item":
-            field_dataset = all_menu_items
-        elif field == "restaurant":
-            field_dataset = [{"restaurant": r.get("name")} for r in restaurants if r.get("name")]
-        else:
-            field_dataset = restaurants
+        field_dataset = _get_field_dataset_for_quick_reorder(field, restaurants, all_menu_items)
         value = _generate_constraint_value(operator, value_source, field, field_dataset)
         if value is not None:
             constraints_list.append(create_constraint_dict(field, operator, value))
