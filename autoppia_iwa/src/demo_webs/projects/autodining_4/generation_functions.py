@@ -40,6 +40,9 @@ from .data import (
 )
 from .data_utils import fetch_data
 
+# ============================================================================
+# CONSTANTS
+# ============================================================================
 MOCK_DATES = generate_mock_dates()
 MOCK_DATE_STRINGS = generate_mock_date_strings(MOCK_DATES)
 # MOCK_PEOPLE_COUNT_STRINGS = ["1 person", "2 people", "4 guests"]
@@ -50,6 +53,9 @@ MOCK_PHONE_NUMBERS = ["555-1234", "9876543210", "+1-202-555-0182"]
 MOCK_SPECIAL_REQUESTS = ["window seat", "allergies: nuts", "quiet table"]
 
 
+# ============================================================================
+# DATA FETCHING HELPERS
+# ============================================================================
 async def _get_restaurant_queries() -> list[str]:
     """Get restaurant queries including names from API data."""
     try:
@@ -61,194 +67,334 @@ async def _get_restaurant_queries() -> list[str]:
         return _BASE_RESTAURANT_QUERIES
 
 
+# ============================================================================
+# CONSTRAINT VALUE GENERATION HELPERS
+# ============================================================================
+def _normalize_field_name(field: str) -> str:
+    """Normalize field name variations."""
+    if field in ("name", "restaurant_name"):
+        return "name"
+    return field
+
+
+def _get_special_field_list(field: str) -> list[str] | None:
+    """Get list for special fields that use predefined constants."""
+    field_mapping = {
+        "direction": SCROLL_DIRECTIONS,
+        "section": SCROLL_SECTIONS_TITLES,
+        "time": RESTAURANT_TIMES,
+        "people": RESTAURANT_PEOPLE_COUNTS,
+        "occasion": RESTAURANT_OCCASIONS,
+        "username": NAMES,
+        "message": CONTACT_MESSAGES,
+        "subject": CONTACT_SUBJECTS,
+        "email": SAMPLE_EMAILS,
+    }
+    return field_mapping.get(field)
+
+
+def _get_country_field_value(field: str, field_value: Any) -> Any:
+    """Get country field value (name or code)."""
+    if field == "country":
+        valid = [v["name"] for v in RESTAURANT_COUNTRIES if v["name"] != field_value]
+        return random.choice(valid) if valid else None
+    if field == "code":
+        valid = [v["code"] for v in RESTAURANT_COUNTRIES if v["code"] != field_value]
+        return random.choice(valid) if valid else None
+    return None
+
+
+def _handle_not_equals_special_field(field: str, field_value: Any) -> Any:
+    """Handle NOT_EQUALS operator for special fields."""
+    special_list = _get_special_field_list(field)
+    if special_list:
+        valid = [v for v in special_list if v != field_value]
+        return random.choice(valid) if valid else None
+    country_value = _get_country_field_value(field, field_value)
+    if country_value is not None:
+        return country_value
+    return None
+
+
+def _handle_not_equals_generic(field: str, field_value: Any, dataset: list[dict[str, Any]]) -> Any:
+    """Handle NOT_EQUALS operator for generic fields."""
+    valid = [v[field] for v in dataset if v.get(field) != field_value]
+    return random.choice(valid) if valid else None
+
+
+def _handle_not_equals_operator(field: str, field_value: Any, dataset: list[dict[str, Any]]) -> Any:
+    """Handle NOT_EQUALS operator."""
+    special_result = _handle_not_equals_special_field(field, field_value)
+    if special_result is not None:
+        return special_result
+    return _handle_not_equals_generic(field, field_value, dataset)
+
+
+def _handle_contains_special_field(field: str, field_value: str) -> Any:
+    """Handle CONTAINS operator for special fields."""
+    if field in ("direction", "section"):
+        special_list = _get_special_field_list(field)
+        if special_list:
+            valid = [v for v in special_list if v != field_value]
+            return random.choice(valid) if valid else None
+    return None
+
+
+def _handle_contains_string(field_value: str) -> str:
+    """Handle CONTAINS operator for strings."""
+    if len(field_value) > 2:
+        start = random.randint(0, max(0, len(field_value) - 2))
+        end = random.randint(start + 1, len(field_value))
+        return field_value[start:end]
+    return field_value
+
+
+def _handle_contains_operator(field: str, field_value: str) -> Any:
+    """Handle CONTAINS operator."""
+    special_result = _handle_contains_special_field(field, field_value)
+    if special_result is not None:
+        return special_result
+    return _handle_contains_string(field_value)
+
+
+def _handle_not_contains_special_field(field: str, field_value: str) -> Any:
+    """Handle NOT_CONTAINS operator for special fields."""
+    special_list = _get_special_field_list(field)
+    if special_list:
+        valid = [v for v in special_list if v != field_value]
+        return random.choice(valid) if valid else None
+    return None
+
+
+def _handle_not_contains_generic(field: str, field_value: str, dataset: list[dict[str, Any]]) -> Any:
+    """Handle NOT_CONTAINS operator for generic fields."""
+    valid = [v[field] for v in dataset if isinstance(v.get(field), str) and field_value not in v.get(field, "")]
+    return random.choice(valid) if valid else None
+
+
+def _handle_not_contains_operator(field: str, field_value: str, dataset: list[dict[str, Any]]) -> Any:
+    """Handle NOT_CONTAINS operator."""
+    special_result = _handle_not_contains_special_field(field, field_value)
+    if special_result is not None:
+        return special_result
+    return _handle_not_contains_generic(field, field_value, dataset)
+
+
+def _handle_in_list_operator(field_value: Any, field: str, dataset: list[dict[str, Any]]) -> list[Any]:
+    """Handle IN_LIST operator."""
+    all_values = list({v.get(field) for v in dataset if field in v})
+    if not all_values:
+        return [field_value]
+    subset = random.sample(all_values, min(2, len(all_values)))
+    if field_value not in subset:
+        subset.append(field_value)
+    return list(set(subset))
+
+
+def _handle_not_in_list_operator(field_value: Any, field: str, dataset: list[dict[str, Any]]) -> list[Any]:
+    """Handle NOT_IN_LIST operator."""
+    all_values = list({v.get(field) for v in dataset if field in v})
+    if field_value in all_values:
+        all_values.remove(field_value)
+    return random.sample(all_values, min(2, len(all_values))) if all_values else []
+
+
+def _handle_datetime_comparison(operator: ComparisonOperator, base: datetime.datetime) -> datetime.datetime:
+    """Handle numeric comparison operators for datetime."""
+    delta = datetime.timedelta(days=random.randint(1, 5))
+    if operator == ComparisonOperator.GREATER_THAN:
+        return base - delta
+    if operator == ComparisonOperator.LESS_THAN:
+        return base + delta
+    return base
+
+
+def _handle_numeric_comparison(operator: ComparisonOperator, base: int | float) -> float:
+    """Handle numeric comparison operators for numbers."""
+    delta = random.uniform(1, 3)
+    if operator == ComparisonOperator.GREATER_THAN:
+        return round(base - delta, 2)
+    if operator == ComparisonOperator.LESS_THAN:
+        return round(base + delta, 2)
+    return round(base, 2)
+
+
+def _handle_numeric_operators(operator: ComparisonOperator, field: str, dataset: list[dict[str, Any]]) -> Any:
+    """Handle numeric comparison operators."""
+    numeric_values = [v.get(field) for v in dataset if isinstance(v.get(field), int | float | datetime.datetime)]
+    if not numeric_values:
+        return None
+    base = random.choice(numeric_values)
+    if isinstance(base, datetime.datetime):
+        return _handle_datetime_comparison(operator, base)
+    return _handle_numeric_comparison(operator, base)
+
+
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | list[str]) -> Any:
     # Extract restaurant list if dataset is a dict, otherwise use dataset as-is
     dataset = dataset["restaurants"] if isinstance(dataset, dict) and "restaurants" in dataset else dataset
 
+    field = _normalize_field_name(field)
+
     if operator == ComparisonOperator.EQUALS:
         return field_value
-    if field == "name" or field == "restaurant_name":
-        field = "name"
+
     if field == "rating":
         return random.choice([2, 3])
-    elif operator == ComparisonOperator.NOT_EQUALS:
-        if field == "direction":
-            valid = [v for v in SCROLL_DIRECTIONS if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "section":
-            valid = [v for v in SCROLL_SECTIONS_TITLES if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "time":
-            valid = [v for v in RESTAURANT_TIMES if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "people":
-            valid = [v for v in RESTAURANT_PEOPLE_COUNTS if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "occasion":
-            valid = [v for v in RESTAURANT_OCCASIONS if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "country":
-            valid = [v["name"] for v in RESTAURANT_COUNTRIES if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "code":
-            valid = [v["code"] for v in RESTAURANT_COUNTRIES if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "username":
-            valid = [v for v in NAMES if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "message":
-            valid = [v for v in CONTACT_MESSAGES if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "subject":
-            valid = [v for v in CONTACT_SUBJECTS if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "email":
-            valid = [v for v in SAMPLE_EMAILS if v != field_value]
-            return random.choice(valid) if valid else None
 
-        valid = [v[field] for v in dataset if v.get(field) != field_value]
-        return random.choice(valid) if valid else None
+    if operator == ComparisonOperator.NOT_EQUALS:
+        return _handle_not_equals_operator(field, field_value, dataset)
 
-    elif operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
-        if field == "direction":
-            valid = [v for v in SCROLL_DIRECTIONS if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "section":
-            valid = [v for v in SCROLL_SECTIONS_TITLES if v != field_value]
-            return random.choice(valid) if valid else None
-        if len(field_value) > 2:
-            start = random.randint(0, max(0, len(field_value) - 2))
-            end = random.randint(start + 1, len(field_value))
-            return field_value[start:end]
-        return field_value
+    if operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
+        return _handle_contains_operator(field, field_value)
 
-    elif operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
-        if field == "direction":
-            valid = [v for v in SCROLL_DIRECTIONS if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "section":
-            valid = [v for v in SCROLL_SECTIONS_TITLES if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "username":
-            valid = [v for v in NAMES if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "message":
-            valid = [m for m in CONTACT_MESSAGES if m != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "subject":
-            valid = [c for c in CONTACT_SUBJECTS if c != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "email":
-            valid = [e for e in SAMPLE_EMAILS if e != field_value]
-            return random.choice(valid) if valid else None
-        valid = [v[field] for v in dataset if isinstance(v.get(field), str) and field_value not in v.get(field, "")]
-        return random.choice(valid) if valid else None
+    if operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
+        return _handle_not_contains_operator(field, field_value, dataset)
 
-    elif operator == ComparisonOperator.IN_LIST:
-        all_values = list({v.get(field) for v in dataset if field in v})
-        if not all_values:
-            return [field_value]
-        subset = random.sample(all_values, min(2, len(all_values)))
-        if field_value not in subset:
-            subset.append(field_value)
-        return list(set(subset))
+    if operator == ComparisonOperator.IN_LIST:
+        return _handle_in_list_operator(field_value, field, dataset)
 
-    elif operator == ComparisonOperator.NOT_IN_LIST:
-        all_values = list({v.get(field) for v in dataset if field in v})
-        if field_value in all_values:
-            all_values.remove(field_value)
-        return random.sample(all_values, min(2, len(all_values))) if all_values else []
+    if operator == ComparisonOperator.NOT_IN_LIST:
+        return _handle_not_in_list_operator(field_value, field, dataset)
 
-    elif operator in {
+    if operator in {
         ComparisonOperator.GREATER_THAN,
         ComparisonOperator.LESS_THAN,
         ComparisonOperator.GREATER_EQUAL,
         ComparisonOperator.LESS_EQUAL,
     }:
-        numeric_values = [v.get(field) for v in dataset if isinstance(v.get(field), int | float | datetime.datetime)]
-        if numeric_values:
-            base = random.choice(numeric_values)
-            if isinstance(base, datetime.datetime):
-                delta = datetime.timedelta(days=random.randint(1, 5))
-                if operator == ComparisonOperator.GREATER_THAN:
-                    return base - delta
-                elif operator == ComparisonOperator.LESS_THAN:
-                    return base + delta
-                else:
-                    return base
-            else:
-                delta = random.uniform(1, 3)
-                if operator == ComparisonOperator.GREATER_THAN:
-                    return round(base - delta, 2)
-                elif operator == ComparisonOperator.LESS_THAN:
-                    return round(base + delta, 2)
-                else:
-                    return round(base, 2)
+        return _handle_numeric_operators(operator, field, dataset)
 
     return field_value
 
 
+# ============================================================================
+# FIELD VALUE GENERATION HELPERS
+# ============================================================================
+def _get_date_field_value() -> datetime.datetime:
+    """Get value for date fields."""
+    return random.choice(MOCK_DATES) if MOCK_DATES else datetime.datetime.now(datetime.UTC)
+
+
+def _get_time_field_value() -> str:
+    """Get value for time fields."""
+    return random.choice(RESTAURANT_TIMES)
+
+
+def _get_people_field_value() -> str:
+    """Get value for people fields."""
+    return random.choice(RESTAURANT_PEOPLE_COUNTS)
+
+
+async def _get_query_field_value() -> str:
+    """Get value for query fields."""
+    possible_queries = await _get_restaurant_queries()
+    return random.choice(possible_queries) if possible_queries else "pizza"
+
+
+async def _get_name_field_value() -> str:
+    """Get value for name/restaurant_name fields."""
+    restaurant_data = await fetch_data()
+    if restaurant_data:
+        return random.choice(restaurant_data).get("name", "Default Restaurant")
+    return "Default Restaurant"
+
+
+def _get_country_code_value() -> str:
+    """Get value for country code fields."""
+    return random.choice(RESTAURANT_COUNTRIES)["code"] if RESTAURANT_COUNTRIES else "US"
+
+
+def _get_country_name_value() -> str:
+    """Get value for country name fields."""
+    return random.choice(RESTAURANT_COUNTRIES)["name"] if RESTAURANT_COUNTRIES else "United States"
+
+
+def _get_field_value_mapping() -> dict[str, Any]:
+    """Get mapping of field names to their value generators (synchronous)."""
+    return {
+        "action": lambda: random.choice(MOCK_RESTAURANT_ACTIONS),
+        "occasion": lambda: random.choice(RESTAURANT_OCCASIONS),
+        "reservation": lambda: random.choice(MOCK_DATE_STRINGS),
+        "phone": lambda: random.choice(MOCK_PHONE_NUMBERS),
+        "request": lambda: random.choice(MOCK_SPECIAL_REQUESTS),
+        "feature": lambda: random.choice(ABOUT_FEATURES),
+        "category": lambda: random.choice(HELP_CATEGORIES),
+        "question": lambda: random.choice(FAQ_QUESTIONS),
+        "card_type": lambda: random.choice(CONTACT_CARD_TYPES),
+        "direction": lambda: random.choice(SCROLL_DIRECTIONS),
+        "section": lambda: random.choice(SCROLL_SECTIONS_TITLES),
+        "desc": lambda: "Enjoy a delightful experience at",
+        "cuisine": lambda: random.choice(CUISINE),
+        "rating": lambda: random.choice([2, 3, 4]),
+        "username": lambda: random.choice(NAMES),
+        "email": lambda: random.choice(SAMPLE_EMAILS),
+        "message": lambda: random.choice(CONTACT_MESSAGES),
+        "subject": lambda: random.choice(CONTACT_SUBJECTS),
+    }
+
+
 async def _generate_value_for_field(field_name: str) -> Any:
-    if field_name == "date" or field_name == "selected_date":
-        return random.choice(MOCK_DATES) if MOCK_DATES else datetime.datetime.now(datetime.UTC)
-    elif field_name == "time" or field_name == "selected_time" or field_name == "reservation_time":
-        return random.choice(RESTAURANT_TIMES)
-    elif field_name == "people" or field_name == "people_count":
-        return random.choice(RESTAURANT_PEOPLE_COUNTS)
-    elif field_name == "query":
-        possible_queries = await _get_restaurant_queries()
-        return random.choice(possible_queries) if possible_queries else "pizza"
-    elif field_name == "name" or field_name == "restaurant_name":
-        restaurant_data = await fetch_data()
-        if restaurant_data:
-            return random.choice(restaurant_data).get("name", "Default Restaurant")
-        return "Default Restaurant"
-    elif field_name == "action":
-        return random.choice(MOCK_RESTAURANT_ACTIONS)
-    elif field_name == "code" or field_name == "country_code":
-        return random.choice(RESTAURANT_COUNTRIES)["code"] if RESTAURANT_COUNTRIES else "US"
-    elif field_name == "country" or field_name == "country_name":
-        return random.choice(RESTAURANT_COUNTRIES)["name"] if RESTAURANT_COUNTRIES else "United States"
-    elif field_name == "occasion" or field_name == "occasion_type":
-        return random.choice(RESTAURANT_OCCASIONS)
-    elif field_name == "reservation" or field_name == "reservation_date_str":
+    # Date fields
+    if field_name in ("date", "selected_date"):
+        return _get_date_field_value()
+
+    # Time fields
+    if field_name in ("time", "selected_time", "reservation_time"):
+        return _get_time_field_value()
+
+    # People fields
+    if field_name in ("people", "people_count"):
+        return _get_people_field_value()
+
+    # Query field
+    if field_name == "query":
+        return await _get_query_field_value()
+
+    # Name fields
+    if field_name in ("name", "restaurant_name"):
+        return await _get_name_field_value()
+
+    # Country code fields
+    if field_name in ("code", "country_code"):
+        return _get_country_code_value()
+
+    # Country name fields
+    if field_name in ("country", "country_name"):
+        return _get_country_name_value()
+
+    # Reservation date string
+    if field_name == "reservation_date_str":
         return random.choice(MOCK_DATE_STRINGS)
-    elif field_name == "phone" or field_name == "phone_number":
-        return random.choice(MOCK_PHONE_NUMBERS)
-    elif field_name == "request" or field_name == "special_request":
+
+    # Special request
+    if field_name == "special_request":
         return random.choice(MOCK_SPECIAL_REQUESTS)
-    elif field_name == "feature":
-        return random.choice(ABOUT_FEATURES)
-    elif field_name == "category":
-        return random.choice(HELP_CATEGORIES)
-    elif field_name == "question":
-        return random.choice(FAQ_QUESTIONS)
-    elif field_name == "card_type":
-        return random.choice(CONTACT_CARD_TYPES)
-    elif field_name == "direction":
-        return random.choice(SCROLL_DIRECTIONS)
-    elif field_name == "section" or field_name == "section_title":
+
+    # Section title
+    if field_name == "section_title":
         return random.choice(SCROLL_SECTIONS_TITLES)
-    elif field_name == "desc":
-        return "Enjoy a delightful experience at"
-    elif field_name == "cuisine":
-        return random.choice(CUISINE)
-    elif field_name == "rating":
-        return random.choice([2, 3, 4])
-    elif field_name == "username":
-        return random.choice(NAMES)
-    elif field_name == "email":
-        return random.choice(SAMPLE_EMAILS)
-    elif field_name == "message":
-        return random.choice(CONTACT_MESSAGES)
-    elif field_name == "subject":
-        return random.choice(CONTACT_SUBJECTS)
+
+    # Occasion type
+    if field_name == "occasion_type":
+        return random.choice(RESTAURANT_OCCASIONS)
+
+    # Phone number
+    if field_name == "phone_number":
+        return random.choice(MOCK_PHONE_NUMBERS)
+
+    # Try synchronous field mapping
+    field_mapping = _get_field_value_mapping()
+    if field_name in field_mapping:
+        return field_mapping[field_name]()
 
     print(f"Warning: No specific mock value generator for field '{field_name}'. Using default string.")
     return "mock_value"
 
 
-# --- Constraint Generators ---
+# ============================================================================
+# RESTAURANT CONSTRAINTS
+# ============================================================================
 async def generate_view_restaurant_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
     if not dataset:
         seed = get_seed_from_url(task_url)
@@ -291,18 +437,6 @@ async def generate_collapse_menu_constraints(task_url: str | None = None, datase
     )
 
 
-async def generate_date_dropdown_opened_constraints():
-    return await generate_constraints_for_single_field("date", OPERATORS_ALLOWED_DATE_DROPDOWN_OPENED)
-
-
-async def generate_time_dropdown_opened_constraints():
-    return await generate_constraints_for_single_field("time", OPERATORS_ALLOWED_TIME_DROPDOWN_OPENED)
-
-
-async def generate_people_dropdown_opened_constraints():
-    return await generate_constraints_for_single_field("people", OPERATORS_ALLOWED_PEOPLE_DROPDOWN_OPENED)
-
-
 async def generate_search_restaurant_constraints():
     return await generate_constraints_for_single_field("query", OPERATORS_ALLOWED_SEARCH_RESTAURANT)
 
@@ -315,6 +449,21 @@ async def generate_constraints_for_single_field(field: str, allowed_operators: d
     if isinstance(value, datetime.datetime):
         value = value.isoformat()
     return [create_constraint_dict(field, op, value)]
+
+
+# ============================================================================
+# BOOKING CONSTRAINTS
+# ============================================================================
+async def generate_date_dropdown_opened_constraints():
+    return await generate_constraints_for_single_field("date", OPERATORS_ALLOWED_DATE_DROPDOWN_OPENED)
+
+
+async def generate_time_dropdown_opened_constraints():
+    return await generate_constraints_for_single_field("time", OPERATORS_ALLOWED_TIME_DROPDOWN_OPENED)
+
+
+async def generate_people_dropdown_opened_constraints():
+    return await generate_constraints_for_single_field("people", OPERATORS_ALLOWED_PEOPLE_DROPDOWN_OPENED)
 
 
 async def generate_book_restaurant_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
@@ -414,10 +563,16 @@ async def generate_reservation_complete_constraints(task_url: str | None = None,
     return all_constraints
 
 
+# ============================================================================
+# SCROLL CONSTRAINTS
+# ============================================================================
 async def generate_scroll_view_constraints():
     return await _generate_constraints_for_fields(all_fields=["section", "direction"], allowed_ops=OPERATORS_ALLOWED_SCROLL_VIEW, required_fields=["section", "direction"])
 
 
+# ============================================================================
+# CONTACT CONSTRAINTS
+# ============================================================================
 async def generate_contact_constraints():
     constraint_list = []
     possible_fields = list(OPERATORS_ALLOWED_CONTACT.keys())
@@ -452,6 +607,9 @@ async def generate_contact_constraints():
     return constraint_list
 
 
+# ============================================================================
+# HELP CONSTRAINTS
+# ============================================================================
 async def generate_about_feature_click_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
     field = "feature"
@@ -500,9 +658,9 @@ async def generate_contact_card_click_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-# --- Internal Helper ---
-
-
+# ============================================================================
+# INTERNAL HELPERS
+# ============================================================================
 async def _generate_constraints_for_fields(
     all_fields: list[str],
     allowed_ops: dict[str, list[str]],
@@ -544,14 +702,18 @@ async def _generate_constraints_for_fields(
     return constraints
 
 
-# ─────────────────── helpers ──────────────────────
+# ============================================================================
+# RESTAURANT CONSTRAINT GENERATION HELPERS
+# ============================================================================
 def _substring(s: str) -> str:
+    """Extract a random substring from a string."""
     start = random.randint(0, len(s) - 1)
     end = random.randint(start + 1, len(s))
     return s[start:end]
 
 
 def _random_string_not_in(s: str, length: int = 6) -> str:
+    """Generate a random string not in the given string."""
     letters = "abcdefghijklmnopqrstuvwxyz"
     out = "".join(random.choice(letters) for _ in range(length))
     while out in s:
@@ -559,7 +721,45 @@ def _random_string_not_in(s: str, length: int = 6) -> str:
     return out
 
 
-# ─────────────────────── main generator ───────────────────
+def _generate_value_for_operator(operator: ComparisonOperator, tgt_val: Any) -> Any:
+    """Generate constraint value based on operator and target value."""
+    if operator == ComparisonOperator.EQUALS:
+        return tgt_val
+
+    if operator == ComparisonOperator.NOT_EQUALS:
+        return _random_string_not_in(tgt_val) if isinstance(tgt_val, str) else tgt_val + 1
+
+    if operator == ComparisonOperator.CONTAINS:
+        return _substring(tgt_val) if isinstance(tgt_val, str) else str(tgt_val)
+
+    if operator == ComparisonOperator.NOT_CONTAINS:
+        return _random_string_not_in(tgt_val) if isinstance(tgt_val, str) else "xyz"
+
+    if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.GREATER_THAN}:
+        return tgt_val - 1
+
+    if operator in {ComparisonOperator.LESS_EQUAL, ComparisonOperator.LESS_THAN}:
+        return tgt_val + 1
+
+    if operator == ComparisonOperator.IN_LIST:
+        return [tgt_val, _random_string_not_in(str(tgt_val))]
+
+    if operator == ComparisonOperator.NOT_IN_LIST:
+        return [_random_string_not_in(str(tgt_val))]
+
+    return tgt_val
+
+
+def _normalize_date_value(value: Any) -> Any:
+    """Normalize date/datetime values to ISO format."""
+    if isinstance(value, datetime.date | datetime.datetime):
+        return value.isoformat()
+    return value
+
+
+# ============================================================================
+# RESTAURANT CONSTRAINT GENERATION
+# ============================================================================
 def generate_restaurant_constraints(
     *,
     dataset: list[dict[str, Any]],
@@ -591,7 +791,7 @@ def generate_restaurant_constraints(
     if not fields:
         raise ValueError("fields cannot be empty")
 
-    # 1️⃣ Registro “solución”
+    # 1️⃣ Registro "solución"
     dataset = dataset.get("restaurants", [])
     target = random.choice(dataset)
 
@@ -609,38 +809,7 @@ def generate_restaurant_constraints(
     for field in chosen_fields:
         op: ComparisonOperator = random.choice(allowed_ops[field])
         tgt_val = target[field]
-
-        # Valor compatible con el operador para que target lo satisfaga
-        if op == ComparisonOperator.EQUALS:
-            value = tgt_val
-
-        elif op == ComparisonOperator.NOT_EQUALS:
-            value = _random_string_not_in(tgt_val) if isinstance(tgt_val, str) else tgt_val + 1
-
-        elif op == ComparisonOperator.CONTAINS:
-            value = _substring(tgt_val) if isinstance(tgt_val, str) else str(tgt_val)
-
-        elif op == ComparisonOperator.NOT_CONTAINS:
-            value = _random_string_not_in(tgt_val) if isinstance(tgt_val, str) else "xyz"
-
-        elif op in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.GREATER_THAN}:
-            value = tgt_val - 1
-
-        elif op in {ComparisonOperator.LESS_EQUAL, ComparisonOperator.LESS_THAN}:
-            value = tgt_val + 1
-
-        elif op == ComparisonOperator.IN_LIST:
-            value = [tgt_val, _random_string_not_in(str(tgt_val))]
-
-        elif op == ComparisonOperator.NOT_IN_LIST:
-            value = [_random_string_not_in(str(tgt_val))]
-
-        else:  # fallback improbable
-            value = tgt_val
-
-        # Fechas → ISO
-        if isinstance(value, datetime.date | datetime.datetime):
-            value = value.isoformat()
-
+        value = _generate_value_for_operator(op, tgt_val)
+        value = _normalize_date_value(value)
         constraints.append({"field": field, "operator": ComparisonOperator(op), "value": value})
     return constraints
