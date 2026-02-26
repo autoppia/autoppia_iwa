@@ -1,6 +1,9 @@
 # autoppia_iwa/src/demo_webs/projects/autolist_12/use_cases.py
 
 from ...classes import UseCase
+
+# Constants
+EXAMPLE_TASK_PROMPT_DESIGN_HOMEPAGE = "Add a task whose name equals 'Design new homepage mockup'."
 from .events import (
     AddTaskClickedEvent,
     AddTeamClickedEvent,
@@ -142,8 +145,8 @@ TASK_ADDED_USE_CASE = UseCase(
     constraints_generator=generate_task_constraints,
     additional_prompt_info=TASK_ADDED_INFO,
     examples=[
-        {"prompt": "Add a task whose name equals 'Design new homepage mockup'.", "prompt_for_task_generation": "Add a task whose name equals 'Design new homepage mockup'."},
-        {"prompt": "Add a task whose name equals 'Design new homepage mockup'.", "prompt_for_task_generation": "Add a task whose name equals 'Design new homepage mockup'."},
+        {"prompt": EXAMPLE_TASK_PROMPT_DESIGN_HOMEPAGE, "prompt_for_task_generation": EXAMPLE_TASK_PROMPT_DESIGN_HOMEPAGE},
+        {"prompt": EXAMPLE_TASK_PROMPT_DESIGN_HOMEPAGE, "prompt_for_task_generation": EXAMPLE_TASK_PROMPT_DESIGN_HOMEPAGE},
         {
             "prompt": "Add a task whose description equals 'Build a detailed financial projection for the proposed 'Project Titan'.' and date equals '2025-09-28'.",
             "prompt_for_task_generation": "Add a task whose description equals 'Build a detailed financial projection for the proposed 'Project Titan'.' and date equals '2025-09-28'.",
