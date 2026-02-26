@@ -1,6 +1,7 @@
 import os
 import sys
 import uuid
+from typing import Literal
 from urllib.parse import urlparse
 
 import uvicorn
@@ -13,7 +14,7 @@ from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
 from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.web_agents.apified_one_shot_agent import ApifiedOneShotWebAgent
+from autoppia_iwa.src.web_agents.apified_iterative_agent import ApifiedWebAgent
 
 # =====================
 # Constants / Settings
@@ -41,6 +42,9 @@ class AgentConfig(BaseModel):
     timeout: int = 120
     should_record_gif: bool = False
     dynamic: bool = False
+    # Evaluator: same as main benchmark. "concurrent" = one /act call per task; "stateful" = repeated /act with browser snapshot.
+    evaluator_mode: Literal["concurrent", "stateful"] = "stateful"
+    max_steps_per_task: int = 50  # Used only when evaluator_mode == "stateful"
 
 
 @app.post(
@@ -65,21 +69,26 @@ async def test_your_agent(config: AgentConfig):
         projects = get_projects_by_ids(demo_web_projects, config.projects)
         if not projects:
             raise HTTPException(status_code=400, detail="Invalid project IDs provided.")
+        if config.evaluator_mode == "stateful" and config.max_steps_per_task <= 0:
+            raise HTTPException(
+                status_code=400,
+                detail="max_steps_per_task must be > 0 when evaluator_mode is 'stateful'.",
+            )
 
         # Generate unique id and name for each agent
         unique_id = str(uuid.uuid4())
         unique_name = f"TestAgent_{unique_id[:8]}"
 
-        # Configure the agent
+        # Configure the agent (ApifiedWebAgent calls remote POST /act; supports both concurrent and stateful).
         # If ip is a full URL (has scheme) or contains a path, use it directly as base_url.
         # If ip is a hostname/IP and port is provided, include port; otherwise omit.
         parsed = urlparse(config.ip)
         if parsed.scheme:
             base_url = config.ip.rstrip("/")
-            agent = ApifiedOneShotWebAgent(id=unique_id, name=unique_name, timeout=config.timeout, base_url=base_url)
+            agent = ApifiedWebAgent(id=unique_id, name=unique_name, timeout=config.timeout, base_url=base_url)
         else:
             # Treat ip as host
-            agent = ApifiedOneShotWebAgent(id=unique_id, name=unique_name, host=config.ip, port=config.port, timeout=config.timeout)
+            agent = ApifiedWebAgent(id=unique_id, name=unique_name, host=config.ip, port=config.port, timeout=config.timeout)
 
         benchmark_config = BenchmarkConfig(
             projects=projects,
@@ -91,6 +100,8 @@ async def test_your_agent(config: AgentConfig):
             record_gif=config.should_record_gif,
             save_results_json=False,
             dynamic=config.dynamic,
+            evaluator_mode=config.evaluator_mode,
+            max_steps_per_task=config.max_steps_per_task,
         )
 
         # Run the benchmark

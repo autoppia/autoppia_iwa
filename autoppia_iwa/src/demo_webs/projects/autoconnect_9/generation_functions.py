@@ -158,15 +158,30 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
     return value
 
 
-def _generate_constraints(dataset: list[dict], field_operators: dict, field_map: dict | None = None, num_constraints: int | None = None, selected_fields: list | None = None) -> list[dict[str, Any]]:
+def _generate_constraints(
+    dataset: list[dict],
+    field_operators: dict,
+    field_map: dict | None = None,
+    num_constraints: int | None = None,
+    selected_fields: list | None = None,
+    use_first_sample: bool = False,
+    sample_index: int | None = None,
+) -> list[dict[str, Any]]:
     """
     Generates constraints based on the dataset and field operator mapping.
+    use_first_sample: if True, use dataset[0] for field values.
+    sample_index: if set and dataset has enough elements, use dataset[sample_index]; else fallback.
     """
     all_constraints = []
     if not dataset:
         print("[ERROR] No dataset provided")
         return all_constraints
-    sample_data = choice(dataset)
+    if sample_index is not None and len(dataset) > sample_index:
+        sample_data = dataset[sample_index]
+    elif use_first_sample:
+        sample_data = dataset[0]
+    else:
+        sample_data = choice(dataset)
     possible_fields = list(field_operators.keys())
     if selected_fields:
         possible_fields = [f for f in possible_fields if f not in selected_fields]
@@ -227,15 +242,49 @@ def _get_nested_value(obj, dotted_key, default=None):
     return obj
 
 
+# User index used by the web for profile/experience use cases (0-based).
+USER_INDEX_FOR_WEB = 2
+
+
+def _normalize_constraint_string(s: str) -> str:
+    """Normalize so value matches heuristic: no newlines, collapsed spaces, stripped (prompt text is normalized similarly)."""
+    s = s.replace("\r", " ").replace("\n", " ")
+    s = " ".join(s.split())
+    return s.strip()
+
+
+def _single_word_for_contains(value: str) -> str:
+    """Use a single word so the prompt is likely to quote it in full (heuristic value-in-prompt check). Only for contains."""
+    words = [w for w in value.split() if w]
+    return max(words, key=len) if words else value.strip()
+
+
+def _normalize_constraint_value(
+    value: Any,
+    trim_leading_single_letter: bool = False,
+) -> Any:
+    """
+    Normalize string constraint values (newlines -> space, collapse spaces, strip).
+    No truncation: equals/not_equals require full value for exact match.
+    trim_leading_single_letter: for contains only, remove leading single letter + space (e.g. 'e yesterday' -> 'yesterday').
+    """
+    if not isinstance(value, str):
+        return value
+    value = _normalize_constraint_string(value)
+    if trim_leading_single_letter and len(value) > 2 and value[0].isalpha() and value[1:2] == " ":
+        value = value[2:].lstrip()
+    return value
+
+
 async def generate_view_user_profile_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     """
     Generates constraints for viewing a user profile based on the provided user profile data.
+    Uses first user (index 0) to align with web implementation.
     """
     dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="users")
     dataset = dataset_dict.get("users", [])
     field_operators = FIELD_OPERATORS_VIEW_USER_PROFILE_MAP
-    all_constraints = _generate_constraints(dataset, field_operators, num_constraints=1)
-
+    all_constraints = _generate_constraints(dataset, field_operators, num_constraints=1, sample_index=USER_INDEX_FOR_WEB)
     return all_constraints
 
 
@@ -262,6 +311,9 @@ async def generate_like_post_constraints(task_url: str | None = None, dataset: l
     field_map = {"poster_content": "content", "poster_name": "name"}
 
     all_constraints = _generate_constraints(dataset, field_operators, field_map)
+    for c in all_constraints:
+        if c.get("field") == "poster_content" and isinstance(c.get("value"), str):
+            c["value"] = _normalize_constraint_value(c["value"], trim_leading_single_letter=True)
     return all_constraints
 
 
@@ -367,7 +419,12 @@ async def generate_unfollow_page_constraints(task_url: str | None = None, datase
     """
     Generates constraints for unfollowing a company page.
     """
-    return await generate_follow_page_constraints(task_url, dataset)
+    constraints = await generate_follow_page_constraints(task_url, dataset)
+    # Single-token value so prompt "containing 'X'" matches heuristic (value must appear in prompt)
+    for c in constraints:
+        if c.get("field") == "recommendation" and c.get("operator") == "contains" and isinstance(c.get("value"), str) and " " in c["value"]:
+            c["value"] = _single_word_for_contains(c["value"])
+    return constraints
 
 
 async def generate_apply_for_job_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
@@ -498,7 +555,7 @@ async def generate_filter_jobs_constraints() -> list[dict[str, Any]]:
             constraints_list.append(constraint)
         if field == "remote":
             field_value = random.choice(filter_options_data["remote"])
-            value = _generate_constraint_value(op, field_value, field, [{"remote": r} for r in filter_options_data["remote"]])
+            value = field_value  # boolean True/False to match web and events.py
             constraint = create_constraint_dict(field, op, value)
             constraints_list.append(constraint)
         if field == "location":
@@ -554,6 +611,8 @@ async def generate_back_to_all_jobs_constraints(task_url: str | None = None, dat
     constraints_list = []
     dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type="jobs")
     dataset = dataset_dict.get("jobs", [])
+    if not dataset:
+        return constraints_list
     job = random.choice(dataset)
     possible_fields = ["location", "title", "company"]
     selected_fields = random.sample(possible_fields, random.randint(1, len(possible_fields)))
@@ -585,7 +644,6 @@ async def generate_save_post_constraints(task_url: str | None = None, dataset: l
     dataset = dataset_dict.get("posts", [])
 
     transformed_posts = []
-
     for post in dataset:
         new_post = {}
         for key, value in post.items():
@@ -597,6 +655,8 @@ async def generate_save_post_constraints(task_url: str | None = None, dataset: l
                 new_post[key] = value
         transformed_posts.append(new_post)
 
+    if not transformed_posts:
+        return constraints_list
     post = random.choice(transformed_posts)
     possible_fields = ["author", "content"]
     for field in possible_fields:
@@ -628,29 +688,36 @@ async def generate_edit_profile_constraints(task_url: str | None = None, dataset
     constraint_list = []
     dataset_dict = await _ensure_entity_dataset(task_url=task_url, dataset=dataset, entity_type="users")
     dataset = dataset_dict.get("users", [])
+    if not dataset:
+        return constraint_list
     possible_fields = ["name", "bio", "about", "title"]
     selected_fields = random.sample(possible_fields, random.randint(1, len(possible_fields)))
-    random_user = random.choice(dataset)
+    first_user = dataset[USER_INDEX_FOR_WEB] if len(dataset) > USER_INDEX_FOR_WEB else dataset[0]
     for field in selected_fields:
         allowed_ops = FIELD_OPERATORS_EDIT_PROFILE_MAP.get(field, [])
         op = ComparisonOperator(random.choice(allowed_ops))
         if field == "name":
-            field_value = random_user[field]
+            field_value = first_user[field]
             value = _generate_constraint_value(op, field_value, field, dataset)
+            # Single-word value so prompt "include 'X'" matches heuristic (value must appear in prompt)
+            if isinstance(value, str) and op == ComparisonOperator.CONTAINS and " " in value:
+                value = _single_word_for_contains(value)
             constraint = create_constraint_dict(field, op, value)
             constraint_list.append(constraint)
         if field == "bio":
-            field_value = random_user[field]
+            field_value = first_user[field]
             value = _generate_constraint_value(op, field_value, field, dataset)
+            value = _normalize_constraint_value(value)
             constraint = create_constraint_dict(field, op, value)
             constraint_list.append(constraint)
         if field == "about":
-            field_value = random_user[field]
+            field_value = first_user[field]
             value = _generate_constraint_value(op, field_value, field, dataset)
+            value = _normalize_constraint_value(value)
             constraint = create_constraint_dict(field, op, value)
             constraint_list.append(constraint)
         if field == "title":
-            field_value = random_user[field]
+            field_value = first_user[field]
             value = _generate_constraint_value(op, field_value, field, dataset)
             constraint = create_constraint_dict(field, op, value)
             constraint_list.append(constraint)
@@ -676,22 +743,34 @@ async def generate_edit_experience_constraints(task_url: str | None = None, data
     constraint_list = []
     dataset_dict = await _ensure_entity_dataset(task_url=task_url, dataset=dataset, entity_type="users")
     dataset = dataset_dict.get("users", [])
+    if not dataset:
+        return constraint_list
+
     possible_fields = ["company", "duration", "title", "location", "description"]
+    # First user with experience (index 0 in filtered list) to align with web implementation
+    users_with_experience = [u for u in dataset if (u.get("experience") or []) and len(u.get("experience", [])) > 0]
+    if not users_with_experience:
+        return constraint_list
+    first_user = users_with_experience[USER_INDEX_FOR_WEB] if len(users_with_experience) > USER_INDEX_FOR_WEB else users_with_experience[0]
+    experiences = first_user.get("experience", []) or []
+    picked_exp = experiences[0] if experiences else None
+    if picked_exp is None:
+        return constraint_list
+
     selected_fields = random.sample(possible_fields, random.randint(1, len(possible_fields)))
-    # Select Emily Patel explicitly
-    random_user = next((user for user in dataset if user.get("name", "").lower() == "emily patel"), None)
-
-    experiences = random_user.get("experience", [])
-    picked_exp = None
-    if len(experiences) > 0:
-        picked_exp = random.choice(experiences)  # experiences[0]
-
     for field in selected_fields:
+        field_value = picked_exp.get(field)
+        if field_value is None:
+            continue
         allowed_ops = FIELD_OPERATORS_EDIT_EXPERIENCE_MAP.get(field, [])
+        if not allowed_ops:
+            continue
         op = ComparisonOperator(random.choice(allowed_ops))
-        field_value = picked_exp[field]
-        # Generate constraint and append
         value = _generate_constraint_value(op, field_value, field, dataset)
+        if value is None:
+            continue
+        if field == "description" and isinstance(value, str):
+            value = _normalize_constraint_value(value)
         constraint = create_constraint_dict(field, op, value)
         constraint_list.append(constraint)
 
@@ -712,21 +791,31 @@ async def generate_add_experience_constraints(task_url: str | None = None, datas
     constraint_list = []
     dataset_dict = await _ensure_entity_dataset(task_url=task_url, dataset=dataset, entity_type="users")
     dataset = dataset_dict.get("users", [])
+    if not dataset:
+        return constraint_list
     possible_fields = ["company", "duration", "title", "location", "description"]
-    # selected_fields = random.sample(possible_fields, random.randint(1, len(possible_fields)))
-    random_user = random.choice(dataset)
-
-    experiences = random_user.get("experience", [])
-    picked_exp = None
-    if len(experiences) > 0:
-        picked_exp = random.choice(experiences)  # experiences[0]
+    first_user = dataset[USER_INDEX_FOR_WEB] if len(dataset) > USER_INDEX_FOR_WEB else dataset[0]
+    experiences = first_user.get("experience", []) or []
+    picked_exp = experiences[0] if experiences else None
+    if picked_exp is None:
+        return constraint_list
 
     for field in possible_fields:
+        field_value = picked_exp.get(field)
+        if field_value is None:
+            continue
         allowed_ops = FIELD_OPERATORS_EDIT_EXPERIENCE_MAP.get(field, [])
+        if not allowed_ops:
+            continue
         op = ComparisonOperator(random.choice(allowed_ops))
-        field_value = picked_exp[field]
-        # Generate constraint and append
         value = _generate_constraint_value(op, field_value, field, dataset)
+        if value is None:
+            continue
+        # Strip duration so prompt text "Present •" matches (heuristic); cap long description
+        if field == "duration" and isinstance(value, str):
+            value = value.strip()
+        if field == "description" and isinstance(value, str):
+            value = _normalize_constraint_value(value)
         constraint = create_constraint_dict(field, op, value)
         constraint_list.append(constraint)
 

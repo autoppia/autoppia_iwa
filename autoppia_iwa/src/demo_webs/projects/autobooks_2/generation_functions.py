@@ -18,6 +18,7 @@ def generate_registration_constraints():
     Generates constraints specifically for film-related use cases.
     Returns the constraints as structured data.
     """
+
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
@@ -829,11 +830,11 @@ async def generate_edit_profile_constraints(task_url: str | None = None, dataset
     ]
 
     random_bios = [
-        "Passionate about independent books and literary fiction.",
-        "Avid reader with a love for classic literature.",
-        "Book enthusiast exploring diverse genres and authors.",
-        "Literary critic specializing in contemporary novels and poetry.",
-        "Story lover and aspiring writer.",
+        "Passionate about independent books and literary fiction",
+        "Avid reader with a love for classic literature",
+        "Book enthusiast exploring diverse genres and authors",
+        "Literary critic specializing in contemporary novels and poetry",
+        "Story lover and aspiring writer",
     ]
     # Fetch data if dataset is not provided or is empty
     if not dataset:

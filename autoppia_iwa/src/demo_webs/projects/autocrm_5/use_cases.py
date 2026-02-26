@@ -408,6 +408,9 @@ Critical requirements:
 1. The request must start with one of the following: "Add a new calendar event...".
 2. Include ALL mentioned constraints in the prompt.
 3. Do not add additional information in the prompt that is not mentioned in the constraints.
+4. All constraint values must be copied exactly as provided, character-for-character.
+5. Do NOT reformat, normalize, paraphrase, or adjust any values (including time, date, capitalization, spacing, or punctuation).
+6. If a time is given as "3:30pm", it must appear exactly as "3:30pm" in the prompt — not "3:30 PM", "15:30", or any other variation.
 """.strip()
 
 ###############################################################################

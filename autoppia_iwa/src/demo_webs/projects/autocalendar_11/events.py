@@ -86,16 +86,14 @@ class CreateCalendarEvent(Event, BaseEventValidator):
         )
 
 
-class ChooseCalendarEvent(Event, BaseEventValidator):
+class UnselectCalendarEvent(Event, BaseEventValidator):
     """Event triggered when user selects or deselects a calendar"""
 
-    event_name: str = "CHOOSE_CALENDAR"
+    event_name: str = "UNSELECT_CALENDAR"
     calendar_name: str
-    selected: bool
 
     class ValidationCriteria(BaseModel):
         calendar_name: str | CriterionValue | None = None
-        selected: bool | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -103,12 +101,11 @@ class ChooseCalendarEvent(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.calendar_name, criteria.calendar_name),
-                self._validate_field(self.selected, criteria.selected),
             ]
         )
 
     @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "ChooseCalendarEvent":
+    def parse(cls, backend_event: BackendEvent) -> "UnselectCalendarEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
 
@@ -118,8 +115,11 @@ class ChooseCalendarEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             calendar_name=data.get("calendarName", ""),
-            selected=data.get("selected", False),
         )
+
+
+class SelectCalendarEvent(UnselectCalendarEvent):
+    event_name: str = "SELECT_CALENDAR"
 
 
 class CellClickedEvent(Event, BaseEventValidator):
@@ -401,7 +401,8 @@ EVENTS = [
     SelectTodayEvent,
     AddNewCalendarEvent,
     CreateCalendarEvent,
-    ChooseCalendarEvent,
+    UnselectCalendarEvent,
+    SelectCalendarEvent,
     AddEventEvent,
     CellClickedEvent,
     CancelAddEventEvent,
@@ -422,7 +423,8 @@ BACKEND_EVENT_TYPES = {
     "SELECT_TODAY": SelectTodayEvent,
     "ADD_NEW_CALENDAR": AddNewCalendarEvent,
     "CREATE_CALENDAR": CreateCalendarEvent,
-    "CHOOSE_CALENDAR": ChooseCalendarEvent,
+    "UNSELECT_CALENDAR": UnselectCalendarEvent,
+    "SELECT_CALENDAR": SelectCalendarEvent,
     "ADD_EVENT": AddEventEvent,
     "CELL_CLICKED": CellClickedEvent,
     "CANCEL_ADD_EVENT": CancelAddEventEvent,

@@ -171,23 +171,38 @@ class RegistrationEvent(UserEvent):
     """Event triggered when a user registration is completed"""
 
     event_name: str = "REGISTRATION"
+    email: str
+    password: str
 
-    def _validate_criteria(self, criteria: UserEvent.ValidationCriteria | None = None) -> bool:
+    class ValidationCriteria(UserEvent.ValidationCriteria):
+        """Criteria for validating registration events"""
+
+        email: str | CriterionValue | None = None
+        password: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """Validate if this registration event meets the criteria."""
-        return self._validate_username(criteria)
+        if not self._validate_username(criteria):
+            return False
+        if not criteria:
+            return True
+        if criteria.email is not None and not self._validate_field(self.email, criteria.email):
+            return False
+        return not (criteria.password is not None and not self._validate_field(self.password, criteria.password))
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "RegistrationEvent":
         """Parse a registration event from backend data."""
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        username = UserEvent._extract_username(data)
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            username=username,
+            username=UserEvent._extract_username(data),
+            email=data.get("email", ""),
+            password=data.get("password", ""),
         )
 
 
