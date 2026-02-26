@@ -5,7 +5,72 @@ from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue
 
 from ..criterion_helper import ComparisonOperator
 
+# ============================================================================
+# SKILL VALIDATION HELPERS
+# ============================================================================
+def _check_skill_contains_string(criteria_skill: str, skills: list[str]) -> bool:
+    """Check if any skill contains the criteria skill string."""
+    return any(criteria_skill.lower() in skill.lower() for skill in skills)
 
+
+def _check_skill_contains_operator(criteria_value: str, skills: list[str]) -> bool:
+    """Check if any skill contains the criteria value."""
+    return any(criteria_value.lower() in skill.lower() for skill in skills)
+
+
+def _check_skill_not_contains_operator(criteria_value: str, skills: list[str]) -> bool:
+    """Check if no skill contains the criteria value."""
+    return not any(criteria_value.lower() in skill.lower() for skill in skills)
+
+
+def _normalize_list_to_lower(values: list[str]) -> list[str]:
+    """Normalize a list of strings to lowercase."""
+    return [v.lower() for v in values]
+
+
+def _check_skill_in_list_operator(criteria_value: list[str], skills: list[str]) -> bool:
+    """Check if any skill is in the criteria value list."""
+    normalized_criteria = _normalize_list_to_lower(criteria_value)
+    return any(skill.lower() in normalized_criteria for skill in skills)
+
+
+def _check_skill_not_in_list_operator(criteria_value: list[str], skills: list[str]) -> bool:
+    """Check if any skill is not in the criteria value list."""
+    normalized_criteria = _normalize_list_to_lower(criteria_value)
+    return any(skill.lower() in normalized_criteria for skill in skills)
+
+
+def _validate_skill_criterion(criteria_skill: CriterionValue, skills: list[str]) -> bool:
+    """Validate skill criterion based on operator."""
+    operator = criteria_skill.operator
+    value = criteria_skill.value
+
+    if operator == ComparisonOperator.CONTAINS:
+        if not isinstance(value, str):
+            return False
+        return _check_skill_contains_operator(value, skills)
+
+    if operator == ComparisonOperator.NOT_CONTAINS:
+        if not isinstance(value, str):
+            return False
+        return _check_skill_not_contains_operator(value, skills)
+
+    if operator == ComparisonOperator.IN_LIST:
+        if not isinstance(value, list):
+            return False
+        return _check_skill_in_list_operator(value, skills)
+
+    if operator == ComparisonOperator.NOT_IN_LIST:
+        if not isinstance(value, list):
+            return False
+        return not _check_skill_not_in_list_operator(value, skills)
+
+    return True
+
+
+# ============================================================================
+# CONSULTATION AND HIRING EVENTS
+# ============================================================================
 class BookAConsultationEvent(Event, BaseEventValidator):
     """Event triggered when someone clicks on the book a consultation button"""
 
@@ -121,7 +186,7 @@ class SelectHiringTeamEvent(Event, BaseEventValidator):
         )
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "SelectHiringTeamEventData":
+    def parse(cls, backend_event: "BackendEvent") -> "SelectHiringTeamEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
         return cls(
@@ -336,6 +401,9 @@ class QuickHireEvent(Event, BaseEventValidator):
         )
 
 
+# ============================================================================
+# JOB POSTING EVENTS
+# ============================================================================
 class PostAJobEvent(Event, BaseEventValidator):
     """event triggered when someone click on post a job button"""
 
@@ -372,6 +440,9 @@ class PostAJobEvent(Event, BaseEventValidator):
         )
 
 
+# ============================================================================
+# JOB FORM EVENTS
+# ============================================================================
 class WriteJobTitleEvent(Event, BaseEventValidator):
     """event triggered when someone start writing job title"""
 
@@ -403,6 +474,9 @@ class WriteJobTitleEvent(Event, BaseEventValidator):
         )
 
 
+# ============================================================================
+# SKILL EVENTS
+# ============================================================================
 class SearchSkillEvent(Event, BaseEventValidator):
     """event triggered when someone start typing to search skills"""
 
@@ -496,6 +570,9 @@ class RemoveSkillEvent(Event, BaseEventValidator):
         )
 
 
+# ============================================================================
+# JOB FORM SELECTION EVENTS
+# ============================================================================
 class ChooseBudgetTypeEvent(Event, BaseEventValidator):
     event_name: str = "CHOOSE_BUDGET_TYPE"
     budget_type: str | None = None
@@ -633,6 +710,9 @@ class WriteJobDescriptionEvent(Event, BaseEventValidator):
         )
 
 
+# ============================================================================
+# NAVIGATION EVENTS
+# ============================================================================
 class NavbarClickEvent(Event, BaseEventValidator):
     event_name: str = "NAVBAR_CLICK"
     label: str | None = None
@@ -690,6 +770,9 @@ class NavbarProfileClickEvent(NavbarClickEvent):
         )
 
 
+# ============================================================================
+# FAVORITE EXPERT EVENTS
+# ============================================================================
 class FavoriteExpertSelectedEvent(Event, BaseEventValidator):
     event_name: str = "FAVORITE_EXPERT_SELECTED"
     expert_name: str | None = None
@@ -796,6 +879,9 @@ class ContactExpertMessageSentEvent(Event, BaseEventValidator):
         )
 
 
+# ============================================================================
+# PROFILE EDIT EVENTS
+# ============================================================================
 class EditProfileNameEvent(Event, BaseEventValidator):
     event_name: str = "EDIT_PROFILE_NAME"
     value: str | None = None
@@ -866,31 +952,14 @@ class SubmitJobEvent(Event, BaseEventValidator):
         step: int | CriterionValue | None = None
         title: str | CriterionValue | None = None
 
-    def _skill_validation(self, criteria: CriterionValue | None = None) -> bool:
-        if not criteria:
+    def _skill_validation(self, criteria: "SubmitJobEvent.ValidationCriteria" | None = None) -> bool:
+        if not criteria or criteria.skills is None:
             return True
-        if criteria.skills is not None:
-            if isinstance(criteria, str):
-                if not any(criteria.skills.lower() in skills.lower() for skills in self.skills):
-                    return False
-            else:
-                if criteria.skills.operator == ComparisonOperator.CONTAINS:
-                    if not any(criteria.skills.value.lower() in skills.lower() for skills in self.skills):
-                        return False
-                elif criteria.skills.operator == ComparisonOperator.NOT_CONTAINS:
-                    if any(criteria.skills.value.lower() in skills.lower() for skills in self.skills):
-                        return False
-                elif criteria.skills.operator == ComparisonOperator.IN_LIST:
-                    if not isinstance(criteria.skills.value, list):
-                        return False
-                    if not any(skills.lower() in [v.lower() for v in criteria.skills.value] for skills in self.skills):
-                        return False
-                elif criteria.skills.operator == ComparisonOperator.NOT_IN_LIST:
-                    if not isinstance(criteria.skills.value, list):
-                        return False
-                    if any(skills.lower() in [v.lower() for v in criteria.skills.value] for skills in self.skills):
-                        return False
-        return True
+
+        if isinstance(criteria.skills, str):
+            return _check_skill_contains_string(criteria.skills, self.skills)
+
+        return _validate_skill_criterion(criteria.skills, self.skills)
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -956,31 +1025,14 @@ class ClosePostAJobWindowEvent(Event, BaseEventValidator):
         step: int | CriterionValue | None = None
         title: str | CriterionValue | None = None
 
-    def _skill_validation(self, criteria: CriterionValue | None = None) -> bool:
-        if not criteria:
+    def _skill_validation(self, criteria: "ClosePostAJobWindowEvent.ValidationCriteria" | None = None) -> bool:
+        if not criteria or criteria.skills is None:
             return True
-        if criteria.skills is not None:
-            if isinstance(criteria, str):
-                if not any(criteria.skills.lower() in skills.lower() for skills in self.skills):
-                    return False
-            else:
-                if criteria.skills.operator == ComparisonOperator.CONTAINS:
-                    if not any(criteria.skills.value.lower() in skills.lower() for skills in self.skills):
-                        return False
-                elif criteria.skills.operator == ComparisonOperator.NOT_CONTAINS:
-                    if any(criteria.skills.value.lower() in skills.lower() for skills in self.skills):
-                        return False
-                elif criteria.skills.operator == ComparisonOperator.IN_LIST:
-                    if not isinstance(criteria.skills.value, list):
-                        return False
-                    if not any(skills.lower() in [v.lower() for v in criteria.skills.value] for skills in self.skills):
-                        return False
-                elif criteria.skills.operator == ComparisonOperator.NOT_IN_LIST:
-                    if not isinstance(criteria.skills.value, list):
-                        return False
-                    if any(skills.lower() in [v.lower() for v in criteria.skills.value] for skills in self.skills):
-                        return False
-        return True
+
+        if isinstance(criteria.skills, str):
+            return _check_skill_contains_string(criteria.skills, self.skills)
+
+        return _validate_skill_criterion(criteria.skills, self.skills)
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
