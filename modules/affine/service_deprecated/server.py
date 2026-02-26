@@ -23,7 +23,7 @@ from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
-from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
+from autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.web_agents.apified_one_shot_agent import ApifiedOneShotWebAgent
 
 
@@ -122,7 +122,7 @@ async def _startup() -> None:
     await task_store.ensure_tasks()
 
 
-@app.get("/healthz")
+@app.get("/healthz", responses={500: {"description": "Internal server error during health check"}})
 async def health() -> dict:
     try:
         await task_store.ensure_tasks()
@@ -131,7 +131,7 @@ async def health() -> dict:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
-@app.post("/evaluate", response_model=EvaluateResponse)
+@app.post("/evaluate", responses={503: {"description": "Task loading failed"}})
 async def evaluate(req: EvaluateRequest) -> EvaluateResponse:
     try:
         await task_store.ensure_tasks()
