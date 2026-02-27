@@ -4,14 +4,13 @@ import { useSearchParams, useParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon, ClockIcon, UserIcon } from "lucide-react";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { EVENT_TYPES, logEvent } from "@/library/events";
 import dayjs from "dayjs";
 import { countries } from "@/library/dataset";
 import { initializeRestaurants, getRestaurants } from "@/dynamic/v2-data";
 import { useDynamicSystem } from "@/dynamic/shared";
 import { ID_VARIANTS_MAP, CLASS_VARIANTS_MAP, TEXT_VARIANTS_MAP } from "@/dynamic/v3";
-import { SeedLink } from "@/components/ui/SeedLink";
 import { useSeed } from "@/context/SeedContext";
 import Navbar from "@/components/Navbar";
 import Image from "next/image";
@@ -31,7 +30,7 @@ type RestaurantView = {
 export default function Page() {
   const params = useParams();
   const searchParams = useSearchParams();
-  const { seed: baseSeed, resolvedSeeds } = useSeed();
+  const { resolvedSeeds } = useSeed();
   const v2Seed = resolvedSeeds.v2 ?? resolvedSeeds.base;
 
   const restaurantId = params.restaurantId as string;
@@ -40,12 +39,12 @@ export default function Page() {
   const reservationDateParam = searchParams.get("date");
 
   const [selectedCountry, setSelectedCountry] = useState(countries[0]);
-  const [date, setDate] = useState<Date | undefined>();
+  const [, setDate] = useState<Date | undefined>();
   const [formattedDate, setFormattedDate] = useState<string | null>(null);
   const [fullDate, setFullDate] = useState<string | null>(null);
-  const [time, setTime] = useState(reservationTimeParam || "1:00 PM");
-  const [people, setPeople] = useState(
-    parseInt(reservationPeopleParam || "2", 10)
+  const [time] = useState(reservationTimeParam || "1:00 PM");
+  const [people] = useState(
+    Number.parseInt(reservationPeopleParam || "2", 10)
   );
   const [reservationTime, setReservationTime] = useState<string | null>(null);
   const [reservationPeople, setReservationPeople] = useState<string | null>(
