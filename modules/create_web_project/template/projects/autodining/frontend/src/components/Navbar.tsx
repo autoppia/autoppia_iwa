@@ -1,6 +1,5 @@
 "use client";
 
-import { useSeed } from "@/context/SeedContext";
 import { SeedLink } from "@/components/ui/SeedLink";
 import { useDynamicSystem } from "@/dynamic/shared";
 import { ID_VARIANTS_MAP } from "@/dynamic/v3";
@@ -14,10 +13,10 @@ interface NavbarProps {
 
 export default function Navbar({
   showSearch = false,
-  searchInputId,
-  searchButtonId,
-  onSearchClick
-}: NavbarProps) {
+  searchInputId: _searchInputId,
+  searchButtonId: _searchButtonId,
+  onSearchClick: _onSearchClick
+}: Readonly<NavbarProps>) {
   const dyn = useDynamicSystem();
 
   // V1: Order navigation links dynamically
