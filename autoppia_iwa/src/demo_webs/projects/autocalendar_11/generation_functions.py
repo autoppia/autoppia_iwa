@@ -3,6 +3,8 @@ from collections.abc import Callable
 from datetime import date, datetime, time, timedelta
 from typing import Any
 
+from loguru import logger
+
 from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_dict, parse_datetime
 
@@ -328,7 +330,7 @@ async def generate_event_wizard_open_constraints(task_url: str | None = None, da
     event_data = await _ensure_event_dataset(task_url, dataset)
     constraints_list = []
     if not event_data:
-        print("[ERROR] No event data provided")
+        logger.error("No event data provided")
         return constraints_list
     possible_fields = list(FIELD_OPERATORS_WIZARD_OPEN.keys())
     selected_fields = random.sample(possible_fields, k=random.randint(1, len(possible_fields)))
