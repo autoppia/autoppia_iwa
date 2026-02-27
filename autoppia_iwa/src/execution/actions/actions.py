@@ -4,7 +4,7 @@ from functools import wraps
 from typing import Any, Literal
 
 from loguru import logger
-from playwright.async_api import Page, TimeoutError as PWTimeout
+from playwright.async_api import Error as PlaywrightError, Page, TimeoutError as PWTimeout
 from pydantic import Field, model_validator
 
 from .base import BaseAction, BaseActionWithSelector, Selector
@@ -12,6 +12,9 @@ from .base import BaseAction, BaseActionWithSelector, Selector
 action_logger = logger.bind(action="autoppia_action")
 # Disable logging for agent actions execution as its so annoying
 logger.disable("autoppia_action")
+
+# Constants for error messages
+SELECTOR_OR_COORDS_REQUIRED_MSG = "Either a selector or (x, y) must be provided."
 
 
 def log_action(action_name: str):
@@ -23,10 +26,11 @@ def log_action(action_name: str):
             action_logger.debug(f"Executing {action_name} with data: {self.model_dump()}")
             try:
                 return await func(self, page, backend_service, web_agent_id)
-            except Exception as e:
+            except (PlaywrightError, ValueError, TypeError, AssertionError) as e:  # NOSONAR - Re-raise to preserve exception context
                 # error_details = traceback.format_exc()
                 # action_logger.error(f"{action_name} failed: {e}\n\n Traceback: {error_details}")
                 # action_logger.error(f"{action_name} failed: {e}")
+                # Re-raise exception to preserve stack trace and exception context
                 raise e
 
         return wrapper
@@ -72,7 +76,7 @@ async def _move_mouse_to(page: Page, selector: str | None, x: int | None, y: int
     if x is not None and y is not None:
         await page.mouse.move(x, y, steps=steps)
         return
-    raise ValueError("Either a selector or (x, y) must be provided.")
+    raise ValueError(SELECTOR_OR_COORDS_REQUIRED_MSG)
 
 
 # -------------------------------------------------------------------
@@ -123,7 +127,7 @@ class ClickAction(BaseClickAction):
             await page.mouse.click(self.x, self.y)
             return
 
-        raise ValueError("Either a selector or (x, y) must be provided.")
+        raise ValueError(SELECTOR_OR_COORDS_REQUIRED_MSG)
 
 
 class DoubleClickAction(BaseClickAction):
@@ -145,7 +149,7 @@ class DoubleClickAction(BaseClickAction):
             await page.mouse.dblclick(x=self.x, y=self.y)
             return
 
-        raise ValueError("Either a selector or (x, y) must be provided.")
+        raise ValueError(SELECTOR_OR_COORDS_REQUIRED_MSG)
 
 
 class RightClickAction(BaseClickAction):
@@ -167,7 +171,7 @@ class RightClickAction(BaseClickAction):
             await page.mouse.click(self.x, self.y, button="right")
             return
 
-        raise ValueError("Either a selector or (x, y) must be provided.")
+        raise ValueError(SELECTOR_OR_COORDS_REQUIRED_MSG)
 
 
 class MiddleClickAction(BaseClickAction):
@@ -189,7 +193,7 @@ class MiddleClickAction(BaseClickAction):
             await page.mouse.click(self.x, self.y, button="middle")
             return
 
-        raise ValueError("Either a selector or (x, y) must be provided.")
+        raise ValueError(SELECTOR_OR_COORDS_REQUIRED_MSG)
 
 
 class TripleClickAction(BaseClickAction):
@@ -210,7 +214,7 @@ class TripleClickAction(BaseClickAction):
             await page.mouse.click(self.x, self.y, click_count=3)
             return
 
-        raise ValueError("Either a selector or (x, y) must be provided.")
+        raise ValueError(SELECTOR_OR_COORDS_REQUIRED_MSG)
 
 
 class MouseDownAction(BaseClickAction):
@@ -263,7 +267,7 @@ class MouseMoveAction(BaseClickAction):
             await page.mouse.move(self.x, self.y, steps=self.steps)
             return
 
-        raise ValueError("Either a selector or (x, y) must be provided.")
+        raise ValueError(SELECTOR_OR_COORDS_REQUIRED_MSG)
 
 
 class NavigateAction(BaseAction):
@@ -511,7 +515,7 @@ class ScrollAction(BaseAction):
 
             dx, dy = (sign * amount, 0) if axis == "x" else (0, sign * amount)
             await self._scroll_by_value(page, dx=dx, dy=dy)
-        except Exception as e:
+        except (PlaywrightError, PWTimeout, ValueError, TypeError) as e:
             # Fallback to keyboard scroll if JS scrolling fails.
             action_logger.warning(f"ScrollAction failed with JS scrolling: {e}. Using keyboard fallback.")
             try:
@@ -523,7 +527,7 @@ class ScrollAction(BaseAction):
                     await page.keyboard.press("PageUp")
                 else:
                     await page.keyboard.press("PageDown")
-            except Exception as kb_error:
+            except (PlaywrightError, PWTimeout) as kb_error:
                 raise ValueError(f"ScrollAction completely failed: {e}") from kb_error
 
 
@@ -601,7 +605,7 @@ class LeftClickDragAction(BaseAction):
         steps = values.get("steps", 1)
         try:
             steps = int(steps)
-        except Exception:
+        except (ValueError, TypeError):
             steps = 1
         values["steps"] = max(1, steps)
         return values
@@ -787,7 +791,7 @@ class GetDropDownOptionsAction(BaseActionWithSelector):
                             )
                         else:
                             options = None
-                    except Exception as e:
+                    except (PlaywrightError, PWTimeout, ValueError, TypeError) as e:
                         action_logger.debug(f"Frame {i} Playwright selector evaluation failed: {e!s}")
                         options = None
 
@@ -805,7 +809,7 @@ class GetDropDownOptionsAction(BaseActionWithSelector):
                 elif options and not options.get("options"):
                     action_logger.debug(f"Frame {i}: Element found but has no options or is not a select element")
 
-            except Exception as e:
+            except (PlaywrightError, PWTimeout, ValueError, TypeError) as e:
                 action_logger.debug(f"Frame {i} evaluate error: {e!s}")
 
         if found_dropdown:
@@ -859,14 +863,14 @@ class SelectDropDownOptionAction(BaseActionWithSelector):
                     try:
                         await select_element.select_option(**strategy, timeout=self.timeout_ms)
                         return True
-                    except Exception as e:
+                    except (PlaywrightError, PWTimeout, ValueError, TypeError) as e:
                         action_logger.debug(f"Selection failed with {strategy}: {e!s}")
                         last_error = str(e)
                         continue
 
                 return False
 
-            except Exception as e:
+            except (PlaywrightError, PWTimeout, ValueError, TypeError) as e:
                 last_error = str(e)
                 return False
 
@@ -890,7 +894,7 @@ class SelectDropDownOptionAction(BaseActionWithSelector):
                 option = await page.wait_for_selector(f"//*[normalize-space(text())={self.text.strip()}]", timeout=self.timeout_ms)
                 await option.click()
                 found = True
-            except Exception as e:
+            except (PlaywrightError, PWTimeout, ValueError, TypeError) as e:
                 last_error = str(e)
 
         if not found:
@@ -916,6 +920,7 @@ class UndefinedAction(BaseAction):
 
     @log_action("UndefinedAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
+        # Intentionally empty - this action does nothing by design
         pass
 
 
@@ -926,4 +931,5 @@ class IdleAction(BaseAction):
 
     @log_action("IdleAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
+        # Intentionally empty - this action represents an intentional pause/idle state
         pass
