@@ -34,12 +34,11 @@ from .data_utils import fetch_data
 
 async def _ensure_event_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Extract events data from the cache, or fetch from server if not available."""
+    _ = dataset  # Unused parameter kept for backward compatibility
     seed = get_seed_from_url(task_url)
     events = await fetch_data(seed_value=seed)
-    dataset = {"events": events}
-
-    if dataset and "events" in dataset:
-        return dataset["events"]
+    if isinstance(events, list):
+        return events
     return []
 
 
@@ -94,9 +93,8 @@ def _generate_constraint_value(
 
         if random_picker_start == len(longest) - 1:
             return longest[random_picker_start]  # just return last char
-        else:
-            random_picker_end = random.randint(random_picker_start + 1, len(longest))
-            return longest[random_picker_start:random_picker_end]
+        random_picker_end = random.randint(random_picker_start + 1, len(longest))
+        return longest[random_picker_start:random_picker_end]
 
     if operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
         alphabet = "abcdefghijklmnopqrstuvwxyz"
@@ -164,8 +162,6 @@ def _handle_time_constraints(context: dict) -> list[dict[str, Any]]:
     start_minute = random.choice([0, 30])
 
     end_hour = start_hour
-    end_minute = start_minute
-
     if start_minute == 0:
         end_minute = 30
     else:
