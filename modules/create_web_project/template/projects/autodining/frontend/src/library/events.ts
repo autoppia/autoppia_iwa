@@ -33,7 +33,7 @@ export function logEvent(
   data: any = {},
   extra_headers: Record<string, string> = {}
 ) {
-  if (typeof window === "undefined") return;
+  if (globalThis.window === undefined) return;
 
   let user = localStorage.getItem("user");
   if (user === "null") {
@@ -66,7 +66,7 @@ export function logEvent(
 
   const backendPayload = {
     web_agent_id: resolvedWebAgentId,
-    web_url: window.location.origin,
+    web_url: globalThis.window.location.origin,
     validator_id: resolvedValidatorId,
     data: eventData,
   };
