@@ -15,9 +15,9 @@ export function DynamicDebug() {
 
   useEffect(() => {
     // Only log if ?dynamic_debug=1 is in URL
-    if (typeof window === "undefined") return;
+    if (globalThis.window === undefined) return;
 
-    const urlParams = new URLSearchParams(window.location.search);
+    const urlParams = new URLSearchParams(globalThis.window.location.search);
     const shouldDebug = urlParams.get("dynamic_debug") === "1";
 
     if (!shouldDebug) return;
@@ -26,15 +26,20 @@ export function DynamicDebug() {
     console.log("Seed:", dyn.seed);
     console.log("V1 enabled:", isV1Enabled());
     console.log("V3 enabled:", isV3Enabled());
-    console.log("NEXT_PUBLIC_ENABLE_DYNAMIC_V1:", typeof window !== "undefined" ? (window as Window & typeof globalThis & { __NEXT_DATA__?: { env?: { NEXT_PUBLIC_ENABLE_DYNAMIC_V1?: string } } }).__NEXT_DATA__?.env?.NEXT_PUBLIC_ENABLE_DYNAMIC_V1 : "SSR");
-    console.log("NEXT_PUBLIC_ENABLE_DYNAMIC_V3:", typeof window !== "undefined" ? (window as Window & typeof globalThis & { __NEXT_DATA__?: { env?: { NEXT_PUBLIC_ENABLE_DYNAMIC_V3?: string } } }).__NEXT_DATA__?.env?.NEXT_PUBLIC_ENABLE_DYNAMIC_V3 : "SSR");
+
+    const windowWithNextData = globalThis.window as Window & typeof globalThis & { __NEXT_DATA__?: { env?: { NEXT_PUBLIC_ENABLE_DYNAMIC_V1?: string; NEXT_PUBLIC_ENABLE_DYNAMIC_V3?: string } } };
+    const nextDataEnv = windowWithNextData.__NEXT_DATA__?.env;
+    console.log("NEXT_PUBLIC_ENABLE_DYNAMIC_V1:", nextDataEnv?.NEXT_PUBLIC_ENABLE_DYNAMIC_V1 ?? "SSR");
+    console.log("NEXT_PUBLIC_ENABLE_DYNAMIC_V3:", nextDataEnv?.NEXT_PUBLIC_ENABLE_DYNAMIC_V3 ?? "SSR");
 
     // Check elements in the DOM
     const v1Elements = document.querySelectorAll('[data-v1="true"]');
     console.log("V1 elements found:", v1Elements.length);
     if (v1Elements.length > 0) {
       const firstElement = v1Elements[0] as HTMLElement;
-      console.log("Example V1 wrapper:", firstElement.getAttribute('data-dyn-wrap') || firstElement.getAttribute('data-decoy'));
+      const dynWrap = firstElement.dataset.dynWrap;
+      const decoy = firstElement.dataset.decoy;
+      console.log("Example V1 wrapper:", dynWrap || decoy || null);
     }
 
     // Check for restaurant cards
