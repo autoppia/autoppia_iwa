@@ -89,7 +89,7 @@ function generateHashBasedOrder(seed: number, key: string, count: number): numbe
   const combined = `${key}:${seed}`;
   let hash = 0;
   for (let i = 0; i < combined.length; i++) {
-    const char = combined.charCodeAt(i);
+    const char = combined.codePointAt(i) ?? 0;
     hash = ((hash << 5) - hash) + char;
     hash = hash & hash;
   }
