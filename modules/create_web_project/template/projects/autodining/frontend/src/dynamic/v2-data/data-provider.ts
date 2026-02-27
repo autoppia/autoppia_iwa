@@ -23,20 +23,20 @@ export class DynamicDataProvider {
   private restaurants: ReturnType<typeof getRestaurants> = [];
   private readonly isEnabled: boolean;
   private ready = false;
-  private readonly readyPromise: Promise<void>;
+  private readyPromise: Promise<void> | null = null;
 
   private constructor() {
     this.isEnabled = process.env.NEXT_PUBLIC_ENABLE_DYNAMIC_V2 === 'true';
-    // NOSONAR - Async initialization in constructor is necessary for singleton pattern with lazy loading
-    this.readyPromise = this.createReadyPromise();
   }
 
-  private createReadyPromise(): Promise<void> {
-    if (globalThis.window === undefined) {
-      this.ready = true;
-      return Promise.resolve();
+  private getOrCreateReadyPromise(): Promise<void> {
+    if (this.readyPromise === null) {
+      this.readyPromise = globalThis.window === undefined ? Promise.resolve() : this.loadRestaurants();
+      if (globalThis.window === undefined) {
+        this.ready = true;
+      }
     }
-    return this.loadRestaurants();
+    return this.readyPromise;
   }
 
   public static getInstance(): DynamicDataProvider {
@@ -64,7 +64,7 @@ export class DynamicDataProvider {
   }
 
   public async whenReady(): Promise<void> {
-    return this.readyPromise;
+    return this.getOrCreateReadyPromise();
   }
 
   public isReady(): boolean {
