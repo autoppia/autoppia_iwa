@@ -8,7 +8,7 @@ class UIParserService:
         # Intentionally empty - placeholder for future implementation
         pass
 
-    def summarize_image(self, file):
+    def summarize_image(self, _file):
         return ""
 
 
