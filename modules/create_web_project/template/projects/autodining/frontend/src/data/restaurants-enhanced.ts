@@ -25,7 +25,14 @@ export interface RestaurantGenerated {
 }
 
 // Cache for loaded restaurants
-export let dynamicRestaurants: RestaurantGenerated[] = [];
+const _dynamicRestaurants: RestaurantGenerated[] = [];
+export function getDynamicRestaurants(): RestaurantGenerated[] {
+  return _dynamicRestaurants;
+}
+export function setDynamicRestaurants(restaurants: RestaurantGenerated[]): void {
+  _dynamicRestaurants.length = 0;
+  _dynamicRestaurants.push(...restaurants);
+}
 
 /**
  * Normalize restaurant data from server
@@ -35,12 +42,14 @@ function normalizeRestaurants(
 ): RestaurantGenerated[] {
   return items.map((r, index) => {
     const fallbackName = (r as any)?.namepool;
-    const normalizedName =
-      typeof r.name === "string" && r.name.trim().length > 0
-        ? r.name.trim()
-        : typeof fallbackName === "string" && fallbackName.trim().length > 0
-        ? fallbackName.trim()
-        : `Restaurant ${index + 1}`;
+    let normalizedName: string;
+    if (typeof r.name === "string" && r.name.trim().length > 0) {
+      normalizedName = r.name.trim();
+    } else if (typeof fallbackName === "string" && fallbackName.trim().length > 0) {
+      normalizedName = fallbackName.trim();
+    } else {
+      normalizedName = `Restaurant ${index + 1}`;
+    }
 
     const providedImage = r.image;
     const normalizedImage =
@@ -52,8 +61,7 @@ function normalizeRestaurants(
     // Si no existen, usar valores por defecto o calcular desde campos antiguos
     const rating = r.rating ?? (r as any)?.staticStars ?? 4.5;
     // Si stars viene del JSON, usarlo directamente; sino calcular desde rating
-    const stars =
-      r.stars !== undefined && r.stars !== null ? r.stars : Math.round(rating);
+    const stars = r.stars ?? Math.round(rating);
     const reviews = r.reviews ?? (r as any)?.staticReviews ?? 0;
     const bookings = r.bookings ?? (r as any)?.staticBookings ?? 0;
     const price = r.price || (r as any)?.staticPrices || "$$";
@@ -78,6 +86,7 @@ function normalizeRestaurants(
  */
 export function getRestaurants(): RestaurantGenerated[] {
   // Si hay dynamic restaurants, usarlos
+  const dynamicRestaurants = getDynamicRestaurants();
   if (dynamicRestaurants.length > 0) {
     return dynamicRestaurants;
   }
@@ -86,7 +95,7 @@ export function getRestaurants(): RestaurantGenerated[] {
   return (fallbackRestaurants as any[]).map((item) => ({
     id: `restaurant-${item.id}`,
     name: item.namepool,
-    image: item.image || `/images/restaurant${parseInt(item.id) % 19 || 1}.jpg`,
+    image: item.image || `/images/restaurant${Number.parseInt(item.id, 10) % 19 || 1}.jpg`,
     rating: item.rating ?? 4.5,
     stars: item.stars ?? 5,
     reviews: item.reviews ?? 0,
@@ -114,16 +123,17 @@ export async function initializeRestaurants(
   effectiveSeed = dbModeEnabled ? seedValue ?? 1 : 1;
 
   if (!dbModeEnabled) {
-    dynamicRestaurants = normalizeRestaurants(
+    const normalized = normalizeRestaurants(
       fallbackRestaurants as RestaurantGenerated[]
     );
-    return dynamicRestaurants;
+    setDynamicRestaurants(normalized);
+    return normalized;
   }
 
   // Load from DB with the determined seed
   try {
     // Clear existing restaurants to force fresh load
-    dynamicRestaurants = [];
+    setDynamicRestaurants([]);
     const fromDb = await fetchSeededSelection<RestaurantGenerated>({
       projectKey: "web_4_autodining",
       entityType: "restaurants",
@@ -139,9 +149,10 @@ export async function initializeRestaurants(
     );
 
     if (fromDb && fromDb.length > 0) {
-      dynamicRestaurants = normalizeRestaurants(fromDb);
+      const normalized = normalizeRestaurants(fromDb);
+      setDynamicRestaurants(normalized);
       // Don't cache when using seeds to ensure each seed gets fresh data
-      return dynamicRestaurants;
+      return normalized;
     } else {
       console.warn(
         `[autodining] No data returned from DB with seed=${effectiveSeed}`
@@ -153,9 +164,10 @@ export async function initializeRestaurants(
       `[autodining] Failed to load from DB with seed=${effectiveSeed}:`,
       err
     );
-    dynamicRestaurants = normalizeRestaurants(
+    const normalized = normalizeRestaurants(
       fallbackRestaurants as RestaurantGenerated[]
     );
-    return dynamicRestaurants;
+    setDynamicRestaurants(normalized);
+    return normalized;
   }
 }
