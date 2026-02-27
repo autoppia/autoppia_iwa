@@ -5,29 +5,29 @@
  * Supports enable_dynamic URL parameter: ?enable_dynamic=v1,v2
  */
 
-const BOOL_TRUE = ["true", "1", "yes", "y"];
+const BOOL_TRUE = new Set(["true", "1", "yes", "y"]);
 
 const boolFromEnv = (value?: string | undefined | null): boolean => {
   if (!value) return false;
-  return BOOL_TRUE.includes(value.toLowerCase());
+  return BOOL_TRUE.has(value.toLowerCase());
 };
 
 /**
  * Parse enable_dynamic parameter from URL (e.g., "v1", "v2", "v1,v2", "v1,v2,v3")
  */
 function parseEnableDynamicFromUrl(): { v1: boolean; v2: boolean; v3: boolean } | null {
-  if (typeof window === "undefined") return null;
+  if (globalThis.window === undefined) return null;
 
-  const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(globalThis.window.location.search);
   const enableDynamic = params.get("enable_dynamic");
 
   if (!enableDynamic) return null;
 
-  const parts = enableDynamic.toLowerCase().split(",").map(s => s.trim());
+  const parts = new Set(enableDynamic.toLowerCase().split(",").map(s => s.trim()));
   return {
-    v1: parts.includes("v1"),
-    v2: parts.includes("v2"),
-    v3: parts.includes("v3"),
+    v1: parts.has("v1"),
+    v2: parts.has("v2"),
+    v3: parts.has("v3"),
   };
 }
 
@@ -72,11 +72,11 @@ const BASE_SEED = {
 
 function getApiBaseUrl(): string {
   const envUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL;
-  const origin = typeof window !== "undefined" ? window.location?.origin : undefined;
+  const origin = globalThis.window ? globalThis.window.location?.origin : undefined;
   const envIsLocal = envUrl && (envUrl.includes("localhost") || envUrl.includes("127.0.0.1"));
   const originIsLocal = origin && (origin.includes("localhost") || origin.includes("127.0.0.1"));
 
-  if (envUrl && (!(envIsLocal) || originIsLocal)) {
+  if (envUrl && (envIsLocal ? originIsLocal : true)) {
     return envUrl;
   }
   if (origin) {
@@ -137,7 +137,7 @@ export async function resolveSeeds(baseSeed: number): Promise<ResolvedSeeds> {
   const enabledFlags = getEnabledFlagsInternal();
 
   // During SSR or if API URL is not available, use local fallback
-  if (typeof window === "undefined") {
+  if (globalThis.window === undefined) {
     return resolveSeedsLocal(safeSeed, enabledFlags);
   }
 
