@@ -99,6 +99,15 @@ SECTION_ORDER = [
     SECTION_DYNAMIC,
 ]
 
+# Report labels (avoid duplicated string literals)
+NOT_RUN_LABEL = "- ⚪ Not run"
+NOT_RUN_CODE_CHECKS_DISABLED = "- ⚪ Not run (code checks disabled)"
+EVENT_COVERAGE_MUST_BE_100 = "Event coverage must be 100%"
+EVENT_COVERAGE_IS_100 = "Event coverage is 100%"
+GENERATE_TASKS_VIA_PIPELINE_LABEL = "Generate tasks via pipeline"
+NODEJS_DYNAMIC_SYSTEM_TEST_LABEL = "Node.js dynamic system test"
+NODEJS_EVENT_COVERAGE_TEST_LABEL = "Node.js event coverage test"
+
 
 @dataclass
 class CheckResult:
@@ -256,7 +265,7 @@ class ProjectReport:
             lines.append("- Miner agent: ⚪ Not run (legacy field)")
         lines.append("\n==== Dynamic Validation ====")
         if not self.dynamic_stats:
-            lines.append("- ⚪ Not run")
+            lines.append(NOT_RUN_LABEL)
         else:
             expect = "yes" if self.dynamic_stats.get("expect_mutations") else "no"
             lines.append(f"- Expect mutations per deck: {expect}")
@@ -663,7 +672,7 @@ def verify_project(project_slug: str, deck_path: Path | None = None, auto_genera
 
     try:
         generation_module = load_module(f"{project_slug}.generation_functions")
-        generation_symbols = set(name for name, obj in inspect.getmembers(generation_module, inspect.isfunction))
+        generation_symbols = {name for name, obj in inspect.getmembers(generation_module, inspect.isfunction)}
     except Exception as exc:
         report.add(False, "Import generation_functions module", f"{exc}", section=SECTION_USE_CASES)
         generation_symbols = set()
@@ -730,7 +739,7 @@ def _limit_tasks_per_use_case(tasks: list[Task], per_use_case: int) -> list[Task
     return selected
 
 
-async def _check_frontend_health(url: str) -> tuple[bool, str]:
+def _check_frontend_health(url: str) -> tuple[bool, str]:
     if not url:
         return False, "frontend_url not configured"
     try:
@@ -787,10 +796,15 @@ def _check_task_prompts(
         f"Tasks with unresolved placeholders: {', '.join(placeholder_failures)}" if placeholder_failures else None,
         section=section,
     )
+    if constraint_failures:
+        constraint_detail = ", ".join(constraint_failures[:20]) + (" ..." if len(constraint_failures) > 20 else "")
+        constraint_msg = f"Issues: {constraint_detail}"
+    else:
+        constraint_msg = None
     report.add(
         not constraint_failures,
         "Task prompts mention constraint values",
-        f"Issues: {', '.join(constraint_failures[:20])}" + (" ..." if len(constraint_failures) > 20 else "") if constraint_failures else None,
+        constraint_msg,
         section=section,
     )
     for task_id, state in prompt_states.items():
@@ -1155,10 +1169,15 @@ async def _llm_validate_tasks(
             reason = "; ".join(str(issue) for issue in issues) if issues else "LLM flagged mismatch"
             failures.append((task.id, reason))
 
+    if failures:
+        failures_preview = ", ".join(f"{task_id}: {reason}" for task_id, reason in failures[:10])
+        failures_msg = f"Issues: {failures_preview}" + (" ..." if len(failures) > 10 else "")
+    else:
+        failures_msg = None
     report.add(
         not failures,
         "LLM validation of prompts",
-        f"Issues: {', '.join(f'{task_id}: {reason}' for task_id, reason in failures[:10])}" + (" ..." if len(failures) > 10 else "") if failures else None,
+        failures_msg,
         section=section,
     )
     for task_id, _ in failures:
@@ -1311,14 +1330,14 @@ def run_full_verification(
                     suffix = f" ... ({len(analysis.event_coverage.unused_events) - 5} more)" if len(analysis.event_coverage.unused_events) > 5 else ""
                     report.add(
                         False,
-                        "Event coverage must be 100%",
+                        EVENT_COVERAGE_MUST_BE_100,
                         f"Only {analysis.event_coverage.used_events}/{analysis.event_coverage.total_events} events used ({analysis.event_coverage.coverage_percent:.1f}%). Unused: {unused}{suffix}",
                         section=SECTION_PROCEDURAL,
                     )
                 else:
                     report.add(
                         True,
-                        "Event coverage is 100%",
+                        EVENT_COVERAGE_IS_100,
                         f"All {analysis.event_coverage.used_events}/{analysis.event_coverage.total_events} events are used",
                         section=SECTION_PROCEDURAL,
                     )
@@ -1341,7 +1360,7 @@ def run_full_verification(
 
         if enable_code_checks:
             print(f"  [{step_idx}/{total_steps}] Frontend reachability probe…")
-            frontend_ok, frontend_detail = asyncio.run(_check_frontend_health(getattr(web_project, "frontend_url", "")))
+            frontend_ok, frontend_detail = _check_frontend_health(getattr(web_project, "frontend_url", ""))
             report.add(
                 frontend_ok,
                 "Frontend health check",
@@ -1366,14 +1385,14 @@ def run_full_verification(
                         suffix = f" ... ({len(analysis.event_coverage.unused_events) - 5} more)" if len(analysis.event_coverage.unused_events) > 5 else ""
                         report.add(
                             False,
-                            "Event coverage must be 100%",
+                            EVENT_COVERAGE_MUST_BE_100,
                             f"Only {analysis.event_coverage.used_events}/{analysis.event_coverage.total_events} events used ({analysis.event_coverage.coverage_percent:.1f}%). Unused: {unused}{suffix}",
                             section=SECTION_PROCEDURAL,
                         )
                     else:
                         report.add(
                             True,
-                            "Event coverage is 100%",
+                            EVENT_COVERAGE_IS_100,
                             f"All {analysis.event_coverage.used_events}/{analysis.event_coverage.total_events} events are used",
                             section=SECTION_PROCEDURAL,
                         )
@@ -1400,15 +1419,15 @@ def run_full_verification(
             try:
                 tasks_for_checks = asyncio.run(_generate_tasks_via_pipeline(web_project))
                 if tasks_for_checks:
-                    report.add(True, "Generate tasks via pipeline", section=SECTION_LLM_TASKS)
+                    report.add(True, GENERATE_TASKS_VIA_PIPELINE_LABEL, section=SECTION_LLM_TASKS)
                     print(f"    -> Generated {len(tasks_for_checks)} tasks via pipeline")
                 else:
                     generation_error = "Pipeline returned no tasks (LLM unavailable or misconfigured)"
-                    report.add(False, "Generate tasks via pipeline", generation_error, section=SECTION_LLM_TASKS)
+                    report.add(False, GENERATE_TASKS_VIA_PIPELINE_LABEL, generation_error, section=SECTION_LLM_TASKS)
                     print(f"    -> Failed: {generation_error}")
             except Exception as exc:
                 generation_error = str(exc)
-                report.add(False, "Generate tasks via pipeline", generation_error, section=SECTION_LLM_TASKS)
+                report.add(False, GENERATE_TASKS_VIA_PIPELINE_LABEL, generation_error, section=SECTION_LLM_TASKS)
                 print(f"    -> Failed: {generation_error}")
             if tasks_for_checks:
                 tasks_for_checks = _limit_tasks_per_use_case(tasks_for_checks, TASKS_PER_USE_CASE)
@@ -1483,14 +1502,14 @@ def run_full_verification(
                     suffix = f" ... ({len(analysis.event_coverage.unused_events) - 5} more)" if len(analysis.event_coverage.unused_events) > 5 else ""
                     report.add(
                         False,
-                        "Event coverage must be 100%",
+                        EVENT_COVERAGE_MUST_BE_100,
                         f"Only {analysis.event_coverage.used_events}/{analysis.event_coverage.total_events} events used ({analysis.event_coverage.coverage_percent:.1f}%). Unused: {unused}{suffix}",
                         section=SECTION_PROCEDURAL,
                     )
                 else:
                     report.add(
                         True,
-                        "Event coverage is 100%",
+                        EVENT_COVERAGE_IS_100,
                         f"All {analysis.event_coverage.used_events}/{analysis.event_coverage.total_events} events are used",
                         section=SECTION_PROCEDURAL,
                     )
@@ -1706,42 +1725,42 @@ def _run_node_tests(frontend_dir: Path | None, report: ProjectReport) -> None:
                 error_summary = output[-500:] if len(output) > 500 else output
                 report.add(
                     False,
-                    "Node.js dynamic system test",
+                    NODEJS_DYNAMIC_SYSTEM_TEST_LABEL,
                     f"test-dynamic-system.js failed. Output: {error_summary[:300]}...",
                     section=SECTION_PROCEDURAL,
                 )
             else:
                 report.add(
                     True,
-                    "Node.js dynamic system test",
+                    NODEJS_DYNAMIC_SYSTEM_TEST_LABEL,
                     "test-dynamic-system.js passed",
                     section=SECTION_PROCEDURAL,
                 )
         except subprocess.TimeoutExpired:
             report.add(
                 False,
-                "Node.js dynamic system test",
+                NODEJS_DYNAMIC_SYSTEM_TEST_LABEL,
                 "test-dynamic-system.js timed out after 60 seconds",
                 section=SECTION_PROCEDURAL,
             )
         except FileNotFoundError:
             report.add(
                 False,
-                "Node.js dynamic system test",
+                NODEJS_DYNAMIC_SYSTEM_TEST_LABEL,
                 "Node.js not found in PATH. Cannot run test-dynamic-system.js",
                 section=SECTION_PROCEDURAL,
             )
         except Exception as exc:
             report.add(
                 False,
-                "Node.js dynamic system test",
+                NODEJS_DYNAMIC_SYSTEM_TEST_LABEL,
                 f"Error running test-dynamic-system.js: {exc}",
                 section=SECTION_PROCEDURAL,
             )
     else:
         report.add(
             False,
-            "Node.js dynamic system test exists",
+            f"{NODEJS_DYNAMIC_SYSTEM_TEST_LABEL} exists",
             f"test-dynamic-system.js not found in {tests_dir}",
             section=SECTION_PROCEDURAL,
         )
@@ -1766,42 +1785,42 @@ def _run_node_tests(frontend_dir: Path | None, report: ProjectReport) -> None:
                 error_summary = output[-300:] if len(output) > 300 else output
                 report.add(
                     False,
-                    "Node.js event coverage test",
+                    NODEJS_EVENT_COVERAGE_TEST_LABEL,
                     f"test-events.js failed. Output: {error_summary[:200]}...",
                     section=SECTION_PROCEDURAL,
                 )
             else:
                 report.add(
                     True,
-                    "Node.js event coverage test",
+                    NODEJS_EVENT_COVERAGE_TEST_LABEL,
                     "test-events.js passed (100% coverage)",
                     section=SECTION_PROCEDURAL,
                 )
         except subprocess.TimeoutExpired:
             report.add(
                 False,
-                "Node.js event coverage test",
+                NODEJS_EVENT_COVERAGE_TEST_LABEL,
                 "test-events.js timed out after 30 seconds",
                 section=SECTION_PROCEDURAL,
             )
         except FileNotFoundError:
             report.add(
                 False,
-                "Node.js event coverage test",
+                NODEJS_EVENT_COVERAGE_TEST_LABEL,
                 "Node.js not found in PATH. Cannot run test-events.js",
                 section=SECTION_PROCEDURAL,
             )
         except Exception as exc:
             report.add(
                 False,
-                "Node.js event coverage test",
+                NODEJS_EVENT_COVERAGE_TEST_LABEL,
                 f"Error running test-events.js: {exc}",
                 section=SECTION_PROCEDURAL,
             )
     else:
         report.add(
             False,
-            "Node.js event coverage test exists",
+            f"{NODEJS_EVENT_COVERAGE_TEST_LABEL} exists",
             f"test-events.js not found in {tests_dir}",
             section=SECTION_PROCEDURAL,
         )
@@ -1951,7 +1970,7 @@ def _write_codex_report(
         section = report.sections.get(section_key)
         lines.append(f"### {title}")
         if not section:
-            lines.append("- ⚪ Not run")
+            lines.append(NOT_RUN_LABEL)
             next_steps.append(f"- IWA / {title}: Section not run")
             continue
         lines.append(f"- `Overall`: {'✅ PASS' if section.ok else '❌ FAIL'}")
@@ -1974,18 +1993,18 @@ def _write_codex_report(
 
     lines.append("### Source Discovery")
     if not run_code_checks:
-        lines.append("- `Frontend directory`: ⚪ Not run (code checks disabled)")
+        lines.append("- `Frontend directory`: " + NOT_RUN_CODE_CHECKS_DISABLED.replace("- ", "", 1))
         lines.extend(
             [
                 "",
                 "### Event Emissions",
-                "- ⚪ Not run (code checks disabled)",
+                NOT_RUN_CODE_CHECKS_DISABLED,
                 "",
                 "### Dynamic Layers (D1-D3)",
-                "- ⚪ Not run (code checks disabled)",
+                NOT_RUN_CODE_CHECKS_DISABLED,
                 "",
                 "### Screenshots",
-                "- ⚪ Not run (code checks disabled)",
+                NOT_RUN_CODE_CHECKS_DISABLED,
             ]
         )
     else:
@@ -2012,7 +2031,7 @@ def _write_codex_report(
         if codex_lines:
             lines.extend(codex_lines)
         else:
-            lines.append("- ⚪ Not run")
+            lines.append(NOT_RUN_LABEL)
 
         lines.append("")
         lines.append("### Event Emissions")
@@ -2039,7 +2058,7 @@ def _write_codex_report(
                 if not layer.passed:
                     next_steps.append(f"- Web Project / {layer.title}: {layer.evidence or 'Implement missing dynamic layer'}")
         else:
-            lines.append("- ⚪ Not run")
+            lines.append(NOT_RUN_LABEL)
 
         lines.append("")
         lines.append("### Screenshots")
