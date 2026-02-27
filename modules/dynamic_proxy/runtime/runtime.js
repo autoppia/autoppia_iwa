@@ -1,6 +1,6 @@
 (function () {
-  const G = (window.__DYN_CONFIG__ ||= {
-    seed: (new URL(location.href).searchParams.get("seed") | 0) % 10000,
+  const G = (globalThis.__DYN_CONFIG__ ||= {
+    seed: Math.trunc(Number(new URL(location.href).searchParams.get("seed") || 0)) % 10000,
     levels: { D1: true, D3: true, D4: true },
     siteKey: location.host,
   });
@@ -49,7 +49,7 @@
   ];
 
   let SITE = null;
-  let rngSeed = (G.seed | 0) + 1;
+  let rngSeed = Math.trunc(Number(G.seed)) + 1;
   const rand = () => {
     rngSeed = (rngSeed ^ (rngSeed << 13)) >>> 0;
     rngSeed = (rngSeed ^ (rngSeed >>> 17)) >>> 0;
@@ -58,10 +58,13 @@
   };
 
   const hash36 = (str, seed) => {
-    let h = 2166136261 ^ (seed | 0);
-    for (let i = 0; i < str.length; i++) {
-      h ^= str.charCodeAt(i);
+    let h = 2166136261 ^ Math.trunc(Number(seed));
+    let i = 0;
+    while (i < str.length) {
+      const code = str.codePointAt(i) ?? 0;
+      h ^= code;
       h = Math.imul(h, 16777619);
+      i += code > 0xffff ? 2 : 1;
     }
     return (h >>> 0).toString(36);
   };
@@ -87,7 +90,7 @@
       if (inIgnore(el, conf.ignore)) return;
       if (rand() < conf.d1.wrapProbability && !el.closest("[data-dyn-wrapper]")) {
         const wrapper = document.createElement("div");
-        wrapper.setAttribute("data-dyn-wrapper", "");
+        wrapper.dataset.dynWrapper = "";
         wrapper.setAttribute("aria-hidden", "true");
         wrapper.style.pointerEvents = "none";
         wrapper.style.display = "contents";
@@ -102,8 +105,8 @@
         if (inIgnore(container, conf.ignore)) return;
         const kids = Array.from(container.children).filter((child) => !inIgnore(child, conf.ignore));
         if (kids.length > 3 && rand() < 0.2) {
-          const i = (kids.length * rand()) | 0;
-          const j = (kids.length * rand()) | 0;
+          const i = Math.trunc(kids.length * rand());
+          const j = Math.trunc(kids.length * rand());
           if (i !== j && !isInteractive(kids[i]) && !isInteractive(kids[j])) {
             container.insertBefore(kids[i], kids[j]);
           }
@@ -117,7 +120,7 @@
         if (inIgnore(target, conf.ignore)) return;
         if (rand() < conf.d1.spacerProbability) {
           const spacer = document.createElement("div");
-          spacer.setAttribute("data-dyn-spacer", "");
+          spacer.dataset.dynSpacer = "";
           spacer.setAttribute("aria-hidden", "true");
           spacer.style.height = `${Math.floor(rand() * 8) + 2}px`;
           spacer.style.pointerEvents = "none";
@@ -166,7 +169,7 @@
         return match;
       }
     }
-    const hash = parseInt(hash36(`${G.siteKey}:${G.seed}:overlay`, G.seed).slice(-5), 36) || 0;
+    const hash = Number.parseInt(hash36(`${G.siteKey}:${G.seed}:overlay`, G.seed).slice(-5), 36) || 0;
     const def = OVERLAYS[hash % OVERLAYS.length];
     overlayState.currentId = def.id;
     return def;
@@ -180,7 +183,7 @@
     node.dataset.dynOverlayId = def.id;
     node.dataset.dynOverlaySeed = String(G.seed);
     node.style.zIndex = "2147483647";
-    node.style.position = node.classList.contains("dyn-banner") ? "fixed" : node.style.position || "fixed";
+    node.style.position = node.classList?.contains("dyn-banner") ? "fixed" : node.style.position || "fixed";
     (document.body || document.documentElement).appendChild(node);
     const dismiss = node.querySelector("[data-dyn-dismiss]");
     if (dismiss) {
@@ -198,7 +201,7 @@
 
   function ensureOverlay() {
     if (!G.levels?.D4) return;
-    if (overlayState.node && document.body && document.body.contains(overlayState.node)) {
+    if (overlayState.node && document.body?.contains(overlayState.node)) {
       return;
     }
     const def = selectOverlay();
@@ -218,24 +221,20 @@
 
   async function maybeLoadSiteConfig() {
     try {
-      // const res = await fetch("/dynamic/config.json", { cache: "no-store" });
-      // if (res.ok) {
-      //   const json = await res.json();
-      //   SITE = json[G.siteKey] || null;
-      // }
-    } catch (_) {
-      // swallow
+      // Config fetch disabled; use defaults (SITE stays null)
+    } catch (error_) {
+      if (globalThis.__DYN_DEBUG__ !== undefined) globalThis.console.debug(error_);
     }
   }
 
   function updateDynamicMap(conf) {
-    window.__DYNAMIC_MAP__ = {
+    globalThis.__DYNAMIC_MAP__ = {
       seed: G.seed,
       d1: { wrapProbability: conf.d1.wrapProbability },
       d3: { renameIds: conf.d3.renameIds, renameNames: conf.d3.renameNames },
       d4: {
         overlayId: overlayState.currentId,
-        present: Boolean(overlayState.node && document.body && document.body.contains(overlayState.node)),
+        present: Boolean(overlayState.node && document.body?.contains(overlayState.node)),
       },
     };
   }
@@ -270,5 +269,5 @@
   };
 
   if (document.readyState === "complete") run();
-  else window.addEventListener("load", run, { once: true });
+  else globalThis.addEventListener("load", run, { once: true });
 })();
