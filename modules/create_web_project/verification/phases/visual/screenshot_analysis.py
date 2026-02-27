@@ -74,13 +74,13 @@ async def _llm_summary_async(llm_service, metadata: dict[str, Any]) -> str:
 
 def summarize_screenshots(
     screenshot_dir: Path,
-    project_id: str,
+    _project_id: str,  # reserved for future use; API consistency with callers
     llm_service: Any | None,
 ) -> list[dict[str, str | float]]:
     if not screenshot_dir.exists():
         return []
     reviews: list[dict[str, str | float]] = []
-    files = sorted(p for p in screenshot_dir.glob("*.png"))
+    files = sorted(screenshot_dir.glob("*.png"))
     for path in files:
         metrics = _compute_metrics(path)
         route_hint = path.stem.split("_", 1)[1] if "_" in path.stem else path.stem
