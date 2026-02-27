@@ -24,14 +24,7 @@ def log_action(action_name: str):
         @wraps(func)
         async def wrapper(self, page: Page | None, backend_service, web_agent_id: str):
             action_logger.debug(f"Executing {action_name} with data: {self.model_dump()}")
-            try:
-                return await func(self, page, backend_service, web_agent_id)
-            except (PlaywrightError, ValueError, TypeError, AssertionError) as e:  # NOSONAR - Re-raise to preserve exception context
-                # error_details = traceback.format_exc()
-                # action_logger.error(f"{action_name} failed: {e}\n\n Traceback: {error_details}")
-                # action_logger.error(f"{action_name} failed: {e}")
-                # Re-raise exception to preserve stack trace and exception context
-                raise e
+            return await func(self, page, backend_service, web_agent_id)
 
         return wrapper
 
