@@ -710,11 +710,11 @@ function generateReport(allResults) {
   const allErrors = allResults.flatMap(r => r.errors || []);
 
   // Get stats from TEST 5 (real usage)
-  const usageTest = allResults.find(r => r.stats && r.stats.v1AddWrapDecoy !== undefined);
+  const usageTest = allResults.find(r => r.stats?.v1AddWrapDecoy !== undefined);
   const usageStats = usageTest?.stats ?? {};
 
   // Get stats from TEST 6 (event coverage)
-  const eventTest = allResults.find(r => r.stats && r.stats.totalEvents !== undefined);
+  const eventTest = allResults.find(r => r.stats?.totalEvents !== undefined);
   const eventStats = eventTest?.stats ?? {};
 
   console.log(`\n✅ Tests pasados: ${totalPassed}`);
