@@ -61,7 +61,7 @@ def pascal_case(value: str) -> str:
 
 def normalize_field_name(value: str) -> str:
     candidate = snake_case(value)
-    candidate = re.sub(r"^[0-9]+", "", candidate)
+    candidate = re.sub(r"^\d+", "", candidate)
     return candidate or value
 
 
