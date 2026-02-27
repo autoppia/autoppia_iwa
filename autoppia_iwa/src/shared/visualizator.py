@@ -158,7 +158,7 @@ class SubnetVisualizer:
 
                     # Get detailed test description
                     test_type = type(test).__name__
-                    description, attributes = self._get_detailed_test_description_and_attributes(test)
+                    description, _ = self._get_detailed_test_description_and_attributes(test)
 
                     # Format the result
                     result_text = "✅ PASS" if test_passed else "❌ FAIL"
@@ -180,7 +180,13 @@ class SubnetVisualizer:
             scores_table.add_column("Type", style="yellow", justify="right", width=25)
             scores_table.add_column("Value", style="cyan", width=10)
 
-            final_score = evaluation_result.get("final_score", 0.0) if isinstance(evaluation_result, dict) else evaluation_result.final_score if hasattr(evaluation_result, "final_score") else 0.0
+            # Extract nested conditional expression
+            if isinstance(evaluation_result, dict):
+                final_score = evaluation_result.get("final_score", 0.0)
+            elif hasattr(evaluation_result, "final_score"):
+                final_score = evaluation_result.final_score
+            else:
+                final_score = 0.0
 
             # Only show final score
             scores_table.add_row("Score:", Text(f"{final_score:.4f}", style="bold green" if final_score > 0.5 else "bold red"))
@@ -274,7 +280,14 @@ class SubnetVisualizer:
                 description = f"Check navigation to URL: '{test.expected_url}'"
             elif hasattr(test, "url_pattern"):
                 description = f"Check URL pattern: '{test.url_pattern}'"
-            attributes["url"] = test.url if hasattr(test, "url") else test.expected_url if hasattr(test, "expected_url") else test.url_pattern
+            # Extract nested conditional expression
+            if hasattr(test, "url"):
+                url_value = test.url
+            elif hasattr(test, "expected_url"):
+                url_value = test.expected_url
+            else:
+                url_value = test.url_pattern if hasattr(test, "url_pattern") else ""
+            attributes["url"] = url_value
 
         if test_type == "FindInHtmlTest":
             # For URL tests, show the expected URL or path
@@ -292,7 +305,14 @@ class SubnetVisualizer:
                 description = f"Success criteria: '{criteria}'"
             elif hasattr(test, "query"):
                 description = f"Query: '{test.query}'"
-            attributes["success_criteria"] = test.success_criteria if hasattr(test, "success_criteria") else test.query if hasattr(test, "query") else ""
+            # Extract nested conditional expression
+            if hasattr(test, "success_criteria"):
+                success_criteria_value = test.success_criteria
+            elif hasattr(test, "query"):
+                success_criteria_value = test.query
+            else:
+                success_criteria_value = ""
+            attributes["success_criteria"] = success_criteria_value
         elif "Event" in test_type or test_type == "CheckEventTest":
             # For event tests, show the event name
             if hasattr(test, "event_name"):
@@ -440,7 +460,6 @@ def visualize_summary(visualizer):
         def wrapper(results, agents, *args, **kwargs):
             func(results, agents, *args, **kwargs)
             visualizer.print_summary(results, agents)
-            return None
 
         return wrapper
 
@@ -502,9 +521,9 @@ def test_visualization():
     evaluation_result = EvaluationResult()
 
     # Call the visualization function
-    visualizer.show_full_evaluation(
-        agent_id=agent_id, validator_id="test", task=task, actions=actions, test_results=test_results_matrix[0] if test_results_matrix else [], evaluation_result=evaluation_result
-    )
+    # test_results_matrix is guaranteed to have at least one element here
+    test_results = test_results_matrix[0]
+    visualizer.show_full_evaluation(agent_id=agent_id, validator_id="test", task=task, actions=actions, test_results=test_results, evaluation_result=evaluation_result)
 
 
 def test_multiple_evaluations():
@@ -534,11 +553,6 @@ def test_multiple_evaluations():
         def model_dump(self):
             return {"type": self.type, "x": self.x, "y": self.y, "selector": self.selector}
 
-    class TestResult:
-        def __init__(self, success, message):
-            self.success = success
-            self.message = message
-
     class EvaluationResult:
         def __init__(self, raw_score=0.0, final_score=0.0):
             self.raw_score = raw_score
@@ -562,7 +576,8 @@ def test_multiple_evaluations():
     ]
 
     # Call the visualization function
-    visualizer.show_list_of_evaluations(task=task, task_solutions=task_solutions, validator_id="test-validator")
+    evaluation_results = [sol.evaluation_result for sol in task_solutions]
+    visualizer.show_list_of_evaluations(task=task, task_solutions=task_solutions, evaluation_results=evaluation_results, validator_id="test-validator")
 
 
 if __name__ == "__main__":
