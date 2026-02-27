@@ -53,7 +53,7 @@ export function getVariant(
     if (fallback !== undefined) {
       return fallback;
     }
-    if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
+    if (globalThis.window && process.env.NODE_ENV === "development") {
       console.warn(
         `[variant-selector] No variants found for "${key}", using fallback: "${key}"`
       );
