@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { EVENT_TYPES, logEvent } from "@/library/events";
 
 export default function ContactPage() {
-  const { seed, resolvedSeeds } = useSeed();
+  const { seed } = useSeed();
   const dyn = useDynamicSystem();
   const searchParams = useSearchParams();
   const hasSeedParam = Boolean(searchParams?.get("seed"));
@@ -113,9 +113,9 @@ export default function ContactPage() {
               to help!
             </p>
             <div className="space-y-4">
-              {contactInfo.map((info, index) => (
+              {contactInfo.map((info) => (
                 <a
-                  key={index}
+                  key={info.title}
                   href={info.link}
                   className="flex items-start gap-4 p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md hover:border-[#46a758] transition-all duration-300 group cursor-default"
                   onClick={() =>
