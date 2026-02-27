@@ -10,12 +10,16 @@ NVM_INSTALL_SCRIPT="https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install
 
 
 log_message() {
-  echo ">>> $1"
+  msg="$1"
+  echo ">>> $msg"
+  return 0
 }
 
 error_exit() {
-  echo "!!! ERROR: $1" >&2
+  msg="$1"
+  echo "!!! ERROR: $msg" >&2
   exit 1
+  return 1
 }
 
 # --- Pre-flight Checks ---
