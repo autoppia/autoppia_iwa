@@ -24,9 +24,6 @@ class OpenAIService(ILLM):
 
     def __init__(self, config: LLMConfig, api_key: str):
         self.config = config
-        # Both OpenAI and AsyncOpenAI are set together in the import block, so checking one is sufficient
-        if OpenAI is None:  # pragma: no cover
-            raise RuntimeError("openai package is required for OpenAIService but is not installed.")
         self.sync_client = OpenAI(api_key=api_key)
         self.async_client = AsyncOpenAI(api_key=api_key)
 
