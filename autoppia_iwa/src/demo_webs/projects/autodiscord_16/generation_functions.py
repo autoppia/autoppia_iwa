@@ -14,6 +14,7 @@ from .data import (
     FIELD_OPERATORS_MAP_SEND_MESSAGE,
     FIELD_OPERATORS_MAP_SERVER,
     FIELD_OPERATORS_MAP_SETTINGS_ACCOUNT,
+    FIELD_OPERATORS_MAP_SETTINGS_NOTIFICATIONS,
     FIELD_OPERATORS_MAP_VOICE_MUTE,
 )
 
@@ -254,6 +255,11 @@ def generate_settings_appearance_constraints() -> list[dict[str, Any]]:
     themes = ["dark", "light"]
     op = ComparisonOperator.EQUALS
     return [create_constraint_dict("theme", op, random.choice(themes))]
+
+
+def generate_settings_notifications_constraints() -> list[dict[str, Any]]:
+    op = ComparisonOperator(random.choice(FIELD_OPERATORS_MAP_SETTINGS_NOTIFICATIONS["enabled"]))
+    return [create_constraint_dict("enabled", op, random.choice([True, False]))]
 
 
 def generate_settings_account_constraints() -> list[dict[str, Any]]:

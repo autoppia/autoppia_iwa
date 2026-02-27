@@ -39,6 +39,7 @@ from .generation_functions import (
     generate_send_message_constraints,
     generate_settings_account_constraints,
     generate_settings_appearance_constraints,
+    generate_settings_notifications_constraints,
     generate_voice_mute_toggle_constraints,
 )
 
@@ -203,9 +204,13 @@ SETTINGS_NOTIFICATIONS_USE_CASE = UseCase(
     description="The user toggles notifications in Settings.",
     event=SettingsNotificationsEvent,
     event_source_code=SettingsNotificationsEvent.get_source_code_of_class(),
-    constraints_generator=False,
+    constraints_generator=generate_settings_notifications_constraints,
     examples=[
-        {"prompt": "Toggle notifications in Settings.", "prompt_for_task_generation": "Toggle notifications in Settings."},
+        {"prompt": "In Settings, set notifications so that enabled equals true.", "prompt_for_task_generation": "In Settings, set notifications so that enabled equals true."},
+        {"prompt": "Toggle notifications so that enabled equals false.", "prompt_for_task_generation": "Toggle notifications so that enabled equals false."},
+        {"prompt": "In Settings, set enabled not_equals false.", "prompt_for_task_generation": "In Settings, set enabled not_equals false."},
+        {"prompt": "Turn on notifications in Settings (enabled equals true).", "prompt_for_task_generation": "Turn on notifications in Settings (enabled equals true)."},
+        {"prompt": "Turn off notifications (enabled equals false).", "prompt_for_task_generation": "Turn off notifications (enabled equals false)."},
     ],
 )
 

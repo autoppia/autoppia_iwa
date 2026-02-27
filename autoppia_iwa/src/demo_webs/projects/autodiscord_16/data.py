@@ -39,6 +39,8 @@ FIELD_OPERATORS_MAP_DM = {
 # Settings
 FIELD_OPERATORS_MAP_SETTINGS_APPEARANCE = {"theme": STRING_OPERATORS}
 FIELD_OPERATORS_MAP_SETTINGS_ACCOUNT = {"name": STRING_OPERATORS}
+# Settings notifications (enabled is bool — equality only)
+FIELD_OPERATORS_MAP_SETTINGS_NOTIFICATIONS = {"enabled": [EQUALS, NOT_EQUALS]}
 
 # Create server (only server_name)
 FIELD_OPERATORS_MAP_CREATE_SERVER = {"server_name": STRING_OPERATORS}
