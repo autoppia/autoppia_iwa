@@ -68,7 +68,7 @@ class EvaluationClient:
         if self._client:
             await self._client.aclose()
 
-    async def _get_client(self) -> httpx.AsyncClient:
+    def _get_client(self) -> httpx.AsyncClient:
         """Get or create HTTP client"""
         if self._client is None:
             self._client = httpx.AsyncClient(timeout=self.timeout)
@@ -88,7 +88,7 @@ class EvaluationClient:
             True if service is healthy, False otherwise
         """
         try:
-            client = await self._get_client()
+            client = self._get_client()
             response = await client.get(f"{self.base_url}/health")
             if response.status_code == 200:
                 logger.debug(f"Health check passed: {response.json()}")
@@ -98,7 +98,7 @@ class EvaluationClient:
         except httpx.ConnectError:
             logger.error(f"Cannot connect to evaluation service at {self.base_url}. Is it running?")
             return False
-        except Exception as e:
+        except (httpx.TimeoutException, httpx.RequestError, ValueError) as e:
             logger.error(f"Health check failed: {e}")
             return False
 
@@ -125,7 +125,7 @@ class EvaluationClient:
             httpx.HTTPError: If the request fails
         """
         try:
-            client = await self._get_client()
+            client = self._get_client()
 
             # Prepare request payload
             payload = {
@@ -156,10 +156,10 @@ class EvaluationClient:
         except httpx.HTTPStatusError as e:
             logger.error(f"Evaluation failed with status {e.response.status_code}: {e.response.text}")
             raise
-        except httpx.HTTPError as e:
+        except httpx.RequestError as e:
             logger.error(f"Evaluation request failed: {e}")
             raise
-        except Exception as e:
+        except (ValueError, KeyError) as e:
             logger.error(f"Unexpected error during evaluation: {e}")
             raise
 
@@ -176,7 +176,7 @@ class EvaluationClient:
             EvaluationResult with success status and detailed metrics
         """
         try:
-            client = await self._get_client()
+            client = self._get_client()
             response = await client.post(f"{self.base_url}/evaluate", json=payload)
             response.raise_for_status()
             result_data = response.json()
@@ -184,8 +184,17 @@ class EvaluationClient:
         except httpx.ConnectError:
             logger.error(f"Cannot connect to evaluation service at {self.base_url}. Is it running?")
             raise
-        except httpx.HTTPError as e:
+        except httpx.TimeoutException:
+            logger.error(f"Evaluation request timed out after {self.timeout}s")
+            raise
+        except httpx.HTTPStatusError as e:
+            logger.error(f"Evaluation failed with status {e.response.status_code}: {e.response.text}")
+            raise
+        except httpx.RequestError as e:
             logger.error(f"Evaluation request failed: {e}")
+            raise
+        except (ValueError, KeyError) as e:
+            logger.error(f"Unexpected error during evaluation: {e}")
             raise
 
 
