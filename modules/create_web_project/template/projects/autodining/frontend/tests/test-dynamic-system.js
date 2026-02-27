@@ -108,9 +108,8 @@ function getAllSourceFiles() {
         } else if ((file.endsWith('.tsx') || file.endsWith('.ts')) && !file.includes('test-dynamic-system')) {
           fileList.push(filePath);
         }
-      } catch (_err) {
+      } catch {
         // Skip files we can't read (permission, symlink, etc.)
-        void _err;
       }
     });
     return fileList;
@@ -624,7 +623,7 @@ function testEventCoverage() {
     const pattern2 = new RegExp(String.raw`logEvent\([^)]*EVENT_TYPES\['${key}'\]\s*[^)]*\)`, 'g');
     const pattern3 = new RegExp(String.raw`EVENT_TYPES\.${key}`, 'g');
     const pattern4 = new RegExp(String.raw`EVENT_TYPES\['${key}'\]`, 'g');
-    const safeValue = value.replaceAll(new RegExp(String.raw`[\^$*+?.()|[\]{}]`, 'g'), String.raw`\$&`);
+    const safeValue = value.replaceAll(/[\^$*+?.()|[\]{}]/g, String.raw`\$&`);
     const pattern5 = new RegExp(`["']${safeValue}["']`, 'g'); // Direct string usage
 
     let usageCount = 0;
@@ -712,11 +711,11 @@ function generateReport(allResults) {
 
   // Get stats from TEST 5 (real usage)
   const usageTest = allResults.find(r => r.stats && r.stats.v1AddWrapDecoy !== undefined);
-  const usageStats = usageTest ? usageTest.stats : {};
+  const usageStats = usageTest?.stats ?? {};
 
   // Get stats from TEST 6 (event coverage)
   const eventTest = allResults.find(r => r.stats && r.stats.totalEvents !== undefined);
-  const eventStats = eventTest ? eventTest.stats : {};
+  const eventStats = eventTest?.stats ?? {};
 
   console.log(`\n✅ Tests pasados: ${totalPassed}`);
   console.log(`❌ Tests fallidos: ${totalFailed}`);
