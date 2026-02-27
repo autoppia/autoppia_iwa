@@ -38,32 +38,50 @@ const FILE_PATHS = {
 };
 
 // ============================================================================
-// UTILITIES
+// UTILITIES (shared by determinism and seed-variation tests)
 // ============================================================================
 
+function hashString(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const code = str.codePointAt(i) ?? 0;
+    hash = ((hash << 5) - hash) + code;
+    hash = hash & hash;
+    if (code > 0xFFFF) i++;
+  }
+  return Math.abs(hash);
+}
+
+function selectVariantIndex(seed, key, count) {
+  if (count <= 1) return 0;
+  const combined = `${key}:${seed}`;
+  const hash = hashString(combined);
+  return Math.abs(hash) % count;
+}
+
 function isBrowser() {
-  return typeof window !== 'undefined';
+  return typeof globalThis.window !== 'undefined';
 }
 
 function loadJSON(path) {
   if (isBrowser()) {
     throw new Error('En navegador, los JSONs deben cargarse vía fetch');
   }
-  const fs = require('fs');
-  const pathModule = require('path');
+  const fs = require('node:fs');
+  const pathModule = require('node:path');
   return JSON.parse(fs.readFileSync(pathModule.join(process.cwd(), path), 'utf8'));
 }
 
 function fileExists(path) {
   if (isBrowser()) return false;
-  const fs = require('fs');
-  const pathModule = require('path');
+  const fs = require('node:fs');
+  const pathModule = require('node:path');
   return fs.existsSync(pathModule.join(process.cwd(), path));
 }
 
 function readFileContent(filePath) {
   if (isBrowser()) return '';
-  const fs = require('fs');
+  const fs = require('node:fs');
   try {
     return fs.readFileSync(filePath, 'utf8');
   } catch {
@@ -73,8 +91,8 @@ function readFileContent(filePath) {
 
 function getAllSourceFiles() {
   if (isBrowser()) return [];
-  const fs = require('fs');
-  const pathModule = require('path');
+  const fs = require('node:fs');
+  const pathModule = require('node:path');
   const srcDir = pathModule.join(process.cwd(), 'src');
 
   function walkDir(dir, fileList = []) {
@@ -89,8 +107,9 @@ function getAllSourceFiles() {
         } else if ((file.endsWith('.tsx') || file.endsWith('.ts')) && !file.includes('test-dynamic-system')) {
           fileList.push(filePath);
         }
-      } catch (err) {
-        // Skip files we can't read
+      } catch (_err) {
+        // Skip files we can't read (permission, symlink, etc.)
+        void _err;
       }
     });
     return fileList;
@@ -230,24 +249,6 @@ function testDeterminism() {
 
   const results = { passed: 0, failed: 0, errors: [] };
 
-  // Hash function (must match the code)
-  function hashString(str) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash;
-    }
-    return Math.abs(hash);
-  }
-
-  function selectVariantIndex(seed, key, count) {
-    if (count <= 1) return 0;
-    const combined = `${key}:${seed}`;
-    const hash = hashString(combined);
-    return Math.abs(hash) % count;
-  }
-
   // Test cases
   const testCases = [
     { seed: 42, key: 'movie-card', count: 10 },
@@ -282,24 +283,6 @@ function testSeedVariation() {
   console.log('─'.repeat(60));
 
   const results = { passed: 0, failed: 0, errors: [], stats: {} };
-
-  // Hash function (must match the code)
-  function hashString(str) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash;
-    }
-    return Math.abs(hash);
-  }
-
-  function selectVariantIndex(seed, key, count) {
-    if (count <= 1) return 0;
-    const combined = `${key}:${seed}`;
-    const hash = hashString(combined);
-    return Math.abs(hash) % count;
-  }
 
   // Test with multiple seeds and keys
   const testSeeds = [1, 2, 3, 5, 10, 25, 50, 100, 250, 500, 999];
@@ -613,7 +596,7 @@ function testEventCoverage() {
     const eventKey = match[1];
     const eventValue = match[2];
     // Only add if not already in the list
-    if (!eventNames.find(e => e.key === eventKey)) {
+    if (!eventNames.some(e => e.key === eventKey)) {
       eventNames.push({ key: eventKey, value: eventValue });
     }
   }
@@ -635,11 +618,12 @@ function testEventCoverage() {
   eventNames.forEach(({ key, value }) => {
     // Look for: logEvent(EVENT_TYPES.KEY, ...) or logEvent(EVENT_TYPES['KEY'], ...)
     // Also look for: EVENT_TYPES.KEY or EVENT_TYPES['KEY'] (direct reference)
-    const pattern1 = new RegExp(`logEvent\\([^)]*EVENT_TYPES\\.${key}[^)]*\\)`, 'g');
-    const pattern2 = new RegExp(`logEvent\\([^)]*EVENT_TYPES\\['${key}'\\][^)]*\\)`, 'g');
-    const pattern3 = new RegExp(`EVENT_TYPES\\.${key}`, 'g');
-    const pattern4 = new RegExp(`EVENT_TYPES\\['${key}'\\]`, 'g');
-    const pattern5 = new RegExp(`["']${value}["']`, 'g'); // Direct string usage
+    const pattern1 = new RegExp(String.raw`logEvent\([^)]*EVENT_TYPES\.${key}[^)]*\)`, 'g');
+    const pattern2 = new RegExp(String.raw`logEvent\([^)]*EVENT_TYPES\['${key}'\]\s*[^)]*\)`, 'g');
+    const pattern3 = new RegExp(String.raw`EVENT_TYPES\.${key}`, 'g');
+    const pattern4 = new RegExp(String.raw`EVENT_TYPES\['${key}'\]`, 'g');
+    const safeValue = value.replace(/[\\^$*+?.()|[\]{}]/g, '\\$&');
+    const pattern5 = new RegExp(`["']${safeValue}["']`, 'g'); // Direct string usage
 
     let usageCount = 0;
     sourceFiles.forEach(file => {
@@ -662,10 +646,10 @@ function testEventCoverage() {
       }
       // For pattern5, be more careful - only count if it's in a logEvent call context
       if (matches5) {
-        // Check if it's in a logEvent call
-        const logEventContext = content.match(new RegExp(`logEvent\\([^)]*["']${value}["'][^)]*\\)`, 'g'));
-        if (logEventContext) {
-          usageCount += logEventContext.length;
+        const logEventRe = new RegExp(String.raw`logEvent\([^)]*["']${safeValue}["'][^)]*\)`, 'g');
+        let logMatch;
+        while ((logMatch = logEventRe.exec(content)) !== null) {
+          usageCount += 1;
         }
       }
     });
@@ -763,7 +747,7 @@ function generateReport(allResults) {
     console.log('─'.repeat(60));
     console.log(`   🔹 Total de eventos definidos: ${eventStats.totalEvents}`);
     console.log(`   🔹 Eventos en uso: ${eventStats.usedEvents}`);
-    console.log(`   🔹 Eventos sin uso: ${eventStats.unusedEvents ? eventStats.unusedEvents.length : 0}`);
+    console.log(`   🔹 Eventos sin uso: ${eventStats.unusedEvents?.length ?? 0}`);
     console.log(`   🔹 Cobertura: ${coveragePercent}%`);
     if (eventStats.unusedEvents && eventStats.unusedEvents.length > 0) {
       console.log(`   ⚠️  Eventos sin uso: ${eventStats.unusedEvents.slice(0, 3).join(', ')}${eventStats.unusedEvents.length > 3 ? '...' : ''}`);
@@ -837,7 +821,7 @@ function runAllTests() {
 // ============================================================================
 
 if (isBrowser()) {
-  window.testDynamicSystem = runAllTests;
+  globalThis.testDynamicSystem = runAllTests;
   console.log('💡 Ejecuta testDynamicSystem() en la consola para correr los tests');
 } else {
   const report = runAllTests();
