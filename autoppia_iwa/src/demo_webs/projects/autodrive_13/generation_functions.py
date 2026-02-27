@@ -42,12 +42,11 @@ async def _ensure_drive_dataset(
     *,
     entity_type: str,
     method: str | None = None,
-    filter_key: str | None = None,
 ) -> dict[str, list[dict[str, Any]]]:
     """
     Extract entity data from the cache dataset, or fetch from server if not available.
 
-    Dynamically fetches only the requested entity_type using the provided method and filter_key.
+    Dynamically fetches only the requested entity_type using the provided method.
     Returns a dictionary with entity_type as the key.
     """
     _ = dataset  # Unused parameter kept for backward compatibility
@@ -58,7 +57,6 @@ async def _ensure_drive_dataset(
     fetched_dataset = await fetch_data(
         entity_type=entity_type,
         method=method,
-        filter_key=filter_key,
         seed_value=seed,
     )
 
