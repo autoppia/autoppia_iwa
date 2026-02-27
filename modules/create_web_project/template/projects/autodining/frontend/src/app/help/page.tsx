@@ -16,7 +16,7 @@ interface FAQItem {
 }
 
 export default function HelpPage() {
-  const { seed, resolvedSeeds } = useSeed();
+  const { seed } = useSeed();
   const dyn = useDynamicSystem();
   const searchParams = useSearchParams();
   const hasSeedParam = Boolean(searchParams?.get("seed"));
@@ -184,12 +184,14 @@ export default function HelpPage() {
         {dyn.v1.addWrapDecoy("help-sections-grid", (
           <section className="mb-12" id={dyn.v3.getVariant("help-sections-grid", ID_VARIANTS_MAP, "help-sections-grid")}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {helpSections.map((section, index) => (
-                dyn.v1.addWrapDecoy(`help-section-${index}`, (
+              {helpSections.map((section, index) => {
+                const sectionVariantKeys = ["guides", "chat", "forum", "videos"];
+                const sectionVariantKey = sectionVariantKeys[index] ?? "videos";
+                return dyn.v1.addWrapDecoy(`help-section-${section.title}`, (
                   <a
-                    key={index}
+                    key={section.title}
                     href={section.link}
-                    id={dyn.v3.getVariant(`help-section-${index === 0 ? "guides" : index === 1 ? "chat" : index === 2 ? "forum" : "videos"}`, ID_VARIANTS_MAP, `help-section-${index}`)}
+                    id={dyn.v3.getVariant(`help-section-${sectionVariantKey}`, ID_VARIANTS_MAP, `help-section-${index}`)}
                     className={dyn.v3.getVariant("card", CLASS_VARIANTS_MAP, "bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow duration-300 hover:border-[#46a758] text-center cursor-default")}
                   >
                     <div className="text-[#46a758] mb-4 flex justify-center">{section.icon}</div>
@@ -200,8 +202,8 @@ export default function HelpPage() {
                       {section.description}
                     </p>
                   </a>
-                ), `help-section-wrap-${index}`)
-              ))}
+                ), `help-section-wrap-${index}`);
+              })}
             </div>
           </section>
         ), "help-sections-grid-wrap")}
@@ -246,7 +248,7 @@ export default function HelpPage() {
               {filteredFAQs.map((faq, index) => (
                 dyn.v1.addWrapDecoy(`faq-item-${index}`, (
                   <div
-                    key={index}
+                    key={`faq-${faq.category}-${faq.question}`}
                     id={dyn.v3.getVariant(`faq-item-${index}`, ID_VARIANTS_MAP, `faq-item-${index}`)}
                     className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow"
                   >
