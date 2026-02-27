@@ -79,8 +79,8 @@
     if (!site) return base;
     return {
       ignore: [...base.ignore, ...(site.ignore || [])],
-      d1: { ...base.d1, ...(site.d1 || {}) },
-      d3: { ...base.d3, ...(site.d3 || {}) },
+      d1: site.d1 ? { ...base.d1, ...site.d1 } : base.d1,
+      d3: site.d3 ? { ...base.d3, ...site.d3 } : base.d3,
     };
   }
 
