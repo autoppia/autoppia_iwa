@@ -15,7 +15,7 @@ export function isV1Enabled(): boolean {
   const enabled = value === "true";
 
   // Debug in development
-  if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
+  if (globalThis.window && process.env.NODE_ENV === "development") {
     if (!enabled) {
       console.warn("[dynamic] V1 está deshabilitado. Para habilitarlo, configura NEXT_PUBLIC_ENABLE_DYNAMIC_V1=true");
     }
@@ -34,7 +34,7 @@ export function isV3Enabled(): boolean {
   const enabled = value === "true";
 
   // Debug in development
-  if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
+  if (globalThis.window && process.env.NODE_ENV === "development") {
     if (!enabled) {
       console.warn("[dynamic] V3 está deshabilitado. Para habilitarlo, configura NEXT_PUBLIC_ENABLE_DYNAMIC_V3=true");
     }
