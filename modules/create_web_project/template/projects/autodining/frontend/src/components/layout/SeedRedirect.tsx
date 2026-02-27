@@ -27,7 +27,7 @@ export function SeedRedirect() {
 
   useEffect(() => {
     // Only run on client side
-    if (typeof window === "undefined") return;
+    if (globalThis.window === undefined) return;
 
     // Prevent multiple redirects
     if (hasRedirectedRef.current) return;
