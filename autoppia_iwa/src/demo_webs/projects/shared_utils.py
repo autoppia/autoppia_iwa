@@ -74,7 +74,7 @@ def generate_mock_dates():
         future_date = today + datetime.timedelta(days=i)
         mock_dates_raw.append(future_date.replace(hour=19, minute=0, second=0, microsecond=0))
 
-    return sorted(list(set(mock_dates_raw)))
+    return sorted(set(mock_dates_raw))
 
 
 def generate_mock_date_strings(dates: list):
@@ -85,7 +85,7 @@ def generate_mock_date_strings(dates: list):
     for d in dates:
         if isinstance(d, datetime.datetime | datetime.date):
             date_strings.append(d.strftime("%b %d"))
-    return sorted(list(set(date_strings)))
+    return sorted(set(date_strings))
 
 
 def parse_datetime(value: str | None) -> datetime.datetime | None:
@@ -135,7 +135,7 @@ def validate_date_field(field_value, criterion):
         if isinstance(val, str):
             try:
                 return datetime.fromisoformat(val).date() if "T" in val else date.fromisoformat(val)
-            except Exception:
+            except (ValueError, TypeError):
                 return None
         elif isinstance(val, datetime):
             return val.date()
@@ -154,7 +154,7 @@ def validate_date_field(field_value, criterion):
         except KeyError:
             logger.error("Unknown comparison operator for date field: %s", op)
             return False
-        except Exception as e:
+        except (TypeError, ValueError) as e:
             logger.error(f"Error validating date field: {e}")
             return False
     elif isinstance(criterion, datetime) and isinstance(field_value, datetime):
@@ -195,7 +195,7 @@ def validate_time_field(field_value, criterion):
             try:
                 # Accepts "HH:MM[:SS[.ffffff]]"
                 return time.fromisoformat(val)
-            except Exception:
+            except (ValueError, TypeError):
                 return None
         elif isinstance(val, datetime):
             return val.time()
@@ -214,7 +214,7 @@ def validate_time_field(field_value, criterion):
         except KeyError:
             logger.error("Unknown comparison operator for time field: %s", op)
             return False
-        except Exception as e:
+        except (TypeError, ValueError) as e:
             logger.error(f"Error validating time field: {e}")
             return False
     elif isinstance(criterion, datetime) and isinstance(field_value, datetime):
