@@ -73,11 +73,21 @@ def _generate_constraint_value(
     if operator == ComparisonOperator.NOT_EQUALS:
         if isinstance(field_value, int | float):
             others = [d.get(field) for d in dataset if d.get(field) is not None and d.get(field) != field_value]
-            return choice(others) if others else (field_value + 1 if isinstance(field_value, int) else field_value + 0.1)
+            if others:
+                return choice(others)
+            # Extract nested conditional expression
+            if isinstance(field_value, int):
+                return field_value + 1
+            return field_value + 0.1
         if isinstance(field_value, str):
             field_value = field_value.strip()
             others = [d.get(field) for d in dataset if d.get(field) and d.get(field) != field_value]
-            return choice(others) if others else (field_value + "x" if field_value else "other")
+            if others:
+                return choice(others)
+            # Extract nested conditional expression
+            if field_value:
+                return field_value + "x"
+            return "other"
         return field_value
 
     if operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
@@ -157,7 +167,7 @@ def _generate_constraints(
     dataset: list[dict],
     field_operators: dict,
     field_map: dict | None = None,
-    min_constraints: int = 1,
+    min_constraints: int = 1,  # Unused parameter kept for backward compatibility
     num_constraints: int | None = None,
     selected_fields: list[str] | None = None,
 ) -> list[dict[str, Any]]:
@@ -165,6 +175,7 @@ def _generate_constraints(
     Generates constraints based on the dataset and field operator mapping.
     DB first: dataset must contain valid entities; empty dataset returns no constraints.
     """
+    _ = min_constraints  # Unused parameter kept for backward compatibility
     if not dataset:
         return []
     all_constraints = []
@@ -198,7 +209,7 @@ def _generate_constraints(
         else:
             lookup = new_field if isinstance(new_field, str) else field
             field_value = sample_data.get(lookup)
-            if field_value is not None and constraint_value is None:
+            if field_value is not None:
                 constraint_value = _generate_constraint_value(op, field_value, lookup, dataset)
 
         if constraint_value is not None:
@@ -207,11 +218,12 @@ def _generate_constraints(
     return all_constraints
 
 
-def generate_registration_constraints(dataset: list[dict]):
+def generate_registration_constraints(dataset: list[dict] | None = None):
     """
     Generates constraints specifically for film-related use cases.
     Returns the constraints as structured data.
     """
+    _ = dataset  # Unused parameter kept for backward compatibility
     from .utils import parse_constraints_str
 
     constraints_str = "username equals newuser<web_agent_id> AND email equals newuser<web_agent_id>@gmail.com AND password equals password123"
@@ -219,11 +231,12 @@ def generate_registration_constraints(dataset: list[dict]):
     return parse_constraints_str(constraints_str)
 
 
-def generate_login_constraints(dataset: list[dict]):
+def generate_login_constraints(dataset: list[dict] | None = None):
     """
     Generates constraints specifically for film-related use cases.
     Returns the constraints as structured data.
     """
+    _ = dataset  # Unused parameter kept for backward compatibility
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
@@ -232,11 +245,12 @@ def generate_login_constraints(dataset: list[dict]):
     return parse_constraints_str(constraints_str)
 
 
-def generate_logout_constraints(dataset: list[dict]):
+def generate_logout_constraints(dataset: list[dict] | None = None):
     """
     Generates constraints specifically for film-related use cases.
     Returns the constraints as structured data.
     """
+    _ = dataset  # Unused parameter kept for backward compatibility
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
@@ -356,7 +370,13 @@ def _build_filter_film_dataset(films: list[dict]) -> list[dict]:
         if year is None:
             continue
         for g in f.get("genres") or []:
-            name = g if isinstance(g, str) else (g.get("name") if isinstance(g, dict) else None)
+            # Extract nested conditional expression
+            if isinstance(g, str):
+                name = g
+            elif isinstance(g, dict):
+                name = g.get("name")
+            else:
+                name = None
             if name:
                 rows.append({"genre_name": name, "year": year})
     return rows if rows else [{"genre_name": "Drama", "year": 2020}]
@@ -444,8 +464,9 @@ def generate_add_film_constraints(dataset: list[dict]):
     return [*_login_constraints(), *film_constraints]
 
 
-def generate_edit_profile_constraints(dataset: list[dict]):
+def generate_edit_profile_constraints(dataset: list[dict] | None = None):
     """Generate constraints for EDIT_USER: fixed username/password + profile fields from map (data.py pools)."""
+    _ = dataset  # Unused parameter kept for backward compatibility
     profile_dataset = [
         {
             "first_name": choice(PROFILE_NAMES),
