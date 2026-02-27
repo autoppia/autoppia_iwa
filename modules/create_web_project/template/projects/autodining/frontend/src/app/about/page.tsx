@@ -1,7 +1,6 @@
 "use client";
 
 import { useSeed } from "@/context/SeedContext";
-import { useDynamicSystem } from "@/dynamic/shared";
 import Navbar from "@/components/Navbar";
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
@@ -9,8 +8,7 @@ import { Utensils, Heart, Users, Award, TrendingUp } from "lucide-react";
 import { EVENT_TYPES, logEvent } from "@/library/events";
 
 export default function AboutPage() {
-  const { seed, resolvedSeeds } = useSeed();
-  const dyn = useDynamicSystem();
+  const { seed } = useSeed();
   const searchParams = useSearchParams();
   const hasSeedParam = Boolean(searchParams?.get("seed"));
 
@@ -92,10 +90,11 @@ export default function AboutPage() {
               Why Choose AutoDining?
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-              {features.map((feature, index) => (
-                <div
-                  key={index}
-                  className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow duration-300"
+              {features.map((feature) => (
+                <button
+                  key={feature.title}
+                  type="button"
+                  className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow duration-300 text-left w-full"
                   onClick={() =>
                     logEvent(EVENT_TYPES.ABOUT_FEATURE_CLICK, {
                       feature: feature.title,
@@ -108,7 +107,7 @@ export default function AboutPage() {
                     {feature.title}
                   </h3>
                   <p className="text-gray-600">{feature.description}</p>
-                </div>
+                </button>
               ))}
             </div>
           </section>
@@ -151,22 +150,19 @@ export default function AboutPage() {
               Our Values
             </h2>
             <div className="space-y-6">
-              {["Excellence", "Integrity", "Innovation"].map((value, idx) => (
+              {[
+                { value: "Excellence", description: "We strive for excellence in everything we do, from restaurant curation to customer service." },
+                { value: "Integrity", description: "We maintain the highest standards of integrity and transparency in all our operations." },
+                { value: "Innovation", description: "We continuously innovate to provide the best possible experience for our users." },
+              ].map((item) => (
                 <div
-                  key={value}
+                  key={item.value}
                   className="border-l-4 border-[#46a758] pl-6 py-2"
                 >
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {value}
+                    {item.value}
                   </h3>
-                  <p className="text-gray-600">
-                    {idx === 0 &&
-                      "We strive for excellence in everything we do, from restaurant curation to customer service."}
-                    {idx === 1 &&
-                      "We maintain the highest standards of integrity and transparency in all our operations."}
-                    {idx === 2 &&
-                      "We continuously innovate to provide the best possible experience for our users."}
-                  </p>
+                  <p className="text-gray-600">{item.description}</p>
                 </div>
               ))}
             </div>
