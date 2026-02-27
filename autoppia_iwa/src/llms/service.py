@@ -4,10 +4,14 @@ except ModuleNotFoundError:  # pragma: no cover
     httpx = None
 
 try:  # pragma: no cover - optional dependency guard
-    from openai import AsyncOpenAI, OpenAI
+    from openai import APIConnectionError, APIError, APITimeoutError, AsyncOpenAI, OpenAI, RateLimitError
 except ModuleNotFoundError:  # pragma: no cover
+    APIError = None
+    APIConnectionError = None
+    APITimeoutError = None
     AsyncOpenAI = None
     OpenAI = None
+    RateLimitError = None
 
 from autoppia_iwa.src.llms.interfaces import ILLM, LLMConfig
 
@@ -20,7 +24,8 @@ class OpenAIService(ILLM):
 
     def __init__(self, config: LLMConfig, api_key: str):
         self.config = config
-        if OpenAI is None or AsyncOpenAI is None:  # pragma: no cover
+        # Both OpenAI and AsyncOpenAI are set together in the import block, so checking one is sufficient
+        if OpenAI is None:  # pragma: no cover
             raise RuntimeError("openai package is required for OpenAIService but is not installed.")
         self.sync_client = OpenAI(api_key=api_key)
         self.async_client = AsyncOpenAI(api_key=api_key)
@@ -52,7 +57,7 @@ class OpenAIService(ILLM):
             if return_raw:
                 return response
             return response.choices[0].message.content
-        except Exception as e:
+        except (APIError, APIConnectionError, APITimeoutError, RateLimitError, ValueError, TypeError) as e:
             raise RuntimeError(f"OpenAI Sync Error: {e}") from e
 
     async def async_predict(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None, return_raw: bool = False, temperature: float | None = None) -> str:
@@ -65,7 +70,7 @@ class OpenAIService(ILLM):
             if return_raw:
                 return response
             return response.choices[0].message.content
-        except Exception as e:
+        except (APIError, APIConnectionError, APITimeoutError, RateLimitError, ValueError, TypeError) as e:
             raise RuntimeError(f"OpenAI Async Error: {e}") from e
 
 
@@ -154,7 +159,7 @@ class ChutesLLMService(ILLM):
             "temperature": temperature if temperature is not None else self.config.temperature,
         }
         system_prompt = None
-        for msg in list(messages):
+        for msg in payload["messages"]:
             if msg["role"] == "system":
                 system_prompt = msg["content"]
                 payload["messages"].remove(msg)
