@@ -52,12 +52,12 @@ class GenerateTaskConfig(BaseModel):
     """
 
     projects: list[str] = Field(..., description="List of project IDs to generate tasks for")
-    prompts_per_use_case: int = Field(1, description="Number of prompts per use case")
+    prompts_per_use_case: int = Field(1, ge=1, le=100, description="Number of prompts per use case (max 100)")
     selective_use_cases: list[str] = Field(
         default_factory=list,
         description="List of specific use cases to include. If empty, uses all available use cases.",
     )
-    runs: int = Field(1, description="Number of runs for each task generation")
+    runs: int = Field(1, ge=1, le=10, description="Number of runs for each task generation (max 10)")
     dynamic: bool = Field(False, description="If True, tasks will include random seeds for dynamic content generation")
 
 
@@ -76,7 +76,7 @@ async def generate_tasks(config: GenerateTaskConfig) -> Any:
     all_results = {}
 
     for run_index in range(1, config.runs + 1):
-        print(f"▶️ Run {run_index}/{config.runs}")
+        logger.info(f"▶️ Run {run_index}/{config.runs}")
 
         # Generate tasks per project
         for project in web_projects:
