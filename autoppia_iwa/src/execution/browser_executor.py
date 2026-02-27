@@ -4,7 +4,7 @@ import contextlib
 from datetime import UTC, datetime
 from typing import Any
 
-from playwright.async_api import Page
+from playwright.async_api import Error as PlaywrightError, Page, TimeoutError as PWTimeout
 
 from autoppia_iwa.src.data_generation.tasks.classes import BrowserSpecification
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
@@ -60,7 +60,7 @@ class PlaywrightBrowserExecutor:
                 if dt.tzinfo is None:
                     return dt.replace(tzinfo=UTC)
                 return dt.astimezone(UTC)
-            except Exception:
+            except (ValueError, TypeError):
                 return None
 
         try:
@@ -96,7 +96,7 @@ class PlaywrightBrowserExecutor:
                 for _ in range(3):
                     try:
                         backend_events = await self.backend_demo_webs_service.get_backend_events(web_agent_id)
-                    except Exception:
+                    except (RuntimeError, ConnectionError, TimeoutError):
                         backend_events = []
                     if backend_events:
                         break
@@ -115,9 +115,9 @@ class PlaywrightBrowserExecutor:
             # client-side navigations after domcontentloaded; this keeps the snapshot
             # aligned with the events we just fetched.
             if not should_record:
-                with contextlib.suppress(Exception):
+                with contextlib.suppress(PlaywrightError, PWTimeout, RuntimeError):
                     snapshot_after["html"] = await self.page.content()
-                with contextlib.suppress(Exception):
+                with contextlib.suppress(PlaywrightError, PWTimeout, RuntimeError):
                     snapshot_after["url"] = self.page.url
 
             # Create a detailed browser snapshot
@@ -142,7 +142,7 @@ class PlaywrightBrowserExecutor:
                 error=None,
             )
 
-        except Exception as e:
+        except (PlaywrightError, PWTimeout, RuntimeError, ValueError, TypeError) as e:
             await self._on_action_error(action, iteration, e)
             # backend_events = await self._get_backend_events(web_agent_id, is_web_real)
             if should_record:
@@ -151,12 +151,12 @@ class PlaywrightBrowserExecutor:
                 # Capture minimal state for debugging/tests
                 try:
                     html = await self.page.content()
-                except Exception:
+                except (PlaywrightError, PWTimeout, RuntimeError):
                     html = ""
                 url = ""
                 try:
                     url = self.page.url
-                except Exception:
+                except (PlaywrightError, PWTimeout, RuntimeError):
                     url = ""
                 snapshot_error = {"html": html, "screenshot": "", "url": url, "error": str(e)}
 
@@ -166,7 +166,7 @@ class PlaywrightBrowserExecutor:
                 for _ in range(3):
                     try:
                         backend_events = await self.backend_demo_webs_service.get_backend_events(web_agent_id)
-                    except Exception:
+                    except (RuntimeError, ConnectionError, TimeoutError):
                         backend_events = []
                     if backend_events:
                         break
@@ -209,7 +209,7 @@ class PlaywrightBrowserExecutor:
             encoded_screenshot = base64.b64encode(screenshot).decode("utf-8")
             current_url = self.page.url
             return {"html": html, "screenshot": encoded_screenshot, "url": current_url}
-        except Exception as e:
+        except (PlaywrightError, PWTimeout, RuntimeError, ValueError) as e:
             # Gracefully handle any errors during snapshot
             return {"html": "", "screenshot": "", "url": "", "error": str(e)}
 
@@ -217,16 +217,16 @@ class PlaywrightBrowserExecutor:
         """
         Hook executed right before each action. Subclasses can override to inject dynamic behavior.
         """
-        return None
+        # Intentionally empty - subclasses can override
 
     async def _after_action(self, action: BaseAction, iteration: int) -> None:
         """
         Hook executed after action execution (and after DOMContentLoaded) but before snapshots.
         """
-        return None
+        # Intentionally empty - subclasses can override
 
     async def _on_action_error(self, action: BaseAction, iteration: int, error: Exception) -> None:
         """
         Hook executed when an action fails. Subclasses may perform cleanup or reporting.
         """
-        return None
+        # Intentionally empty - subclasses can override
