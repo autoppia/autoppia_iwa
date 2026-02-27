@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useRef, useEffect, useMemo, Suspense } from "react";
-import { useRouter } from "next/navigation";
 import { SeedLink } from "@/components/ui/SeedLink";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -20,12 +19,9 @@ import {
 import { useSeed } from "@/context/SeedContext";
 import { EVENT_TYPES, logEvent } from "@/library/events";
 import { getRestaurants, initializeRestaurants } from "@/dynamic/v2-data";
-import type { RestaurantData } from "@/dynamic/v2-data";
-import { useSearchParams } from "next/navigation";
 import { useDynamicSystem } from "@/dynamic/shared";
 import { ID_VARIANTS_MAP, CLASS_VARIANTS_MAP, TEXT_VARIANTS_MAP } from "@/dynamic/v3";
 import { isDataGenerationEnabled } from "@/shared/data-generator";
-import { buildBookingHref } from "@/utils/bookingPaths";
 import Navbar from "@/components/Navbar";
 import fallbackRestaurants from "@/data/original/restaurants_1.json";
 
@@ -76,15 +72,15 @@ const staticById = new Map(
   ])
 );
 
-function StarRating({ count }: { count: number }) {
+function StarRating({ count }: Readonly<{ count: number }>) {
   // count ya viene como entero (1-5) del JSON, no necesitamos round
   // Solo asegurar que esté en el rango válido
   const clamped = Math.max(1, Math.min(5, Math.floor(count)));
   return (
     <span className="text-lg align-middle mr-1">
-      {Array.from({ length: 5 }).map((_, i) => (
+      {Array.from({ length: 5 }, (_, i) => `star-${count}-${i}`).map((key, i) => (
         <span
-          key={i}
+          key={key}
           className={i < clamped ? "text-yellow-400" : "text-gray-400"}
         >
           ★
@@ -118,13 +114,8 @@ function RestaurantCard({
   time: string;
 }) {
   const dyn = useDynamicSystem();
-  const personLabel = dyn.v3.getVariant("person", undefined, "Guest");
-  const peopleLabel = dyn.v3.getVariant("people", undefined, "Guests");
-
-  const formattedDate = date ? format(date, "yyyy-MM-dd") : "2025-05-20";
 
   const viewDetailsLabel = dyn.v3.getVariant("see_details", TEXT_VARIANTS_MAP, "View details");
-  const bookNowLabel = dyn.v3.getVariant("reserve_now", TEXT_VARIANTS_MAP, "Book now");
 
   // Usar rating para el número y stars para las estrellas
   const ratingValue = r.rating ?? 4.5; // Para mostrar el número (con decimales)
@@ -256,7 +247,7 @@ function CardScroller({
   const scheduleCheck = () => {
     if (tickingRef.current) return;
     tickingRef.current = true;
-    rafIdRef.current = window.requestAnimationFrame(() => {
+    rafIdRef.current = globalThis.requestAnimationFrame(() => {
       checkScroll();
       tickingRef.current = false;
     });
@@ -373,7 +364,6 @@ function CardScroller({
 
 // Client-only component that uses seed from context
 function HomePageContent() {
-  const router = useRouter();
   const [isReady, setIsReady] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -385,9 +375,8 @@ function HomePageContent() {
   const [dateOpen, setDateOpen] = useState(false);
   const [timeOpen, setTimeOpen] = useState(false);
   const [peopleOpen, setPeopleOpen] = useState(false);
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dyn = useDynamicSystem();
-  const searchParams = useSearchParams();
   const personLabel = dyn.v3.getVariant("person", undefined, "Guest");
   const peopleLabel = dyn.v3.getVariant("people", undefined, "Guests");
 
@@ -516,9 +505,9 @@ function HomePageContent() {
               staticById.get(r.id?.toString().replace("restaurant-", ""));
 
             // Priorizar valores directos del restaurante, luego defaults, luego fallback
-            const rating = (r as any).rating ?? staticDefaults?.rating ?? 4.5;
+            const rating = r.rating ?? staticDefaults?.rating ?? 4.5;
             const stars =
-              (r as any).stars ?? staticDefaults?.stars ?? Math.round(rating);
+              r.stars ?? staticDefaults?.stars ?? Math.round(rating);
             const reviews = r.reviews ?? staticDefaults?.reviews ?? 64;
             const bookings = r.bookings ?? staticDefaults?.bookings ?? 0;
             const price = r.price ?? staticDefaults?.price ?? "$$";
