@@ -9,6 +9,7 @@ Main pipeline that orchestrates:
 4. Dynamic verification with different seeds (V3)
 """
 
+import asyncio
 import json
 import re
 from pathlib import Path
@@ -26,6 +27,9 @@ from .config import WebVerificationConfig
 from .dynamic_verifier import DynamicVerifier
 from .iwap_client import IWAPClient
 from .llm_reviewer import LLMReviewer
+
+# Constants
+UNKNOWN_REASON = "Unknown reason"
 
 
 class WebVerificationPipeline:
@@ -486,7 +490,7 @@ class WebVerificationPipeline:
                             if actions:
                                 print(f"  First Action: {actions[0] if len(actions) > 0 else 'N/A'}")
                         else:
-                            reason = doability_result.get("reason", "Unknown reason")
+                            reason = doability_result.get("reason", UNKNOWN_REASON)
                             print("✗ USE CASE NOT DOABLE")
                             print(f"  ⚠️  WARNING: {reason}")
                     else:
@@ -721,17 +725,20 @@ class WebVerificationPipeline:
                 if idx < len(llm_reviews):
                     llm_review = llm_reviews[idx]
 
+                # Extract nested conditional expression
+                llm_review_data = None
+                if llm_review:
+                    llm_review_data = {
+                        "valid": llm_review.get("valid", False),
+                        "score": llm_review.get("score"),
+                    }
+
                 formatted_task = {
                     "task_id": task_id,
                     "prompt": task_info.get("prompt", ""),
                     "seed": task_info.get("seed"),
                     "constraints": task_info.get("constraints_str", ""),
-                    "llm_review": {
-                        "valid": llm_review.get("valid", False) if llm_review else None,
-                        "score": llm_review.get("score") if llm_review else None,
-                    }
-                    if llm_review
-                    else None,
+                    "llm_review": llm_review_data,
                 }
 
                 formatted_use_case["tasks"].append(formatted_task)
@@ -841,11 +848,16 @@ class WebVerificationPipeline:
         # Dynamic verification: Pass if all seeds passed (all_passed=True), else Fail
         # If no dynamic verification was executed, we can't determine pass/fail
 
+        # Extract nested conditional expression for dynamic_verification
+        dynamic_verification_status = "N/A"
+        if has_dynamic_verification:
+            dynamic_verification_status = "Pass" if all_dynamic_verification_passed else "Fail"
+
         summary = {
             "task_generation": "Pass" if all_tasks_generated and total_tasks > 0 else "Fail",
             "number_of_tasks_generated": total_tasks,
             "llm_review": "Pass" if (all_llm_reviews_passed or not self.llm_reviewer) else "Fail",
-            "dynamic_verification": "Pass" if (all_dynamic_verification_passed and has_dynamic_verification) else ("Fail" if has_dynamic_verification else "N/A"),
+            "dynamic_verification": dynamic_verification_status,
         }
 
         return summary
@@ -863,16 +875,18 @@ class WebVerificationPipeline:
         # Convert to JSON-serializable format
         results_dict = self._serialize_results(formatted_results)
 
-        with open(output_file, "w", encoding="utf-8") as f:
-            json.dump(results_dict, f, indent=2, ensure_ascii=False)
+        # Use asyncio.to_thread for synchronous file I/O
+        def _write_results_file(file_path: Path, data: dict) -> None:
+            with open(file_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
 
+        await asyncio.to_thread(_write_results_file, output_file, results_dict)
         logger.info(f"Results saved to: {output_file}")
 
         # Also save a focused report with misgenerated/suspicious tasks to make manual review easy
         misgenerated_report = self._build_misgenerated_tasks_report()
         misgenerated_file = output_dir / f"misgenerated_tasks_{self.web_project.id}.json"
-        with open(misgenerated_file, "w", encoding="utf-8") as f:
-            json.dump(self._serialize_results(misgenerated_report), f, indent=2, ensure_ascii=False)
+        await asyncio.to_thread(_write_results_file, misgenerated_file, self._serialize_results(misgenerated_report))
         logger.info(f"Misgenerated tasks report saved to: {misgenerated_file}")
 
     def _build_misgenerated_tasks_report(self) -> dict[str, Any]:
@@ -1219,7 +1233,7 @@ class WebVerificationPipeline:
             dataset_diversity = use_case_data.get("dataset_diversity_verification")
             if dataset_diversity:
                 if dataset_diversity.get("skipped", False):
-                    reason = dataset_diversity.get("reason", "Unknown reason")
+                    reason = dataset_diversity.get("reason", UNKNOWN_REASON)
                     summary_lines.append(f"  Step 2 (V2 Dataset): ⏭️ Skipped ({reason})")
                 else:
                     passed = dataset_diversity.get("passed", False)
@@ -1243,7 +1257,7 @@ class WebVerificationPipeline:
             if iwap_status:
                 if iwap_status.get("skipped", False):
                     # Step 3 was skipped
-                    reason = iwap_status.get("reason", "Unknown reason")
+                    reason = iwap_status.get("reason", UNKNOWN_REASON)
                     summary_lines.append(f"  Step 3 (IWAP): ⏭️ Skipped ({reason})")
                 elif iwap_status.get("executed", False):
                     # Step 3 was executed
@@ -1276,7 +1290,7 @@ class WebVerificationPipeline:
                 if isinstance(dynamic_verification, dict):
                     skipped = dynamic_verification.get("skipped", False)
                     if skipped:
-                        reason = dynamic_verification.get("reason", "Unknown reason")
+                        reason = dynamic_verification.get("reason", UNKNOWN_REASON)
                         summary_lines.append(f"  Step 4 (Dynamic): ⏭️ Skipped ({reason})")
                     else:
                         all_passed = dynamic_verification.get("all_passed", False)

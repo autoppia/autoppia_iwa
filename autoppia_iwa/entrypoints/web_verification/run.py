@@ -288,7 +288,7 @@ async def main():
     logger.info("🔍 VALIDATING PROJECT SETUP")
     logger.info("=" * 80)
 
-    is_valid, validation_messages = validate_project_setup(web_project)
+    is_valid, _ = validate_project_setup(web_project)
     if not is_valid:
         logger.error("❌ Project validation failed. Please fix the errors before running the pipeline.")
         sys.exit(1)

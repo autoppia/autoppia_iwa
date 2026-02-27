@@ -11,6 +11,9 @@ from loguru import logger
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.llms.interfaces import ILLM
 
+# Constants for operator lists
+STRING_OPERATORS = "[equals, not_equals, contains, not_contains]"
+
 
 class LLMReviewer:
     """Reviewer that uses LLM to validate task prompts against generated tests"""
@@ -322,12 +325,12 @@ class LLMReviewer:
             cleaned = raw_response.strip()
 
             # Remove code fences if present
-            code_fence_match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", cleaned, re.DOTALL)
+            code_fence_match = re.search(r"```(?:json)?\s*(\{[^\}]*\})\s*```", cleaned, re.DOTALL)
             if code_fence_match:
                 cleaned = code_fence_match.group(1)
 
             # Try to find JSON object
-            json_match = re.search(r"\{.*\}", cleaned, re.DOTALL)
+            json_match = re.search(r"\{[^\}]*\}", cleaned, re.DOTALL)
             if json_match:
                 cleaned = json_match.group(0)
 
@@ -459,9 +462,9 @@ class LLMReviewer:
         if "str" in field_type.lower():
             # Check if it's a name/title field (usually equals/contains)
             if any(x in field_name.lower() for x in ["name", "title", "email", "username", "query", "subject", "message", "content", "body", "description", "director", "author", "cast"]):
-                return "[equals, not_equals, contains, not_contains]"
+                return STRING_OPERATORS
             # Generic string
-            return "[equals, not_equals, contains, not_contains]"
+            return STRING_OPERATORS
 
         # Numeric fields
         elif any(x in field_type.lower() for x in ["int", "float"]):
@@ -475,4 +478,4 @@ class LLMReviewer:
             return "[equals, not_equals]"
 
         # Default
-        return "[equals, not_equals, contains, not_contains]"
+        return STRING_OPERATORS

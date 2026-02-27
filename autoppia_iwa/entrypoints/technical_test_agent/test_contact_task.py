@@ -27,7 +27,7 @@ AGENT_TIMEOUT = 120
 CONTACT_PROMPT = "Fill the contact form with a subject equal to 'Job Position' and message contains 'I am the best developer'"
 
 
-async def create_contact_task(project) -> Task:
+def create_contact_task(project) -> Task:
     """Create a contact form task with specific criteria."""
     # Find the CONTACT use case
     contact_use_case = next((uc for uc in project.use_cases if uc.name == "CONTACT"), None)
@@ -71,7 +71,7 @@ async def test_contact_task():
     logger.info(f"Frontend URL: {project.frontend_url}")
 
     # Create task
-    task = await create_contact_task(project)
+    task = create_contact_task(project)
     logger.info(f"Task created with ID: {task.id}")
     logger.info(f"Task URL: {task.url}")
 

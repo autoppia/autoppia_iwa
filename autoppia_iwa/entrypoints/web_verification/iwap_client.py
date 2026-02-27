@@ -11,6 +11,10 @@ from typing import Any
 import aiohttp
 from loguru import logger
 
+# Constants for repeated messages
+MOCK_RESPONSE_GENERATED_MSG = "   ✓ Mock response generated!"
+MOCK_MODE_ENABLED_MSG = "   ⚠️  Mock mode enabled, using mock response..."
+
 
 class IWAPClient:
     """Client for querying IWAP service about successful task solutions"""
@@ -225,7 +229,7 @@ class IWAPClient:
             print(f"   Use Case: {use_case_name}")
             logger.info(f"Using mock IWAP API response for {website}/{use_case_name}")
             mock_response = self._generate_mock_response(project_id, use_case_name or "", page or 1, limit or 20, our_tasks or [])
-            print("   ✓ Mock response generated!")
+            print(MOCK_RESPONSE_GENERATED_MSG)
             print(f"   Response: {len(mock_response.get('data', {}).get('tasks', []))} tasks returned")
             return mock_response
 
@@ -290,10 +294,10 @@ class IWAPClient:
                         print(f"   Error: {error_text[:200]}")  # Print first 200 chars
 
                         if self.use_mock:
-                            print("   ⚠️  Mock mode enabled, using mock response...")
+                            print(MOCK_MODE_ENABLED_MSG)
                             logger.warning(f"IWAP API returned status {response.status}: {error_text}. Using mock response (mock mode enabled).")
                             mock_response = self._generate_mock_response(project_id, use_case_name or "", page or 1, limit or 20, our_tasks or [])
-                            print("   ✓ Mock response generated!")
+                            print(MOCK_RESPONSE_GENERATED_MSG)
                             return mock_response
                         else:
                             # Return error response
@@ -310,10 +314,10 @@ class IWAPClient:
             print(f"   ✗ Network/Client Error: {e}")
             # Improvement 4: Only use mock if explicitly enabled
             if self.use_mock:
-                print("   ⚠️  Mock mode enabled, using mock response...")
+                print(MOCK_MODE_ENABLED_MSG)
                 logger.warning(f"IWAP API request error: {e}. Using mock response (mock mode enabled).")
                 mock_response = self._generate_mock_response(project_id, use_case_name or "", page or 1, limit or 20, our_tasks or [])
-                print("   ✓ Mock response generated!")
+                print(MOCK_RESPONSE_GENERATED_MSG)
                 return mock_response
             else:
                 logger.error(f"IWAP API request error: {e}, returning error.")
@@ -327,10 +331,10 @@ class IWAPClient:
             print(f"   ✗ Unexpected Error: {e}")
             # Improvement 4: Only use mock if explicitly enabled
             if self.use_mock:
-                print("   ⚠️  Mock mode enabled, using mock response...")
+                print(MOCK_MODE_ENABLED_MSG)
                 logger.warning(f"Error querying IWAP API: {e}. Using mock response (mock mode enabled).")
                 mock_response = self._generate_mock_response(project_id, use_case_name or "", page or 1, limit or 20, our_tasks or [])
-                print("   ✓ Mock response generated!")
+                print(MOCK_RESPONSE_GENERATED_MSG)
                 return mock_response
             else:
                 print("   ✗ Mock mode disabled. Returning error response.")
@@ -497,7 +501,7 @@ class IWAPClient:
         # Check if prompts are similar (simple heuristic)
         return normalized_api_prompt in normalized_our_prompt or normalized_our_prompt in normalized_api_prompt or normalized_api_prompt == normalized_our_prompt
 
-    def process_api_response_for_tasks(self, api_response: dict[str, Any], our_tasks: list[Any]) -> dict[str, Any]:
+    def process_api_response_for_tasks(self, api_response: dict[str, Any], our_tasks: list[Any] | None = None) -> dict[str, Any]:
         """
         IWAP Use Case Doability Check
 
@@ -511,7 +515,7 @@ class IWAPClient:
 
         Args:
             api_response: Response from get_tasks_with_solutions
-            our_tasks: List of Task objects we generated (not used for matching, only for reference)
+            our_tasks: List of Task objects we generated (deprecated, kept for backward compatibility)
 
         Returns:
             Dictionary with doability check results:
@@ -521,6 +525,7 @@ class IWAPClient:
             - api_tests: Tests from successful task
             - api_start_url: Start URL from successful task (will be modified with different seeds)
         """
+        _ = our_tasks  # Unused parameter kept for backward compatibility
         if not api_response or not api_response.get("success", False):
             return {
                 "matched": False,
@@ -604,11 +609,12 @@ class IWAPClient:
         Args:
             project_id: The web project ID
             use_case_name: Name of the use case
-            min_success_rate: Minimum success rate to consider use case doable (not used in current implementation)
+            min_success_rate: Minimum success rate to consider use case doable (deprecated, kept for backward compatibility)
 
         Returns:
             Dictionary with doability assessment and API response
         """
+        _ = min_success_rate  # Unused parameter kept for backward compatibility
         result = await self.get_tasks_with_solutions(project_id, use_case_name)
 
         if not result or not result.get("success", False):
