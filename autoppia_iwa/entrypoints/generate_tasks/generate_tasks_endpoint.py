@@ -40,6 +40,9 @@ DYNAMIC = True  # Set to False if you don't want dynamic seeds
 # Cache directory (same as benchmark uses)
 CACHE_DIR = str(PROJECT_BASE_DIR.parent / "benchmark-output" / "cache" / "tasks")
 
+# Maximum number of runs allowed in one request (loop bound not set directly from user input)
+MAX_GENERATION_RUNS = 10
+
 router = APIRouter()
 
 
@@ -75,8 +78,10 @@ async def generate_tasks(config: GenerateTaskConfig) -> Any:
 
     all_results = {}
 
-    for run_index in range(1, config.runs + 1):
-        logger.info(f"▶️ Run {run_index}/{config.runs}")
+    # Use capped value for loop bound (Sonar: do not set loop bounds directly from user-controlled data)
+    num_runs = min(config.runs, MAX_GENERATION_RUNS)
+    for run_index in range(1, num_runs + 1):
+        logger.info(f"▶️ Run {run_index}/{num_runs}")
 
         # Generate tasks per project
         for project in web_projects:
