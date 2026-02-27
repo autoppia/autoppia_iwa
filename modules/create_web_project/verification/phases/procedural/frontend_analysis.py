@@ -454,7 +454,7 @@ def _calculate_dynamic_usage(source_index: list[tuple[Path, str]]) -> DynamicUsa
     # Matches multiple patterns for text variants
     text_pattern1 = re.compile(r"\.v3\.getVariant\s*\([^)]*,\s*undefined|getVariant\s*\([^)]*,\s*undefined", re.IGNORECASE)
     text_pattern2 = re.compile(r"\.v3\.getVariant\s*\([^)]*TEXT_VARIANTS_MAP|getVariant\s*\([^)]*TEXT_VARIANTS_MAP", re.IGNORECASE)
-    text_pattern3 = re.compile(r"\.v3\.getVariant\s*\([^)]*[Tt]ext[^)]*Variants|getVariant\s*\([^)]*[Tt]ext[^)]*Variants", re.IGNORECASE)
+    text_pattern3 = re.compile(r"\.v3\.getVariant\s*\([^)]*ext[^)]*Variants|getVariant\s*\([^)]*ext[^)]*Variants", re.IGNORECASE)
 
     for path, text in source_index:
         # Skip test files
