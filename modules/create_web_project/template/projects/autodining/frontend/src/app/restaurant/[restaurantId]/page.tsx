@@ -31,6 +31,11 @@ const photos = [
   "https://images.unsplash.com/photo-1551218808-94e220e084d2?w=150&h=150",
 ];
 
+// Constants for default values
+const DEFAULT_PRICE = "$$";
+const DEFAULT_CUISINE = "International";
+const DEFAULT_LOCATION = "Downtown";
+
 type RestaurantView = {
   id: string;
   name: string;
@@ -49,7 +54,6 @@ export default function RestaurantPage() {
   const params = useParams();
   const id = params.restaurantId as string;
   const [r, setR] = useState<RestaurantView | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [people, setPeople] = useState<number | undefined>(undefined);
   const [time, setTime] = useState<string | undefined>(undefined);
@@ -68,7 +72,7 @@ export default function RestaurantPage() {
   const selectTimeLabel = "Select time";
   const bookNowLabel = dyn.v3.getVariant("reserve_now", TEXT_VARIANTS_MAP, "Book Now");
 
-  const { seed, resolvedSeeds } = useSeed();
+  const { resolvedSeeds } = useSeed();
   const v2Seed = resolvedSeeds.v2 ?? resolvedSeeds.base;
 
   const peopleOptions = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -96,12 +100,14 @@ export default function RestaurantPage() {
     // Ensure data is initialized and loaded from DB or generator as configured
     let mounted = true;
     const run = async () => {
-      setIsLoading(true);
       const genEnabled = isDataGenerationEnabled();
       if (genEnabled) setIsGenerating(true);
       try {
         await initializeRestaurants(v2Seed ?? undefined);
-        if (!mounted) return;
+        if (!mounted) {
+          setIsGenerating(false);
+          return;
+        }
         const list = getRestaurants();
         const found = list.find((x) => x.id === id) || list[0];
         if (found) {
@@ -117,22 +123,22 @@ export default function RestaurantPage() {
             stars: Number(stars),
             reviews: Number(found.reviews ?? 0),
             bookings: Number(found.bookings ?? 0),
-            price: String(found.price ?? "$$"),
-            cuisine: String(found.cuisine ?? "International"),
+            price: String(found.price ?? DEFAULT_PRICE),
+            cuisine: String(found.cuisine ?? DEFAULT_CUISINE),
             tags: ["cozy", "modern", "casual"],
             desc: `Enjoy a delightful experience at ${
               found.name
             }, offering a fusion of flavors in the heart of ${
-              found.area ?? "Downtown"
+              found.area ?? DEFAULT_LOCATION
             }.`,
             photos,
           };
           setR(mapped);
         }
       } finally {
-        if (!mounted) return;
-        setIsLoading(false);
-        setIsGenerating(false);
+        if (mounted) {
+          setIsGenerating(false);
+        }
       }
     };
     run();
@@ -287,10 +293,10 @@ export default function RestaurantPage() {
                     id={dyn.v3.getVariant("rating-stars", ID_VARIANTS_MAP, "rating-stars")}
                   >
                     {Array.from({ length: r?.stars ?? 5 }).map((_, i) => (
-                      <span key={i}>★</span>
+                      <span key={`star-filled-${i}`}>★</span>
                     ))}
                     {Array.from({ length: 5 - (r?.stars ?? 5) }).map((_, i) => (
-                      <span key={`empty-${i}`} className="text-gray-300">
+                      <span key={`star-empty-${i}`} className="text-gray-300">
                         ★
                       </span>
                     ))}
@@ -310,13 +316,13 @@ export default function RestaurantPage() {
                     className="text-base flex items-center gap-2"
                     id={dyn.v3.getVariant("price-range", ID_VARIANTS_MAP, "price-range")}
                   >
-                    💵 {r?.price ?? "$$"}
+                    💵 {r?.price ?? DEFAULT_PRICE}
                   </span>
                   <span
                     className="text-base flex items-center gap-2"
                     id={dyn.v3.getVariant("cuisine-type", ID_VARIANTS_MAP, "cuisine-type")}
                   >
-                    {r?.cuisine ?? "International"}
+                    {r?.cuisine ?? DEFAULT_CUISINE}
                   </span>
                 </div>
           ), "restaurant-meta-wrap")}
@@ -328,7 +334,7 @@ export default function RestaurantPage() {
             >
               {(r?.tags || []).map((tag: string, index: number) => (
                 <span
-                  key={`${tag}-${index}`}
+                  key={tag}
                   className="inline-flex items-center py-1.5 px-4 bg-gray-100 rounded-full text-gray-800 font-semibold text-sm border border-gray-200 whitespace-nowrap"
                   id={dyn.v3.getVariant(`restaurant-tag-${index}`, ID_VARIANTS_MAP, `restaurant-tag-${index}`)}
                 >
@@ -361,9 +367,9 @@ export default function RestaurantPage() {
               >
                 {r.photos.map((url: string, i: number) => (
                   <img
-                    key={i}
+                    key={url}
                     src={url}
-                    alt={`${r?.name} photo ${i + 1}`}
+                    alt={`${r?.name} ${i + 1}`}
                     className="rounded-lg object-cover aspect-square w-full h-[160px] md:h-[200px] hover:opacity-90 transition-opacity cursor-pointer shadow-md"
                     id={dyn.v3.getVariant(`restaurant-photo-${i}`, ID_VARIANTS_MAP, `restaurant-photo-${i}`)}
                   />
@@ -523,7 +529,7 @@ export default function RestaurantPage() {
                           <span>🍽️</span> Cuisine
                         </h3>
                         <p className="text-gray-700 font-medium">
-                          {r?.cuisine ?? "International"}
+                          {r?.cuisine ?? DEFAULT_CUISINE}
                         </p>
                       </div>
                     ), "info-card-cuisine-wrap")}
@@ -535,7 +541,7 @@ export default function RestaurantPage() {
                         <h3 className="font-semibold text-base mb-2 text-gray-900 flex items-center gap-2">
                           <span>💰</span> Price Range
                         </h3>
-                        <p className="text-gray-700 font-medium">{r?.price ?? "$$"}</p>
+                        <p className="text-gray-700 font-medium">{r?.price ?? DEFAULT_PRICE}</p>
                       </div>
                     ), "info-card-price-wrap")}
                     {dyn.v1.addWrapDecoy("info-card-location", (
@@ -547,9 +553,13 @@ export default function RestaurantPage() {
                           <span>📍</span> Location
                         </h3>
                         <p className="text-gray-700 font-medium">
-                          {r?.desc?.includes("heart of")
-                            ? r.desc.split("heart of")[1]?.replace(".", "")?.trim()
-                            : "Downtown"}
+                          {(() => {
+                            if (!r?.desc?.includes("heart of")) {
+                              return DEFAULT_LOCATION;
+                            }
+                            const locationPart = r.desc.split("heart of")[1];
+                            return locationPart?.replace(".", "")?.trim() ?? DEFAULT_LOCATION;
+                          })()}
                         </p>
                       </div>
                     ), "info-card-location-wrap")}
@@ -600,7 +610,7 @@ export default function RestaurantPage() {
                           id={dyn.v3.getVariant("reviews-stars", ID_VARIANTS_MAP, "reviews-stars")}
                         >
                           {Array.from({ length: r?.stars ?? 5 }).map((_, i) => (
-                            <span key={i}>★</span>
+                            <span key={`review-star-${i}`}>★</span>
                           ))}
                         </div>
                         <div
@@ -657,11 +667,13 @@ export default function RestaurantPage() {
                     <div className="flex items-center gap-2">
                       <UserIcon className="h-5 w-5 text-gray-600" />
                       <span className="text-gray-700">
-                        {people
-                          ? `${people} ${
-                              people === 1 ? personLabel : peopleLabel
-                            }`
-                          : `${pickLabel} ${peopleLabel}`}
+                        {(() => {
+                          if (!people) {
+                            return `${pickLabel} ${peopleLabel}`;
+                          }
+                          const label = people === 1 ? personLabel : peopleLabel;
+                          return `${people} ${label}`;
+                        })()}
                       </span>
                     </div>
                     <ChevronDownIcon className="h-4 w-4 text-gray-400" />
@@ -764,7 +776,7 @@ export default function RestaurantPage() {
                       <div className="flex items-center gap-2">
                         <ClockIcon className="h-5 w-5 text-gray-600" />
                         <span className="text-gray-700">
-                          {time ? time : selectTimeLabel}
+                          {time ?? selectTimeLabel}
                         </span>
                       </div>
                       <ChevronDownIcon className="h-4 w-4 text-gray-400" />
