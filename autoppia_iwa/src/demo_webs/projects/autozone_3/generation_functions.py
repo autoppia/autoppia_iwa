@@ -1,6 +1,5 @@
 import contextlib
 import random
-import traceback
 from typing import Any
 
 from loguru import logger
@@ -11,6 +10,8 @@ from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict, parse_price
 from .data import FIELD_OPERATORS_MAP_PRODUCTS
 from .data_utils import fetch_data
+
+QUANTITY_FIELDS = ["quantity", "items", "total_items", "previous_quantity", "new_quantity"]
 
 
 async def _ensure_products_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
@@ -57,7 +58,7 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
                     with contextlib.suppress(ValueError, TypeError):
                         value_pool.append(float(val))
 
-            if field in ["quantity", "items", "total_items", "previous_quantity", "new_quantity"]:
+            if field in QUANTITY_FIELDS:
                 # Ensure integers for quantity/count fields
                 value_pool = [int(v) for v in value_pool if v is not None]
                 if source_value is not None:
@@ -77,11 +78,10 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
                 brand = p.get("brand", "")
                 if isinstance(brand, str) and brand:
                     all_terms_list.append(brand)
-            value_pool = list(set(term for term in all_terms_list if term and isinstance(term, str)))
+            value_pool = list({term for term in all_terms_list if term and isinstance(term, str)})
 
     except Exception as e:
-        logger.error(f"Error building value pool for field '{field}': {e}")
-        traceback.print_exc()
+        logger.exception(f"Error building value pool for field '{field}': {e}")
         return None
 
     valid_pool = [v for v in value_pool if v is not None]
@@ -96,7 +96,7 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
 
     elif operator in [ComparisonOperator.NOT_EQUALS]:
         if source_value is not None:
-            other_values = list(set(v for v in valid_pool if v != source_value))
+            other_values = list({v for v in valid_pool if v != source_value})
             # Return None if no other value can be found
             generated_value = random.choice(other_values) if other_values else None
         elif valid_pool:
@@ -126,12 +126,12 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
                 generated_value = num_source_value
 
             # Cast to int for integer fields
-            generated_value = max(1, round(generated_value)) if field in ["quantity", "items", "total_items", "previous_quantity", "new_quantity"] else round(generated_value, 2)
+            generated_value = max(1, round(generated_value)) if field in QUANTITY_FIELDS else round(generated_value, 2)
         else:
             # If no source_value, try to pick from pool or return None
             if valid_pool and all(isinstance(v, int | float) for v in valid_pool):
                 generated_value = random.choice([float(v) for v in valid_pool])
-                generated_value = max(1, round(generated_value)) if field in ["quantity", "items", "total_items", "previous_quantity", "new_quantity"] else round(generated_value, 2)
+                generated_value = max(1, round(generated_value)) if field in QUANTITY_FIELDS else round(generated_value, 2)
             else:
                 return None  # Cannot generate numeric comparison without a numeric base
 
@@ -176,7 +176,12 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
 
     else:
         logger.warning(f"Operator {operator} not explicitly handled for field '{field}' in _generate_constraint_value")
-        generated_value = source_value if source_value is not None else (random.choice(valid_pool) if valid_pool else None)
+        if source_value is not None:
+            generated_value = source_value
+        elif valid_pool:
+            generated_value = random.choice(valid_pool)
+        else:
+            generated_value = None
         if generated_value is None:
             logger.warning(f"Could not generate value for field '{field}' with operator '{operator}' using fallback.")
             return None
@@ -370,8 +375,6 @@ async def generate_category_filter_constraints(task_url: str | None = None, data
     if not categories:
         # Fallback to "all" if dataset categories don't match allowed values
         categories = ["all"]
-    if not categories:
-        return constraints
 
     selected_category = random.choice(categories)
     constraints.append(create_constraint_dict("category", ComparisonOperator.EQUALS, selected_category))
