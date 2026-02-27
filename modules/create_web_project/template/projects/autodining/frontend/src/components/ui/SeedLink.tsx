@@ -12,7 +12,7 @@ interface SeedLinkProps extends Omit<ComponentProps<typeof Link>, 'href'> {
 /**
  * Custom Link component that automatically preserves seed parameter in URLs
  */
-export function SeedLink({ href, preserveSeed = true, ...props }: SeedLinkProps) {
+export function SeedLink({ href, preserveSeed = true, ...props }: Readonly<SeedLinkProps>) {
   const { getNavigationUrl } = useSeed();
 
   // If preserveSeed is false or href starts with http (external link), use original href
