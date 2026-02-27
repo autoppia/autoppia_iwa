@@ -54,18 +54,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         help_module = importlib.import_module(module_path, package=__package__)
         help_parser = getattr(help_module, "parse_args", None)
         if callable(help_parser):
-            try:
-                help_parser(["--help"])
-            except SystemExit as exc:
-                return exc.code or 0
+            help_parser(["--help"])
             return 0
         print(description)
         print("This command does not expose a custom --help handler.")
         return 0
-    try:
-        exit_code = runner(forwarded)
-    except SystemExit as exc:
-        return exc.code or 0
+    exit_code = runner(forwarded)
     return exit_code if isinstance(exit_code, int) else 0
 
 
