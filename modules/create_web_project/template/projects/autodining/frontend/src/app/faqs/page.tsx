@@ -12,7 +12,7 @@ interface FAQItem {
 }
 
 export default function FaqsPage() {
-  const { seed, resolvedSeeds } = useSeed();
+  useSeed();
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   const faqs: FAQItem[] = [
@@ -82,7 +82,7 @@ export default function FaqsPage() {
           <div className="space-y-4">
             {faqs.map((faq, index) => (
               <div
-                key={index}
+                key={faq.question}
                 className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow"
               >
                 <button
