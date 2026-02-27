@@ -38,7 +38,7 @@ export interface EventLayoutVariation {
 // 3 completely different layouts that repeat: Layout A (1,4,7,10), Layout B (2,5,8), Layout C (3,6,9)
 // Focus on structural layout changes while keeping all elements visible
 export class SeedVariationManager {
-  private static variations: SeedVariations = {
+  private static readonly variations: SeedVariations = {
     // Restaurant card variations - 3 completely different structural layouts
     restaurantCard: [
       // Layout A: Traditional Flexbox Cards (Seeds 1, 4, 7, 10)
@@ -863,7 +863,7 @@ export class SeedVariationManager {
 
   // Event-based layout variations - these override seed-based variations when events occur
   // Focus on structural changes rather than visibility changes
-  private static eventVariations: EventLayoutVariation = {
+  private static readonly eventVariations: EventLayoutVariation = {
     // Removed SEARCH_RESTAURANT variations to prevent layout breaking when searching
     // Seed-based variations should always take priority
     VIEW_RESTAURANT: {
@@ -1120,7 +1120,7 @@ export class SeedVariationManager {
   };
 
   // Track active events
-  private static activeEvents: Set<string> = new Set();
+  private static readonly activeEvents: Set<string> = new Set();
 
   // Method to register an event
   static registerEvent(eventType: string) {
@@ -1147,20 +1147,13 @@ export class SeedVariationManager {
     eventType?: string
   ): LayoutVariation {
     // First check if there's an event-based variation
-    if (
-      eventType &&
-      this.eventVariations[eventType] &&
-      this.eventVariations[eventType][type]
-    ) {
+    if (eventType && this.eventVariations[eventType]?.[type]) {
       return this.eventVariations[eventType][type];
     }
 
     // Check if any active events should override the layout
     for (const activeEvent of this.activeEvents) {
-      if (
-        this.eventVariations[activeEvent] &&
-        this.eventVariations[activeEvent][type]
-      ) {
+      if (this.eventVariations[activeEvent]?.[type]) {
         return this.eventVariations[activeEvent][type];
       }
     }
