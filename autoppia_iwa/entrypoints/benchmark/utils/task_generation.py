@@ -1,7 +1,7 @@
 """Task generation utilities for benchmark projects."""
 
+import asyncio
 import json
-import os
 from datetime import datetime
 from pathlib import Path
 
@@ -15,44 +15,54 @@ from autoppia_iwa.src.demo_webs.classes import WebProject
 # =====================
 # Cache File Management
 # =====================
-def get_cache_filename(project: WebProject, task_cache_dir: str) -> str:
+def get_cache_filename(project: WebProject, task_cache_dir: str) -> Path:
     """Generate a project-specific cache filename based on the project's name or ID."""
     safe_name = project.id.replace("/", "_").replace("\\", "_")
-    return os.path.join(task_cache_dir, f"{safe_name}_tasks.json")
+    return Path(task_cache_dir) / f"{safe_name}_tasks.json"
+
+
+def _write_tasks_to_file(filename: Path, cache_data: dict) -> None:
+    """Synchronous helper to write tasks to JSON file."""
+    filename.parent.mkdir(parents=True, exist_ok=True)
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(cache_data, f, indent=2)
 
 
 async def save_tasks_to_json(tasks: list[Task], project: WebProject, task_cache_dir: str) -> bool:
     """Save tasks to a project-specific JSON file."""
     filename = get_cache_filename(project, task_cache_dir)
     try:
-        # Ensure directory exists
-        os.makedirs(task_cache_dir, exist_ok=True)
-
         # Serialize tasks
         serialized_tasks = [task.serialize() for task in tasks]
 
         # Compose cache data
         cache_data = {"project_id": project.id, "project_name": project.name, "timestamp": datetime.now().isoformat(), "tasks": serialized_tasks}
 
-        with open(filename, "w") as f:
-            json.dump(cache_data, f, indent=2)
+        # Use async file I/O to avoid blocking event loop
+        await asyncio.to_thread(_write_tasks_to_file, filename, cache_data)
 
-        print(f"Tasks for project '{project.name}' saved to {filename}")
+        logger.info(f"Tasks for project '{project.name}' saved to {filename}")
         return True
-    except Exception as e:
-        print(f"Error saving tasks to {filename}: {e!s}")
+    except (OSError, json.JSONEncodeError) as e:
+        logger.error(f"Error saving tasks to {filename}: {e!s}")
         return False
+
+
+def _read_tasks_from_file(filename: Path) -> dict:
+    """Synchronous helper to read tasks from JSON file."""
+    with open(filename, encoding="utf-8") as f:
+        return json.load(f)
 
 
 async def load_tasks_from_json(project: WebProject, task_cache_dir: str) -> list[Task] | None:
     """Load tasks from a project-specific JSON file."""
     filename = get_cache_filename(project, task_cache_dir)
     try:
-        if not Path(filename).exists():
+        if not filename.exists():
             return None
 
-        with open(filename) as f:
-            data = json.load(f)
+        # Use async file I/O to avoid blocking event loop
+        data = await asyncio.to_thread(_read_tasks_from_file, filename)
 
         tasks_data = data.get("tasks", [])
         if not tasks_data:
@@ -61,10 +71,10 @@ async def load_tasks_from_json(project: WebProject, task_cache_dir: str) -> list
         # Deserialize tasks
         tasks = [Task.deserialize(task_data) for task_data in tasks_data]
 
-        print(f"Loaded {len(tasks)} tasks from cache for '{project.name}'")
+        logger.info(f"Loaded {len(tasks)} tasks from cache for '{project.name}'")
         return tasks
-    except Exception as e:
-        print(f"Error loading tasks from {filename}: {e!s}")
+    except (OSError, json.JSONDecodeError, KeyError) as e:
+        logger.error(f"Error loading tasks from {filename}: {e!s}")
         return None
 
 
