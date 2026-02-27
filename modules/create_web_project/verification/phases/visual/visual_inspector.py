@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import contextvars
 import json
 import random
 import re
@@ -19,6 +20,7 @@ from ..deck.models import DeckPage, DeckRequiredElement, WebProjectDeck
 
 DECKS_BASE = Path(__file__).resolve().parents[1] / "deck"
 SCREENSHOT_DIR = Path("data") / "web_verification" / "visual_inspector"
+TIMEOUT_MS: contextvars.ContextVar[float] = contextvars.ContextVar("timeout_ms", default=8000.0)
 
 try:  # pragma: no cover - DI optional in CLI
     DI = DIContainer()
@@ -72,15 +74,17 @@ def _build_url(base_url: str, pattern: str, seed: str | None) -> str:
     return urljoin(base, path)
 
 
-async def _check_required_elements(page: Page, elements: Iterable[DeckRequiredElement], timeout: float) -> list[str]:
+async def _check_required_elements(page: Page, elements: Iterable[DeckRequiredElement]) -> list[str]:
     issues: list[str] = []
+    timeout_sec = TIMEOUT_MS.get() / 1000.0  # asyncio.timeout uses seconds
     for element in elements:
         selector = element.selector
         text = element.text_contains
         try:
             if selector:
                 locator = page.locator(selector)
-                await locator.first.wait_for(state="visible", timeout=timeout)
+                async with asyncio.timeout(timeout_sec):
+                    await locator.first.wait_for(state="visible")
                 if text:
                     locator = locator.filter(has_text=text)
                     count = await locator.count()
@@ -88,10 +92,11 @@ async def _check_required_elements(page: Page, elements: Iterable[DeckRequiredEl
                         issues.append(f"No element matching {element.describe()}")
             elif text:
                 locator = page.get_by_text(text, exact=False)
-                await locator.first.wait_for(state="visible", timeout=timeout)
+                async with asyncio.timeout(timeout_sec):
+                    await locator.first.wait_for(state="visible")
             else:
                 issues.append("Element spec missing selector/text")
-        except PlaywrightTimeoutError:
+        except (PlaywrightTimeoutError, TimeoutError):
             issues.append(f"Timeout waiting for {element.describe()}")
     return issues
 
@@ -101,7 +106,6 @@ async def _inspect_page(
     project_slug: str,
     base_url: str,
     page_spec: DeckPage,
-    timeout: float,
     seed: str | None,
     capture_dir: Path | None,
 ) -> dict:
@@ -120,15 +124,16 @@ async def _inspect_page(
             candidate_url = _build_url(base_url, pattern, seed)
             result["url_attempted"] = candidate_url
             try:
-                response = await page.goto(candidate_url, wait_until="domcontentloaded", timeout=timeout)
-            except PlaywrightTimeoutError:
+                async with asyncio.timeout(TIMEOUT_MS.get() / 1000.0):
+                    response = await page.goto(candidate_url, wait_until="domcontentloaded")
+            except (PlaywrightTimeoutError, TimeoutError):
                 result["errors"].append(f"Timeout navigating to {candidate_url}")
                 continue
             status = response.status if response else None
             if status and status >= 400:
                 result["errors"].append(f"{candidate_url} returned status {status}")
                 continue
-            missing = await _check_required_elements(page, page_spec.required_elements, timeout)
+            missing = await _check_required_elements(page, page_spec.required_elements)
             if missing:
                 result["missing_elements"] = missing
                 continue
@@ -230,7 +235,7 @@ async def _llm_judge_page(
 
     def _attempt_parse(text: str) -> dict | None:
         cleaned = text.strip()
-        cleaned = re.sub(r"^```(?:json)?|```$", "", cleaned, flags=re.IGNORECASE | re.MULTILINE).strip()
+        cleaned = re.sub(r"(^```(?:json)?)|(```$)", "", cleaned, flags=re.IGNORECASE | re.MULTILINE).strip()
         try:
             return json.loads(cleaned)
         except Exception:
@@ -283,7 +288,6 @@ async def run_inspector(
     deck: WebProjectDeck,
     project_slug: str,
     base_url: str,
-    timeout: float,
     seed: str | None,
     headless: bool,
     screenshot_dir: Path | None = None,
@@ -299,7 +303,6 @@ async def run_inspector(
                     project_slug=project_slug,
                     base_url=base_url,
                     page_spec=page_spec,
-                    timeout=timeout,
                     seed=seed,
                     capture_dir=screenshot_dir,
                 )
@@ -365,13 +368,13 @@ def main() -> None:
     seed = args.seed or str(random.randint(1, 9999))
     screenshot_dir = SCREENSHOT_DIR
     llm_service = _obtain_llm_service() if args.llm_judge else None
+    TIMEOUT_MS.set(args.timeout)
     logger.info(f"Using deck {deck_path} with base URL {base_url} and seed {seed}")
     results = asyncio.run(
         run_inspector(
             deck,
             project_slug=args.project_slug,
             base_url=base_url,
-            timeout=args.timeout,
             seed=seed,
             headless=not args.headed,
             screenshot_dir=screenshot_dir,
