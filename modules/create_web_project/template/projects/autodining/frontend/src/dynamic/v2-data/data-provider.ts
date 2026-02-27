@@ -21,18 +21,22 @@ export interface RestaurantData {
 export class DynamicDataProvider {
   private static instance: DynamicDataProvider;
   private restaurants: ReturnType<typeof getRestaurants> = [];
-  private isEnabled = false;
+  private readonly isEnabled: boolean;
   private ready = false;
-  private readyPromise: Promise<void>;
+  private readonly readyPromise: Promise<void>;
 
   private constructor() {
     this.isEnabled = process.env.NEXT_PUBLIC_ENABLE_DYNAMIC_V2 === 'true';
-    if (typeof window === "undefined") {
+    // NOSONAR - Async initialization in constructor is necessary for singleton pattern with lazy loading
+    this.readyPromise = this.createReadyPromise();
+  }
+
+  private createReadyPromise(): Promise<void> {
+    if (globalThis.window === undefined) {
       this.ready = true;
-      this.readyPromise = Promise.resolve();
-      return;
+      return Promise.resolve();
     }
-    this.readyPromise = this.loadRestaurants();
+    return this.loadRestaurants();
   }
 
   public static getInstance(): DynamicDataProvider {
@@ -81,11 +85,10 @@ export class DynamicDataProvider {
     }));
   }
 
-  public async reload(seed?: number): Promise<void> {
+  public async reload(seed: number = 1): Promise<void> {
     if (!this.isEnabled) return;
 
-    const v2Seed = seed ?? 1;
-    await initializeRestaurants(v2Seed);
+    await initializeRestaurants(seed);
     this.restaurants = getRestaurants();
   }
 
@@ -99,7 +102,7 @@ export class DynamicDataProvider {
 export const dynamicDataProvider = DynamicDataProvider.getInstance();
 
 // Re-export for compatibility
-export { initializeRestaurants, getRestaurants };
+export { initializeRestaurants, getRestaurants } from '@/data/restaurants-enhanced';
 
 // Export helper functions
 export const isDynamicModeEnabled = () => dynamicDataProvider.isDynamicModeEnabled();
