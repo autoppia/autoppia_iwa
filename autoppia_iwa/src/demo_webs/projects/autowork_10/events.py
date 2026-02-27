@@ -848,8 +848,8 @@ class SubmitJobEvent(Event, BaseEventValidator):
     budgetType: str
     description: str
     duration: str
-    rate_from: int | None
-    rate_to: int | None
+    rate_from: int | None = None
+    rate_to: int | None = None
     scope: str
     skills: list[str]
     step: int
@@ -938,8 +938,8 @@ class ClosePostAJobWindowEvent(Event, BaseEventValidator):
     budgetType: str
     description: str
     duration: str
-    rate_from: int | None
-    rate_to: int | None
+    rate_from: int | None = None
+    rate_to: int | None = None
     scope: str
     skills: list[str]
     step: int
