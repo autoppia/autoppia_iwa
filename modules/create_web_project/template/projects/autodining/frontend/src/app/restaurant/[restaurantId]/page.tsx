@@ -292,11 +292,11 @@ export default function RestaurantPage() {
                     className="flex items-center text-[#46a758] text-xl font-semibold"
                     id={dyn.v3.getVariant("rating-stars", ID_VARIANTS_MAP, "rating-stars")}
                   >
-                    {Array.from({ length: r?.stars ?? 5 }).map((_, i) => (
-                      <span key={`star-filled-${i}`}>★</span>
+                    {Array.from({ length: r?.stars ?? 5 }, (_, i) => `star-filled-${r?.id ?? "r"}-${i}`).map((key) => (
+                      <span key={key}>★</span>
                     ))}
-                    {Array.from({ length: 5 - (r?.stars ?? 5) }).map((_, i) => (
-                      <span key={`star-empty-${i}`} className="text-gray-300">
+                    {Array.from({ length: 5 - (r?.stars ?? 5) }, (_, i) => `star-empty-${r?.id ?? "r"}-${i}`).map((key) => (
+                      <span key={key} className="text-gray-300">
                         ★
                       </span>
                     ))}
@@ -609,8 +609,8 @@ export default function RestaurantPage() {
                           className="flex items-center text-[#46a758] text-2xl mb-2"
                           id={dyn.v3.getVariant("reviews-stars", ID_VARIANTS_MAP, "reviews-stars")}
                         >
-                          {Array.from({ length: r?.stars ?? 5 }).map((_, i) => (
-                            <span key={`review-star-${i}`}>★</span>
+                          {Array.from({ length: r?.stars ?? 5 }, (_, i) => `review-star-${r?.id ?? "r"}-${i}`).map((key) => (
+                            <span key={key}>★</span>
                           ))}
                         </div>
                         <div
