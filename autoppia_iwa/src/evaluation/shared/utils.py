@@ -266,13 +266,10 @@ async def log_progress(total_groups: int, interval: int = 10):
         total_groups (int): The total number of groups to evaluate.
         interval (int): How often (in seconds) to log progress.
     """
-    try:
-        while True:
-            await asyncio.sleep(interval)
-            completed = sum(1 for t in asyncio.all_tasks() if t.done() and "evaluate_group_with_semaphore" in str(t))
-            logger.info(f"Progress: {completed}/{total_groups} groups ({completed / total_groups * 100:.0f}%)")
-    except asyncio.CancelledError:
-        pass
+    while True:
+        await asyncio.sleep(interval)
+        completed = sum(1 for t in asyncio.all_tasks() if t.done() and "evaluate_group_with_semaphore" in str(t))
+        logger.info(f"Progress: {completed}/{total_groups} groups ({completed / total_groups * 100:.0f}%)")
 
 
 def hash_actions(actions: list[BaseAction]) -> str:
