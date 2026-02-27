@@ -174,13 +174,9 @@ class EditUserEvent(Event, BaseEventValidator):
         previous_values = data.get("previous_values", {})
 
         # Process previous_values favorite_genres if present
-        if "favorite_genres" in previous_values and isinstance(previous_values["favorite_genres"], list):
-            # If it's already a list of strings, keep it
-            if all(isinstance(item, str) for item in previous_values["favorite_genres"]):
-                pass
-            # If it's a list of objects, extract the names
-            else:
-                previous_values["favorite_genres"] = [item["name"] if isinstance(item, dict) and "name" in item else str(item) for item in previous_values["favorite_genres"]]
+        if "favorite_genres" in previous_values and isinstance(previous_values["favorite_genres"], list) and not all(isinstance(item, str) for item in previous_values["favorite_genres"]):
+            # If it's not a list of strings, extract the names from objects
+            previous_values["favorite_genres"] = [item["name"] if isinstance(item, dict) and "name" in item else str(item) for item in previous_values["favorite_genres"]]
 
         return cls(
             event_name=base_event.event_name,

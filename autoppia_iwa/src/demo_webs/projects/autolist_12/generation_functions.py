@@ -185,7 +185,7 @@ async def generate_select_date_for_task_constraints(task_url: str | None = None,
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_SELECT_DATE_MAP)
 
 
-async def generate_select_task_priority_constraints() -> list[dict[str, Any]]:
+def generate_select_task_priority_constraints() -> list[dict[str, Any]]:
     """Generate constraints for selecting a task priority."""
     field_map = {
         "priority": {"dataset": PRIORITIES},
@@ -206,7 +206,7 @@ async def generate_task_constraints(task_url: str | None = None, dataset: list[d
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_TASK_MAP)
 
 
-async def generate_team_members_added_constraints() -> list[dict[str, Any]]:
+def generate_team_members_added_constraints() -> list[dict[str, Any]]:
     """Generate constraints for adding team members, including member_count and members."""
     num_members = random.randint(1, 3)
     selected_members = random.sample([m["label"] for m in TEAM_MEMBERS_OPTIONS], k=num_members)
@@ -221,7 +221,7 @@ async def generate_team_members_added_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_team_role_assigned_constraints() -> list[dict[str, Any]]:
+def generate_team_role_assigned_constraints() -> list[dict[str, Any]]:
     """Generate constraints for assigning a role to a team member."""
     field_map = {
         "_dataset": TEAMS,
@@ -231,7 +231,7 @@ async def generate_team_role_assigned_constraints() -> list[dict[str, Any]]:
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_TEAM_ROLE_ASSIGNED_MAP)
 
 
-async def generate_team_created_constraints() -> list[dict[str, Any]]:
+def generate_team_created_constraints() -> list[dict[str, Any]]:
     """Generate constraints for creating a team."""
     field_map = {
         "_dataset": TEAMS,

@@ -50,6 +50,7 @@ async def _ensure_entity_dataset(
     Extract entity data from the cache dataset, or fetch from server if not available.
 
     """
+    _ = dataset  # Unused parameter kept for backward compatibility
 
     # Otherwise, fetch the specific entity type dynamically using the provided parameters
     seed = get_seed_from_url(task_url)
@@ -386,7 +387,7 @@ sample_post_contents = [
 ]
 
 
-async def generate_post_status_constraints() -> list[dict[str, Any]]:
+def generate_post_status_constraints() -> list[dict[str, Any]]:
     all_constraints = []
     field = "content"
     field_operators = FIELD_OPERATORS_POST_STATUS_MAP
@@ -526,7 +527,7 @@ async def generate_view_job_constraints(task_url: str | None = None, dataset: li
     return all_constraints
 
 
-async def generate_filter_jobs_constraints() -> list[dict[str, Any]]:
+def generate_filter_jobs_constraints() -> list[dict[str, Any]]:
     """
     Generates constraints for filtering jobs based on current filters/result counts.
     """

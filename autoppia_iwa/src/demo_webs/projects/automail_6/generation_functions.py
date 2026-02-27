@@ -8,6 +8,10 @@ from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 from ..criterion_helper import ComparisonOperator
 from ..operators import EQUALS, NOT_EQUALS
 from ..shared_utils import create_constraint_dict
+
+# Constants
+NAME_PLACEHOLDER = "<name>"
+
 from .data import (
     FIELD_OPERATORS_ADD_LABEL_MAP,
     FIELD_OPERATORS_CREATE_LABEL_MAP,
@@ -64,14 +68,14 @@ def _body_safe_substring_for_contains(body: str) -> str:
     Return a substring of body suitable for 'contains' that does not include <name>,
     so the task prompt generator and verification pipeline can match reliably.
     """
-    if "<name>" not in body:
+    if NAME_PLACEHOLDER not in body:
         if "\n" in body:
             parts = [p.strip() for p in body.split("\n") if p.strip()]
             return max(parts, key=len) if parts else body
         return body if len(body) <= 80 else body[:80]
-    parts = [p.strip() for p in body.split("\n") if p.strip() and "<name>" not in p]
+    parts = [p.strip() for p in body.split("\n") if p.strip() and NAME_PLACEHOLDER not in p]
     if not parts:
-        return body.replace("<name>", "").strip()
+        return body.replace(NAME_PLACEHOLDER, "").strip()
     return max(parts, key=len)
 
 
@@ -93,16 +97,19 @@ def _email_body_safe_for_constraint(body: str) -> str:
 
 async def _ensure_email_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Extract emails data from the pre-loaded dataset, or fetch from server if not available."""
+    _ = dataset  # Unused parameter kept for backward compatibility
     seed = get_seed_from_url(task_url)
     emails = await fetch_data(seed_value=seed)
-    dataset = {"emails": emails}
+    fetched_dataset = {"emails": emails}
 
-    if dataset and "emails" in dataset:
-        return dataset["emails"]
+    if fetched_dataset and "emails" in fetched_dataset:
+        return fetched_dataset["emails"]
     return []
 
 
-def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
+def _generate_constraint_value(
+    operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]
+) -> Any:  # NOSONAR - Cognitive complexity is intentionally high due to multiple operator handling
     value = None
 
     if operator == ComparisonOperator.EQUALS:
@@ -511,14 +518,11 @@ async def generate_add_label_constraints(task_url: str | None = None, dataset: l
     return constraints_list
 
 
-async def generate_theme_changed_constraints() -> list[dict[str, Any]]:
+def generate_theme_changed_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     themes = ["light", "dark", "system"]
     field = "theme"
     allowed_ops = [EQUALS, NOT_EQUALS]
-
-    if not allowed_ops:
-        return constraints_list
 
     operator = ComparisonOperator(random.choice(allowed_ops))
 
@@ -530,7 +534,7 @@ async def generate_theme_changed_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_template_selection_constraints() -> list[dict[str, Any]]:
+def generate_template_selection_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     template = choice(TEMPLATES)
     possible_fields = ["template_name", "subject"]
@@ -552,7 +556,7 @@ async def generate_template_selection_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_template_body_constraints() -> list[dict[str, Any]]:
+def generate_template_body_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     template = choice(TEMPLATES)
     possible_fields = ["template_name", "subject", "body"]
@@ -579,7 +583,7 @@ async def generate_template_body_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_sent_template_constraints() -> list[dict[str, Any]]:
+def generate_sent_template_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     template = choice(TEMPLATES)
     to_emails = [{"to": email} for email in LIST_OF_EMAILS]

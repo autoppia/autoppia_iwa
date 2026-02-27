@@ -131,9 +131,7 @@ def generate_delete_book_constraints():
     constraints_str = f"username equals {USERNAME_PLACEHOLDER} AND password equals {PASSWORD_PLACEHOLDER} AND id equals <web_agent_id>"
 
     # Convertir el string a la estructura de datos
-    if constraints_str:
-        return parse_constraints_str(constraints_str)
-    return None
+    return parse_constraints_str(constraints_str)
 
 
 async def generate_search_book_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
@@ -604,8 +602,8 @@ async def generate_edit_book_constraints(task_url: str | None = None, dataset: d
     constraints = []
 
     # Always add username and password constraints explicitly
-    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<username>"})
-    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<password>"})
+    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": USERNAME_PLACEHOLDER})
+    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": PASSWORD_PLACEHOLDER})
 
     # Seleccionar 1, 2, 3 o 4 campos para editar
     # Security Hotspot: random.sample and random.choice are used for non-security purposes (test data generation)
@@ -707,8 +705,8 @@ async def generate_add_book_constraints(task_url: str | None = None, dataset: di
     constraints = []
 
     # Always add username and password constraints explicitly
-    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<username>"})
-    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<password>"})
+    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": USERNAME_PLACEHOLDER})
+    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": PASSWORD_PLACEHOLDER})
 
     # Seleccionar 1, 2, 3 o 4 campos para editar
     selected_fields = sample(editable_fields, k=choice([1, 2, 3, 4]))

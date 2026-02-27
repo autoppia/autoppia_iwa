@@ -406,13 +406,13 @@ async def generate_add_to_cart_constraints(task_url: str | None = None, dataset:
 
 async def generate_dropoff_option_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict]:
     constraints_list = await __generate_add_to_cart_options_constraints(task_url, dataset=dataset)
-    dropoffOptions = ["Leave it at my door", "Hand it to me", "Meet outside", "Meet in the lobby", "Call upon arrival", "Text when arriving"]
+    dropoff_options = ["Leave it at my door", "Hand it to me", "Meet outside", "Meet in the lobby", "Call upon arrival", "Text when arriving"]
 
     field = "delivery_preference"
     allowed_ops = FIELD_OPERATORS_DROPOFF_OPTION_MAP[field]
     operator = ComparisonOperator(random.choice(allowed_ops))
-    field_value = random.choice(dropoffOptions)
-    dataset = [{"delivery_preference": opt} for opt in dropoffOptions]
+    field_value = random.choice(dropoff_options)
+    dataset = [{"delivery_preference": opt} for opt in dropoff_options]
     value = _generate_constraint_value(operator, field_value, field, dataset)
     constraints_list.append(create_constraint_dict(field, operator, value))
     return constraints_list

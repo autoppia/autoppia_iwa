@@ -59,6 +59,7 @@ async def _ensure_entity_dataset(
     Dynamically fetches only the requested entity_type using the provided method and filter_key.
     Returns a dictionary with entity_type as the key.
     """
+    _ = dataset  # Unused parameter kept for backward compatibility
 
     # Otherwise, fetch the specific entity type dynamically using the provided parameters
     seed = get_seed_from_url(task_url)

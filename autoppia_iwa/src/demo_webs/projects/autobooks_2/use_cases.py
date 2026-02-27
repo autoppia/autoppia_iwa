@@ -57,7 +57,7 @@ def _generate_allowed_years_list(books_data: list[dict]) -> list[int]:
     """Generate a list of unique years from books data."""
     if not books_data:
         return []
-    return sorted(list(set(book.get("year") for book in books_data if book.get("year") is not None)))
+    return sorted({book.get("year") for book in books_data if book.get("year") is not None})
 
 
 def _generate_allowed_genres_list(books_data: list[dict]) -> list[str]:
@@ -71,7 +71,7 @@ def _generate_allowed_genres_list(books_data: list[dict]) -> list[str]:
             genres.update(book_genres)
         elif isinstance(book_genres, str):
             genres.add(book_genres)
-    return sorted(list(genres))
+    return sorted(genres)
 
 
 ###############################################################################

@@ -7,6 +7,9 @@ from typing import Any
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
 
 from ..shared_utils import create_constraint_dict
+
+# Constants
+ERROR_NO_DATASET_MSG = "[ERROR] No dataset provided"
 from .data import (
     ALLOWED_EVENT_COLORS,
     FIELD_OPERATORS_MAP_BILLING_SEARCH,
@@ -49,6 +52,7 @@ async def _ensure_crm_dataset(
     Dynamically fetches only the requested entity_type using the provided method and filter_key.
     Returns a dictionary with entity_type as the key.
     """
+    _ = dataset  # Unused parameter kept for backward compatibility
     from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
     from .data_utils import fetch_data
@@ -97,7 +101,7 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
 
     elif operator == ComparisonOperator.IN_LIST:
         all_values = [v.get(field) for v in dataset if field in v and v.get(field) is not None]
-        all_values = list({v for v in all_values})
+        all_values = list(set(all_values))
         if not all_values:
             return [field_value]
         random.shuffle(all_values)
@@ -108,7 +112,7 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
 
     elif operator == ComparisonOperator.NOT_IN_LIST:
         all_values = [v.get(field) for v in dataset if field in v and v.get(field) is not None]
-        all_values = list({v for v in all_values})
+        all_values = list(set(all_values))
         if field_value in all_values:
             with contextlib.suppress(ValueError):
                 all_values.remove(field_value)
@@ -139,7 +143,7 @@ async def generate_view_matter_constraints(task_url: str | None = None, dataset:
     dataset_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="matters", method="distribute", filter_key="status")
     dataset = dataset_dict.get("matters", [])
     if not dataset:
-        print("[ERROR] No dataset provided")
+        print(ERROR_NO_DATASET_MSG)
         return constraints_list
     possible_fields = ["name", "client", "status", "updated"]
     num_constraints = random.randint(2, len(possible_fields))
@@ -221,7 +225,7 @@ async def generate_view_client_constraints(task_url: str | None = None, dataset:
     client_data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="clients", method="distribute", filter_key="status")
     client_data = client_data_dict.get("clients", [])
     if not client_data:
-        print("[ERROR] No dataset provided")
+        print(ERROR_NO_DATASET_MSG)
         return constraints_list
     possible_fields = ["name", "email", "status", "matters"]
     num_constraints = random.randint(1, len(possible_fields))
@@ -251,7 +255,7 @@ async def generate_search_client_constraints(task_url: str | None = None, datase
     client_data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="clients", method="distribute", filter_key="status")
     client_data = client_data_dict.get("clients", [])
     if not client_data:
-        print("[ERROR] No dataset provided")
+        print(ERROR_NO_DATASET_MSG)
         return constraints_list
     field_map = {"name": "query"}
     field = "name"
@@ -274,7 +278,7 @@ async def generate_search_matter_constraints(task_url: str | None = None, datase
     matter_data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="matters", method="distribute", filter_key="status")
     matter_data = matter_data_dict.get("matters", [])
     if not matter_data:
-        print("[ERROR] No dataset provided")
+        print(ERROR_NO_DATASET_MSG)
         return constraints_list
 
     field = "name"
@@ -369,7 +373,7 @@ async def generate_document_deleted_constraints(task_url: str | None = None, dat
     data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="files", method="", filter_key="")
     data = data_dict.get("files", [])
     if not data:
-        print("[ERROR] No dataset provided")
+        print(ERROR_NO_DATASET_MSG)
         return constraints_list
     document_data = random.choice(data)
     # document_data = random.choice(DOCUMENT_DATA)
@@ -591,7 +595,7 @@ async def generate_new_log_added_constraints(task_url: str | None = None, datase
     data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="logs")
     data = data_dict.get("logs", [])
     if not data:
-        print("[ERROR] No dataset provided")
+        print(ERROR_NO_DATASET_MSG)
         return constraints
     log_data = random.choice(data)
 
@@ -618,7 +622,7 @@ async def generate_log_edited_constraints(task_url: str | None = None, dataset: 
     data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="logs", method="", filter_key="")
     data = data_dict.get("logs", [])
     if not data:
-        print("[ERROR] No dataset provided")
+        print(ERROR_NO_DATASET_MSG)
         return constraints
 
     log_data = random.choice(data)
@@ -645,7 +649,7 @@ async def generate_delete_log_constraints(task_url: str | None = None, dataset: 
     data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="logs", method="", filter_key="")
     data = data_dict.get("logs", [])
     if not data:
-        print("[ERROR] No dataset provided")
+        print(ERROR_NO_DATASET_MSG)
         return constraints
     log_data = random.choice(data)
     for field in fields:
@@ -670,7 +674,7 @@ async def generate_filter_matter_status_constraints(task_url: str | None = None,
     matter_data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="matters", method="distribute", filter_key="status")
     matter_data = matter_data_dict.get("matters", [])
     if not matter_data:
-        print("[ERROR] No dataset provided")
+        print(ERROR_NO_DATASET_MSG)
         return constraints
 
     statuses = [m.get("status") for m in matter_data if m.get("status")]
@@ -700,7 +704,7 @@ async def generate_update_matter_constraints(task_url: str | None = None, datase
     matter_data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="matters", method="distribute", filter_key="status")
     matter_data = matter_data_dict.get("matters", [])
     if not matter_data:
-        print("[ERROR] No dataset provided")
+        print(ERROR_NO_DATASET_MSG)
         return constraints
 
     fields = ["name", "client", "status", "updated"]
