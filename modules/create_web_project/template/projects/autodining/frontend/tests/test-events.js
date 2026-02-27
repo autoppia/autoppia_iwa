@@ -14,12 +14,12 @@
 // ============================================================================
 
 function isBrowser() {
-  return typeof window !== 'undefined';
+  return globalThis.window !== undefined;
 }
 
 function readFileContent(filePath) {
   if (isBrowser()) return '';
-  const fs = require('fs');
+  const fs = require('node:fs');
   try {
     return fs.readFileSync(filePath, 'utf8');
   } catch {
@@ -29,8 +29,8 @@ function readFileContent(filePath) {
 
 function getAllSourceFiles() {
   if (isBrowser()) return [];
-  const fs = require('fs');
-  const pathModule = require('path');
+  const fs = require('node:fs');
+  const pathModule = require('node:path');
   const srcDir = pathModule.join(process.cwd(), 'src');
 
   function walkDir(dir, fileList = []) {
@@ -45,8 +45,8 @@ function getAllSourceFiles() {
         } else if ((file.endsWith('.tsx') || file.endsWith('.ts')) && !file.includes('test-')) {
           fileList.push(filePath);
         }
-      } catch (err) {
-        // Skip files we can't read
+      } catch (error_) {
+        if (process.env.NODE_DEBUG) console.debug(error_);
       }
     });
     return fileList;
@@ -84,8 +84,8 @@ function testEventCoverage() {
     return results;
   }
 
-  const fs = require('fs');
-  const pathModule = require('path');
+  const fs = require('node:fs');
+  const pathModule = require('node:path');
 
   // Try to find events.ts file in common locations
   const possiblePaths = [
@@ -118,7 +118,8 @@ function testEventCoverage() {
   }
 
   // Extract EVENT_TYPES from the file
-  const eventTypesMatch = eventsContent.match(/export\s+const\s+EVENT_TYPES\s*=\s*\{([^}]+)\}/s);
+  const eventTypesRe = /export\s+const\s+EVENT_TYPES\s*=\s*\{([^}]+)\}/s;
+  const eventTypesMatch = eventTypesRe.exec(eventsContent);
   if (!eventTypesMatch) {
     console.log('\n❌ No se pudo extraer EVENT_TYPES del archivo');
     results.failed++;
@@ -145,7 +146,7 @@ function testEventCoverage() {
     const eventKey = match[1];
     const eventValue = match[2];
     // Only add if not already in the list
-    if (!eventNames.find(e => e.key === eventKey)) {
+    if (!eventNames.some(e => e.key === eventKey)) {
       eventNames.push({ key: eventKey, value: eventValue });
     }
   }
@@ -168,11 +169,13 @@ function testEventCoverage() {
   eventNames.forEach(({ key, value }) => {
     // Look for: logEvent(EVENT_TYPES.KEY, ...) or logEvent(EVENT_TYPES['KEY'], ...)
     // Also look for: EVENT_TYPES.KEY or EVENT_TYPES['KEY'] (direct reference)
-    const pattern1 = new RegExp(`logEvent\\([^)]*EVENT_TYPES\\.${key}[^)]*\\)`, 'g');
-    const pattern2 = new RegExp(`logEvent\\([^)]*EVENT_TYPES\\['${key}'\\][^)]*\\)`, 'g');
-    const pattern3 = new RegExp(`EVENT_TYPES\\.${key}`, 'g');
-    const pattern4 = new RegExp(`EVENT_TYPES\\['${key}'\\]`, 'g');
-    const pattern5 = new RegExp(`["']${value}["']`, 'g'); // Direct string usage
+    const pattern1 = new RegExp(String.raw`logEvent\([^)]*EVENT_TYPES\.${key}[^)]*\)`, 'g');
+    const pattern2 = new RegExp(String.raw`logEvent\([^)]*EVENT_TYPES\['${key}'\]\s*[^)]*\)`, 'g');
+    const pattern3 = new RegExp(String.raw`EVENT_TYPES\.${key}`, 'g');
+    const pattern4 = new RegExp(String.raw`EVENT_TYPES\['${key}'\]`, 'g');
+    const escapeRe = /[\\^$*+?.()|[\]{}]/g;
+    const safeValue = value.replaceAll(escapeRe, String.raw`\$&`);
+    const pattern5 = new RegExp(`["']${safeValue}["']`, 'g'); // Direct string usage
 
     let usageCount = 0;
     sourceFiles.forEach(file => {
@@ -195,10 +198,9 @@ function testEventCoverage() {
       }
       // For pattern5, be more careful - only count if it's in a logEvent call context
       if (matches5) {
-        // Check if it's in a logEvent call
-        const logEventContext = content.match(new RegExp(`logEvent\\([^)]*["']${value}["'][^)]*\\)`, 'g'));
-        if (logEventContext) {
-          usageCount += logEventContext.length;
+        const logEventRe = new RegExp(String.raw`logEvent\([^)]*["']${safeValue}["'][^)]*\)`, 'g');
+        while (logEventRe.exec(content) !== null) {
+          usageCount += 1;
         }
       }
     });
@@ -297,7 +299,7 @@ function generateReport(result) {
 // ============================================================================
 
 if (isBrowser()) {
-  window.testEvents = () => generateReport(testEventCoverage());
+  globalThis.testEvents = () => generateReport(testEventCoverage());
   console.log('💡 Ejecuta testEvents() en la consola para correr el test');
 } else {
   const result = testEventCoverage();
