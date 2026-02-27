@@ -123,20 +123,17 @@ class SendMessageEvent(Event, BaseEventValidator):
     event_name: str = "SEND_MESSAGE"
     channel_name: str
     content: str
+    server_name: str
 
     class ValidationCriteria(BaseModel):
         channel_name: str | CriterionValue | None = None
         content: str | CriterionValue | None = None
+        server_name: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return all(
-            [
-                self._validate_field(self.channel_name, criteria.channel_name),
-                self._validate_field(self.content, criteria.content),
-            ]
-        )
+        return all([self._validate_field(self.channel_name, criteria.channel_name), self._validate_field(self.content, criteria.content), self._validate_field(self.server_name, criteria.server_name)])
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "SendMessageEvent":
@@ -149,6 +146,7 @@ class SendMessageEvent(Event, BaseEventValidator):
             user_id=base.user_id,
             channel_name=data.get("channel_name", ""),
             content=data.get("content", ""),
+            server_name=data.get("server_name", ""),
         )
 
 
@@ -158,10 +156,14 @@ class AddReactionEvent(Event, BaseEventValidator):
     event_name: str = "ADD_REACTION"
     message_id: str
     channel_name: str
+    server_name: str
+    content: str
 
     class ValidationCriteria(BaseModel):
         message_id: str | CriterionValue | None = None
         channel_name: str | CriterionValue | None = None
+        server_name: str | CriterionValue | None = None
+        content: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -170,6 +172,8 @@ class AddReactionEvent(Event, BaseEventValidator):
             [
                 self._validate_field(self.message_id, criteria.message_id),
                 self._validate_field(self.channel_name, criteria.channel_name),
+                self._validate_field(self.server_name, criteria.server_name),
+                self._validate_field(self.content, criteria.content),
             ]
         )
 
@@ -184,6 +188,8 @@ class AddReactionEvent(Event, BaseEventValidator):
             user_id=base.user_id,
             message_id=data.get("message_id", ""),
             channel_name=data.get("channel_name", ""),
+            server_name=data.get("server_name", ""),
+            content=data.get("message_content", ""),
         )
 
 
@@ -191,17 +197,17 @@ class SelectDmEvent(Event, BaseEventValidator):
     """User selects a DM conversation. Payload: display_name."""
 
     event_name: str = "SELECT_DM"
-    display_name: str
+    name: str
 
     class ValidationCriteria(BaseModel):
-        display_name: str | CriterionValue | None = None
+        name: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.display_name, criteria.display_name),
+                self._validate_field(self.name, criteria.name),
             ]
         )
 
@@ -214,7 +220,7 @@ class SelectDmEvent(Event, BaseEventValidator):
             timestamp=base.timestamp,
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
-            display_name=data.get("display_name", ""),
+            name=data.get("name", ""),
         )
 
 
@@ -222,11 +228,11 @@ class SendDmMessageEvent(Event, BaseEventValidator):
     """User sends a message in a DM. Payload: peer_display_name, content."""
 
     event_name: str = "SEND_DM_MESSAGE"
-    peer_display_name: str
+    name: str
     content: str
 
     class ValidationCriteria(BaseModel):
-        peer_display_name: str | CriterionValue | None = None
+        name: str | CriterionValue | None = None
         content: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
@@ -234,7 +240,7 @@ class SendDmMessageEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.peer_display_name, criteria.peer_display_name),
+                self._validate_field(self.name, criteria.name),
                 self._validate_field(self.content, criteria.content),
             ]
         )
@@ -248,7 +254,7 @@ class SendDmMessageEvent(Event, BaseEventValidator):
             timestamp=base.timestamp,
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
-            peer_display_name=data.get("peer_display_name", ""),
+            name=data.get("name", ""),
             content=data.get("content", ""),
         )
 
@@ -335,15 +341,15 @@ class SettingsAccountEvent(Event, BaseEventValidator):
     """User saves display name. Payload: display_name."""
 
     event_name: str = "SETTINGS_ACCOUNT"
-    display_name: str
+    name: str
 
     class ValidationCriteria(BaseModel):
-        display_name: str | CriterionValue | None = None
+        name: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return self._validate_field(self.display_name, criteria.display_name)
+        return self._validate_field(self.name, criteria.name)
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "SettingsAccountEvent":
@@ -354,7 +360,7 @@ class SettingsAccountEvent(Event, BaseEventValidator):
             timestamp=base.timestamp,
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
-            display_name=data.get("display_name", ""),
+            name=data.get("name", ""),
         )
 
 
@@ -526,9 +532,11 @@ class LeaveVoiceChannelEvent(Event, BaseEventValidator):
 
     event_name: str = "LEAVE_VOICE_CHANNEL"
     channel_name: str
+    server_name: str
 
     class ValidationCriteria(BaseModel):
         channel_name: str | CriterionValue | None = None
+        server_name: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -536,6 +544,7 @@ class LeaveVoiceChannelEvent(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.channel_name, criteria.channel_name),
+                self._validate_field(self.server_name, criteria.server_name),
             ]
         )
 
@@ -549,6 +558,7 @@ class LeaveVoiceChannelEvent(Event, BaseEventValidator):
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
             channel_name=data.get("channel_name", ""),
+            server_name=data.get("server_name", ""),
         )
 
 
@@ -558,10 +568,12 @@ class VoiceMuteToggleEvent(Event, BaseEventValidator):
     event_name: str = "VOICE_MUTE_TOGGLE"
     channel_name: str
     muted: bool
+    server_name: str
 
     class ValidationCriteria(BaseModel):
         channel_name: str | CriterionValue | None = None
         muted: bool | CriterionValue | None = None
+        server_name: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -570,6 +582,7 @@ class VoiceMuteToggleEvent(Event, BaseEventValidator):
             [
                 self._validate_field(self.channel_name, criteria.channel_name),
                 self._validate_field(self.muted, criteria.muted),
+                self._validate_field(self.server_name, criteria.server_name),
             ]
         )
 
@@ -585,6 +598,7 @@ class VoiceMuteToggleEvent(Event, BaseEventValidator):
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
             channel_name=data.get("channel_name", ""),
+            server_name=data.get("server_name", ""),
             muted=muted,
         )
 

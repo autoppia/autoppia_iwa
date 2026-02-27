@@ -19,24 +19,26 @@ FIELD_OPERATORS_MAP_CHANNEL = {
 FIELD_OPERATORS_MAP_SEND_MESSAGE = {
     "channel_name": STRING_OPERATORS,
     "content": STRING_OPERATORS,
+    "server_name": STRING_OPERATORS,
 }
 
 # Add reaction
 FIELD_OPERATORS_MAP_ADD_REACTION = {
     "message_id": STRING_OPERATORS,
     "channel_name": STRING_OPERATORS,
+    "server_name": STRING_OPERATORS,
+    "content": STRING_OPERATORS,
 }
 
-# DM selection / send DM
+# DM selection / send DM (event payload uses "name" for peer/display)
 FIELD_OPERATORS_MAP_DM = {
-    "display_name": STRING_OPERATORS,
-    "peer_display_name": STRING_OPERATORS,
+    "name": STRING_OPERATORS,
     "content": STRING_OPERATORS,
 }
 
 # Settings
 FIELD_OPERATORS_MAP_SETTINGS_APPEARANCE = {"theme": STRING_OPERATORS}
-FIELD_OPERATORS_MAP_SETTINGS_ACCOUNT = {"display_name": STRING_OPERATORS}
+FIELD_OPERATORS_MAP_SETTINGS_ACCOUNT = {"name": STRING_OPERATORS}
 
 # Create server (only server_name)
 FIELD_OPERATORS_MAP_CREATE_SERVER = {"server_name": STRING_OPERATORS}
@@ -51,5 +53,6 @@ FIELD_OPERATORS_MAP_CREATE_CHANNEL = {
 # Voice mute (muted is bool — equality only)
 FIELD_OPERATORS_MAP_VOICE_MUTE = {
     "channel_name": STRING_OPERATORS,
+    "server_name": STRING_OPERATORS,
     "muted": [EQUALS, NOT_EQUALS],
 }

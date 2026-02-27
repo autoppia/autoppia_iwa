@@ -118,8 +118,8 @@ SEND_MESSAGE_USE_CASE = UseCase(
     constraints_generator=generate_send_message_constraints,
     examples=[
         {
-            "prompt": "Send a message in the channel where channel_name equals 'general' with content that contains 'Hello'.",
-            "prompt_for_task_generation": "Send a message in the channel where channel_name equals 'general' with content that contains 'Hello'.",
+            "prompt": "Send a message in the channel where channel_name equals 'general' and server_name equals 'Dev Squad' with content that contains 'Hello'.",
+            "prompt_for_task_generation": "Send a message in the channel where channel_name equals 'general' and server_name equals 'Dev Squad' with content that contains 'Hello'.",
         },
         {
             "prompt": "Send a message where channel_name equals 'dev-help' and content equals 'Need help with the API'.",
@@ -140,7 +140,10 @@ ADD_REACTION_USE_CASE = UseCase(
     event_source_code=AddReactionEvent.get_source_code_of_class(),
     constraints_generator=generate_add_reaction_constraints,
     examples=[
-        {"prompt": "Add a reaction where channel_name equals 'general'.", "prompt_for_task_generation": "Add a reaction where channel_name equals 'general'."},
+        {
+            "prompt": "Add a reaction where channel_name equals 'general' and server_name equals 'Dev Squad' and content that contains 'Hello'.",
+            "prompt_for_task_generation": "Add a reaction where channel_name equals 'general' and server_name equals 'Dev Squad' and content that contains 'Hello'.",
+        },
         {"prompt": "Add a reaction where channel_name equals 'general'.", "prompt_for_task_generation": "Add a reaction where channel_name equals 'general'."},
         {"prompt": "Add a reaction where channel_name not_equals 'random'.", "prompt_for_task_generation": "Add a reaction where channel_name not_equals 'random'."},
     ],
@@ -153,11 +156,11 @@ SELECT_DM_USE_CASE = UseCase(
     event_source_code=SelectDmEvent.get_source_code_of_class(),
     constraints_generator=generate_select_dm_constraints,
     examples=[
-        {"prompt": "Open the DM where display_name equals 'Alex'.", "prompt_for_task_generation": "Open the DM where display_name equals 'Alex'."},
-        {"prompt": "Select the DM where display_name equals 'Jordan'.", "prompt_for_task_generation": "Select the DM where display_name equals 'Jordan'."},
-        {"prompt": "Select the DM where display_name contains 'lex'.", "prompt_for_task_generation": "Select the DM where display_name contains 'lex'."},
-        {"prompt": "Select the DM where display_name not_equals 'Casey'.", "prompt_for_task_generation": "Select the DM where display_name not_equals 'Casey'."},
-        {"prompt": "Select the DM where display_name not_equals 'Guest'.", "prompt_for_task_generation": "Select the DM where display_name not_equals 'Guest'."},
+        {"prompt": "Open the DM where name equals 'Alex'.", "prompt_for_task_generation": "Open the DM where name equals 'Alex'."},
+        {"prompt": "Select the DM where name equals 'Jordan'.", "prompt_for_task_generation": "Select the DM where name equals 'Jordan'."},
+        {"prompt": "Select the DM where name contains 'lex'.", "prompt_for_task_generation": "Select the DM where name contains 'lex'."},
+        {"prompt": "Select the DM where name not_equals 'Casey'.", "prompt_for_task_generation": "Select the DM where name not_equals 'Casey'."},
+        {"prompt": "Select the DM where name not_equals 'Guest'.", "prompt_for_task_generation": "Select the DM where name not_equals 'Guest'."},
     ],
 )
 
@@ -169,15 +172,15 @@ SEND_DM_MESSAGE_USE_CASE = UseCase(
     constraints_generator=generate_send_dm_message_constraints,
     examples=[
         {
-            "prompt": "Send a DM where peer_display_name equals 'Jordan' and content contains 'Hey'.",
-            "prompt_for_task_generation": "Send a DM where peer_display_name equals 'Jordan' and content contains 'Hey'.",
+            "prompt": "Send a DM where name equals 'Jordan' and content contains 'Hey'.",
+            "prompt_for_task_generation": "Send a DM where name equals 'Jordan' and content contains 'Hey'.",
         },
-        {"prompt": "Send a direct message to the peer where peer_display_name equals 'Sam'.", "prompt_for_task_generation": "Send a direct message to the peer where peer_display_name equals 'Sam'."},
+        {"prompt": "Send a direct message to the peer where name equals 'Sam'.", "prompt_for_task_generation": "Send a direct message to the peer where name equals 'Sam'."},
         {
-            "prompt": "Send a DM where peer_display_name contains 'Case' and content not_contains 'secret'.",
-            "prompt_for_task_generation": "Send a DM where peer_display_name contains 'Case' and content not_contains 'secret'.",
+            "prompt": "Send a DM where name contains 'Case' and content not_contains 'secret'.",
+            "prompt_for_task_generation": "Send a DM where name contains 'Case' and content not_contains 'secret'.",
         },
-        {"prompt": "Send a DM where peer_display_name not_equals 'Guest'.", "prompt_for_task_generation": "Send a DM where peer_display_name not_equals 'Guest'."},
+        {"prompt": "Send a DM where name not_equals 'Guest'.", "prompt_for_task_generation": "Send a DM where name not_equals 'Guest'."},
     ],
 )
 
@@ -213,10 +216,10 @@ SETTINGS_ACCOUNT_USE_CASE = UseCase(
     event_source_code=SettingsAccountEvent.get_source_code_of_class(),
     constraints_generator=generate_settings_account_constraints,
     examples=[
-        {"prompt": "In Settings, set display_name equals 'Test User'.", "prompt_for_task_generation": "In Settings, set display_name equals 'Test User'."},
-        {"prompt": "In Settings, set display_name equals 'Alex'.", "prompt_for_task_generation": "In Settings, set display_name equals 'Alex'."},
-        {"prompt": "In Settings, set display_name contains 'Test'.", "prompt_for_task_generation": "In Settings, set display_name contains 'Test'."},
-        {"prompt": "In Settings, set display_name not_equals 'Guest'.", "prompt_for_task_generation": "In Settings, set display_name not_equals 'Guest'."},
+        {"prompt": "In Settings, set name equals 'Test User'.", "prompt_for_task_generation": "In Settings, set name equals 'Test User'."},
+        {"prompt": "In Settings, set name equals 'Alex'.", "prompt_for_task_generation": "In Settings, set name equals 'Alex'."},
+        {"prompt": "In Settings, set name contains 'Test'.", "prompt_for_task_generation": "In Settings, set name contains 'Test'."},
+        {"prompt": "In Settings, set name not_equals 'Guest'.", "prompt_for_task_generation": "In Settings, set name not_equals 'Guest'."},
     ],
 )
 
@@ -314,7 +317,10 @@ LEAVE_VOICE_CHANNEL_USE_CASE = UseCase(
     event_source_code=LeaveVoiceChannelEvent.get_source_code_of_class(),
     constraints_generator=generate_leave_voice_channel_constraints,
     examples=[
-        {"prompt": "Leave the voice channel where channel_name equals 'voice-chat'.", "prompt_for_task_generation": "Leave the voice channel where channel_name equals 'voice-chat'."},
+        {
+            "prompt": "Leave the voice channel where channel_name equals 'voice-chat' and server_name equals 'Dev Squad'.",
+            "prompt_for_task_generation": "Leave the voice channel where channel_name equals 'voice-chat' and server_name equals 'Dev Squad'.",
+        },
         {"prompt": "Leave the voice channel where channel_name equals 'general'.", "prompt_for_task_generation": "Leave the voice channel where channel_name equals 'general'."},
         {"prompt": "Leave the voice channel where channel_name not_equals 'general'.", "prompt_for_task_generation": "Leave the voice channel where channel_name not_equals 'general'."},
         {"prompt": "Leave the voice channel where channel_name contains 'voice'.", "prompt_for_task_generation": "Leave the voice channel where channel_name contains 'voice'."},
@@ -329,8 +335,8 @@ VOICE_MUTE_TOGGLE_USE_CASE = UseCase(
     constraints_generator=generate_voice_mute_toggle_constraints,
     examples=[
         {
-            "prompt": "In the voice channel where channel_name equals 'voice-chat', set muted equals true.",
-            "prompt_for_task_generation": "In the voice channel where channel_name equals 'voice-chat', set muted equals true.",
+            "prompt": "In the voice channel where channel_name equals 'voice-chat', and server_name equals 'Dev Squad' and set muted equals true.",
+            "prompt_for_task_generation": "In the voice channel where channel_name equals 'voice-chat', and server_name equals 'Dev Squad' and set muted equals true.",
         },
         {"prompt": "Toggle mute so that muted equals false in the current voice channel.", "prompt_for_task_generation": "Toggle mute so that muted equals false in the current voice channel."},
         {"prompt": "In the voice channel, set muted not_equals true.", "prompt_for_task_generation": "In the voice channel, set muted not_equals true."},
@@ -344,8 +350,8 @@ VOICE_MUTE_TOGGLE_USE_CASE = UseCase(
 ALL_USE_CASES = [
     VIEW_SERVERS_USE_CASE,
     VIEW_DMS_USE_CASE,
-    SELECT_SERVER_USE_CASE,  # done
-    SELECT_CHANNEL_USE_CASE,  # done
+    SELECT_SERVER_USE_CASE,
+    SELECT_CHANNEL_USE_CASE,
     SEND_MESSAGE_USE_CASE,
     ADD_REACTION_USE_CASE,
     SELECT_DM_USE_CASE,
@@ -355,8 +361,8 @@ ALL_USE_CASES = [
     SETTINGS_NOTIFICATIONS_USE_CASE,
     SETTINGS_ACCOUNT_USE_CASE,
     CREATE_SERVER_USE_CASE,
-    OPEN_SERVER_SETTINGS_USE_CASE,  # done
-    DELETE_SERVER_USE_CASE,  # done
+    OPEN_SERVER_SETTINGS_USE_CASE,
+    DELETE_SERVER_USE_CASE,
     CREATE_CHANNEL_USE_CASE,
     JOIN_VOICE_CHANNEL_USE_CASE,
     LEAVE_VOICE_CHANNEL_USE_CASE,
