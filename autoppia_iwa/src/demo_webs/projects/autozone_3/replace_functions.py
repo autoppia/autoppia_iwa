@@ -7,7 +7,6 @@ async def replace_products_placeholders(
     text: str,
     seed_value: int | None = None,
     dataset: list[dict] | None = None,
-    constraints: list | None = None,
 ) -> str:
     """
     Replaces placeholders in a text string with data from API.
