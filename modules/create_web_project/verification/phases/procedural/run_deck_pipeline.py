@@ -65,7 +65,6 @@ def evaluate_project(
     project_slug: str | None,
     base_url: str | None,
     seed: str,
-    timeout_ms: float,
     headed: bool,
     enable_llm_judge: bool,
 ) -> PhaseResult:
@@ -91,7 +90,6 @@ def evaluate_project(
             deck=deck,
             project_slug=slug,
             base_url=target_base,
-            timeout=timeout_ms,
             seed=seed,
             headless=not headed,
             screenshot_dir=SCREENSHOT_DIR,
@@ -113,7 +111,6 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--project-slug", help="Override project slug (defaults to deck.metadata.project_id).")
     parser.add_argument("--base-url", help="Override base URL for visual inspection.")
     parser.add_argument("--seed", default="42", help="Seed placeholder for URLs (default: 42).")
-    parser.add_argument("--timeout", type=float, default=8000, help="Playwright timeout (ms).")
     parser.add_argument("--headed", action="store_true", help="Run Playwright with visible browser.")
     parser.add_argument("--disable-llm-judge", action="store_true", help="Skip LLM visual judgement.")
     return parser.parse_args(argv)
@@ -126,7 +123,6 @@ def main(argv: list[str] | None = None) -> None:
         project_slug=args.project_slug,
         base_url=args.base_url,
         seed=args.seed,
-        timeout_ms=args.timeout,
         headed=args.headed,
         enable_llm_judge=not args.disable_llm_judge,
     )
