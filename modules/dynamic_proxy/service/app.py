@@ -186,7 +186,7 @@ def create_project_proxy_app(
             return (html[:body_idx] + snippet + html[body_idx:]).encode("utf-8")
         return (snippet + html).encode("utf-8")
 
-    async def _mutate_if_needed(content: bytes, full_url: str, charset_hint: str, is_head: bool, seed: int) -> tuple[bytes, MutationResult | None]:
+    def _mutate_if_needed(content: bytes, full_url: str, charset_hint: str, is_head: bool, seed: int) -> tuple[bytes, MutationResult | None]:
         if is_head:
             return content, None
         try:
@@ -226,7 +226,7 @@ def create_project_proxy_app(
         if mutate:
             seed = _extract_seed(request.query_params)
             full_url = str(upstream_response.request.url)
-            content, result = await _mutate_if_needed(content, full_url, content_type, request.method.upper() == "HEAD", seed)
+            content, result = _mutate_if_needed(content, full_url, content_type, request.method.upper() == "HEAD", seed)
             if result and result.audit_record and app.state.audit_writer:
                 await app.state.audit_writer.write(result.audit_record)
 
