@@ -9,7 +9,7 @@ import json
 
 async def test_all_projects_have_optimization():
     print("\n" + "=" * 80)
-    print("🔍 VERIFICANDO QUE TODOS LOS 13 PROYECTOS ESTÁN ACTUALIZADOS")
+    print("🔍 VERIFICANDO QUE TODOS LOS PROYECTOS ESTÁN ACTUALIZADOS")
     print("=" * 80)
 
     projects = [
@@ -26,6 +26,7 @@ async def test_all_projects_have_optimization():
         ("autocalendar_11", "events"),
         ("autolist_12", "tasks"),
         ("autodrive_13", "trips"),
+        ("autodiscord_16", "servers"),
     ]
 
     results = []

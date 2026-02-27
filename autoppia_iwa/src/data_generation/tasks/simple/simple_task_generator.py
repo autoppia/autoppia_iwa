@@ -380,6 +380,7 @@ class SimpleTaskGenerator:
             "autowork_10": ["jobs", "experts", "hires", "skills"],
             "autodrive_13": ["places", "rides"],
             "autohealth_14": ["appointments", "doctors", "prescriptions", "medical-records"],
+            "autodiscord_16": ["servers", "channels", "messages", "members"],
         }
         return entity_types_map.get(project_dir)
 

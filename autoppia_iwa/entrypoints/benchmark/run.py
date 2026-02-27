@@ -63,12 +63,13 @@ SOTA_AGENTS = [
 ]
 # Active agents to run.
 AGENTS = [
-    ApifiedWebAgent(base_url="http://localhost:5000", id="1", name="LocalAgent", timeout=120),
+    # ApifiedWebAgent(base_url="http://localhost:5000", id="1", name="LocalAgent", timeout=120),
+    ApifiedWebAgent(host="127.0.0.1", id="1", name="BrowserUse-Native", timeout=248, port=7000),
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
-    "autocinema",
+    "autodiscord",
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 USE_CASES = None  # None = all use cases
