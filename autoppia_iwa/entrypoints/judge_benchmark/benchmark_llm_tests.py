@@ -51,7 +51,7 @@ def calculate_metrics_by_test_type(data: list[dict[str, Any]]) -> dict[str, dict
             metrics["failed_tasks"] += 1
 
     # Calculate averages for each test type
-    for _, metrics in metrics_by_test_type.items():
+    for metrics in metrics_by_test_type.values():
         total_tasks = metrics["total_tasks"]
         metrics["avg_cost"] = metrics["total_cost"] / total_tasks if total_tasks > 0 else 0
         metrics["avg_duration"] = metrics["total_duration"] / total_tasks if total_tasks > 0 else 0
