@@ -1,6 +1,5 @@
 "use client";
 
-import type React from "react";
 import {
   createContext,
   useContext,
@@ -8,6 +7,7 @@ import {
   useEffect,
   useCallback,
   Suspense,
+  type ReactNode,
 } from "react";
 import { useSearchParams } from "next/navigation";
 import {
@@ -62,7 +62,7 @@ function SeedInitializer({
   return null;
 }
 
-export const SeedProvider = ({ children }: { children: React.ReactNode }) => {
+export const SeedProvider = ({ children }: { children: ReactNode }) => {
   const [seed, setSeedState] = useState<number>(() => DEFAULT_SEED);
   const [resolvedSeeds, setResolvedSeeds] = useState<ResolvedSeeds>(() =>
     resolveSeedsSync(DEFAULT_SEED)
@@ -75,9 +75,9 @@ export const SeedProvider = ({ children }: { children: React.ReactNode }) => {
     if (isInitialized) return;
 
     // Try localStorage only on client-side
-    if (typeof window !== "undefined") {
+    if (globalThis.window !== undefined) {
       try {
-        const savedSeed = localStorage.getItem("autodining_seed_base");
+        const savedSeed = globalThis.window.localStorage.getItem("autodining_seed_base");
         if (savedSeed) {
           const parsedSeed = clampBaseSeed(Number.parseInt(savedSeed, 10));
           setSeedState(parsedSeed);
@@ -125,9 +125,9 @@ export const SeedProvider = ({ children }: { children: React.ReactNode }) => {
       }
     });
 
-    if (typeof window !== "undefined") {
+    if (globalThis.window !== undefined) {
       try {
-        localStorage.setItem("autodining_seed_base", seed.toString());
+        globalThis.window.localStorage.setItem("autodining_seed_base", seed.toString());
       } catch (error) {
         console.error("Error saving seed to localStorage:", error);
       }
@@ -148,9 +148,12 @@ export const SeedProvider = ({ children }: { children: React.ReactNode }) => {
     if (!path) return path;
     if (path.startsWith("http")) return path;
 
-    const currentParams = typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search)
-      : new URLSearchParams();
+    let currentParams: URLSearchParams;
+    if (globalThis.window) {
+      currentParams = new URLSearchParams(globalThis.window.location.search);
+    } else {
+      currentParams = new URLSearchParams();
+    }
 
     // If path already has query params
     const [base, queryString] = path.split("?");
