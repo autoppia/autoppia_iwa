@@ -12,7 +12,7 @@ from typing import Any, Literal
 
 from bs4 import BeautifulSoup, Tag
 from loguru import logger
-from playwright.async_api import Page, Route
+from playwright.async_api import Error as PlaywrightError, Page, Route, TimeoutError as PWTimeout
 from pydantic import BaseModel
 
 from autoppia_iwa.src.execution.actions.base import BaseAction
@@ -147,9 +147,9 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
 
         try:
             response = await route.fetch()
-        except Exception as exc:
+        except (PlaywrightError, PWTimeout, RuntimeError) as exc:
             logger.debug(f"Route fetch failed ({route.request.url}): {exc}")
-            with contextlib.suppress(Exception):
+            with contextlib.suppress(PlaywrightError, PWTimeout, RuntimeError):
                 await route.continue_()
             return
         try:
@@ -164,15 +164,15 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
             return
 
         html = body.decode("utf-8", errors="ignore")
-        mutated_html = await self._mutate_html(html, route.request.url)
+        mutated_html = self._mutate_html(html, route.request.url)
 
         new_body = mutated_html.encode("utf-8")
         headers = dict(response.headers)
         headers["content-length"] = str(len(new_body))
         await route.fulfill(status=response.status, headers=headers, body=new_body)
 
-    async def _mutate_html(self, html: str, url: str) -> str:
-        plan = await self._get_dom_plan(html, url)
+    def _mutate_html(self, html: str, url: str) -> str:
+        plan = self._get_dom_plan(html, url)
         mutation_started = time.perf_counter()
         soup = BeautifulSoup(html, "html.parser")
 
@@ -203,7 +203,7 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
                 continue
             try:
                 target = soup.select_one(target_selector)
-            except Exception:
+            except (ValueError, AttributeError):
                 target = None
             if target is None:
                 continue
@@ -236,7 +236,7 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
                 continue
             try:
                 target = soup.select_one(target_selector)
-            except Exception:
+            except (ValueError, AttributeError):
                 target = None
             if target is None:
                 continue
@@ -321,7 +321,7 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
             if overlay.blocking:
                 await self._attach_overlay_dismiss_handler(overlay.dismiss_selector)
             self._metrics["overlays_injected"] += 1
-        except Exception as exc:
+        except (PlaywrightError, PWTimeout, RuntimeError) as exc:
             logger.debug(f"Overlay injection failed: {exc}")
 
     async def _attach_overlay_dismiss_handler(self, dismiss_selector: str | None) -> None:
@@ -341,10 +341,10 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
         """
         try:
             await self.page.evaluate(script, selector)
-        except Exception as exc:
+        except (PlaywrightError, PWTimeout, RuntimeError) as exc:
             logger.debug(f"Overlay dismiss hook failed: {exc}")
 
-    async def _get_dom_plan(self, html: str, url: str) -> dict[str, Any]:
+    def _get_dom_plan(self, html: str, url: str) -> dict[str, Any]:
         start = time.perf_counter()
         normalized = self._normalize_html(html)
         cache_key = f"{self.project_id}:{self.seed}:{url}"
@@ -508,5 +508,5 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
         )
         try:
             self._audit_callback(record)
-        except Exception as exc:  # pragma: no cover - diagnostics only
+        except (RuntimeError, TypeError, ValueError) as exc:  # pragma: no cover - diagnostics only
             logger.debug(f"Audit callback failed: {exc}")
