@@ -43,11 +43,12 @@ const FILE_PATHS = {
 
 function hashString(str) {
   let hash = 0;
-  for (let i = 0; i < str.length; i++) {
+  let i = 0;
+  while (i < str.length) {
     const code = str.codePointAt(i) ?? 0;
     hash = ((hash << 5) - hash) + code;
     hash = hash & hash;
-    if (code > 0xFFFF) i++;
+    i += code > 0xFFFF ? 2 : 1;
   }
   return Math.abs(hash);
 }
@@ -60,7 +61,7 @@ function selectVariantIndex(seed, key, count) {
 }
 
 function isBrowser() {
-  return typeof globalThis.window !== 'undefined';
+  return globalThis.window !== undefined;
 }
 
 function loadJSON(path) {
@@ -536,8 +537,8 @@ function testEventCoverage() {
     return results;
   }
 
-  const fs = require('fs');
-  const pathModule = require('path');
+  const fs = require('node:fs');
+  const pathModule = require('node:path');
 
   // Try to find events.ts file in common locations
   const possiblePaths = [
@@ -569,7 +570,8 @@ function testEventCoverage() {
 
   // Extract EVENT_TYPES from the file
   // Look for: EVENT_TYPES = { ... } or export const EVENT_TYPES = { ... }
-  const eventTypesMatch = eventsContent.match(/export\s+const\s+EVENT_TYPES\s*=\s*\{([^}]+)\}/s);
+  const eventTypesRegex = /export\s+const\s+EVENT_TYPES\s*=\s*\{([^}]+)\}/s;
+  const eventTypesMatch = eventTypesRegex.exec(eventsContent);
   if (!eventTypesMatch) {
     console.log('   ❌ No se pudo extraer EVENT_TYPES del archivo');
     results.failed++;
@@ -622,7 +624,7 @@ function testEventCoverage() {
     const pattern2 = new RegExp(String.raw`logEvent\([^)]*EVENT_TYPES\['${key}'\]\s*[^)]*\)`, 'g');
     const pattern3 = new RegExp(String.raw`EVENT_TYPES\.${key}`, 'g');
     const pattern4 = new RegExp(String.raw`EVENT_TYPES\['${key}'\]`, 'g');
-    const safeValue = value.replace(/[\\^$*+?.()|[\]{}]/g, '\\$&');
+    const safeValue = value.replaceAll(new RegExp(String.raw`[\^$*+?.()|[\]{}]`, 'g'), String.raw`\$&`);
     const pattern5 = new RegExp(`["']${safeValue}["']`, 'g'); // Direct string usage
 
     let usageCount = 0;
@@ -647,8 +649,7 @@ function testEventCoverage() {
       // For pattern5, be more careful - only count if it's in a logEvent call context
       if (matches5) {
         const logEventRe = new RegExp(String.raw`logEvent\([^)]*["']${safeValue}["'][^)]*\)`, 'g');
-        let logMatch;
-        while ((logMatch = logEventRe.exec(content)) !== null) {
+        while (logEventRe.exec(content) !== null) {
           usageCount += 1;
         }
       }
@@ -800,14 +801,14 @@ function runAllTests() {
   console.log('🧪 TEST DEL SISTEMA DINÁMICO (MEJORADO - CUENTA USOS REALES)');
   console.log('🧪'.repeat(30));
 
-  const results = [];
-
-  results.push(testFileStructure());
-  results.push(testVariantFiles());
-  results.push(testDeterminism());
-  results.push(testSeedVariation()); // NEW!
-  results.push(testRealUsage()); // NEW!
-  results.push(testEventCoverage()); // NEW!
+  const results = [
+    testFileStructure(),
+    testVariantFiles(),
+    testDeterminism(),
+    testSeedVariation(), // NEW!
+    testRealUsage(), // NEW!
+    testEventCoverage(), // NEW!
+  ];
 
   if (isBrowser()) {
     results.push(testDOMUsage());
