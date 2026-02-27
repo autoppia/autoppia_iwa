@@ -25,7 +25,7 @@ import type { ReactNode } from "react";
 export function hashString(value: string): number {
   let hash = 0;
   for (let i = 0; i < value.length; i++) {
-    const char = value.charCodeAt(i);
+    const char = value.codePointAt(i) ?? 0;
     hash = ((hash << 5) - hash) + char;
     hash = hash & hash; // Convert to 32bit integer (avoids overflow)
   }
