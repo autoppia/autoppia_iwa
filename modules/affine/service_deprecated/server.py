@@ -176,10 +176,11 @@ def run() -> None:
     """CLI entrypoint: python -m autoppia_iwa.affine_service.server"""
     import uvicorn
 
-    # NOSONAR - Binding to 0.0.0.0 is intentional for containerized deployments
+    # Default 127.0.0.1; set AFFINE_SERVICE_HOST=0.0.0.0 for containerized deployments
+    host = os.getenv("AFFINE_SERVICE_HOST", "127.0.0.1")
     uvicorn.run(
         "autoppia_iwa.affine_service.server:app",
-        host="0.0.0.0",  # NOSONAR
+        host=host,
         port=int(os.getenv("PORT", "8000")),
         reload=False,
     )
