@@ -93,6 +93,59 @@ def _pick_different_value_from_dataset(
     return choice(valid) if valid else fallback
 
 
+def _constraint_value_for_datetime_date(
+    operator: ComparisonOperator, field_value: datetime | date
+) -> Any:
+    """Return constraint value for datetime/date operators (GREATER_THAN, LESS_THAN, etc.)."""
+    delta_days = random.randint(1, 5)
+    if operator == ComparisonOperator.GREATER_THAN:
+        return field_value - timedelta(days=delta_days)
+    if operator == ComparisonOperator.LESS_THAN:
+        return field_value + timedelta(days=delta_days)
+    if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS}:
+        return field_value
+    if operator == ComparisonOperator.NOT_EQUALS:
+        return field_value + timedelta(days=delta_days + 1)
+    return None
+
+
+def _constraint_value_for_time(
+    operator: ComparisonOperator, field_value: time, field: str, dataset: list[dict[str, Any]]
+) -> Any:
+    """Return constraint value for time operators."""
+
+    def add_minutes(t: time, mins: int) -> time:
+        full_dt = datetime.combine(date.today(), t) + timedelta(minutes=mins)
+        return full_dt.time()
+
+    delta_minutes = random.choice([5, 10, 15, 30, 60])
+    if operator == ComparisonOperator.GREATER_THAN:
+        return add_minutes(field_value, -delta_minutes)
+    if operator == ComparisonOperator.LESS_THAN:
+        return add_minutes(field_value, delta_minutes)
+    if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS}:
+        return field_value
+    if operator == ComparisonOperator.NOT_EQUALS:
+        return _pick_different_value_from_dataset(
+            dataset, field, field_value, add_minutes(field_value, delta_minutes + 5)
+        )
+    return None
+
+
+def _constraint_value_for_numeric(
+    operator: ComparisonOperator, field_value: int | float
+) -> Any:
+    """Return constraint value for numeric comparison operators."""
+    delta = random.uniform(0.5, 2.0) if isinstance(field_value, float) else random.randint(1, 5)
+    if operator == ComparisonOperator.GREATER_THAN:
+        return field_value - delta
+    if operator == ComparisonOperator.LESS_THAN:
+        return field_value + delta
+    if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+        return field_value
+    return None
+
+
 def _generate_constraint_value(
     operator: ComparisonOperator,
     field_value: Any,
@@ -104,33 +157,10 @@ def _generate_constraint_value(
     Handles various data types and operators robustly.
     """
     if isinstance(field_value, datetime | date):
-        delta_days = random.randint(1, 5)
-        if operator == ComparisonOperator.GREATER_THAN:
-            return field_value - timedelta(days=delta_days)
-        if operator == ComparisonOperator.LESS_THAN:
-            return field_value + timedelta(days=delta_days)
-        if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS}:
-            return field_value
-        if operator == ComparisonOperator.NOT_EQUALS:
-            return field_value + timedelta(days=delta_days + 1)
+        return _constraint_value_for_datetime_date(operator, field_value)
 
     if isinstance(field_value, time):
-        delta_minutes = random.choice([5, 10, 15, 30, 60])
-
-        def add_minutes(t, mins):
-            full_dt = datetime.combine(date.today(), t) + timedelta(minutes=mins)
-            return full_dt.time()
-
-        if operator == ComparisonOperator.GREATER_THAN:
-            return add_minutes(field_value, -delta_minutes)
-        if operator == ComparisonOperator.LESS_THAN:
-            return add_minutes(field_value, delta_minutes)
-        if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS}:
-            return field_value
-        if operator == ComparisonOperator.NOT_EQUALS:
-            return _pick_different_value_from_dataset(
-                dataset, field, field_value, add_minutes(field_value, delta_minutes + 5)
-            )
+        return _constraint_value_for_time(operator, field_value, field, dataset)
 
     if operator == ComparisonOperator.EQUALS:
         return field_value
@@ -172,13 +202,7 @@ def _generate_constraint_value(
         ComparisonOperator.GREATER_EQUAL,
         ComparisonOperator.LESS_EQUAL,
     } and isinstance(field_value, int | float):
-        delta = random.uniform(0.5, 2.0) if isinstance(field_value, float) else random.randint(1, 5)
-        if operator == ComparisonOperator.GREATER_THAN:
-            return field_value - delta
-        if operator == ComparisonOperator.LESS_THAN:
-            return field_value + delta
-        if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
-            return field_value
+        return _constraint_value_for_numeric(operator, field_value)
 
     return None
 
@@ -266,6 +290,37 @@ def _random_future_time_from_now(current_datetime: datetime) -> time:
     return time(future_dt.hour, minute_slot)
 
 
+def _now_optional_utc(use_utc: bool) -> datetime:
+    """Return datetime.now(UTC) or datetime.now() to avoid repeating the ternary."""
+    return datetime.now(UTC) if use_utc else datetime.now()
+
+
+def _resolve_special_datetime_field(new_field: dict) -> tuple[Any, Any, str] | None:
+    """
+    For field configs with is_datetime, is_date, or is_time, return (constraint_value, field_value, new_field_name).
+    Returns None if not a special datetime/date/time config.
+    """
+    use_utc = new_field.get("utc", False)
+    current = _now_optional_utc(use_utc)
+    new_field_name = new_field.get("field", "")
+
+    if new_field.get("is_datetime"):
+        constraint_value = random_datetime(days=new_field.get("days", 1), start=current)
+        return (constraint_value, constraint_value, new_field_name)
+    if new_field.get("is_date"):
+        offset = random.randint(1, 7)
+        new_date = current.date() + timedelta(days=offset)
+        parsed = parser.parse(str(new_date))
+        return (parsed, new_field, new_field_name)
+    if new_field.get("is_time"):
+        offset_hours = random.randint(0, 23)
+        offset_minutes = random.randint(0, 59)
+        new_time = current + timedelta(hours=offset_hours, minutes=offset_minutes)
+        constraint_value = time(new_time.hour, new_time.minute)
+        return (constraint_value, new_field, new_field_name)
+    return None
+
+
 def _generate_constraints(
     dataset: list[dict], field_operators: dict, field_map: dict | None = None, min_constraints: int | None = 1, num_constraints: int | None = None, selected_fields: list | None = None
 ) -> list[dict[str, Any]]:
@@ -307,38 +362,18 @@ def _generate_constraints(
         elif isinstance(new_field, str):
             field_value = sample_data.get(new_field)
         elif isinstance(new_field, dict):
-            if new_field.get("is_datetime"):
-                days = new_field.get("days", 1)
-                new_field_name = new_field.get("field", "")
-                current_datetime = datetime.now(UTC) if new_field.get("utc") else datetime.now()
-                constraint_value = random_datetime(days=days, start=current_datetime)
-                field_value = constraint_value
-                new_field = new_field_name
-
-            elif new_field.get("is_date"):
-                current_datetime = datetime.now(UTC) if new_field.get("utc") else datetime.now()
-                offset = random.randint(1, 7)
-                new_date = current_datetime.date() + timedelta(days=offset)
-                new_date = parser.parse(str(new_date))
-                constraint_value = new_date
-                field_value = new_field
-
-            elif new_field.get("is_time"):
-                current_datetime = datetime.now(UTC) if new_field.get("utc") else datetime.now()
-                offset_hours = random.randint(0, 23)
-                offset_minutes = random.randint(0, 59)
-                new_time = current_datetime + timedelta(hours=offset_hours, minutes=offset_minutes)
-                new_time = time(new_time.hour, new_time.minute)
-                constraint_value = new_time
-                field_value = new_field
-
+            special = _resolve_special_datetime_field(new_field)
+            if special is not None:
+                constraint_value, field_value, new_field = special
             else:
                 custom_dataset = new_field.get("dataset", [])
                 new_field_name = new_field.get("field", "")
                 if custom_dataset and new_field_name:
                     field_value = choice(custom_dataset).get(new_field_name)
                     if field_value is not None:
-                        constraint_value = _generate_constraint_value(op, field_value, new_field_name, dataset=custom_dataset)
+                        constraint_value = _generate_constraint_value(
+                            op, field_value, new_field_name, dataset=custom_dataset
+                        )
                 new_field = new_field_name
 
         if field_value is None:

@@ -2,7 +2,7 @@ from typing import Any, Callable
 
 from ..criterion_helper import ComparisonOperator
 from ..operators import CONTAINS, EQUALS, IN_LIST, NOT_CONTAINS, NOT_EQUALS, NOT_IN_LIST
-from ..shared_utils import constraints_exist_in_db, item_matches_all_constraints
+from ..shared_utils import constraints_exist_in_db
 
 
 def _parse_bracketed_or_single(value_str: str, parse_item: Callable[[str], Any]) -> Any:
@@ -25,6 +25,22 @@ def _parse_float_value(value_str: str) -> float | list[float]:
 def _parse_list_value(value_str: str) -> list[str] | str:
     """Parse list value, handling list format or plain string."""
     return _parse_bracketed_or_single(value_str, lambda x: x)
+
+
+# Director field: filter operators by data type (list vs string)
+_DIRECTOR_LIST_OPS = (IN_LIST, NOT_IN_LIST)
+_DIRECTOR_STRING_OPS = (EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS)
+
+
+def _valid_operators_for_field(
+    field: str, valid_operators: list, solution_movie: dict
+) -> list:
+    """Return valid operators for field; for 'director' filter by list vs string type."""
+    if field != "director":
+        return valid_operators
+    if isinstance(solution_movie.get(field), list):
+        return [op for op in valid_operators if op in _DIRECTOR_LIST_OPS]
+    return [op for op in valid_operators if op in _DIRECTOR_STRING_OPS]
 
 
 def _convert_value_by_field_type(field: str, value_str: str) -> Any:
@@ -56,11 +72,7 @@ def parse_constraints_str(constraints_str: str) -> list[dict[str, Any]]:
     """
     if not constraints_str:
         return []
-
-    constraints = []
-    for part in constraints_str.split(" AND "):
-        constraints.append(_parse_constraint_part(part))
-    return constraints
+    return [_parse_constraint_part(part) for part in constraints_str.split(" AND ")]
 
 
 def _format_constraint_value(value: Any) -> str:
@@ -70,16 +82,19 @@ def _format_constraint_value(value: Any) -> str:
     return str(value)
 
 
+def _constraint_to_part(idx: int, constraint: dict[str, Any]) -> str:
+    """Format a single constraint dict as 'idx) field operator value'."""
+    field = constraint["field"]
+    operator = constraint["operator"]
+    value_str = _format_constraint_value(constraint["value"])
+    return f"{idx}) {field} {operator.value} {value_str}"
+
+
 def _build_constraints_string(constraint_list: list[dict[str, Any]]) -> str:
     """Build the constraint string from a list of constraint dicts (e.g. '1) year equals 2014 AND 2) genres contains Sci-Fi')."""
-    parts = []
-    for idx, constraint in enumerate(constraint_list, start=1):
-        field = constraint["field"]
-        operator = constraint["operator"]
-        value = constraint["value"]
-        value_str = _format_constraint_value(value)
-        parts.append(f"{idx}) {field} {operator.value} {value_str}")
-    return " AND ".join(parts)
+    return " AND ".join(
+        _constraint_to_part(idx, c) for idx, c in enumerate(constraint_list, start=1)
+    )
 
 
 def build_constraints_info(data: list[dict], max_attempts: int = 10) -> str | None:
@@ -110,20 +125,9 @@ def build_constraints_info(data: list[dict], max_attempts: int = 10) -> str | No
     constraint_list = []
 
     for field in selected_fields:
-        # Obtener operadores válidos para este campo
-        valid_operators = FIELD_OPERATORS_MAP_FILM[field]
-
-        # Special handling for director: select operators based on data type
-        if field == "director":
-            # Check if director is a list (multiple directors) or string (single director)
-            if isinstance(solution_movie.get(field), list):
-                # Multiple directors: use list operators
-                valid_operators = [op for op in valid_operators if op in [IN_LIST, NOT_IN_LIST]]
-            else:
-                # Single director: use string operators
-                valid_operators = [op for op in valid_operators if op in [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]]
-
-        # Elegir un operador aleatorio
+        valid_operators = _valid_operators_for_field(
+            field, FIELD_OPERATORS_MAP_FILM[field], solution_movie
+        )
         if not valid_operators:
             continue  # Skip if no valid operators
         operator = random.choice(valid_operators)
@@ -136,17 +140,7 @@ def build_constraints_info(data: list[dict], max_attempts: int = 10) -> str | No
 
     # Verificar que hay al menos un constraint y que existan películas que cumplan todos
     if constraint_list and constraints_exist_in_db(data, constraint_list):
-        constraints_str = _build_constraints_string(constraint_list)
-
-        # Mostrar todas las películas que satisfacen las restricciones (solo para debug)
-        [movie for movie in data if item_matches_all_constraints(movie, constraint_list)]
-        # print(f"Restricciones generadas: {constraints_str}")
-        # print(f"Películas que satisfacen las restricciones ({len(matching_movies)}):")
-        # for movie in matching_movies:
-        #     print(f"  - {movie['name']} ({movie['year']}) - Director: {movie['director']}")
-
-        # Retornar solo el string de restricciones sin información adicional
-        return constraints_str
+        return _build_constraints_string(constraint_list)
 
     # Si no se pudo crear constraints válidos, intentar de nuevo
     return build_constraints_info(data, max_attempts - 1) if max_attempts > 1 else None
