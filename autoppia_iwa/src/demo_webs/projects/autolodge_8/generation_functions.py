@@ -26,6 +26,67 @@ from .data import (
 )
 from .data_utils import fetch_data
 
+# Filter option samples for apply-filters constraints (reused to avoid duplication)
+RATING_FILTER_SAMPLE = [0, 4, 4.5, 4.7]
+REGION_FILTER_SAMPLE = [
+    "USA",
+    "India",
+    "Italy",
+    "Scotland",
+    "Belgium",
+    "Sweden",
+    "Ireland",
+    "Czech Republic",
+    "Australia",
+    "France",
+    "Japan",
+    "Poland",
+    "Switzerland",
+    "UK",
+    "Germany",
+    "Indonesia",
+    "Turkey",
+    "Greece",
+    "Spain",
+    "Portugal",
+    "Austria",
+    "Hungary",
+    "Iceland",
+    "UAE",
+    "Luxembourg",
+    "Denmark",
+    "Russia",
+    "Norway",
+    "Netherlands",
+]
+
+
+def _collect_field_values_from_dataset_flat(dataset: list[dict[str, Any]], field: str) -> list[Any]:
+    """Collect unique values for field from dataset; flatten list values into a single list."""
+    all_values: list[Any] = []
+    for v in dataset:
+        if field in v:
+            val = v.get(field)
+            if isinstance(val, list):
+                all_values.extend(val)
+            elif val is not None:
+                all_values.append(val)
+    return list(set(all_values))
+
+
+def _pick_different_value_from_dataset(dataset: list[dict[str, Any]], field: str, exclude_value: Any, fallback: Any = None) -> Any:
+    """Return a random value for field from dataset that is not exclude_value, or fallback."""
+    valid = [v[field] for v in dataset if v.get(field) is not None and v.get(field) != exclude_value]
+    return random.choice(valid) if valid else fallback
+
+
+def _ensure_dates_pair_in_selected(selected_fields: list[str]) -> None:
+    """Ensure both 'datesFrom' and 'datesTo' are in selected_fields if either is present. Modifies list in place."""
+    if "datesFrom" in selected_fields and "datesTo" not in selected_fields:
+        selected_fields.append("datesTo")
+    elif "datesTo" in selected_fields and "datesFrom" not in selected_fields:
+        selected_fields.append("datesFrom")
+
 
 async def _ensure_hotel_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     _ = dataset  # Unused parameter kept for backward compatibility
@@ -75,8 +136,7 @@ def _generate_constraint_value(
 
     elif operator == ComparisonOperator.NOT_EQUALS:
         if isinstance(field_value, str):
-            valid = [v[field] for v in dataset if v.get(field) and v.get(field) != field_value]
-            return random.choice(valid) if valid else None
+            return _pick_different_value_from_dataset(dataset, field, field_value, None)
         elif isinstance(field_value, list):
             # For lists, find a value in dataset that is not equal to the list
             valid = []
@@ -105,16 +165,7 @@ def _generate_constraint_value(
         return "xyz"  # fallback
 
     elif operator == ComparisonOperator.IN_LIST:
-        all_values = []
-        for v in dataset:
-            if field in v:
-                val = v.get(field)
-                if isinstance(val, list):
-                    all_values.extend(val)
-                elif val is not None:
-                    all_values.append(val)
-        all_values = list(set(all_values))
-
+        all_values = _collect_field_values_from_dataset_flat(dataset, field)
         if not all_values:
             return [field_value]
         random.shuffle(all_values)
@@ -124,16 +175,7 @@ def _generate_constraint_value(
         return list(set(subset))
 
     elif operator == ComparisonOperator.NOT_IN_LIST:
-        all_values = []
-        for v in dataset:
-            if field in v:
-                val = v.get(field)
-                if isinstance(val, list):
-                    all_values.extend(val)
-                elif val is not None:
-                    all_values.append(val)
-        all_values = list(set(all_values))
-
+        all_values = _collect_field_values_from_dataset_flat(dataset, field)
         if field_value in all_values:
             all_values.remove(field_value)
         return random.sample(all_values, min(2, len(all_values))) if all_values else []
@@ -174,9 +216,7 @@ async def generate_search_hotel_constraints(task_url: str | None = None, dataset
     num_constraints = random.randint(1, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
 
-    # Ensure if 'datesTo' is selected, 'datesFrom' is also selected
-    if "datesTo" in selected_fields and "datesFrom" not in selected_fields:
-        selected_fields.append("datesFrom")
+    _ensure_dates_pair_in_selected(selected_fields)
     if not data:
         logger.warning("No hotel data available for generating search hotel constraints")
         return []
@@ -283,11 +323,7 @@ async def __generate_view_hotel_constraints(task_url: str | None = None, dataset
     num_constraints = random.randint(3, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
 
-    # Ensure both 'datesFrom' and 'datesTo' are present if either is selected
-    if "datesFrom" in selected_fields and "datesTo" not in selected_fields:
-        selected_fields.append("datesTo")
-    elif "datesTo" in selected_fields and "datesFrom" not in selected_fields:
-        selected_fields.append("datesFrom")
+    _ensure_dates_pair_in_selected(selected_fields)
     data = await _ensure_hotel_dataset(task_url, dataset)
     if not data:
         logger.warning("No hotel data available for generating view hotel constraints")
@@ -647,53 +683,15 @@ async def generate_share_hotel_constraints(task_url: str | None = None, dataset:
 
 async def generate_apply_filter_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     await _ensure_hotel_dataset(task_url, dataset)
-    rating_sample = [0, 4, 4.5, 4.7]
-    region_sample = [
-        "USA",
-        "India",
-        "Italy",
-        "Scotland",
-        "Belgium",
-        "Sweden",
-        "Ireland",
-        "Czech Republic",
-        "Australia",
-        "France",
-        "Japan",
-        "Poland",
-        "Switzerland",
-        "UK",
-        "Germany",
-        "Indonesia",
-        "Turkey",
-        "Greece",
-        "Spain",
-        "Portugal",
-        "Austria",
-        "Hungary",
-        "Iceland",
-        "UAE",
-        "Luxembourg",
-        "Denmark",
-        "Russia",
-        "Norway",
-        "Netherlands",
-    ]
     possible_fields = ["rating", "region"]
     constraint_list = []
     for field in possible_fields:
         allowed_ops = FIELD_OPERATORS_APPLY_FILTERS_MAP.get(field, [])
         if not allowed_ops:
             continue
-
         operator = ComparisonOperator(random.choice(allowed_ops))
-        if field == "rating":
-            value = random.choice(rating_sample)
-            constraint_list.append(create_constraint_dict(field, operator, value))
-        if field == "region":
-            value = random.choice(region_sample)
-            constraint_list.append(create_constraint_dict(field, operator, value))
-
+        value = random.choice(RATING_FILTER_SAMPLE) if field == "rating" else random.choice(REGION_FILTER_SAMPLE)
+        constraint_list.append(create_constraint_dict(field, operator, value))
     return constraint_list
 
 
