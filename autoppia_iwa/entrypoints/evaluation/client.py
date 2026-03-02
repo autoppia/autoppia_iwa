@@ -27,6 +27,9 @@ from autoppia_iwa.src.data_generation.tests.classes import CheckEventTest
 from autoppia_iwa.src.execution.actions.actions import NavigateAction, WaitAction
 from autoppia_iwa.src.execution.actions.base import BaseAction
 
+# Centralized messages to avoid duplication (SonarCloud)
+_MSG_CANNOT_CONNECT = "Cannot connect to evaluation service at {base_url}. Is it running?"
+
 
 class EvaluationResult(BaseModel):
     """Result from evaluation endpoint"""
@@ -80,6 +83,33 @@ class EvaluationClient:
             await self._client.aclose()
             self._client = None
 
+    async def _post_evaluate_and_parse(self, payload: dict[str, Any]) -> EvaluationResult:
+        """
+        POST to /evaluate with the given payload and return parsed EvaluationResult.
+        Centralizes request and exception handling for check_solution and check_solution_dict.
+        """
+        try:
+            client = self._get_client()
+            response = await client.post(f"{self.base_url}/evaluate", json=payload)
+            response.raise_for_status()
+            result_data = response.json()
+            return EvaluationResult(**result_data)
+        except httpx.ConnectError:
+            logger.error(_MSG_CANNOT_CONNECT.format(base_url=self.base_url))
+            raise
+        except httpx.TimeoutException:
+            logger.error(f"Evaluation request timed out after {self.timeout}s")
+            raise
+        except httpx.HTTPStatusError as e:
+            logger.error(f"Evaluation failed with status {e.response.status_code}: {e.response.text}")
+            raise
+        except httpx.RequestError as e:
+            logger.error(f"Evaluation request failed: {e}")
+            raise
+        except (ValueError, KeyError) as e:
+            logger.error(f"Unexpected error during evaluation: {e}")
+            raise
+
     async def health_check(self) -> bool:
         """
         Check if the evaluation endpoint is healthy.
@@ -96,7 +126,7 @@ class EvaluationClient:
             logger.warning(f"Health check returned status {response.status_code}")
             return False
         except httpx.ConnectError:
-            logger.error(f"Cannot connect to evaluation service at {self.base_url}. Is it running?")
+            logger.error(_MSG_CANNOT_CONNECT.format(base_url=self.base_url))
             return False
         except (httpx.TimeoutException, httpx.RequestError, ValueError) as e:
             logger.error(f"Health check failed: {e}")
@@ -124,44 +154,17 @@ class EvaluationClient:
         Raises:
             httpx.HTTPError: If the request fails
         """
-        try:
-            client = self._get_client()
-
-            # Prepare request payload
-            payload = {
-                "task_id": task.id,
-                "prompt": task.prompt,
-                "url": task.url,
-                "tests": [test.model_dump() for test in task.tests],
-                "actions": [action.model_dump() for action in actions],
-                "web_agent_id": web_agent_id,
-                "web_project_id": task.web_project_id,
-                "should_record": should_record,
-            }
-
-            # Make request
-            response = await client.post(f"{self.base_url}/evaluate", json=payload)
-            response.raise_for_status()
-
-            # Parse response
-            result_data = response.json()
-            return EvaluationResult(**result_data)
-
-        except httpx.ConnectError:
-            logger.error(f"Cannot connect to evaluation service at {self.base_url}. Is it running?")
-            raise
-        except httpx.TimeoutException:
-            logger.error(f"Evaluation request timed out after {self.timeout}s")
-            raise
-        except httpx.HTTPStatusError as e:
-            logger.error(f"Evaluation failed with status {e.response.status_code}: {e.response.text}")
-            raise
-        except httpx.RequestError as e:
-            logger.error(f"Evaluation request failed: {e}")
-            raise
-        except (ValueError, KeyError) as e:
-            logger.error(f"Unexpected error during evaluation: {e}")
-            raise
+        payload = {
+            "task_id": task.id,
+            "prompt": task.prompt,
+            "url": task.url,
+            "tests": [test.model_dump() for test in task.tests],
+            "actions": [action.model_dump() for action in actions],
+            "web_agent_id": web_agent_id,
+            "web_project_id": task.web_project_id,
+            "should_record": should_record,
+        }
+        return await self._post_evaluate_and_parse(payload)
 
     async def check_solution_dict(self, payload: dict[str, Any]) -> EvaluationResult:
         """
@@ -175,27 +178,7 @@ class EvaluationClient:
         Returns:
             EvaluationResult with success status and detailed metrics
         """
-        try:
-            client = self._get_client()
-            response = await client.post(f"{self.base_url}/evaluate", json=payload)
-            response.raise_for_status()
-            result_data = response.json()
-            return EvaluationResult(**result_data)
-        except httpx.ConnectError:
-            logger.error(f"Cannot connect to evaluation service at {self.base_url}. Is it running?")
-            raise
-        except httpx.TimeoutException:
-            logger.error(f"Evaluation request timed out after {self.timeout}s")
-            raise
-        except httpx.HTTPStatusError as e:
-            logger.error(f"Evaluation failed with status {e.response.status_code}: {e.response.text}")
-            raise
-        except httpx.RequestError as e:
-            logger.error(f"Evaluation request failed: {e}")
-            raise
-        except (ValueError, KeyError) as e:
-            logger.error(f"Unexpected error during evaluation: {e}")
-            raise
+        return await self._post_evaluate_and_parse(payload)
 
 
 # ==============
