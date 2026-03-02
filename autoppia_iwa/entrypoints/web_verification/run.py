@@ -65,16 +65,16 @@ def validate_project_setup(web_project) -> tuple[bool, list[str]]:
     if not web_project.name:
         errors.append("❌ Project name is missing")
 
-    # 2. Validate URLs
+    # 2. Validate URLs (https only for security)
     if not web_project.frontend_url:
         errors.append("❌ Frontend URL is missing")
-    elif not web_project.frontend_url.startswith(("http://", "https://")):
-        warnings.append("⚠️  Frontend URL doesn't start with http:// or https://")
+    elif not web_project.frontend_url.startswith("https://"):
+        warnings.append("⚠️  Frontend URL should start with https://")
 
     if not web_project.backend_url:
         errors.append("❌ Backend URL is missing")
-    elif not web_project.backend_url.startswith(("http://", "https://")):
-        warnings.append("⚠️  Backend URL doesn't start with http:// or https://")
+    elif not web_project.backend_url.startswith("https://"):
+        warnings.append("⚠️  Backend URL should start with https://")
 
     # 3. Validate events are defined
     if not web_project.events:
