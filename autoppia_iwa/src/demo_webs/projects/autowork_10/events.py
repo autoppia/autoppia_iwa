@@ -6,6 +6,30 @@ from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue
 from ..criterion_helper import ComparisonOperator
 
 
+def _validate_skill_criteria(
+    self_skills: list[str],
+    skills_criterion: CriterionValue | str | None,
+) -> bool:
+    """Shared validation for skills field: CONTAINS, NOT_CONTAINS, IN_LIST, NOT_IN_LIST."""
+    if not skills_criterion:
+        return True
+    if isinstance(skills_criterion, str):
+        return any(skills_criterion.lower() in skill.lower() for skill in self_skills)
+    if skills_criterion.operator == ComparisonOperator.CONTAINS:
+        return any(skills_criterion.value.lower() in skill.lower() for skill in self_skills)
+    if skills_criterion.operator == ComparisonOperator.NOT_CONTAINS:
+        return not any(skills_criterion.value.lower() in skill.lower() for skill in self_skills)
+    if skills_criterion.operator == ComparisonOperator.IN_LIST:
+        if not isinstance(skills_criterion.value, list):
+            return False
+        return any(skill.lower() in [v.lower() for v in skills_criterion.value] for skill in self_skills)
+    if skills_criterion.operator == ComparisonOperator.NOT_IN_LIST:
+        if not isinstance(skills_criterion.value, list):
+            return False
+        return not any(skill.lower() in [v.lower() for v in skills_criterion.value] for skill in self_skills)
+    return True
+
+
 class BookAConsultationEvent(Event, BaseEventValidator):
     """Event triggered when someone clicks on the book a consultation button"""
 
@@ -866,31 +890,8 @@ class SubmitJobEvent(Event, BaseEventValidator):
         step: int | CriterionValue | None = None
         title: str | CriterionValue | None = None
 
-    def _skill_validation(self, criteria: CriterionValue | None = None) -> bool:
-        if not criteria:
-            return True
-        if criteria.skills is not None:
-            if isinstance(criteria, str):
-                if not any(criteria.skills.lower() in skills.lower() for skills in self.skills):
-                    return False
-            else:
-                if criteria.skills.operator == ComparisonOperator.CONTAINS:
-                    if not any(criteria.skills.value.lower() in skills.lower() for skills in self.skills):
-                        return False
-                elif criteria.skills.operator == ComparisonOperator.NOT_CONTAINS:
-                    if any(criteria.skills.value.lower() in skills.lower() for skills in self.skills):
-                        return False
-                elif criteria.skills.operator == ComparisonOperator.IN_LIST:
-                    if not isinstance(criteria.skills.value, list):
-                        return False
-                    if not any(skills.lower() in [v.lower() for v in criteria.skills.value] for skills in self.skills):
-                        return False
-                elif criteria.skills.operator == ComparisonOperator.NOT_IN_LIST:
-                    if not isinstance(criteria.skills.value, list):
-                        return False
-                    if any(skills.lower() in [v.lower() for v in criteria.skills.value] for skills in self.skills):
-                        return False
-        return True
+    def _skill_validation(self, criteria: ValidationCriteria | None = None) -> bool:
+        return _validate_skill_criteria(self.skills, criteria.skills if criteria else None)
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -956,31 +957,8 @@ class ClosePostAJobWindowEvent(Event, BaseEventValidator):
         step: int | CriterionValue | None = None
         title: str | CriterionValue | None = None
 
-    def _skill_validation(self, criteria: CriterionValue | None = None) -> bool:
-        if not criteria:
-            return True
-        if criteria.skills is not None:
-            if isinstance(criteria, str):
-                if not any(criteria.skills.lower() in skills.lower() for skills in self.skills):
-                    return False
-            else:
-                if criteria.skills.operator == ComparisonOperator.CONTAINS:
-                    if not any(criteria.skills.value.lower() in skills.lower() for skills in self.skills):
-                        return False
-                elif criteria.skills.operator == ComparisonOperator.NOT_CONTAINS:
-                    if any(criteria.skills.value.lower() in skills.lower() for skills in self.skills):
-                        return False
-                elif criteria.skills.operator == ComparisonOperator.IN_LIST:
-                    if not isinstance(criteria.skills.value, list):
-                        return False
-                    if not any(skills.lower() in [v.lower() for v in criteria.skills.value] for skills in self.skills):
-                        return False
-                elif criteria.skills.operator == ComparisonOperator.NOT_IN_LIST:
-                    if not isinstance(criteria.skills.value, list):
-                        return False
-                    if any(skills.lower() in [v.lower() for v in criteria.skills.value] for skills in self.skills):
-                        return False
-        return True
+    def _skill_validation(self, criteria: ValidationCriteria | None = None) -> bool:
+        return _validate_skill_criteria(self.skills, criteria.skills if criteria else None)
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
