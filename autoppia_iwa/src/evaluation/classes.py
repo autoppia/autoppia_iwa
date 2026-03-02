@@ -3,7 +3,6 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
-from autoppia_iwa.src.execution.dynamic import DynamicPhaseConfig
 
 
 class TestResult(BaseModel):
@@ -108,5 +107,4 @@ class EvaluatorConfig(BaseModel):
     verbose_logging: bool = Field(default=False)  # Default to minimal logging
     debug_mode: bool = Field(default=False)  # Even more minimal logging
     should_record_gif: bool = Field(default=False, description="Record evaluation on browser executions.")
-    dynamic_phase_config: DynamicPhaseConfig | None = Field(default=None, description="Optional DOM mutation configuration (D1/D3/D4 phases).")
     max_consecutive_action_failures: int = Field(default=2, gt=0, description="Maximum consecutive action failures before marking task as failed. Default: 2")

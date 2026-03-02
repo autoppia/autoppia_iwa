@@ -107,6 +107,10 @@ def _is_navigation_url_allowed(*, is_web_real: bool, task_url: str | None, candi
             return True, None
         if target_host in {"localhost", "127.0.0.1", "::1"}:
             return True, None
+        # Allow the task URL's host so remote demo webs (e.g. DEMO_WEBS_ENDPOINT on another machine) work
+        allowed_host = _url_hostname(task_url)
+        if allowed_host and target_host == allowed_host:
+            return True, None
         return False, f"NavigateAction host '{target_host}' is not allowed for demo webs"
 
     allowed_host = _url_hostname(task_url)

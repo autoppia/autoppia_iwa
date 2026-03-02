@@ -34,7 +34,6 @@ from autoppia_iwa.src.execution.actions.actions import NavigateAction
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.execution.browser_executor import PlaywrightBrowserExecutor
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
-from autoppia_iwa.src.execution.dynamic import DynamicPlaywrightExecutor
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 EVALUATION_LEVEL_NAME = "EVALUATION"
@@ -115,6 +114,10 @@ def _is_navigation_url_allowed(*, is_web_real: bool, task_url: str | None, candi
         if _is_testing_mode():
             return True, None
         if target_host in {"localhost", "127.0.0.1", "::1"}:
+            return True, None
+        # Allow the task URL's host so remote demo webs (e.g. DEMO_WEBS_ENDPOINT on another machine) work
+        allowed_host = _url_hostname(task_url)
+        if allowed_host and target_host == allowed_host:
             return True, None
         return False, f"NavigateAction host '{target_host}' is not allowed for demo webs"
 
@@ -611,23 +614,7 @@ class ConcurrentEvaluator(IEvaluator):
                     page.on("request", _on_request)
                     page.on("response", _on_response)
 
-                dynamic_config = self.config.dynamic_phase_config
-                dynamic_enabled = dynamic_config.any_enabled() if dynamic_config else False
-                if dynamic_enabled:
-                    try:
-                        seed_value = extract_seed_from_url(task.url)
-                    except Exception:
-                        seed_value = None
-                    browser_executor = DynamicPlaywrightExecutor(
-                        browser_specifications,
-                        page,
-                        self.backend_demo_webs_service,
-                        dynamic_config=dynamic_config,
-                        project_id=self.web_project.id,
-                        seed=seed_value,
-                    )
-                else:
-                    browser_executor = PlaywrightBrowserExecutor(browser_specifications, page, self.backend_demo_webs_service)
+                browser_executor = PlaywrightBrowserExecutor(browser_specifications, page, self.backend_demo_webs_service)
 
                 _log_action_execution(f"🎬 Starting execution of {len(actions)} actions", web_agent_id=web_agent_id)
 
