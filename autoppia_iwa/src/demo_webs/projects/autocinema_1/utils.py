@@ -5,6 +5,49 @@ from ..operators import CONTAINS, EQUALS, IN_LIST, NOT_CONTAINS, NOT_EQUALS, NOT
 from ..shared_utils import constraints_exist_in_db, item_matches_all_constraints
 
 
+def _parse_integer_value(value_str: str) -> int | list[int]:
+    """Parse integer value, handling both single values and list format (e.g. '[1, 2, 3]')."""
+    if "[" in value_str and "]" in value_str:
+        return [int(item) for item in value_str.strip("[]").split(", ")]
+    return int(value_str)
+
+
+def _parse_float_value(value_str: str) -> float | list[float]:
+    """Parse float value, handling both single values and list format."""
+    if "[" in value_str and "]" in value_str:
+        return [float(item) for item in value_str.strip("[]").split(", ")]
+    return float(value_str)
+
+
+def _parse_list_value(value_str: str) -> list[str] | str:
+    """Parse list value, handling list format or plain string."""
+    if "[" in value_str and "]" in value_str:
+        return value_str.strip("[]").split(", ")
+    return value_str
+
+
+def _convert_value_by_field_type(field: str, value_str: str) -> Any:
+    """Convert value string to the appropriate type for the field. Centralizes constraint value parsing."""
+    if field in ["year", "duration"]:
+        return _parse_integer_value(value_str)
+    if field == "rating":
+        return _parse_float_value(value_str)
+    if field == "genres":
+        return _parse_list_value(value_str)
+    return value_str
+
+
+def _parse_constraint_part(part: str) -> dict[str, Any]:
+    """Parse a single constraint part (e.g. '1) year equals 2014') into a dict with field, operator, value."""
+    clean_part = part.split(") ", 1)[1] if ") " in part else part
+    field, rest = clean_part.split(" ", 1)
+    op_value = rest.split(" ", 1)
+    op = op_value[0]
+    value_str = op_value[1]
+    value = _convert_value_by_field_type(field, value_str)
+    return {"field": field, "operator": ComparisonOperator(op), "value": value}
+
+
 def parse_constraints_str(constraints_str: str) -> list[dict[str, Any]]:
     """
     Parses the constraints string into a list of dictionaries.
@@ -14,35 +57,28 @@ def parse_constraints_str(constraints_str: str) -> list[dict[str, Any]]:
         return []
 
     constraints = []
-    parts = constraints_str.split(" AND ")
-
-    for part in parts:
-        # Remove the numeric prefix (e.g., "1) ")
-        clean_part = part.split(") ", 1)[1] if ") " in part else part
-
-        # Split into field, operator, and value
-        field, rest = clean_part.split(" ", 1)
-        op_value = rest.split(" ", 1)
-        op = op_value[0]
-        value_str = op_value[1]
-
-        # Convert value based on type
-        if field in ["year", "duration"]:
-            # For integer numeric fields
-            value = [int(item) for item in value_str.strip("[]").split(", ")] if "[" in value_str and "]" in value_str else int(value_str)
-        elif field == "rating":
-            # For float numeric fields
-            value = [float(item) for item in value_str.strip("[]").split(", ")] if "[" in value_str and "]" in value_str else float(value_str)
-        elif field == "genres":
-            # For list fields
-            value = value_str.strip("[]").split(", ") if "[" in value_str and "]" in value_str else value_str
-        else:
-            # For text fields
-            value = value_str
-
-        constraints.append({"field": field, "operator": ComparisonOperator(op), "value": value})
-
+    for part in constraints_str.split(" AND "):
+        constraints.append(_parse_constraint_part(part))
     return constraints
+
+
+def _format_constraint_value(value: Any) -> str:
+    """Format a constraint value for string representation (list as '[a, b, c]', else str)."""
+    if isinstance(value, list):
+        return f"[{', '.join(map(str, value))}]"
+    return str(value)
+
+
+def _build_constraints_string(constraint_list: list[dict[str, Any]]) -> str:
+    """Build the constraint string from a list of constraint dicts (e.g. '1) year equals 2014 AND 2) genres contains Sci-Fi')."""
+    parts = []
+    for idx, constraint in enumerate(constraint_list, start=1):
+        field = constraint["field"]
+        operator = constraint["operator"]
+        value = constraint["value"]
+        value_str = _format_constraint_value(value)
+        parts.append(f"{idx}) {field} {operator.value} {value_str}")
+    return " AND ".join(parts)
 
 
 def build_constraints_info(data: list[dict], max_attempts: int = 10) -> str | None:
@@ -99,20 +135,7 @@ def build_constraints_info(data: list[dict], max_attempts: int = 10) -> str | No
 
     # Verificar que hay al menos un constraint y que existan películas que cumplan todos
     if constraint_list and constraints_exist_in_db(data, constraint_list):
-        # Construir un string que describa cada constraint
-        parts = []
-        for idx, constraint in enumerate(constraint_list, start=1):
-            f = constraint["field"]
-            op = constraint["operator"]
-            v = constraint["value"]
-
-            # Formateo especial para listas
-            v_str = f"[{', '.join(map(str, v))}]" if isinstance(v, list) else v
-
-            parts.append(f"{idx}) {f} {op.value} {v_str}")
-
-        # Crear el string de restricciones
-        constraints_str = " AND ".join(parts)
+        constraints_str = _build_constraints_string(constraint_list)
 
         # Mostrar todas las películas que satisfacen las restricciones (solo para debug)
         [movie for movie in data if item_matches_all_constraints(movie, constraint_list)]
