@@ -10,7 +10,7 @@ from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.execution.actions.actions import BaseAction, NavigateAction
 from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
-from autoppia_iwa.src.web_agents.classes import IWebAgent
+from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution
 
 
 class ApifiedWebAgent(IWebAgent):
@@ -104,6 +104,10 @@ class ApifiedWebAgent(IWebAgent):
                 history=history,
             )
         )
+
+    async def solve_task(self, task: Task) -> TaskSolution:
+        """Not supported: this agent only supports act(). Use ApifiedOneShotWebAgent for one-shot solve_task."""
+        raise NotImplementedError("ApifiedWebAgent only supports act(). Use ApifiedOneShotWebAgent for one-shot solve_task.")
 
     # ------------------------------------------------------------------ #
     # Helpers
