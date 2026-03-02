@@ -7,7 +7,14 @@ from typing import Any
 from loguru import logger
 
 from ..criterion_helper import ComparisonOperator
-from ..shared_utils import create_constraint_dict, random_str_not_contained_in
+from ..shared_utils import (
+    constraint_value_for_datetime_date,
+    constraint_value_for_numeric,
+    constraint_value_for_time,
+    create_constraint_dict,
+    pick_different_value_from_dataset,
+    random_str_not_contained_in,
+)
 from .data import (
     FIELD_OPERATORS_MAP_ADD_SKILL,
     FIELD_OPERATORS_MAP_BROWSE_FAVORITE_EXPERT,
@@ -75,12 +82,6 @@ DURATION_OPTIONS = ["3 to 6 months", "More than 6 months"]
 def _collect_field_values_from_dataset(dataset: list[dict[str, Any]], field: str) -> list[Any]:
     """Return unique non-None values for field across dataset rows."""
     return list({v.get(field) for v in dataset if field in v and v.get(field) is not None})
-
-
-def _pick_different_value_from_dataset(dataset: list[dict[str, Any]], field: str, exclude_value: Any, fallback: Any = None) -> Any:
-    """Return a random value for field from dataset that is not exclude_value, or fallback."""
-    valid = [v[field] for v in dataset if v.get(field) is not None and v.get(field) != exclude_value]
-    return random.choice(valid) if valid else fallback
 
 
 async def _get_experts_data(
@@ -177,57 +178,6 @@ async def _ensure_dataset(
     return fetched_data
 
 
-def _constraint_value_for_datetime_date(
-    operator: ComparisonOperator, field_value: datetime | date
-) -> Any:
-    """Return constraint value for datetime/date operators (GREATER_THAN, LESS_THAN, etc.)."""
-    delta_days = random.randint(1, 5)
-    if operator == ComparisonOperator.GREATER_THAN:
-        return field_value - timedelta(days=delta_days)
-    if operator == ComparisonOperator.LESS_THAN:
-        return field_value + timedelta(days=delta_days)
-    if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS}:
-        return field_value
-    if operator == ComparisonOperator.NOT_EQUALS:
-        return field_value + timedelta(days=delta_days + 1)
-    return None
-
-
-def _constraint_value_for_time(
-    operator: ComparisonOperator, field_value: time, field: str, dataset: list[dict[str, Any]]
-) -> Any:
-    """Return constraint value for time operators."""
-
-    def add_minutes(t: time, mins: int) -> time:
-        full_dt = datetime.combine(date.today(), t) + timedelta(minutes=mins)
-        return full_dt.time()
-
-    delta_minutes = random.choice([5, 10, 15, 30, 60])
-    if operator == ComparisonOperator.GREATER_THAN:
-        return add_minutes(field_value, -delta_minutes)
-    if operator == ComparisonOperator.LESS_THAN:
-        return add_minutes(field_value, delta_minutes)
-    if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS}:
-        return field_value
-    if operator == ComparisonOperator.NOT_EQUALS:
-        return _pick_different_value_from_dataset(
-            dataset, field, field_value, add_minutes(field_value, delta_minutes + 5)
-        )
-    return None
-
-
-def _constraint_value_for_numeric(operator: ComparisonOperator, field_value: int | float) -> Any:
-    """Return constraint value for numeric comparison operators (rounds to 2 decimals)."""
-    delta = random.uniform(0.5, 2.0) if isinstance(field_value, float) else random.randint(1, 5)
-    if operator == ComparisonOperator.GREATER_THAN:
-        return round(field_value - delta, 2)
-    if operator == ComparisonOperator.LESS_THAN:
-        return round(field_value + delta, 2)
-    if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
-        return field_value
-    return None
-
-
 def _generate_constraint_value(
     operator: ComparisonOperator,
     field_value: Any,
@@ -239,16 +189,16 @@ def _generate_constraint_value(
     Handles various data types and operators robustly.
     """
     if isinstance(field_value, datetime | date):
-        return _constraint_value_for_datetime_date(operator, field_value)
+        return constraint_value_for_datetime_date(operator, field_value)
 
     if isinstance(field_value, time):
-        return _constraint_value_for_time(operator, field_value, field, dataset)
+        return constraint_value_for_time(operator, field_value, field, dataset)
 
     if operator == ComparisonOperator.EQUALS:
         return field_value
 
     if operator == ComparisonOperator.NOT_EQUALS:
-        return _pick_different_value_from_dataset(dataset, field, field_value, None)
+        return pick_different_value_from_dataset(dataset, field, field_value, None)
 
     if operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
         if len(field_value) > 2:
@@ -284,7 +234,7 @@ def _generate_constraint_value(
         ComparisonOperator.GREATER_EQUAL,
         ComparisonOperator.LESS_EQUAL,
     } and isinstance(field_value, int | float):
-        return _constraint_value_for_numeric(operator, field_value)
+        return constraint_value_for_numeric(operator, field_value, round_digits=2)
 
     return None
 
