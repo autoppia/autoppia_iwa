@@ -352,11 +352,7 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
         if plan_entry:
             self._metrics["cache_hits"] += 1
             logger.debug(f"[DYNAMIC] Cache hit for {cache_key}")
-            self._last_plan_metadata = {
-                "source": "cache",
-                "duration_ms": (time.perf_counter() - start) * 1000,
-                "cache_key": cache_key,
-            }
+            self._set_plan_metadata("cache", start, cache_key)
             return plan_entry["plan"]
 
         similar_plan = self._find_similar_plan(normalized)
@@ -364,32 +360,28 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
             self._metrics["cache_hits"] += 1
             logger.debug(f"[DYNAMIC] Reused similar plan for {cache_key}")
             self._remember_plan(cache_key, normalized, similar_plan)
-            self._last_plan_metadata = {
-                "source": "similar",
-                "duration_ms": (time.perf_counter() - start) * 1000,
-                "cache_key": cache_key,
-            }
+            self._set_plan_metadata("similar", start, cache_key)
             return similar_plan
 
         if self._palette_generator:
             plan = self._palette_generator.build_plan(url)
             self._remember_plan(cache_key, normalized, plan)
-            self._last_plan_metadata = {
-                "source": "palette",
-                "duration_ms": (time.perf_counter() - start) * 1000,
-                "cache_key": cache_key,
-            }
+            self._set_plan_metadata("palette", start, cache_key)
             return plan
 
         self._metrics["cache_misses"] += 1
         plan = self._fallback_plan()
         self._remember_plan(cache_key, normalized, plan)
+        self._set_plan_metadata("fallback", start, cache_key)
+        return plan
+
+    def _set_plan_metadata(self, source: str, start: float, cache_key: str) -> None:
+        """Set _last_plan_metadata for audit/telemetry after plan resolution."""
         self._last_plan_metadata = {
-            "source": "fallback",
+            "source": source,
             "duration_ms": (time.perf_counter() - start) * 1000,
             "cache_key": cache_key,
         }
-        return plan
 
     def _remember_plan(self, key: str, normalized_html: str, plan: dict[str, Any]) -> None:
         self._dom_plan_cache[key] = {"plan": plan, "normalized": normalized_html}
