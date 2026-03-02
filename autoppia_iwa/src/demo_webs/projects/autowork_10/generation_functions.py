@@ -7,7 +7,7 @@ from typing import Any
 from loguru import logger
 
 from ..criterion_helper import ComparisonOperator
-from ..shared_utils import create_constraint_dict
+from ..shared_utils import create_constraint_dict, random_str_not_contained_in
 from .data import (
     FIELD_OPERATORS_MAP_ADD_SKILL,
     FIELD_OPERATORS_MAP_BROWSE_FAVORITE_EXPERT,
@@ -229,12 +229,7 @@ def _generate_constraint_value(
         return field_value
 
     if operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
-        alphabet = "abcdefghijklmnopqrstuvwxyz"
-        for _ in range(100):
-            test_str = "".join(random.choice(alphabet) for _ in range(3))
-            if test_str.lower() not in field_value.lower():
-                return test_str
-        return "xyz"  # fallback
+        return random_str_not_contained_in(field_value)
 
     if operator == ComparisonOperator.IN_LIST:
         all_values = _collect_field_values_from_dataset(dataset, field)

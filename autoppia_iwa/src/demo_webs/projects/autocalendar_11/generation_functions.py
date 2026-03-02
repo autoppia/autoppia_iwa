@@ -6,7 +6,11 @@ from typing import Any
 from loguru import logger
 
 from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
-from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_dict, parse_datetime
+from autoppia_iwa.src.demo_webs.projects.shared_utils import (
+    create_constraint_dict,
+    parse_datetime,
+    random_str_not_contained_in,
+)
 
 from ..criterion_helper import ComparisonOperator
 from .data import (
@@ -106,12 +110,7 @@ def _generate_constraint_value(
         return longest[random_picker_start:random_picker_end]
 
     if operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
-        alphabet = "abcdefghijklmnopqrstuvwxyz"
-        for _ in range(100):
-            test_str = "".join(random.choice(alphabet) for _ in range(3))
-            if test_str.lower() not in field_value.lower():
-                return test_str
-        return "xyz"  # fallback
+        return random_str_not_contained_in(field_value)
 
     if operator in {
         ComparisonOperator.GREATER_THAN,

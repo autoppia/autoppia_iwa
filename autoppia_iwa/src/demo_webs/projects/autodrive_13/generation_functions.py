@@ -8,7 +8,7 @@ from dateutil import parser
 from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
 from ..criterion_helper import ComparisonOperator
-from ..shared_utils import create_constraint_dict
+from ..shared_utils import create_constraint_dict, random_str_not_contained_in
 from .data import (
     FIELD_OPERATORS_MAP_ENTER_DESTINATION,
     FIELD_OPERATORS_MAP_ENTER_LOCATION,
@@ -148,12 +148,7 @@ def _generate_constraint_value(
         return normalize_contain_value(result) if "-" in result else result
 
     if operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
-        alphabet = "abcdefghijklmnopqrstuvwxyz"
-        for _ in range(100):
-            test_str = "".join(random.choice(alphabet) for _ in range(3))
-            if test_str.lower() not in field_value.lower():
-                return test_str
-        return "xyz"  # fallback
+        return random_str_not_contained_in(field_value)
 
     if operator == ComparisonOperator.IN_LIST:
         all_values = _collect_field_values_from_dataset(dataset, field)

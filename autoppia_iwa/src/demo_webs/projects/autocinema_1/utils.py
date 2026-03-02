@@ -1,29 +1,30 @@
-from typing import Any
+from typing import Any, Callable
 
 from ..criterion_helper import ComparisonOperator
 from ..operators import CONTAINS, EQUALS, IN_LIST, NOT_CONTAINS, NOT_EQUALS, NOT_IN_LIST
 from ..shared_utils import constraints_exist_in_db, item_matches_all_constraints
 
 
+def _parse_bracketed_or_single(value_str: str, parse_item: Callable[[str], Any]) -> Any:
+    """Parse 'value' or '[a, b, c]' format: if bracketed return list of parse_item results, else single parse_item result."""
+    if "[" in value_str and "]" in value_str:
+        return [parse_item(item.strip()) for item in value_str.strip("[]").split(", ")]
+    return parse_item(value_str.strip())
+
+
 def _parse_integer_value(value_str: str) -> int | list[int]:
     """Parse integer value, handling both single values and list format (e.g. '[1, 2, 3]')."""
-    if "[" in value_str and "]" in value_str:
-        return [int(item) for item in value_str.strip("[]").split(", ")]
-    return int(value_str)
+    return _parse_bracketed_or_single(value_str, int)
 
 
 def _parse_float_value(value_str: str) -> float | list[float]:
     """Parse float value, handling both single values and list format."""
-    if "[" in value_str and "]" in value_str:
-        return [float(item) for item in value_str.strip("[]").split(", ")]
-    return float(value_str)
+    return _parse_bracketed_or_single(value_str, float)
 
 
 def _parse_list_value(value_str: str) -> list[str] | str:
     """Parse list value, handling list format or plain string."""
-    if "[" in value_str and "]" in value_str:
-        return value_str.strip("[]").split(", ")
-    return value_str
+    return _parse_bracketed_or_single(value_str, lambda x: x)
 
 
 def _convert_value_by_field_type(field: str, value_str: str) -> Any:

@@ -1,4 +1,5 @@
 import datetime
+import random
 from typing import Any
 
 from dateutil import parser
@@ -60,6 +61,18 @@ def parse_price(price_raw: Any) -> float | None:
 def create_constraint_dict(field: str, operator: ComparisonOperator, value: Any) -> dict[str, Any]:
     """Creates a single constraint dictionary in the list[dict] format."""
     return {"field": field, "operator": operator, "value": value}
+
+
+def random_str_not_contained_in(
+    text: str, length: int = 3, max_attempts: int = 100, fallback: str = "xyz"
+) -> str:
+    """Return a random lowercase string of given length not contained in text (case-insensitive). Used for NOT_CONTAINS constraint value generation."""
+    alphabet = "abcdefghijklmnopqrstuvwxyz"
+    for _ in range(max_attempts):
+        test_str = "".join(random.choice(alphabet) for _ in range(length))
+        if test_str.lower() not in text.lower():
+            return test_str
+    return fallback
 
 
 def generate_mock_dates():
