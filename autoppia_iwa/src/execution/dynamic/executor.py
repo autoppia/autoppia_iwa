@@ -20,6 +20,9 @@ from autoppia_iwa.src.execution.browser_executor import PlaywrightBrowserExecuto
 from autoppia_iwa.src.execution.dynamic.palette import PalettePlanGenerator, load_palette_for_project
 from modules.dynamic_proxy.core.palettes import load_palette_from_module
 
+# Exception types for route/evaluate operations (reused to avoid duplication).
+_PLAYWRIGHT_EXCEPTIONS = (PlaywrightError, PWTimeout, RuntimeError)
+
 
 class DynamicPhaseConfig(BaseModel):
     """
@@ -147,9 +150,9 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
 
         try:
             response = await route.fetch()
-        except (PlaywrightError, PWTimeout, RuntimeError) as exc:
+        except _PLAYWRIGHT_EXCEPTIONS as exc:
             logger.debug(f"Route fetch failed ({route.request.url}): {exc}")
-            with contextlib.suppress(PlaywrightError, PWTimeout, RuntimeError):
+            with contextlib.suppress(*_PLAYWRIGHT_EXCEPTIONS):
                 await route.continue_()
             return
         try:
@@ -194,6 +197,14 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
         self._maybe_emit_audit_record(url, html, mutated, plan, mutation_duration_ms)
         return mutated
 
+    def _select_one_or_none(self, soup: BeautifulSoup, selector: str | None) -> Tag | None:
+        if not selector:
+            return None
+        try:
+            return soup.select_one(selector)
+        except (ValueError, AttributeError):
+            return None
+
     def _apply_structural_mutations(self, soup: BeautifulSoup, instructions: list[dict[str, Any]]) -> None:
         for instr in instructions:
             target_selector = instr.get("target")
@@ -201,10 +212,7 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
             operation = instr.get("operation", "append_child")
             if not target_selector or not html_fragment:
                 continue
-            try:
-                target = soup.select_one(target_selector)
-            except (ValueError, AttributeError):
-                target = None
+            target = self._select_one_or_none(soup, target_selector)
             if target is None:
                 continue
             fragment = BeautifulSoup(html_fragment, "html.parser")
@@ -234,10 +242,7 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
             operation = instr.get("operation")
             if not target_selector or not operation:
                 continue
-            try:
-                target = soup.select_one(target_selector)
-            except (ValueError, AttributeError):
-                target = None
+            target = self._select_one_or_none(soup, target_selector)
             if target is None:
                 continue
 
@@ -287,6 +292,17 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
             instructions.append(OverlayInstruction(trigger_after=trigger_after, html=html, overlay_type=overlay_type, blocking=blocking, dismiss_selector=dismiss_selector))
         return instructions
 
+    async def _safe_page_evaluate(self, script: str, *args: Any, log_msg: str = "Page evaluate failed") -> bool:
+        """Run page.evaluate; on Playwright/Timeout/Runtime errors log and return False."""
+        if not self.page:
+            return False
+        try:
+            await self.page.evaluate(script, *args)
+            return True
+        except _PLAYWRIGHT_EXCEPTIONS as exc:
+            logger.debug(f"{log_msg}: {exc}")
+            return False
+
     async def _maybe_trigger_overlays(self, completed_actions: int) -> None:
         if not self.page:
             return
@@ -316,13 +332,12 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
                 return true;
             }
         """
-        try:
-            await self.page.evaluate(script, {"html": overlay.html, "overlayType": overlay.overlay_type, "blocking": overlay.blocking})
+        if await self._safe_page_evaluate(
+            script, {"html": overlay.html, "overlayType": overlay.overlay_type, "blocking": overlay.blocking}, log_msg="Overlay injection failed"
+        ):
             if overlay.blocking:
                 await self._attach_overlay_dismiss_handler(overlay.dismiss_selector)
             self._metrics["overlays_injected"] += 1
-        except (PlaywrightError, PWTimeout, RuntimeError) as exc:
-            logger.debug(f"Overlay injection failed: {exc}")
 
     async def _attach_overlay_dismiss_handler(self, dismiss_selector: str | None) -> None:
         selector = dismiss_selector or "[data-iwa-dismiss]"
@@ -339,10 +354,7 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
                 return true;
             }
         """
-        try:
-            await self.page.evaluate(script, selector)
-        except (PlaywrightError, PWTimeout, RuntimeError) as exc:
-            logger.debug(f"Overlay dismiss hook failed: {exc}")
+        await self._safe_page_evaluate(script, selector, log_msg="Overlay dismiss hook failed")
 
     def _get_dom_plan(self, html: str, url: str) -> dict[str, Any]:
         start = time.perf_counter()
@@ -426,6 +438,14 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
         d4 = self._fallback_overlay_plan()
         return {"d1": d1, "d3": d3, "d4": d4}
 
+    def _overlay_bar_html(self, position: str, inner_html: str) -> str:
+        """Build the shared bar-style overlay div (cookie/banner) to avoid duplicating style and wrapper."""
+        return (
+            f"<div class='iwa-overlay iwa-overlay--{position}' style='position:fixed;{position}:0;left:0;right:0;background:#101828;color:#fff;"
+            "padding:18px;z-index:2147483647;font-family:sans-serif;'>"
+            f"{inner_html}</div>"
+        )
+
     def _fallback_overlay_plan(self) -> list[dict[str, Any]]:
         position = self._rng.choice(["top", "bottom", "center"])
         overlay_type = self._rng.choice(["banner", "modal", "cookie"])
@@ -441,22 +461,19 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
                 "</div></div>"
             )
         elif overlay_type == "cookie":
-            html = (
-                f"<div class='iwa-overlay iwa-overlay--{position}' style='position:fixed;{position}:0;left:0;right:0;background:#101828;color:#fff;"
-                "padding:18px;z-index:2147483647;font-family:sans-serif;'>"
+            html = self._overlay_bar_html(
+                position,
                 "<strong>Cookie preferences</strong> - You must accept tracking to view inventory."
                 "<div style='margin-top:10px;display:flex;gap:12px;flex-wrap:wrap;'>"
                 "<button data-iwa-dismiss style='padding:6px 14px;border-radius:6px;border:none;background:#10b981;color:#fff;'>Accept all</button>"
                 "<button style='padding:6px 14px;border-radius:6px;border:1px solid rgba(255,255,255,0.6);background:transparent;color:#fff;'>View options</button>"
-                "</div></div>"
+                "</div>",
             )
         else:
-            html = (
-                f"<div class='iwa-overlay iwa-overlay--{position}' style='position:fixed;{position}:0;left:0;right:0;background:#101828;color:#fff;"
-                "padding:18px;z-index:2147483647;font-family:sans-serif;'>"
+            html = self._overlay_bar_html(
+                position,
                 "<strong>Autoppia Dynamic Challenge</strong> - Accept cookies to continue."
-                "<button data-iwa-dismiss style='margin-left:12px;padding:6px 14px;border-radius:6px;border:none;background:#6941C6;color:#fff;'>Accept</button>"
-                "</div>"
+                "<button data-iwa-dismiss style='margin-left:12px;padding:6px 14px;border-radius:6px;border:none;background:#6941C6;color:#fff;'>Accept</button>",
             )
         return [
             {
