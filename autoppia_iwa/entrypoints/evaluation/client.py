@@ -77,6 +77,10 @@ class EvaluationClient:
             self._client = httpx.AsyncClient(timeout=self.timeout)
         return self._client
 
+    def _log_connection_error(self) -> None:
+        """Log that the evaluation service could not be reached."""
+        logger.error(_MSG_CANNOT_CONNECT.format(base_url=self.base_url))
+
     async def close(self):
         """Close the HTTP client"""
         if self._client:
@@ -95,7 +99,7 @@ class EvaluationClient:
             result_data = response.json()
             return EvaluationResult(**result_data)
         except httpx.ConnectError:
-            logger.error(_MSG_CANNOT_CONNECT.format(base_url=self.base_url))
+            self._log_connection_error()
             raise
         except httpx.TimeoutException:
             logger.error(f"Evaluation request timed out after {self.timeout}s")
@@ -126,7 +130,7 @@ class EvaluationClient:
             logger.warning(f"Health check returned status {response.status_code}")
             return False
         except httpx.ConnectError:
-            logger.error(_MSG_CANNOT_CONNECT.format(base_url=self.base_url))
+            self._log_connection_error()
             return False
         except (httpx.TimeoutException, httpx.RequestError, ValueError) as e:
             logger.error(f"Health check failed: {e}")
