@@ -4,6 +4,37 @@ from ..criterion_helper import ComparisonOperator
 from ..shared_utils import constraints_exist_in_db
 
 # =============================================================================
+#                     SHARED DATA EXTRACTION (events + generation)
+# =============================================================================
+
+
+def extract_genres_from_data(data: dict, key: str = "genres") -> list[str]:
+    """
+    Extract list of genre names from a dict that may contain a list of dicts (with "name")
+    or a list of strings. Reusable for event parsing and any code that normalizes genre data.
+    """
+    genres: list[str] = []
+    if key not in data or not isinstance(data[key], list):
+        return genres
+    for item in data[key]:
+        if isinstance(item, dict) and "name" in item:
+            genres.append(str(item.get("name", "")))
+        elif isinstance(item, str):
+            genres.append(item)
+    return genres
+
+
+def get_author_from_data(data: dict) -> str:
+    """Return author from data, falling back to legacy 'director' key."""
+    return data.get("author", data.get("director", "")) or ""
+
+
+def get_pages_from_data(data: dict) -> Any:
+    """Return pages from data, falling back to legacy 'duration' key."""
+    return data.get("pages", data.get("duration"))
+
+
+# =============================================================================
 #                            HELPER FUNCTIONS
 # =============================================================================
 
