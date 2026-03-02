@@ -34,6 +34,13 @@ from .llm_reviewer import LLMReviewer
 UNKNOWN_REASON = "Unknown reason"
 
 
+def _truncate_for_display(text: str, max_length: int) -> str:
+    """Return text truncated to max_length with '...' if longer. Reusable for prompts and messages."""
+    if not text or max_length <= 0:
+        return text
+    return (text[:max_length] + "...") if len(text) > max_length else text
+
+
 class WebVerificationPipeline:
     """Main pipeline for web verification"""
 
@@ -185,11 +192,15 @@ class WebVerificationPipeline:
                 # Print successfully generated task details
                 seed_value, constraints, constraints_str = self._get_task_seed_and_constraints(task)
                 print(f"✅ Task {task_num}/{total_tasks} generated successfully!")
-                print(f"   Task ID: {task.id}")
-                print(f"   Seed: {seed_value if seed_value else 'N/A'}")
-                print(f"   Constraints: {len(constraints) if constraints else 0} constraint(s)")
-                self._print_constraints_details(constraints_str)
-                print(f"   Prompt: {task.prompt[:100]}..." if len(task.prompt) > 100 else f"   Prompt: {task.prompt}")
+                self._print_task_info_block(
+                    task.id,
+                    task.prompt,
+                    seed_value,
+                    constraints,
+                    constraints_str,
+                    line_indent="   ",
+                    prompt_max_length=100,
+                )
                 print()
                 sys.stdout.flush()
             else:
@@ -227,13 +238,18 @@ class WebVerificationPipeline:
                 print("-" * 80)
                 print("📝 TASK DETAILS:")
                 print("-" * 80)
-                print(f"Task ID: {task.id}")
-                print(f"Use Case: {use_case.name}")
-                print(f"Seed: {seed_value if seed_value else 'N/A'}")
-                print(f"Constraints: {len(constraints) if constraints else 0} constraint(s)")
-                self._print_constraints_details(constraints_str, line_indent="  ", header="\nConstraints Details:")
-                print("\nPrompt:")
-                print(f"  {task.prompt}")
+                self._print_task_info_block(
+                    task.id,
+                    task.prompt,
+                    seed_value,
+                    constraints,
+                    constraints_str,
+                    use_case_name=use_case.name,
+                    line_indent="  ",
+                    constraints_header="\nConstraints Details:",
+                    prompt_max_length=None,
+                    prompt_on_new_line=True,
+                )
                 print("-" * 80)
                 print("🤖 LLM REVIEW RESULT:")
                 print("-" * 80)
@@ -337,16 +353,7 @@ class WebVerificationPipeline:
             comparison_results = v2_result.get("comparison_results", [])
             if comparison_results:
                 print("\nPairwise comparisons:")
-                for comparison in comparison_results:
-                    seed1 = comparison.get("seed1")
-                    seed2 = comparison.get("seed2")
-                    different = comparison.get("different")
-                    if different is None:
-                        print(f"  Seed {seed1} vs {seed2}: ⚠️  {comparison.get('reason', 'Unknown')}")
-                    elif different:
-                        print(f"  Seed {seed1} vs {seed2}: ✓ Different (hash1={comparison.get('hash1')}, hash2={comparison.get('hash2')})")
-                    else:
-                        print(f"  Seed {seed1} vs {seed2}: ✗ IDENTICAL (hash={comparison.get('hash1')})")
+                self._print_v2_comparison_results(comparison_results)
 
             # Print summary
             print(f"\n{v2_result.get('summary', 'No summary available')}")
@@ -431,26 +438,7 @@ class WebVerificationPipeline:
                         use_case_results["iwap_doability_result"] = doability_result  # New clearer key
 
                         # Print doability results
-                        if doability_result.get("matched", False):
-                            doability_result.get("match_type", "unknown")
-                            reason = doability_result.get("reason", "")
-                            actions = doability_result.get("actions", [])
-                            api_task_id = doability_result.get("api_task_id", "N/A")
-                            api_prompt = doability_result.get("api_prompt", "N/A")
-                            total_solutions = doability_result.get("total_solutions_found", 0)
-
-                            print("✓ USE CASE IS DOABLE!")
-                            print(f"  Reason: {reason}")
-                            print(f"  Total Solutions Found: {total_solutions}")
-                            print(f"  Using Solution From Task ID: {api_task_id}")
-                            print(f"  Solution Prompt: {api_prompt[:80]}..." if len(api_prompt) > 80 else f"  Solution Prompt: {api_prompt}")
-                            print(f"  Actions Found: {len(actions) if actions else 0} actions")
-                            if actions:
-                                print(f"  First Action: {actions[0] if len(actions) > 0 else 'N/A'}")
-                        else:
-                            reason = doability_result.get("reason", UNKNOWN_REASON)
-                            print("✗ USE CASE NOT DOABLE")
-                            print(f"  ⚠️  WARNING: {reason}")
+                        self._print_doability_result(doability_result)
                     else:
                         error = iwap_result.get("error", "Unknown error")
                         print(f"Error: {error}")
@@ -503,7 +491,7 @@ class WebVerificationPipeline:
                     self._print_step_banner(
                         "🔄 STEP 4: DYNAMIC VERIFICATION",
                         f"Use Case: {use_case.name}",
-                        f"Using Solution Prompt: {api_prompt[:100]}..." if len(api_prompt) > 100 else f"Using Solution Prompt: {api_prompt}",
+                        f"Using Solution Prompt: {_truncate_for_display(api_prompt, 100)}",
                         f"Evaluating solution with {len(solution_actions)} actions against different seeds",
                         f"Seeds to test: {self.config.seed_values}",
                         "Note: Testing if solution works across different dynamic content variations",
@@ -1090,6 +1078,67 @@ class WebVerificationPipeline:
         for line in constraints_str.split("\n"):
             if line.strip():
                 print(f"{line_indent}{line}")
+
+    def _print_task_info_block(
+        self,
+        task_id: str,
+        prompt: str,
+        seed_value: int | None,
+        constraints: list | None,
+        constraints_str: str,
+        *,
+        use_case_name: str = "",
+        line_indent: str = "   ",
+        constraints_header: str = "   Constraints Details:",
+        prompt_max_length: int | None = 100,
+        prompt_on_new_line: bool = False,
+    ) -> None:
+        """Print task ID, use case, seed, constraints count/details, and prompt. Reused for task generation and LLM review."""
+        print(f"{line_indent}Task ID: {task_id}")
+        if use_case_name:
+            print(f"{line_indent}Use Case: {use_case_name}")
+        print(f"{line_indent}Seed: {seed_value if seed_value is not None else 'N/A'}")
+        print(f"{line_indent}Constraints: {len(constraints) if constraints else 0} constraint(s)")
+        self._print_constraints_details(constraints_str, line_indent=line_indent, header=constraints_header)
+        display_prompt = _truncate_for_display(prompt, prompt_max_length) if prompt_max_length else prompt
+        if prompt_on_new_line:
+            print("\nPrompt:")
+            print(f"  {display_prompt}")
+        else:
+            print(f"{line_indent}Prompt: {display_prompt}")
+
+    def _print_doability_result(self, doability_result: dict[str, Any]) -> None:
+        """Print use case doability result (matched vs not matched). Centralizes IWAP doability output."""
+        if doability_result.get("matched", False):
+            reason = doability_result.get("reason", "")
+            actions = doability_result.get("actions", [])
+            api_task_id = doability_result.get("api_task_id", "N/A")
+            api_prompt = doability_result.get("api_prompt", "N/A")
+            total_solutions = doability_result.get("total_solutions_found", 0)
+            print("✓ USE CASE IS DOABLE!")
+            print(f"  Reason: {reason}")
+            print(f"  Total Solutions Found: {total_solutions}")
+            print(f"  Using Solution From Task ID: {api_task_id}")
+            print(f"  Solution Prompt: {_truncate_for_display(api_prompt, 80)}")
+            print(f"  Actions Found: {len(actions) if actions else 0} actions")
+            print(f"  First Action: {actions[0] if actions else 'N/A'}")
+        else:
+            reason = doability_result.get("reason", UNKNOWN_REASON)
+            print("✗ USE CASE NOT DOABLE")
+            print(f"  ⚠️  WARNING: {reason}")
+
+    def _print_v2_comparison_results(self, comparison_results: list[dict[str, Any]]) -> None:
+        """Print pairwise seed comparison results for V2 dataset diversity. Reduces duplicated comparison output."""
+        for comparison in comparison_results:
+            seed1 = comparison.get("seed1")
+            seed2 = comparison.get("seed2")
+            different = comparison.get("different")
+            if different is None:
+                print(f"  Seed {seed1} vs {seed2}: ⚠️  {comparison.get('reason', 'Unknown')}")
+            elif different:
+                print(f"  Seed {seed1} vs {seed2}: ✓ Different (hash1={comparison.get('hash1')}, hash2={comparison.get('hash2')})")
+            else:
+                print(f"  Seed {seed1} vs {seed2}: ✗ IDENTICAL (hash={comparison.get('hash1')})")
 
     def _make_skipped_dynamic_verification(self, reason: str) -> dict[str, Any]:
         """Build the standard dict for a skipped dynamic verification step. Centralizes structure."""
