@@ -69,6 +69,27 @@ async def _ensure_crm_dataset(
     return {entity_type: fetched_dataset}
 
 
+async def _get_crm_entity_list(
+    task_url: str | None,
+    dataset: dict[str, list[dict[str, Any]]] | None,
+    entity_type: str,
+    *,
+    method: str | None = None,
+    filter_key: str | None = None,
+) -> list[dict[str, Any]]:
+    """Fetch CRM dataset for entity_type and return the list. Reduces repeated ensure+get pattern."""
+    data_dict = await _ensure_crm_dataset(
+        task_url, dataset, entity_type=entity_type, method=method, filter_key=filter_key
+    )
+    return data_dict.get(entity_type, [])
+
+
+def _collect_field_values_from_dataset(dataset: list[dict[str, Any]], field: str) -> list[Any]:
+    """Collect all unique non-None values for field from dataset. Used by IN_LIST and NOT_IN_LIST."""
+    values = [v.get(field) for v in dataset if field in v and v.get(field) is not None]
+    return list(set(values))
+
+
 def _to_float_safe(value: Any) -> float | None:
     if isinstance(value, int | float):
         return float(value)
@@ -100,8 +121,7 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         return random.choice(valid) if valid else None
 
     elif operator == ComparisonOperator.IN_LIST:
-        all_values = [v.get(field) for v in dataset if field in v and v.get(field) is not None]
-        all_values = list(set(all_values))
+        all_values = _collect_field_values_from_dataset(dataset, field)
         if not all_values:
             return [field_value]
         random.shuffle(all_values)
@@ -111,8 +131,7 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         return list(set(subset))
 
     elif operator == ComparisonOperator.NOT_IN_LIST:
-        all_values = [v.get(field) for v in dataset if field in v and v.get(field) is not None]
-        all_values = list(set(all_values))
+        all_values = _collect_field_values_from_dataset(dataset, field)
         if field_value in all_values:
             with contextlib.suppress(ValueError):
                 all_values.remove(field_value)
@@ -138,34 +157,41 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
     return None
 
 
-async def generate_view_matter_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    constraints_list: list[dict[str, Any]] = []
-    dataset_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="matters", method="distribute", filter_key="status")
-    dataset = dataset_dict.get("matters", [])
+def _generate_constraints_from_sample(
+    dataset: list[dict[str, Any]],
+    possible_fields: list[str],
+    field_operators_map: dict[str, list],
+    num_constraints: int | None = None,
+) -> list[dict[str, Any]]:
+    """Build constraints by picking a random sample and random fields, then generating one constraint per field. Reduces duplication across view/generate functions."""
     if not dataset:
-        print(ERROR_NO_DATASET_MSG)
-        return constraints_list
-    possible_fields = ["name", "client", "status", "updated"]
-    num_constraints = random.randint(2, len(possible_fields))
-    selected_fields = random.sample(possible_fields, num_constraints)
-
-    matter_data = random.choice(dataset)
-
+        return []
+    if num_constraints is None:
+        num_constraints = random.randint(1, len(possible_fields))
+    selected_fields = random.sample(possible_fields, min(num_constraints, len(possible_fields)))
+    sample = random.choice(dataset)
+    constraints_list: list[dict[str, Any]] = []
     for field in selected_fields:
-        allowed_ops = FIELD_OPERATORS_MAP_CLIENT_VIEW_MATTER.get(field, [])
+        allowed_ops = field_operators_map.get(field, [])
         if not allowed_ops:
             continue
-
         operator = ComparisonOperator(random.choice(allowed_ops))
-
-        field_value = matter_data.get(field)
+        field_value = sample.get(field)
         value = _generate_constraint_value(operator, field_value, field, dataset=dataset)
-
         if value is not None:
-            constraint = create_constraint_dict(field, operator, value)
-            constraints_list.append(constraint)
-
+            constraints_list.append(create_constraint_dict(field, operator, value))
     return constraints_list
+
+
+async def generate_view_matter_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraints_list: list[dict[str, Any]] = []
+    data = await _get_crm_entity_list(task_url, dataset, "matters", method="distribute", filter_key="status")
+    if not data:
+        print(ERROR_NO_DATASET_MSG)
+        return constraints_list
+    return _generate_constraints_from_sample(
+        data, ["name", "client", "status", "updated"], FIELD_OPERATORS_MAP_CLIENT_VIEW_MATTER, num_constraints=random.randint(2, 4)
+    )
 
 
 def generate_add_matter_constraints() -> list[dict[str, Any]]:
@@ -221,39 +247,17 @@ def generate_add_matter_constraints() -> list[dict[str, Any]]:
 
 
 async def generate_view_client_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    constraints_list = []
-    client_data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="clients", method="distribute", filter_key="status")
-    client_data = client_data_dict.get("clients", [])
-    if not client_data:
+    constraints_list: list[dict[str, Any]] = []
+    data = await _get_crm_entity_list(task_url, dataset, "clients", method="distribute", filter_key="status")
+    if not data:
         print(ERROR_NO_DATASET_MSG)
         return constraints_list
-    possible_fields = ["name", "email", "status", "matters"]
-    num_constraints = random.randint(1, len(possible_fields))
-    selected_fields = random.sample(possible_fields, num_constraints)
-
-    sample_client = random.choice(client_data)
-
-    for field in selected_fields:
-        allowed_ops = FIELD_OPERATORS_MAP_CLIENT_VIEW_MATTER.get(field, [])
-        if not allowed_ops:
-            continue
-
-        operator = ComparisonOperator(random.choice(allowed_ops))
-
-        field_value = sample_client.get(field)
-        value = _generate_constraint_value(operator, field_value, field, dataset=client_data)
-
-        if value is not None:
-            constraint = create_constraint_dict(field, operator, value)
-            constraints_list.append(constraint)
-
-    return constraints_list
+    return _generate_constraints_from_sample(data, ["name", "email", "status", "matters"], FIELD_OPERATORS_MAP_CLIENT_VIEW_MATTER)
 
 
 async def generate_search_client_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    constraints_list = []
-    client_data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="clients", method="distribute", filter_key="status")
-    client_data = client_data_dict.get("clients", [])
+    constraints_list: list[dict[str, Any]] = []
+    client_data = await _get_crm_entity_list(task_url, dataset, "clients", method="distribute", filter_key="status")
     if not client_data:
         print(ERROR_NO_DATASET_MSG)
         return constraints_list
@@ -275,8 +279,7 @@ async def generate_search_client_constraints(task_url: str | None = None, datase
 
 async def generate_search_matter_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-    matter_data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="matters", method="distribute", filter_key="status")
-    matter_data = matter_data_dict.get("matters", [])
+    matter_data = await _get_crm_entity_list(task_url, dataset, "matters", method="distribute", filter_key="status")
     if not matter_data:
         print(ERROR_NO_DATASET_MSG)
         return constraints_list
@@ -368,64 +371,44 @@ def _generate_value_for_document_field(field: str, field_value: str, operator: C
 
 async def generate_document_deleted_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-
-    possible_fields = ["name", "size", "version", "status"]  # , "updated"]
-    data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="files", method="", filter_key="")
-    data = data_dict.get("files", [])
+    data = await _get_crm_entity_list(task_url, dataset, "files", method="", filter_key="")
     if not data:
         print(ERROR_NO_DATASET_MSG)
         return constraints_list
-    document_data = random.choice(data)
-    # document_data = random.choice(DOCUMENT_DATA)
-
+    possible_fields = ["name", "size", "version", "status"]
     num_constraints = random.randint(2, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
+    document_data = random.choice(data)
     for field in selected_fields:
         allowed_ops = FIELD_OPERATORS_MAP_DOCUMENT.get(field, [])
         if not allowed_ops:
             continue
-
         operator = ComparisonOperator(random.choice(allowed_ops))
-
         field_value = document_data.get(field)
-
-        value = _generate_value_for_document_field(field, field_value, operator, data) if field == "size" else _generate_constraint_value(operator, field_value, field, dataset=data)
-
+        value = (
+            _generate_value_for_document_field(field, field_value, operator, data)
+            if field == "size"
+            else _generate_constraint_value(operator, field_value, field, dataset=data)
+        )
         if value is not None:
-            constraint = create_constraint_dict(field, operator, value)
-            constraints_list.append(constraint)
-
+            constraints_list.append(create_constraint_dict(field, operator, value))
     return constraints_list
+
+
+# Document rename: allowed new names for constraint generation
+NEW_DOCUMENT_NAMES = [
+    "Report-102.pdf", "Invoice-511.docx", "Statement-743.xlsx", "Summary-928.pdf",
+    "Agreement-337.docx", "Form-684.xlsx", "Proposal-219.pdf", "Record-570.docx",
+    "Analysis-803.xlsx", "Notes-445.pdf", "Plan-122.docx", "Schedule-699.xlsx",
+    "Brief-911.pdf", "Memo-318.docx", "Budget-472.xlsx", "Guide-856.pdf",
+    "Outline-394.docx", "Registry-640.xlsx",
+]
 
 
 async def generate_document_renamed_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints: list[dict[str, Any]] = []
-    docs_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="files")
-    docs = docs_dict.get("files", [])
-    NEW_DOCUMENT_NAMES = [
-        "Report-102.pdf",
-        "Invoice-511.docx",
-        "Statement-743.xlsx",
-        "Summary-928.pdf",
-        "Agreement-337.docx",
-        "Form-684.xlsx",
-        "Proposal-219.pdf",
-        "Record-570.docx",
-        "Analysis-803.xlsx",
-        "Notes-445.pdf",
-        "Plan-122.docx",
-        "Schedule-699.xlsx",
-        "Brief-911.pdf",
-        "Memo-318.docx",
-        "Budget-472.xlsx",
-        "Guide-856.pdf",
-        "Outline-394.docx",
-        "Registry-640.xlsx",
-    ]
-    NEW_DOCUMENT_NAMES_MODIFIED = []
-
-    for name in NEW_DOCUMENT_NAMES:
-        NEW_DOCUMENT_NAMES_MODIFIED.append({"new_name": name})
+    docs = await _get_crm_entity_list(task_url, dataset, "files")
+    new_names_as_dataset = [{"new_name": name} for name in NEW_DOCUMENT_NAMES]
 
     if docs:
         doc = random.choice(docs)
@@ -436,20 +419,19 @@ async def generate_document_renamed_constraints(task_url: str | None = None, dat
             operator = ComparisonOperator(random.choice(allowed_ops))
             if field == "new_name":
                 field_value = random.choice(NEW_DOCUMENT_NAMES)
-                value = _generate_constraint_value(operator, field_value, field, dataset=NEW_DOCUMENT_NAMES_MODIFIED)
-                constraint = create_constraint_dict(field, operator, value)
-                constraints.append(constraint)
-            if field == "previous_name":
+                value = _generate_constraint_value(operator, field_value, field, dataset=new_names_as_dataset)
+                if value is not None:
+                    constraints.append(create_constraint_dict(field, operator, value))
+            elif field == "previous_name":
                 value = _generate_constraint_value(operator, doc.get("name", "Document"), field, docs)
-                constraint = create_constraint_dict(field, operator, value)
-                constraints.append(constraint)
+                if value is not None:
+                    constraints.append(create_constraint_dict(field, operator, value))
     return constraints
 
 
 async def generate_billing_search_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints: list[dict[str, Any]] = []
-    logs_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="logs")
-    logs = logs_dict.get("logs", [])
+    logs = await _get_crm_entity_list(task_url, dataset, "logs")
     sample = random.choice(logs) if logs else {"matter": "Review", "description": "Review"}
     fields = ["query", "date_filter"]
     for field in fields:
@@ -471,8 +453,7 @@ async def generate_billing_search_constraints(task_url: str | None = None, datas
 
 
 async def generate_add_client_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    clients_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="clients")
-    clients = clients_dict.get("clients", [])
+    clients = await _get_crm_entity_list(task_url, dataset, "clients")
     if not clients:
         clients = [{"name": "New Client", "email": "new@example.com", "matters": 1, "status": "Active", "last": "Today"}]
     sample = random.choice(clients)
@@ -492,8 +473,7 @@ async def generate_delete_client_constraints(task_url: str | None = None, datase
 
 async def generate_filter_clients_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints: list[dict[str, Any]] = []
-    clients_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="clients")
-    clients = clients_dict.get("clients", [])
+    clients = await _get_crm_entity_list(task_url, dataset, "clients")
     sample = random.choice(clients) if clients else {"status": "Active", "matters": 2}
     for field in ["status", "matters"]:
         allowed_ops = FIELD_OPERATORS_MAP_CLIENT_FILTERS.get(field, [])
@@ -505,56 +485,22 @@ async def generate_filter_clients_constraints(task_url: str | None = None, datas
     return constraints
 
 
+ALLOWED_EVENT_LABELS = [
+    "Client Meeting", "Sales Call", "Follow-up Call", "Lead Qualification", "Product Demo",
+    "Contract Review", "Proposal Sent", "Negotiation Meeting", "Deal Closed", "Customer Onboarding",
+    "Account Review", "Renewal Discussion", "Upsell Opportunity", "Cross-sell Discussion", "Support Call",
+    "Customer Feedback Session", "Billing Discussion", "Churn Risk Review", "QBR Meeting", "Welcome Call",
+    "Lead Assignment", "Marketing Campaign Review", "Email Outreach Scheduled", "Pipeline Review", "CRM Data Cleanup",
+    "Client Training Session", "Technical Walkthrough", "Internal Strategy Sync", "Team Performance Review",
+    "Monthly Sales Review", "Weekly Client Check-in", "Cold Outreach Call", "Warm Lead Follow-up",
+    "Trial Expiry Notification", "Subscription Renewal", "Invoice Review", "NDA Signing", "Kickoff Call",
+    "Client Escalation", "Feature Discussion", "CSAT Follow-up", "Implementation Review", "Introductory Meeting",
+    "Decision Maker Call", "Referral Discussion",
+]
+
+
 def generate_new_calendar_event_constraints() -> list[dict[str, Any]]:
     fields = ["label", "time", "date", "event_type"]
-    ALLOWED_EVENT_LABELS = [
-        "Client Meeting",
-        "Sales Call",
-        "Follow-up Call",
-        "Lead Qualification",
-        "Product Demo",
-        "Contract Review",
-        "Proposal Sent",
-        "Negotiation Meeting",
-        "Deal Closed",
-        "Customer Onboarding",
-        "Account Review",
-        "Renewal Discussion",
-        "Upsell Opportunity",
-        "Cross-sell Discussion",
-        "Support Call",
-        "Customer Feedback Session",
-        "Billing Discussion",
-        "Churn Risk Review",
-        "QBR Meeting",
-        "Welcome Call",
-        "Lead Assignment",
-        "Marketing Campaign Review",
-        "Email Outreach Scheduled",
-        "Pipeline Review",
-        "CRM Data Cleanup",
-        "Client Training Session",
-        "Technical Walkthrough",
-        "Internal Strategy Sync",
-        "Team Performance Review",
-        "Monthly Sales Review",
-        "Weekly Client Check-in",
-        "Cold Outreach Call",
-        "Warm Lead Follow-up",
-        "Trial Expiry Notification",
-        "Subscription Renewal",
-        "Invoice Review",
-        "NDA Signing",
-        "Kickoff Call",
-        "Client Escalation",
-        "Feature Discussion",
-        "CSAT Follow-up",
-        "Implementation Review",
-        "Introductory Meeting",
-        "Decision Maker Call",
-        "Referral Discussion",
-    ]
-
     constraints = []
     for field in fields:
         op_str = random.choice(FIELD_OPERATORS_MAP_CALENDAR[field])
@@ -590,89 +536,32 @@ def generate_new_calendar_event_constraints() -> list[dict[str, Any]]:
 
 
 async def generate_new_log_added_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    fields = ["matter", "hours", "description"]
-    constraints: list[dict[str, Any]] = []
-    data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="logs")
-    data = data_dict.get("logs", [])
+    data = await _get_crm_entity_list(task_url, dataset, "logs")
     if not data:
         print(ERROR_NO_DATASET_MSG)
-        return constraints
-    log_data = random.choice(data)
-
-    for field in fields:
-        allowed_ops = FIELD_OPERATORS_MAP_NEW_LOG.get(field, [])
-        if not allowed_ops:
-            continue
-
-        operator = ComparisonOperator(random.choice(allowed_ops))
-        field_value = log_data.get(field)
-
-        value = _generate_constraint_value(operator, field_value, field, dataset=data)
-
-        if value is not None:
-            constraint = create_constraint_dict(field, operator, value)
-            constraints.append(constraint)
-
-    return constraints
+        return []
+    return _generate_constraints_from_sample(data, ["matter", "hours", "description"], FIELD_OPERATORS_MAP_NEW_LOG)
 
 
 async def generate_log_edited_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    fields = ["matter", "hours", "description", "client", "status"]
-    constraints: list[dict[str, Any]] = []
-    data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="logs", method="", filter_key="")
-    data = data_dict.get("logs", [])
+    data = await _get_crm_entity_list(task_url, dataset, "logs", method="", filter_key="")
     if not data:
         print(ERROR_NO_DATASET_MSG)
-        return constraints
-
-    log_data = random.choice(data)
-    for field in fields:
-        allowed_ops = FIELD_OPERATORS_MAP_LOG.get(field, [])
-        if not allowed_ops:
-            continue
-
-        operator = ComparisonOperator(random.choice(allowed_ops))
-        field_value = log_data.get(field)
-
-        value = _generate_constraint_value(operator, field_value, field, dataset=data)
-
-        if value is not None:
-            constraint = create_constraint_dict(field, operator, value)
-            constraints.append(constraint)
-
-    return constraints
+        return []
+    return _generate_constraints_from_sample(data, ["matter", "hours", "description", "client", "status"], FIELD_OPERATORS_MAP_LOG)
 
 
 async def generate_delete_log_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    fields = ["matter", "hours", "client", "status"]
-    constraints: list[dict[str, Any]] = []
-    data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="logs", method="", filter_key="")
-    data = data_dict.get("logs", [])
+    data = await _get_crm_entity_list(task_url, dataset, "logs", method="", filter_key="")
     if not data:
         print(ERROR_NO_DATASET_MSG)
-        return constraints
-    log_data = random.choice(data)
-    for field in fields:
-        allowed_ops = FIELD_OPERATORS_MAP_LOG.get(field, [])
-        if not allowed_ops:
-            continue
-
-        operator = ComparisonOperator(random.choice(allowed_ops))
-        field_value = log_data.get(field)
-
-        value = _generate_constraint_value(operator, field_value, field, dataset=data)
-
-        if value is not None:
-            constraint = create_constraint_dict(field, operator, value)
-            constraints.append(constraint)
-
-    return constraints
+        return []
+    return _generate_constraints_from_sample(data, ["matter", "hours", "client", "status"], FIELD_OPERATORS_MAP_LOG)
 
 
 async def generate_filter_matter_status_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints: list[dict[str, Any]] = []
-    matter_data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="matters", method="distribute", filter_key="status")
-    matter_data = matter_data_dict.get("matters", [])
+    matter_data = await _get_crm_entity_list(task_url, dataset, "matters", method="distribute", filter_key="status")
     if not matter_data:
         print(ERROR_NO_DATASET_MSG)
         return constraints
@@ -700,36 +589,18 @@ def generate_sort_matter_constraints() -> list[dict[str, Any]]:
 
 
 async def generate_update_matter_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    constraints: list[dict[str, Any]] = []
-    matter_data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="matters", method="distribute", filter_key="status")
-    matter_data = matter_data_dict.get("matters", [])
+    matter_data = await _get_crm_entity_list(task_url, dataset, "matters", method="distribute", filter_key="status")
     if not matter_data:
         print(ERROR_NO_DATASET_MSG)
-        return constraints
-
-    fields = ["name", "client", "status", "updated"]
-    sample = random.choice(matter_data)
-
-    for field in fields:
-        allowed_ops = FIELD_OPERATORS_MAP_MATTER.get(field, [])
-        if not allowed_ops:
-            continue
-
-        operator = ComparisonOperator(random.choice(allowed_ops))
-        field_value = sample.get(field)
-        value = _generate_constraint_value(operator, field_value, field, dataset=matter_data)
-        if value is not None:
-            constraints.append(create_constraint_dict(field, operator, value))
-
-    return constraints
+        return []
+    return _generate_constraints_from_sample(matter_data, ["name", "client", "status", "updated"], FIELD_OPERATORS_MAP_MATTER)
 
 
 async def generate_view_pending_events_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints: list[dict[str, Any]] = []
-    events_data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type="events", method="", filter_key="")
-    events_data = events_data_dict.get("events", [])
+    events_data = await _get_crm_entity_list(task_url, dataset, "events", method="", filter_key="")
     if not events_data:
-        print("[ERROR] No dataset provided")
+        print(ERROR_NO_DATASET_MSG)
         return constraints
 
     sorted_events = sorted(events_data, key=lambda e: e.get("date", ""))
