@@ -738,7 +738,7 @@ function generateReport(allResults) {
     console.log(`   🔹 TOTAL V3: ${usageStats.v3Ids + usageStats.v3Classes + usageStats.v3Texts} usos`);
   }
 
-  // Show event coverage stats
+  //Show event coverage stats
   if (eventStats.totalEvents !== undefined) {
     const coveragePercent = eventStats.totalEvents > 0
       ? ((eventStats.usedEvents / eventStats.totalEvents) * 100).toFixed(1)
