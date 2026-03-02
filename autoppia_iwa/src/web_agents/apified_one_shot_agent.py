@@ -123,7 +123,7 @@ class ApifiedOneShotWebAgent(IWebAgent):
         if not original_url:
             return original_url
 
-        remote = DEMO_WEBS_ENDPOINT if DEMO_WEBS_ENDPOINT.startswith("http") else f"http://{DEMO_WEBS_ENDPOINT}"
+        remote = DEMO_WEBS_ENDPOINT if DEMO_WEBS_ENDPOINT.startswith("http") else f"https://{DEMO_WEBS_ENDPOINT}"
         remote_parsed = urlparse(remote)
 
         # Relative paths from the agent should be anchored to the remote host
