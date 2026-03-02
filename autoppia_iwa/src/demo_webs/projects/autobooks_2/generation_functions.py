@@ -12,6 +12,38 @@ from .data_utils import fetch_data
 USERNAME_PLACEHOLDER = "<username>"
 PASSWORD_PLACEHOLDER = "<password>"
 
+# Shared word list for author/text constraints (edit book, add book)
+RANDOM_WORDS_FOR_CONSTRAINTS = [
+    "car", "star", "red", "blue", "green", "e", "a", "o", "x", "z",
+    "cinema", "book", "light", "shadow", "dream", "story", "heart", "vision",
+    "gold", "silver", "thunder", "wind", "quantum", "stellar", "cosmic",
+    "rhythm", "echo", "spark", "rebel", "sage",
+]
+
+
+async def _get_books_from_task_or_dataset(
+    task_url: str | None,
+    dataset: dict[str, list[dict]] | None,
+) -> tuple[dict[str, list[dict]], list[dict]]:
+    """
+    Return (dataset, books). If dataset is not provided or empty, fetch using task_url seed.
+    Callers should check `if not books: return ...` after calling.
+    """
+    if not dataset:
+        seed = get_seed_from_url(task_url)
+        books = await fetch_data(seed_value=seed)
+        dataset = {"books": books}
+    books = dataset.get("books", []) if dataset else []
+    return dataset, books
+
+
+def _default_auth_constraints() -> list[dict]:
+    """Return the standard username and password placeholder constraints for book use cases."""
+    return [
+        {"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": USERNAME_PLACEHOLDER},
+        {"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": PASSWORD_PLACEHOLDER},
+    ]
+
 
 def generate_registration_constraints():
     """
@@ -61,30 +93,16 @@ async def generate_book_constraints(task_url: str | None = None, dataset: dict[s
     """
     from .utils import build_constraints_info, parse_constraints_str
 
-    constraints = []
-
-    # Fetch data if dataset is not provided or is empty
-    if not dataset:
-        seed = get_seed_from_url(task_url)
-        books = await fetch_data(seed_value=seed)
-        dataset = {"books": books}
-
-    # Extract books from dataset
-    books = dataset.get("books", []) if dataset else []
+    dataset, books = await _get_books_from_task_or_dataset(task_url, dataset)
     if not books:
         return None
+    constraints = []
 
     constraints_str = build_constraints_info(books)
-
-    # Convertir el string a la estructura de datos
     if constraints_str:
         constraints = parse_constraints_str(constraints_str)
-        # Login constraints use placeholders; replaced at validation time in base_events (same as in actions).
-        constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": USERNAME_PLACEHOLDER})
-        constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": PASSWORD_PLACEHOLDER})
-
+        constraints.extend(_default_auth_constraints())
         return constraints
-
     return None
 
 
@@ -95,28 +113,14 @@ async def generate_book_details_constraints(task_url: str | None = None, dataset
     """
     from .utils import build_constraints_info, parse_constraints_str
 
-    constraints = []
-
-    # Fetch data if dataset is not provided or is empty
-    if not dataset:
-        seed = get_seed_from_url(task_url)
-        books = await fetch_data(seed_value=seed)
-        dataset = {"books": books}
-
-    # Extract books from dataset
-    books = dataset.get("books", []) if dataset else []
+    dataset, books = await _get_books_from_task_or_dataset(task_url, dataset)
     if not books:
         return None
-
     constraints_str = build_constraints_info(books)
-
-    # Convertir el string a la estructura de datos
     if constraints_str:
         constraints = parse_constraints_str(constraints_str)
-        constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": USERNAME_PLACEHOLDER})
-        constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": PASSWORD_PLACEHOLDER})
+        constraints.extend(_default_auth_constraints())
         return constraints
-
     return None
 
 
@@ -141,14 +145,7 @@ async def generate_search_book_constraints(task_url: str | None = None, dataset:
     """
     from .utils import parse_constraints_str
 
-    # Fetch data if dataset is not provided or is empty
-    if not dataset:
-        seed = get_seed_from_url(task_url)
-        books = await fetch_data(seed_value=seed)
-        dataset = {"books": books}
-
-    # Extract books from dataset
-    books = dataset.get("books", []) if dataset else []
+    _, books = await _get_books_from_task_or_dataset(task_url, dataset)
     if not books:
         return None
 
@@ -246,14 +243,7 @@ async def generate_book_filter_constraints(task_url: str | None = None, dataset:
     Genera una combinación de constraints para filtrado de libros
     usando los años y géneros reales de los libros.
     """
-    # Fetch data if dataset is not provided or is empty
-    if not dataset:
-        seed = get_seed_from_url(task_url)
-        books = await fetch_data(seed_value=seed)
-        dataset = {"books": books}
-
-    # Extract books from dataset
-    books = dataset.get("books", []) if dataset else []
+    _, books = await _get_books_from_task_or_dataset(task_url, dataset)
     if not books:
         return []
 
@@ -467,14 +457,7 @@ async def generate_add_comment_constraints(task_url: str | None = None, dataset:
     """
     Genera combinaciones de constraints para añadir comentarios.
     """
-    # Fetch data if dataset is not provided or is empty
-    if not dataset:
-        seed = get_seed_from_url(task_url)
-        books = await fetch_data(seed_value=seed)
-        dataset = {"books": books}
-
-    # Extract books from dataset
-    books_data = dataset.get("books", []) if dataset else []
+    _, books_data = await _get_books_from_task_or_dataset(task_url, dataset)
     if not books_data:
         return []
 
@@ -553,59 +536,13 @@ async def generate_edit_book_constraints(task_url: str | None = None, dataset: d
     Generates constraints specifically for editing book-related use cases.
     Returns the constraints as structured data.
     """
-
-    # Campos editables (sin name porque ya tenemos la película)
     editable_fields = ["author", "year", "genres", "rating", "page_count"]
 
-    random_words = [
-        "car",
-        "star",
-        "red",
-        "blue",
-        "green",
-        "e",
-        "a",
-        "o",
-        "x",
-        "z",
-        # Palabras más largas
-        "cinema",
-        "book",
-        "light",
-        "shadow",
-        "dream",
-        "story",
-        "heart",
-        "vision",
-        "gold",
-        "silver",
-        "thunder",
-        "wind",
-        "quantum",
-        "stellar",
-        "cosmic",
-        "rhythm",
-        "echo",
-        "spark",
-        "rebel",
-        "sage",
-    ]
+    dataset, books = await _get_books_from_task_or_dataset(task_url, dataset)
+    all_genres = list({genre for book in books for genre in book["genres"]})
 
-    # Fetch data if dataset is not provided or is empty
-    if not dataset:
-        seed = get_seed_from_url(task_url)
-        books = await fetch_data(seed_value=seed)
-        dataset = {"books": books}
-    all_genres = list({genre for book in dataset.get("books", []) for genre in book["genres"]})
-
-    # Generar constraints
     constraints = []
-
-    # Always add username and password constraints explicitly
-    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": USERNAME_PLACEHOLDER})
-    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": PASSWORD_PLACEHOLDER})
-
-    # Seleccionar 1, 2, 3 o 4 campos para editar
+    constraints.extend(_default_auth_constraints())
     # Security Hotspot: random.sample and random.choice are used for non-security purposes (test data generation)
     selected_fields = sample(editable_fields, k=choice([1, 2, 3, 4]))
 
@@ -615,7 +552,7 @@ async def generate_edit_book_constraints(task_url: str | None = None, dataset: d
                 {
                     "field": field,
                     "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.CONTAINS), ComparisonOperator(ComparisonOperator.NOT_CONTAINS)]),
-                    "value": choice(random_words),
+                    "value": choice(RANDOM_WORDS_FOR_CONSTRAINTS),
                 }
             )
         elif field == "year":
@@ -653,62 +590,18 @@ async def generate_edit_book_constraints(task_url: str | None = None, dataset: d
 
 async def generate_add_book_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
     """
-    Generates constraints specifically for editing book-related use cases.
+    Generates constraints specifically for add-book use cases.
     Returns the constraints as structured data.
     """
-
-    # Campos editables
     editable_fields = ["author", "year", "genres", "rating", "page_count"]
 
-    random_words = [
-        "car",
-        "star",
-        "red",
-        "blue",
-        "green",
-        "e",
-        "a",
-        "o",
-        "x",
-        "z",
-        # Palabras más largas
-        "cinema",
-        "book",
-        "light",
-        "shadow",
-        "dream",
-        "story",
-        "heart",
-        "vision",
-        "gold",
-        "silver",
-        "thunder",
-        "wind",
-        "quantum",
-        "stellar",
-        "cosmic",
-        "rhythm",
-        "echo",
-        "spark",
-        "rebel",
-        "sage",
-    ]
+    dataset, books = await _get_books_from_task_or_dataset(task_url, dataset)
+    all_genres = list({genre for book in books for genre in book["genres"]})
 
-    # Fetch data if dataset is not provided or is empty
-    if not dataset:
-        seed = get_seed_from_url(task_url)
-        books = await fetch_data(seed_value=seed)
-        dataset = {"books": books}
-    all_genres = list({genre for book in dataset.get("books", []) for genre in book["genres"]})
-
-    # Generar constraints
     constraints = []
+    constraints.extend(_default_auth_constraints())
 
-    # Always add username and password constraints explicitly
-    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": USERNAME_PLACEHOLDER})
-    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": PASSWORD_PLACEHOLDER})
-
-    # Seleccionar 1, 2, 3 o 4 campos para editar
+    # Security Hotspot: random.sample and random.choice are used for non-security purposes (test data generation)
     selected_fields = sample(editable_fields, k=choice([1, 2, 3, 4]))
 
     for field in selected_fields:
@@ -717,7 +610,7 @@ async def generate_add_book_constraints(task_url: str | None = None, dataset: di
                 {
                     "field": field,
                     "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.CONTAINS), ComparisonOperator(ComparisonOperator.NOT_CONTAINS)]),
-                    "value": choice(random_words),
+                    "value": choice(RANDOM_WORDS_FOR_CONSTRAINTS),
                 }
             )
         elif field == "year":
@@ -834,21 +727,11 @@ async def generate_edit_profile_constraints(task_url: str | None = None, dataset
         "Literary critic specializing in contemporary novels and poetry",
         "Story lover and aspiring writer",
     ]
-    # Fetch data if dataset is not provided or is empty
-    if not dataset:
-        seed = get_seed_from_url(task_url)
-        books = await fetch_data(seed_value=seed)
-        dataset = {"books": books}
-    all_genres = list({genre for book in dataset.get("books", []) for genre in book["genres"]})
+    dataset, books = await _get_books_from_task_or_dataset(task_url, dataset)
+    all_genres = list({genre for book in books for genre in book["genres"]})
 
-    # Generar constraints
     constraints = []
-
-    # Always add username and password constraints explicitly
-    constraints.append({"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": USERNAME_PLACEHOLDER})
-    constraints.append({"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": PASSWORD_PLACEHOLDER})
-
-    # Select random fields to edit
+    constraints.extend(_default_auth_constraints())
     # Security Hotspot: random.sample and random.choice are used for non-security purposes (test data generation)
     selected_fields = sample(editable_fields, k=choice([1, 2, 3]))
     if "website" not in selected_fields:

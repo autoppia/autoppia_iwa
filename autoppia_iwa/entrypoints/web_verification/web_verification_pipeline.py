@@ -10,8 +10,10 @@ Main pipeline that orchestrates:
 """
 
 import asyncio
+import copy
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlparse
@@ -142,12 +144,11 @@ class WebVerificationPipeline:
 
         # Step 1: Generate tasks (2 per use case) with constraints
         # Generate each task separately with different seeds to ensure variety
-        print("\n" + "=" * 80)
-        print("📝 STEP 1: TASK GENERATION")
-        print("=" * 80)
-        print(f"Use Case: {use_case.name}")
-        print(f"Generating {self.config.tasks_per_use_case} task(s)...")
-        print("=" * 80 + "\n")
+        self._print_step_banner(
+            "📝 STEP 1: TASK GENERATION",
+            f"Use Case: {use_case.name}",
+            f"Generating {self.config.tasks_per_use_case} task(s)...",
+        )
 
         tasks = []
 
@@ -174,8 +175,6 @@ class WebVerificationPipeline:
                 # We need to create a copy of the use_case for this task to preserve the constraints
                 # that were just generated, before they get overwritten by the next task generation.
                 if use_case.constraints and task.use_case:
-                    import copy
-
                     # Create a copy of the use_case object so each task has its own independent use_case
                     # with its own constraints. This prevents constraints from being overwritten.
                     task.use_case = copy.deepcopy(use_case)
@@ -184,21 +183,12 @@ class WebVerificationPipeline:
                 tasks.append(task)
 
                 # Print successfully generated task details
-                seed_value = self._extract_seed_from_url(task.url)
-                constraints = task.use_case.constraints if task.use_case and task.use_case.constraints else None
-                constraints_str = task.use_case.constraints_to_str() if task.use_case else ""
-
-                import sys
-
+                seed_value, constraints, constraints_str = self._get_task_seed_and_constraints(task)
                 print(f"✅ Task {task_num}/{total_tasks} generated successfully!")
                 print(f"   Task ID: {task.id}")
                 print(f"   Seed: {seed_value if seed_value else 'N/A'}")
                 print(f"   Constraints: {len(constraints) if constraints else 0} constraint(s)")
-                if constraints_str:
-                    print("   Constraints Details:")
-                    for line in constraints_str.split("\n"):
-                        if line.strip():
-                            print(f"     {line}")
+                self._print_constraints_details(constraints_str)
                 print(f"   Prompt: {task.prompt[:100]}..." if len(task.prompt) > 100 else f"   Prompt: {task.prompt}")
                 print()
                 sys.stdout.flush()
@@ -207,59 +197,33 @@ class WebVerificationPipeline:
                 print()
 
         if not tasks:
-            print("=" * 80)
-            print("❌ ERROR: No tasks generated for use case")
-            print("=" * 80 + "\n")
+            self._print_step_banner("❌ ERROR: No tasks generated for use case", trailing_newline=True)
             logger.warning(f"No tasks generated for use case: {use_case.name}")
             use_case_results["error"] = "No tasks generated"
             return use_case_results
 
-        import sys
-
-        print("=" * 80)
-        print(f"✅ All {len(tasks)} task(s) generated successfully!")
-        print("=" * 80)
+        self._print_step_banner(f"✅ All {len(tasks)} task(s) generated successfully!", leading_newline=False, trailing_newline=True)
         sys.stdout.flush()
-        print()
 
         # Step 1: LLM review (no retry logic)
-        print("\n" + "=" * 80)
-        print("🤖 STEP 1: LLM REVIEW")
-        print("=" * 80)
-        print(f"Use Case: {use_case.name}")
-        print(f"Reviewing {len(tasks)} task(s)...")
-        print("=" * 80 + "\n")
+        self._print_step_banner("🤖 STEP 1: LLM REVIEW", f"Use Case: {use_case.name}", f"Reviewing {len(tasks)} task(s)...")
 
         # Review each task once
         task_review_map = {}
         for task_index, task in enumerate(tasks):
             task_num = task_index + 1
-
-            # Extract seed value from task URL
-            seed_value = self._extract_seed_from_url(task.url)
-
-            # Get constraints
-            constraints = task.use_case.constraints if task.use_case and task.use_case.constraints else None
-            constraints_str = task.use_case.constraints_to_str() if task.use_case else ""
+            seed_value, constraints, constraints_str = self._get_task_seed_and_constraints(task)
 
             # Review task with LLM
             if self.llm_reviewer:
-                print("=" * 80)
-                print(f"📋 Reviewing Task {task_num}/{len(tasks)}")
-                print("=" * 80)
-                print(f"Giving task {task_num} to LLM for review...")
-                print()
+                self._print_step_banner(f"📋 Reviewing Task {task_num}/{len(tasks)}", f"Giving task {task_num} to LLM for review...", leading_newline=False, trailing_newline=True)
 
                 logger.debug(f"Reviewing task {task.id} with LLM: checking if prompt matches constraints")
                 review_result = await self.llm_reviewer.review_task_and_constraints(task)
                 review_result["task_id"] = task.id
                 review_result["retry_count"] = 0
 
-                # Print task details and review result immediately after review
-                import sys
-
                 sys.stdout.flush()
-
                 print("-" * 80)
                 print("📝 TASK DETAILS:")
                 print("-" * 80)
@@ -267,11 +231,7 @@ class WebVerificationPipeline:
                 print(f"Use Case: {use_case.name}")
                 print(f"Seed: {seed_value if seed_value else 'N/A'}")
                 print(f"Constraints: {len(constraints) if constraints else 0} constraint(s)")
-                if constraints_str:
-                    print("\nConstraints Details:")
-                    for line in constraints_str.split("\n"):
-                        if line.strip():
-                            print(f"  {line}")
+                self._print_constraints_details(constraints_str, line_indent="  ", header="\nConstraints Details:")
                 print("\nPrompt:")
                 print(f"  {task.prompt}")
                 print("-" * 80)
@@ -289,7 +249,6 @@ class WebVerificationPipeline:
                 sys.stdout.flush()
                 print()
 
-                # Print result status
                 if review_result.get("valid", False):
                     print(f"✅ Task {task_num} passed LLM review!\n")
                 else:
@@ -314,12 +273,8 @@ class WebVerificationPipeline:
             }
 
         # Print summary of review results
-        import sys
-
         sys.stdout.flush()
-        print("=" * 80)
-        print("📊 REVIEW SUMMARY")
-        print("=" * 80)
+        self._print_step_banner("📊 REVIEW SUMMARY", leading_newline=False, trailing_newline=False)
         passed_count = sum(1 for info in task_review_map.values() if info.get("review_result", {}).get("valid", False))
         total_count = len(task_review_map)
         print(f"Tasks Passed: {passed_count}/{total_count}")
@@ -336,13 +291,7 @@ class WebVerificationPipeline:
         for _task_index, task_info in sorted(task_review_map.items()):
             task = task_info["task"]
             review_result = task_info["review_result"]
-
-            # Extract seed value from task URL
-            seed_value = self._extract_seed_from_url(task.url)
-
-            # Get constraints
-            constraints = task.use_case.constraints if task.use_case and task.use_case.constraints else None
-            constraints_str = task.use_case.constraints_to_str() if task.use_case else ""
+            seed_value, constraints, constraints_str = self._get_task_seed_and_constraints(task)
 
             # Serialize constraints to make them JSON-compatible
             serialized_constraints = self._serialize_constraints(constraints) if constraints else None
@@ -361,14 +310,14 @@ class WebVerificationPipeline:
 
         # Step 2 (V2): Dataset Diversity Verification - verify that datasets are different with different seeds
         if self.config.dynamic_enabled and self.dynamic_verifier:
-            print("\n" + "=" * 80)
-            print("🔄 STEP 2 (V2): DATASET DIVERSITY VERIFICATION")
-            print("=" * 80)
-            print(f"Use Case: {use_case.name}")
-            print(f"Project ID: {self.web_project.id}")
-            print(f"Seeds to test: {self.config.seed_values}")
-            print("Verifying that datasets are different with different seeds...")
-            print("Note: This ensures dynamic data generation is working correctly")
+            self._print_step_banner(
+                "🔄 STEP 2 (V2): DATASET DIVERSITY VERIFICATION",
+                f"Use Case: {use_case.name}",
+                f"Project ID: {self.web_project.id}",
+                f"Seeds to test: {self.config.seed_values}",
+                "Verifying that datasets are different with different seeds...",
+                "Note: This ensures dynamic data generation is working correctly",
+            )
             print("-" * 80)
 
             logger.info(f"Step 2 (V2): Dataset Diversity Verification for {use_case.name}")
@@ -418,18 +367,27 @@ class WebVerificationPipeline:
                 all_reviews_valid = all(review.get("valid", False) for review in llm_reviews) and len(llm_reviews) > 0
 
             if all_reviews_valid:
-                print("\n" + "=" * 80)
-                print("🔄 STEP 3: IWAP USE CASE DOABILITY CHECK")
-                print("=" * 80)
-                print(f"Use Case: {use_case.name}")
-                print(f"Project ID: {self.web_project.id}")
+                step3_lines = [
+                    "🔄 STEP 3: IWAP USE CASE DOABILITY CHECK",
+                    f"Use Case: {use_case.name}",
+                    f"Project ID: {self.web_project.id}",
+                ]
                 if self.llm_reviewer:
-                    print(f"Total Tasks Reviewed: {len(use_case_results.get('llm_reviews', []))}")
-                    print("All LLM Reviews: VALID ✓")
+                    step3_lines.extend(
+                        [
+                            f"Total Tasks Reviewed: {len(use_case_results.get('llm_reviews', []))}",
+                            "All LLM Reviews: VALID ✓",
+                        ]
+                    )
                 else:
-                    print("LLM Review: DISABLED (proceeding without gating)")
-                print("Checking if use case is doable (has successful solution)...")
-                print("Note: We don't compare specific constraints, just check if use case has been solved before")
+                    step3_lines.append("LLM Review: DISABLED (proceeding without gating)")
+                step3_lines.extend(
+                    [
+                        "Checking if use case is doable (has successful solution)...",
+                        "Note: We don't compare specific constraints, just check if use case has been solved before",
+                    ]
+                )
+                self._print_step_banner(*step3_lines)
                 print("-" * 80)
 
                 logger.info(f"Step 3: IWAP Use Case Doability Check for {use_case.name} (LLM review {'enabled' if self.llm_reviewer else 'disabled'})")
@@ -542,15 +500,14 @@ class WebVerificationPipeline:
                     api_tests = doability_result.get("api_tests", [])
                     api_start_url = doability_result.get("api_start_url", "")
 
-                    print("\n" + "=" * 80)
-                    print("🔄 STEP 4: DYNAMIC VERIFICATION")
-                    print("=" * 80)
-                    print(f"Use Case: {use_case.name}")
-                    print(f"Using Solution Prompt: {api_prompt[:100]}..." if len(api_prompt) > 100 else f"Using Solution Prompt: {api_prompt}")
-                    print(f"Evaluating solution with {len(solution_actions)} actions against different seeds")
-                    print(f"Seeds to test: {self.config.seed_values}")
-                    print("Note: Testing if solution works across different dynamic content variations")
-                    print("=" * 80 + "\n")
+                    self._print_step_banner(
+                        "🔄 STEP 4: DYNAMIC VERIFICATION",
+                        f"Use Case: {use_case.name}",
+                        f"Using Solution Prompt: {api_prompt[:100]}..." if len(api_prompt) > 100 else f"Using Solution Prompt: {api_prompt}",
+                        f"Evaluating solution with {len(solution_actions)} actions against different seeds",
+                        f"Seeds to test: {self.config.seed_values}",
+                        "Note: Testing if solution works across different dynamic content variations",
+                    )
 
                     # manual testing
                     # if solution_actions:
@@ -596,54 +553,23 @@ class WebVerificationPipeline:
                         else:
                             logger.warning("No reference task available for dynamic verification")
                         # Store skip reason for Step 4
-                        use_case_results["dynamic_verification"] = {
-                            "skipped": True,
-                            "reason": "No reference task available (missing api_prompt or api_start_url)",
-                            "all_passed": False,
-                            "passed_count": 0,
-                            "total_count": 0,
-                        }
+                        use_case_results["dynamic_verification"] = self._make_skipped_dynamic_verification("No reference task available (missing api_prompt or api_start_url)")
                     else:
                         logger.info("Dynamic verification is disabled")
-                        # Store skip reason for Step 4
-                        use_case_results["dynamic_verification"] = {
-                            "skipped": True,
-                            "reason": "Dynamic verification is disabled",
-                            "all_passed": False,
-                            "passed_count": 0,
-                            "total_count": 0,
-                        }
+                        use_case_results["dynamic_verification"] = self._make_skipped_dynamic_verification("Dynamic verification is disabled")
                 else:
-                    print("\n" + "=" * 80)
-                    print("⏭️  STEP 4: SKIPPED")
-                    print("=" * 80)
-                    print(f"Use Case: {use_case.name}")
-                    skip_reason = ""
-                    if not doability_result.get("matched", False):
-                        skip_reason = "Use case is not doable - no successful solution found from IWAP API"
-                        print(f"Reason: {skip_reason}")
-                    else:
-                        skip_reason = "No actions in solution"
-                        print(f"Reason: {skip_reason}")
-                    print("=" * 80 + "\n")
-                    # Store skip reason for Step 4
-                    use_case_results["dynamic_verification"] = {
-                        "skipped": True,
-                        "reason": skip_reason,
-                        "all_passed": False,
-                        "passed_count": 0,
-                        "total_count": 0,
-                    }
+                    skip_reason = "Use case is not doable - no successful solution found from IWAP API" if not doability_result.get("matched", False) else "No actions in solution"
+                    self._print_step_banner("⏭️  STEP 4: SKIPPED", f"Use Case: {use_case.name}", f"Reason: {skip_reason}")
+                    use_case_results["dynamic_verification"] = self._make_skipped_dynamic_verification(skip_reason)
             else:
                 invalid_count = sum(1 for review in use_case_results.get("llm_reviews", []) if not review.get("valid", False))
-                print("\n" + "=" * 80)
-                print("⏭️  STEP 3: SKIPPED")
-                print("=" * 80)
-                print(f"Use Case: {use_case.name}")
-                print(f"Total Tasks Reviewed: {len(use_case_results.get('llm_reviews', []))}")
-                print(f"Invalid Reviews: {invalid_count}")
-                print("Reason: Not all LLM reviews are valid")
-                print("=" * 80 + "\n")
+                self._print_step_banner(
+                    "⏭️  STEP 3: SKIPPED",
+                    f"Use Case: {use_case.name}",
+                    f"Total Tasks Reviewed: {len(use_case_results.get('llm_reviews', []))}",
+                    f"Invalid Reviews: {invalid_count}",
+                    "Reason: Not all LLM reviews are valid",
+                )
                 logger.info(f"Step 3: Skipping IWAP Use Case Doability Check for {use_case.name} because not all LLM reviews are valid")
                 # Store skip reason for Step 3
                 use_case_results["iwap_status"] = {
@@ -652,35 +578,18 @@ class WebVerificationPipeline:
                     "invalid_reviews": invalid_count,
                     "total_reviews": len(use_case_results.get("llm_reviews", [])),
                 }
-                # Also mark Step 4 as skipped since Step 3 was skipped
-                use_case_results["dynamic_verification"] = {
-                    "skipped": True,
-                    "reason": "Step 3 skipped (not all LLM reviews are valid)",
-                    "all_passed": False,
-                    "passed_count": 0,
-                    "total_count": 0,
-                }
+                use_case_results["dynamic_verification"] = self._make_skipped_dynamic_verification("Step 3 skipped (not all LLM reviews are valid)")
         else:
-            print("\n" + "=" * 80)
-            print("⏭️  STEP 2: SKIPPED")
+            self._print_step_banner("⏭️  STEP 2: SKIPPED", f"Use Case: {use_case.name}", "Reason: IWAP client is disabled (--no-iwap flag used)")
             print("=" * 80)
             print(f"Use Case: {use_case.name}")
             print("Reason: IWAP client is disabled (--no-iwap flag used)")
-            print("=" * 80 + "\n")
             logger.info(f"Step 3: Skipping IWAP Use Case Doability Check for {use_case.name} because IWAP client is disabled")
-            # Store skip reason for Step 3
             use_case_results["iwap_status"] = {
                 "skipped": True,
                 "reason": "IWAP client is disabled",
             }
-            # Also mark Step 4 as skipped since Step 3 was skipped
-            use_case_results["dynamic_verification"] = {
-                "skipped": True,
-                "reason": "Step 3 skipped (IWAP client disabled)",
-                "all_passed": False,
-                "passed_count": 0,
-                "total_count": 0,
-            }
+            use_case_results["dynamic_verification"] = self._make_skipped_dynamic_verification("Step 3 skipped (IWAP client disabled)")
 
         # Note: IWAP doability check is now done per-task in Step 3 (when LLM review is valid)
         # Keeping this for backward compatibility if needed, but it's now integrated into Step 3
@@ -1153,6 +1062,44 @@ class WebVerificationPipeline:
         except Exception:
             pass
         return None
+
+    def _get_task_seed_and_constraints(self, task: Task) -> tuple[int | None, list | None, str]:
+        """
+        Extract seed and constraint data from a task for display/serialization.
+        Returns (seed_value, constraints_list, constraints_str).
+        """
+        seed_value = self._extract_seed_from_url(task.url)
+        constraints = task.use_case.constraints if task.use_case and task.use_case.constraints else None
+        constraints_str = task.use_case.constraints_to_str() if task.use_case else ""
+        return seed_value, constraints, constraints_str
+
+    def _print_step_banner(self, *lines: str, leading_newline: bool = True, trailing_newline: bool = True) -> None:
+        """Print a section banner with separator lines (80 chars). Reduces duplicated banner code."""
+        if leading_newline:
+            print()
+        print("=" * 80)
+        for line in lines:
+            print(line)
+        print("=" * 80 + ("\n" if trailing_newline else ""))
+
+    def _print_constraints_details(self, constraints_str: str, line_indent: str = "     ", header: str = "   Constraints Details:") -> None:
+        """Print constraints string line-by-line with optional header. Reusable for task/review output."""
+        if not constraints_str or not constraints_str.strip():
+            return
+        print(header)
+        for line in constraints_str.split("\n"):
+            if line.strip():
+                print(f"{line_indent}{line}")
+
+    def _make_skipped_dynamic_verification(self, reason: str) -> dict[str, Any]:
+        """Build the standard dict for a skipped dynamic verification step. Centralizes structure."""
+        return {
+            "skipped": True,
+            "reason": reason,
+            "all_passed": False,
+            "passed_count": 0,
+            "total_count": 0,
+        }
 
     def _print_task_details_for_review(self, task: Task, seed: int | None, constraints_str: str):
         """
