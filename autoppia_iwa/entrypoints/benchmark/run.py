@@ -97,12 +97,6 @@ CFG = BenchmarkConfig(
     record_gif=False,  # if your evaluator returns GIFs
     # Dynamic mode: disabled for this simple fixed-task test to avoid seed constraints.
     dynamic=True,
-    # TODO REVIEW BECAUSE THERE SHOULD ONLY BE ONE
-    # dynamic_phase_config=DynamicPhaseConfig(
-    #     enable_d1_structure=True,
-    #     enable_d3_attributes=True,
-    #     enable_d4_overlays=True,
-    # ),
     # Persistence
     save_results_json=True,
 )
