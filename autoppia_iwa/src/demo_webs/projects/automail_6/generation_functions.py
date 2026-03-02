@@ -11,6 +11,7 @@ from ..shared_utils import create_constraint_dict
 
 # Constants
 NAME_PLACEHOLDER = "<name>"
+FIELD_MAP_TEMPLATE_NAME = {"template_name": "name"}
 
 from .data import (
     FIELD_OPERATORS_ADD_LABEL_MAP,
@@ -107,6 +108,40 @@ async def _ensure_email_dataset(task_url: str | None = None, dataset: dict[str, 
     return []
 
 
+def _collect_field_values_from_dataset(dataset: list[dict[str, Any]], field: str) -> list[Any]:
+    """Return unique non-None values for field across dataset rows."""
+    return list({v.get(field) for v in dataset if field in v and v.get(field) is not None})
+
+
+def _pick_different_value_from_dataset(dataset: list[dict[str, Any]], field: str, exclude_value: Any, fallback: Any = None) -> Any:
+    """Return a random value for field from dataset that is not exclude_value, or fallback."""
+    valid = [v[field] for v in dataset if v.get(field) is not None and v.get(field) != exclude_value]
+    return random.choice(valid) if valid else fallback
+
+
+def _append_extra_constraints_from_map(
+    constraints_list: list[dict[str, Any]],
+    operators_map: dict[str, list],
+    fixed_field: str,
+    email: dict[str, Any],
+    dataset: list[dict[str, Any]],
+) -> None:
+    """Append constraints for all fields in operators_map except fixed_field, using email and dataset."""
+    possible_fields = [f for f in operators_map if f != fixed_field]
+    if not possible_fields:
+        return
+    num_constraints = random.randint(1, len(possible_fields))
+    selected_fields = random.sample(possible_fields, num_constraints)
+    for field in selected_fields:
+        allowed_ops = operators_map.get(field, [])
+        if not allowed_ops:
+            continue
+        operator = ComparisonOperator(random.choice(allowed_ops))
+        field_value = email.get(field)
+        value = _generate_constraint_value(operator, field_value, field, dataset)
+        constraints_list.append(create_constraint_dict(field, operator, value))
+
+
 def _generate_constraint_value(
     operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]
 ) -> Any:  # NOSONAR - Cognitive complexity is intentionally high due to multiple operator handling
@@ -117,8 +152,7 @@ def _generate_constraint_value(
 
     elif operator == ComparisonOperator.NOT_EQUALS:
         if isinstance(field_value, str):
-            valid = [v[field] for v in dataset if v.get(field) != field_value]
-            return random.choice(valid) if valid else None
+            return _pick_different_value_from_dataset(dataset, field, field_value, None)
         elif isinstance(field_value, list):
             valid = [v[field] for v in dataset for f in field_value if v.get(f) != field_value]
             return random.choice(valid) if valid else None
@@ -145,7 +179,7 @@ def _generate_constraint_value(
                 return test_str
 
     elif operator == ComparisonOperator.IN_LIST:
-        all_values = list({v.get(field) for v in dataset if field in v})
+        all_values = _collect_field_values_from_dataset(dataset, field)
         if not all_values:
             return [field_value]
         random.shuffle(all_values)
@@ -155,7 +189,7 @@ def _generate_constraint_value(
         return list(set(subset))
 
     elif operator == ComparisonOperator.NOT_IN_LIST:
-        all_values = list({v.get(field) for v in dataset if field in v})
+        all_values = _collect_field_values_from_dataset(dataset, field)
         if field_value in all_values:
             all_values.remove(field_value)
         return random.sample(all_values, min(2, len(all_values))) if all_values else []
@@ -222,22 +256,7 @@ async def generate_is_starred_constraints(task_url: str | None = None, dataset: 
     op = ComparisonOperator(random.choice(FIELD_OPERATORS_STARRED_MAP[fixed_field]))
     field_value = email.get(fixed_field, False)
     constraints_list.append(create_constraint_dict(fixed_field, op, field_value))
-
-    possible_fields = [item for item in FIELD_OPERATORS_STARRED_MAP if item != fixed_field]
-    num_constraints = random.randint(1, len(possible_fields))
-    selected_fields = random.sample(possible_fields, num_constraints)
-
-    for field in selected_fields:
-        allowed_ops = FIELD_OPERATORS_STARRED_MAP.get(field, [])
-        if not allowed_ops:
-            continue
-
-        op_str = random.choice(allowed_ops)
-        operator = ComparisonOperator(op_str)
-
-        field_value = email.get(field)
-        value = _generate_constraint_value(operator, field_value, field, eligible_emails)
-        constraints_list.append(create_constraint_dict(field, operator, value))
+    _append_extra_constraints_from_map(constraints_list, FIELD_OPERATORS_STARRED_MAP, fixed_field, email, eligible_emails)
     return constraints_list
 
 
@@ -251,22 +270,7 @@ async def generate_is_read_constraints(task_url: str | None = None, dataset: lis
     email = random.choice(base) if not eligible_emails else random.choice(eligible_emails)
     op = ComparisonOperator(random.choice(FIELD_OPERATORS_IS_READ_MAP[fixed_field]))
     constraints_list.append(create_constraint_dict(fixed_field, op, field_value))
-
-    possible_fields = [item for item in FIELD_OPERATORS_IS_READ_MAP if item != fixed_field]
-    num_constraints = random.randint(1, len(possible_fields))
-    selected_fields = random.sample(possible_fields, num_constraints)
-
-    for field in selected_fields:
-        allowed_ops = FIELD_OPERATORS_IS_READ_MAP.get(field, [])
-        if not allowed_ops:
-            continue
-
-        op_str = random.choice(allowed_ops)
-        operator = ComparisonOperator(op_str)
-
-        field_value = email.get(field)
-        value = _generate_constraint_value(operator, field_value, field, eligible_emails)
-        constraints_list.append(create_constraint_dict(field, operator, value))
+    _append_extra_constraints_from_map(constraints_list, FIELD_OPERATORS_IS_READ_MAP, fixed_field, email, eligible_emails)
     return constraints_list
 
 
@@ -278,22 +282,7 @@ async def generate_is_important_constraints(task_url: str | None = None, dataset
     op = ComparisonOperator(random.choice(FIELD_OPERATORS_IMPORTANT_MAP[fixed_field]))
     field_value = not email[fixed_field]
     constraints_list.append(create_constraint_dict(fixed_field, op, field_value))
-
-    possible_fields = [item for item in FIELD_OPERATORS_IMPORTANT_MAP if item != fixed_field]
-    num_constraints = random.randint(1, len(possible_fields))
-    selected_fields = random.sample(possible_fields, num_constraints)
-
-    for field in selected_fields:
-        allowed_ops = FIELD_OPERATORS_IMPORTANT_MAP.get(field, [])
-        if not allowed_ops:
-            continue
-
-        op_str = random.choice(allowed_ops)
-        operator = ComparisonOperator(op_str)
-
-        field_value = email.get(field)
-        value = _generate_constraint_value(operator, field_value, field, base)
-        constraints_list.append(create_constraint_dict(field, operator, value))
+    _append_extra_constraints_from_map(constraints_list, FIELD_OPERATORS_IMPORTANT_MAP, fixed_field, email, base)
     return constraints_list
 
 
@@ -308,22 +297,7 @@ async def generate_is_spam_constraints(task_url: str | None = None, dataset: lis
         email = random.choice(base)
     op = ComparisonOperator(random.choice(FIELD_OPERATORS_IS_SPAM_MAP[fixed_field]))
     constraints_list.append(create_constraint_dict(fixed_field, op, field_value))
-
-    possible_fields = [item for item in FIELD_OPERATORS_IS_SPAM_MAP if item != fixed_field]
-    num_constraints = random.randint(1, len(possible_fields))
-    selected_fields = random.sample(possible_fields, num_constraints)
-
-    for field in selected_fields:
-        allowed_ops = FIELD_OPERATORS_IS_SPAM_MAP.get(field, [])
-        if not allowed_ops:
-            continue
-
-        op_str = random.choice(allowed_ops)
-        operator = ComparisonOperator(op_str)
-
-        field_value = email.get(field)
-        value = _generate_constraint_value(operator, field_value, field, base)
-        constraints_list.append(create_constraint_dict(field, operator, value))
+    _append_extra_constraints_from_map(constraints_list, FIELD_OPERATORS_IS_SPAM_MAP, fixed_field, email, base)
     return constraints_list
 
 
@@ -539,15 +513,11 @@ def generate_template_selection_constraints() -> list[dict[str, Any]]:
     template = choice(TEMPLATES)
     possible_fields = ["template_name", "subject"]
     for field in possible_fields:
-        field_map = {
-            "template_name": "name",
-        }
         allowed_ops = FIELD_OPERATORS_TEMPLATE_SELECTED_MAP.get(field, [])
         if not allowed_ops:
             continue
-
         operator = ComparisonOperator(choice(allowed_ops))
-        mapped_field = field_map.get(field, field)
+        mapped_field = FIELD_MAP_TEMPLATE_NAME.get(field, field)
         field_value = template.get(mapped_field)
         value = _generate_constraint_value(operator, field_value, mapped_field, TEMPLATES)
         constraint = create_constraint_dict(field, operator, value)
@@ -563,15 +533,11 @@ def generate_template_body_constraints() -> list[dict[str, Any]]:
     num_fields = randint(1, len(possible_fields))
     selected_fields = sample(possible_fields, num_fields)
     for field in selected_fields:
-        field_map = {
-            "template_name": "name",
-        }
         allowed_ops = FIELD_OPERATORS_TEMPLATE_BODY_EDITED_MAP.get(field, [])
         if not allowed_ops:
             continue
-
         operator = ComparisonOperator(choice(allowed_ops))
-        mapped_field = field_map.get(field, field)
+        mapped_field = FIELD_MAP_TEMPLATE_NAME.get(field, field)
         field_value = template.get(mapped_field)
         if field == "body" and operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
             value = _body_safe_substring_for_contains(field_value)
@@ -592,15 +558,11 @@ def generate_sent_template_constraints() -> list[dict[str, Any]]:
     num_fields = randint(1, len(possible_fields))
     selected_fields = sample(possible_fields, num_fields)
     for field in selected_fields:
-        field_map = {
-            "template_name": "name",
-        }
         allowed_ops = FIELD_OPERATORS_TEMPLATE_SENT_MAP.get(field, [])
         if not allowed_ops:
             continue
-
         operator = ComparisonOperator(choice(allowed_ops))
-        mapped_field = field_map.get(field, field)
+        mapped_field = FIELD_MAP_TEMPLATE_NAME.get(field, field)
         if field == "to":
             field_value = sample_email.get(field)
             value = _generate_constraint_value(operator, field_value, mapped_field, to_emails)
