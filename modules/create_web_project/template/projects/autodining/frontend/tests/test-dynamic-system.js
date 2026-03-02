@@ -41,6 +41,16 @@ const FILE_PATHS = {
 // UTILITIES (shared by determinism and seed-variation tests)
 // ============================================================================
 
+const {
+  isBrowser,
+  readFileContent,
+  getAllSourceFiles,
+  findEventsFile,
+  parseEventNamesFromContent,
+  countEventUsages,
+  DEFAULT_EVENTS_PATHS
+} = require('./test-helpers.js');
+
 function hashString(str) {
   let hash = 0;
   let i = 0;
@@ -60,10 +70,6 @@ function selectVariantIndex(seed, key, count) {
   return Math.abs(hash) % count;
 }
 
-function isBrowser() {
-  return globalThis.window !== undefined;
-}
-
 function loadJSON(path) {
   if (isBrowser()) {
     throw new Error('En navegador, los JSONs deben cargarse vía fetch');
@@ -78,47 +84,6 @@ function fileExists(path) {
   const fs = require('node:fs');
   const pathModule = require('node:path');
   return fs.existsSync(pathModule.join(process.cwd(), path));
-}
-
-function readFileContent(filePath) {
-  if (isBrowser()) return '';
-  const fs = require('node:fs');
-  try {
-    return fs.readFileSync(filePath, 'utf8');
-  } catch {
-    return '';
-  }
-}
-
-function getAllSourceFiles() {
-  if (isBrowser()) return [];
-  const fs = require('node:fs');
-  const pathModule = require('node:path');
-  const srcDir = pathModule.join(process.cwd(), 'src');
-
-  function walkDir(dir, fileList = []) {
-    if (!fs.existsSync(dir)) return fileList;
-    const files = fs.readdirSync(dir);
-    files.forEach(file => {
-      const filePath = pathModule.join(dir, file);
-      try {
-        const stat = fs.statSync(filePath);
-        if (stat.isDirectory() && !filePath.includes('node_modules') && !filePath.includes('.next') && !filePath.includes('__pycache__')) {
-          walkDir(filePath, fileList);
-        } else if ((file.endsWith('.tsx') || file.endsWith('.ts')) && !file.includes('test-dynamic-system')) {
-          fileList.push(filePath);
-        }
-      } catch {
-        // Skip files we can't read (permission, symlink, etc.)
-      }
-    });
-    return fileList;
-  }
-
-  if (fs.existsSync(srcDir)) {
-    return walkDir(srcDir);
-  }
-  return [];
 }
 
 function countPatternInFiles(files, pattern) {
@@ -425,7 +390,7 @@ function testRealUsage() {
     return results;
   }
 
-  const sourceFiles = getAllSourceFiles();
+  const sourceFiles = getAllSourceFiles({ excludeFileNameContaining: 'test-dynamic-system' });
   console.log(`   📂 Archivos fuente encontrados: ${sourceFiles.length}`);
 
   // Count V1: addWrapDecoy (dyn.v1.addWrapDecoy or addWrapDecoy)
@@ -536,72 +501,18 @@ function testEventCoverage() {
     return results;
   }
 
-  const fs = require('node:fs');
-  const pathModule = require('node:path');
-
-  // Try to find events.ts file in common locations
-  const possiblePaths = [
-    'src/library/events.ts',
-    'src/lib/events.ts',
-    'src/library/event.ts',
-    'src/lib/event.ts'
-  ];
-
-  let eventsFilePath = null;
-  let eventsContent = '';
-
-  for (const relPath of possiblePaths) {
-    const fullPath = pathModule.join(process.cwd(), relPath);
-    if (fs.existsSync(fullPath)) {
-      eventsFilePath = fullPath;
-      eventsContent = readFileContent(fullPath);
-      console.log(`   📄 Archivo de eventos encontrado: ${relPath}`);
-      break;
-    }
-  }
-
-  if (!eventsFilePath) {
+  const found = findEventsFile(DEFAULT_EVENTS_PATHS);
+  if (!found) {
     console.log('   ❌ No se encontró el archivo events.ts');
     results.failed++;
     results.errors.push('Archivo events.ts no encontrado en ubicaciones comunes');
     return results;
   }
 
-  // Extract EVENT_TYPES from the file
-  // Look for: EVENT_TYPES = { ... } or export const EVENT_TYPES = { ... }
-  const eventTypesRegex = /export\s+const\s+EVENT_TYPES\s*=\s*\{([^}]+)\}/s;
-  const eventTypesMatch = eventTypesRegex.exec(eventsContent);
-  if (!eventTypesMatch) {
-    console.log('   ❌ No se pudo extraer EVENT_TYPES del archivo');
-    results.failed++;
-    results.errors.push('No se encontró EVENT_TYPES en el archivo de eventos');
-    return results;
-  }
+  const { path: eventsFilePath, content: eventsContent, relPath } = found;
+  console.log(`   📄 Archivo de eventos encontrado: ${relPath}`);
 
-  const eventTypesBlock = eventTypesMatch[1];
-
-  // Extract event names (KEY: "VALUE" or KEY: 'VALUE')
-  const eventNamePattern = /(\w+)\s*:\s*["']([^"']+)["']/g;
-  const eventNames = [];
-  let match;
-
-  while ((match = eventNamePattern.exec(eventTypesBlock)) !== null) {
-    const eventKey = match[1];
-    const eventValue = match[2];
-    eventNames.push({ key: eventKey, value: eventValue });
-  }
-
-  // Also try to match commented out events (// EVENT_NAME: "EVENT_NAME")
-  const commentedPattern = /\/\/\s*(\w+)\s*:\s*["']([^"']+)["']/g;
-  while ((match = commentedPattern.exec(eventTypesBlock)) !== null) {
-    const eventKey = match[1];
-    const eventValue = match[2];
-    // Only add if not already in the list
-    if (!eventNames.some(e => e.key === eventKey)) {
-      eventNames.push({ key: eventKey, value: eventValue });
-    }
-  }
-
+  const { names: eventNames, block } = parseEventNamesFromContent(eventsContent);
   results.stats.totalEvents = eventNames.length;
   console.log(`   📊 Total de eventos definidos: ${results.stats.totalEvents}`);
 
@@ -612,56 +523,11 @@ function testEventCoverage() {
     return results;
   }
 
-  // Get all source files
-  const sourceFiles = getAllSourceFiles();
-
-  // Check usage of each event
-  eventNames.forEach(({ key, value }) => {
-    // Look for: logEvent(EVENT_TYPES.KEY, ...) or logEvent(EVENT_TYPES['KEY'], ...)
-    // Also look for: EVENT_TYPES.KEY or EVENT_TYPES['KEY'] (direct reference)
-    const pattern1 = new RegExp(String.raw`logEvent\([^)]*EVENT_TYPES\.${key}[^)]*\)`, 'g');
-    const pattern2 = new RegExp(String.raw`logEvent\([^)]*EVENT_TYPES\['${key}'\]\s*[^)]*\)`, 'g');
-    const pattern3 = new RegExp(String.raw`EVENT_TYPES\.${key}`, 'g');
-    const pattern4 = new RegExp(String.raw`EVENT_TYPES\['${key}'\]`, 'g');
-    const safeValue = value.replaceAll(/[\^$*+?.()|[\]{}]/g, String.raw`\$&`);
-    const pattern5 = new RegExp(`["']${safeValue}["']`, 'g'); // Direct string usage
-
-    let usageCount = 0;
-    sourceFiles.forEach(file => {
-      const content = readFileContent(file);
-      // Don't count the events.ts file itself
-      if (file === eventsFilePath) return;
-
-      const matches1 = content.match(pattern1);
-      const matches2 = content.match(pattern2);
-      const matches3 = content.match(pattern3);
-      const matches4 = content.match(pattern4);
-      const matches5 = content.match(pattern5);
-
-      usageCount += (matches1 ? matches1.length : 0);
-      usageCount += (matches2 ? matches2.length : 0);
-      // For pattern3 and pattern4, only count if not in events.ts
-      if (file !== eventsFilePath) {
-        usageCount += (matches3 ? matches3.length : 0);
-        usageCount += (matches4 ? matches4.length : 0);
-      }
-      // For pattern5, be more careful - only count if it's in a logEvent call context
-      if (matches5) {
-        const logEventRe = new RegExp(String.raw`logEvent\([^)]*["']${safeValue}["'][^)]*\)`, 'g');
-        while (logEventRe.exec(content) !== null) {
-          usageCount += 1;
-        }
-      }
-    });
-
-    results.stats.eventUsages[key] = usageCount;
-
-    if (usageCount > 0) {
-      results.stats.usedEvents++;
-    } else {
-      results.stats.unusedEvents.push(key);
-    }
-  });
+  const sourceFiles = getAllSourceFiles({ excludeFileNameContaining: 'test-dynamic-system' });
+  const { eventUsages, usedEvents, unusedEvents } = countEventUsages(eventNames, sourceFiles, eventsFilePath);
+  results.stats.eventUsages = eventUsages;
+  results.stats.usedEvents = usedEvents;
+  results.stats.unusedEvents = unusedEvents;
 
   console.log(`   📊 Eventos usados: ${results.stats.usedEvents} / ${results.stats.totalEvents}`);
 
