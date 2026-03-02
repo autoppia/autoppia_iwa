@@ -8,7 +8,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Iterator, Literal
 
 from bs4 import BeautifulSoup, Tag
 from loguru import logger
@@ -205,16 +205,21 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
         except (ValueError, AttributeError):
             return None
 
-    def _apply_structural_mutations(self, soup: BeautifulSoup, instructions: list[dict[str, Any]]) -> None:
+    def _iter_targets(
+        self, soup: BeautifulSoup, instructions: list[dict[str, Any]], required_keys: list[str]
+    ) -> Iterator[tuple[dict[str, Any], Tag]]:
+        """Yield (instr, target) for instructions that have all required_keys and a valid target element."""
         for instr in instructions:
-            target_selector = instr.get("target")
+            if not all(instr.get(k) for k in required_keys):
+                continue
+            target = self._select_one_or_none(soup, instr.get("target"))
+            if target is not None:
+                yield instr, target
+
+    def _apply_structural_mutations(self, soup: BeautifulSoup, instructions: list[dict[str, Any]]) -> None:
+        for instr, target in self._iter_targets(soup, instructions, ["target", "html"]):
             html_fragment = instr.get("html", "")
             operation = instr.get("operation", "append_child")
-            if not target_selector or not html_fragment:
-                continue
-            target = self._select_one_or_none(soup, target_selector)
-            if target is None:
-                continue
             fragment = BeautifulSoup(html_fragment, "html.parser")
             if operation == "insert_before":
                 target.insert_before(fragment)
@@ -237,15 +242,8 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
                 target.append(fragment)
 
     def _apply_attribute_mutations(self, soup: BeautifulSoup, instructions: list[dict[str, Any]]) -> None:
-        for instr in instructions:
-            target_selector = instr.get("target")
+        for instr, target in self._iter_targets(soup, instructions, ["target", "operation"]):
             operation = instr.get("operation")
-            if not target_selector or not operation:
-                continue
-            target = self._select_one_or_none(soup, target_selector)
-            if target is None:
-                continue
-
             if operation == "rename_attribute":
                 original = instr.get("attribute")
                 new_name = instr.get("new_name")
@@ -356,35 +354,37 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
         """
         await self._safe_page_evaluate(script, selector, log_msg="Overlay dismiss hook failed")
 
-    def _get_dom_plan(self, html: str, url: str) -> dict[str, Any]:
-        start = time.perf_counter()
-        normalized = self._normalize_html(html)
-        cache_key = f"{self.project_id}:{self.seed}:{url}"
+    def _resolve_plan(self, normalized: str, cache_key: str, url: str) -> tuple[dict[str, Any], str]:
+        """Resolve DOM plan from cache, similar HTML, palette, or fallback. Returns (plan, source)."""
         plan_entry = self._dom_plan_cache.get(cache_key)
         if plan_entry:
             self._metrics["cache_hits"] += 1
             logger.debug(f"[DYNAMIC] Cache hit for {cache_key}")
-            self._set_plan_metadata("cache", start, cache_key)
-            return plan_entry["plan"]
+            return plan_entry["plan"], "cache"
 
         similar_plan = self._find_similar_plan(normalized)
         if similar_plan:
             self._metrics["cache_hits"] += 1
             logger.debug(f"[DYNAMIC] Reused similar plan for {cache_key}")
             self._remember_plan(cache_key, normalized, similar_plan)
-            self._set_plan_metadata("similar", start, cache_key)
-            return similar_plan
+            return similar_plan, "similar"
 
         if self._palette_generator:
             plan = self._palette_generator.build_plan(url)
             self._remember_plan(cache_key, normalized, plan)
-            self._set_plan_metadata("palette", start, cache_key)
-            return plan
+            return plan, "palette"
 
         self._metrics["cache_misses"] += 1
         plan = self._fallback_plan()
         self._remember_plan(cache_key, normalized, plan)
-        self._set_plan_metadata("fallback", start, cache_key)
+        return plan, "fallback"
+
+    def _get_dom_plan(self, html: str, url: str) -> dict[str, Any]:
+        start = time.perf_counter()
+        normalized = self._normalize_html(html)
+        cache_key = f"{self.project_id}:{self.seed}:{url}"
+        plan, source = self._resolve_plan(normalized, cache_key, url)
+        self._set_plan_metadata(source, start, cache_key)
         return plan
 
     def _set_plan_metadata(self, source: str, start: float, cache_key: str) -> None:
@@ -408,32 +408,37 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
                 return entry["plan"]
         return None
 
+    @staticmethod
+    def _d1_instr(operation: str, target: str, html: str = "", **extra: Any) -> dict[str, Any]:
+        """Build a D1 structural instruction dict to avoid repeating keys."""
+        out: dict[str, Any] = {"operation": operation, "target": target}
+        if html:
+            out["html"] = html
+        out.update(extra)
+        return out
+
+    @staticmethod
+    def _d3_instr(operation: str, target: str, **kwargs: Any) -> dict[str, Any]:
+        """Build a D3 attribute instruction dict to avoid repeating keys."""
+        return {"operation": operation, "target": target, **kwargs}
+
     def _fallback_plan(self) -> dict[str, Any]:
         """
         Deterministic fallback instructions derived from the seed to keep evaluations reproducible.
         """
         rng = self._rng
         d1 = [
-            {
-                "operation": "wrap_with",
-                "target": "body > div:first-of-type",
-                "html": f"<section class='iwa-wrapper w-{rng.randint(1, 100)}' data-seed='{self.seed}'></section>",
-            },
-            {
-                "operation": "insert_after",
-                "target": "header",
-                "html": "<div class='iwa-banner'>Limited-time discount</div>",
-            },
+            self._d1_instr(
+                "wrap_with",
+                "body > div:first-of-type",
+                f"<section class='iwa-wrapper w-{rng.randint(1, 100)}' data-seed='{self.seed}'></section>",
+            ),
+            self._d1_instr("insert_after", "header", "<div class='iwa-banner'>Limited-time discount</div>"),
         ]
         d3 = [
-            {
-                "operation": "set_attribute",
-                "target": "button",
-                "attribute": f"data-iwa-{rng.randint(1, 5)}",
-                "value": f"mut-{self.seed}",
-            },
-            {"operation": "append_class", "target": "nav a", "value": f"iwa-link-{rng.randint(1, 50)}"},
-            {"operation": "replace_text", "target": "button", "text": "Process request"},
+            self._d3_instr("set_attribute", "button", attribute=f"data-iwa-{rng.randint(1, 5)}", value=f"mut-{self.seed}"),
+            self._d3_instr("append_class", "nav a", value=f"iwa-link-{rng.randint(1, 50)}"),
+            self._d3_instr("replace_text", "button", text="Process request"),
         ]
         d4 = self._fallback_overlay_plan()
         return {"d1": d1, "d3": d3, "d4": d4}
