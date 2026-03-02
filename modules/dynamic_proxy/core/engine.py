@@ -12,7 +12,7 @@ from typing import Any
 from bs4 import BeautifulSoup, Tag
 from loguru import logger
 
-from autoppia_iwa.src.execution.dynamic.palette import PalettePlanGenerator, load_palette_for_project
+from modules.dynamic_proxy.core.palette import PalettePlanGenerator, load_palette_for_project
 
 from .config import DynamicPhaseConfig
 from .palettes import load_palette_from_module
