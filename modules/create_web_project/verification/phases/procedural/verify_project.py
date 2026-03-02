@@ -186,9 +186,7 @@ class ProjectReport:
                     flag = "✅" if coverage_ok else "❌"
                     lines.append(f"- Event coverage: {flag} {coverage.used_events}/{coverage.total_events} ({coverage.coverage_percent:.1f}%) - {'PASS' if coverage_ok else 'FAIL (requires 100%)'}")
                     if coverage.unused_events:
-                        preview = ", ".join(coverage.unused_events[:5])
-                        suffix = " ..." if len(coverage.unused_events) > 5 else ""
-                        lines.append(f"    Unused events: {preview}{suffix}")
+                        lines.append(f"    Unused events: {_format_list_preview(coverage.unused_events)}")
                 else:
                     lines.append("- Event coverage: ⚪ No events defined")
             else:
@@ -198,9 +196,7 @@ class ProjectReport:
                 if total_events:
                     lines.append(f"- Event emissions: ✅ {total_events - len(missing_events)}/{total_events} matched")
                     if missing_events:
-                        preview = ", ".join(missing_events[:5])
-                        suffix = " ..." if len(missing_events) > 5 else ""
-                        lines.append(f"    Missing: {preview}{suffix}")
+                        lines.append(f"    Missing: {_format_list_preview(missing_events)}")
                 else:
                     lines.append("- Event emissions: ⚪ No events defined")
 
@@ -334,6 +330,15 @@ def _read_int_env(name: str, default: int) -> int:
         return int(os.getenv(name, default))
     except (TypeError, ValueError):
         return default
+
+
+def _format_list_preview(items: list[str], max_visible: int = 5, suffix_if_more: str = " ...") -> str:
+    """Format a list as a short preview string (e.g. 'a, b, c ...'). Reusable for error messages."""
+    if not items:
+        return ""
+    visible = items[:max_visible]
+    suffix = suffix_if_more if len(items) > max_visible else ""
+    return ", ".join(visible) + suffix
 
 
 def _bootstrap_llm_from_env():
@@ -797,7 +802,7 @@ def _check_task_prompts(
         section=section,
     )
     if constraint_failures:
-        constraint_detail = ", ".join(constraint_failures[:20]) + (" ..." if len(constraint_failures) > 20 else "")
+        constraint_detail = _format_list_preview(constraint_failures, max_visible=20)
         constraint_msg = f"Issues: {constraint_detail}"
     else:
         constraint_msg = None
@@ -906,9 +911,7 @@ def _run_llm_test_generation_pipeline(
     if tasks_with_new_tests:
         details.append(f"Tests added for {len(tasks_with_new_tests)} task(s)")
     if tasks_without_tests:
-        preview = ", ".join(tasks_without_tests[:5])
-        suffix = " ..." if len(tasks_without_tests) > 5 else ""
-        details.append(f"No tests produced for: {preview}{suffix}")
+        details.append(f"No tests produced for: {_format_list_preview(tasks_without_tests)}")
 
     report.add(
         not tasks_without_tests,
@@ -1322,38 +1325,7 @@ def run_full_verification(
             _attach_screenshot_reviews(analysis, getattr(web_project, "id", project_slug) if web_project else project_slug)
             report.web_analysis = analysis
 
-            # HIGH PRIORITY: Enforce 100% event coverage
-            if analysis.event_coverage and analysis.event_coverage.total_events > 0:
-                coverage_ok = analysis.event_coverage.coverage_percent >= 100.0
-                if not coverage_ok:
-                    unused = ", ".join(analysis.event_coverage.unused_events[:5])
-                    suffix = f" ... ({len(analysis.event_coverage.unused_events) - 5} more)" if len(analysis.event_coverage.unused_events) > 5 else ""
-                    report.add(
-                        False,
-                        EVENT_COVERAGE_MUST_BE_100,
-                        f"Only {analysis.event_coverage.used_events}/{analysis.event_coverage.total_events} events used ({analysis.event_coverage.coverage_percent:.1f}%). Unused: {unused}{suffix}",
-                        section=SECTION_PROCEDURAL,
-                    )
-                else:
-                    report.add(
-                        True,
-                        EVENT_COVERAGE_IS_100,
-                        f"All {analysis.event_coverage.used_events}/{analysis.event_coverage.total_events} events are used",
-                        section=SECTION_PROCEDURAL,
-                    )
-
-            # HIGH PRIORITY: Run Node.js tests if frontend_dir is available
-            if report.frontend_dir:
-                _run_node_tests(report.frontend_dir, report)
-
-            # MEDIA PRIORITY: Validate SeedContext, tests structure, and variant JSONs
-            if analysis.seed_context:
-                _validate_seed_context_checks(analysis.seed_context, report)
-            if analysis.tests_structure:
-                _validate_tests_structure_checks(analysis.tests_structure, report)
-            if analysis.variant_jsons:
-                _validate_variant_jsons_checks(analysis.variant_jsons, report)
-
+            _apply_event_coverage_and_frontend_checks(report, analysis)
             return report, task_summaries, None
 
         _apply_frontend_overrides(web_project, override_frontend_url, override_frontend_port)
@@ -1377,38 +1349,7 @@ def run_full_verification(
                 _attach_screenshot_reviews(analysis, getattr(web_project, "id", project_slug) if web_project else project_slug)
                 report.web_analysis = analysis
 
-                # HIGH PRIORITY: Enforce 100% event coverage
-                if analysis.event_coverage and analysis.event_coverage.total_events > 0:
-                    coverage_ok = analysis.event_coverage.coverage_percent >= 100.0
-                    if not coverage_ok:
-                        unused = ", ".join(analysis.event_coverage.unused_events[:5])
-                        suffix = f" ... ({len(analysis.event_coverage.unused_events) - 5} more)" if len(analysis.event_coverage.unused_events) > 5 else ""
-                        report.add(
-                            False,
-                            EVENT_COVERAGE_MUST_BE_100,
-                            f"Only {analysis.event_coverage.used_events}/{analysis.event_coverage.total_events} events used ({analysis.event_coverage.coverage_percent:.1f}%). Unused: {unused}{suffix}",
-                            section=SECTION_PROCEDURAL,
-                        )
-                    else:
-                        report.add(
-                            True,
-                            EVENT_COVERAGE_IS_100,
-                            f"All {analysis.event_coverage.used_events}/{analysis.event_coverage.total_events} events are used",
-                            section=SECTION_PROCEDURAL,
-                        )
-
-                # HIGH PRIORITY: Run Node.js tests if frontend_dir is available
-                if report.frontend_dir:
-                    _run_node_tests(report.frontend_dir, report)
-
-                # MEDIA PRIORITY: Validate SeedContext, tests structure, and variant JSONs
-                if analysis.seed_context:
-                    _validate_seed_context_checks(analysis.seed_context, report)
-                if analysis.tests_structure:
-                    _validate_tests_structure_checks(analysis.tests_structure, report)
-                if analysis.variant_jsons:
-                    _validate_variant_jsons_checks(analysis.variant_jsons, report)
-
+                _apply_event_coverage_and_frontend_checks(report, analysis)
                 return report, task_summaries, web_project
 
         tasks_for_checks: list[Task] = []
@@ -1494,37 +1435,7 @@ def run_full_verification(
             _attach_screenshot_reviews(analysis, getattr(web_project, "id", project_slug) if web_project else project_slug)
             report.web_analysis = analysis
 
-            # HIGH PRIORITY: Enforce 100% event coverage
-            if analysis.event_coverage and analysis.event_coverage.total_events > 0:
-                coverage_ok = analysis.event_coverage.coverage_percent >= 100.0
-                if not coverage_ok:
-                    unused = ", ".join(analysis.event_coverage.unused_events[:5])
-                    suffix = f" ... ({len(analysis.event_coverage.unused_events) - 5} more)" if len(analysis.event_coverage.unused_events) > 5 else ""
-                    report.add(
-                        False,
-                        EVENT_COVERAGE_MUST_BE_100,
-                        f"Only {analysis.event_coverage.used_events}/{analysis.event_coverage.total_events} events used ({analysis.event_coverage.coverage_percent:.1f}%). Unused: {unused}{suffix}",
-                        section=SECTION_PROCEDURAL,
-                    )
-                else:
-                    report.add(
-                        True,
-                        EVENT_COVERAGE_IS_100,
-                        f"All {analysis.event_coverage.used_events}/{analysis.event_coverage.total_events} events are used",
-                        section=SECTION_PROCEDURAL,
-                    )
-
-            # HIGH PRIORITY: Run Node.js tests if frontend_dir is available
-            if report.frontend_dir:
-                _run_node_tests(report.frontend_dir, report)
-
-            # MEDIA PRIORITY: Validate SeedContext, tests structure, and variant JSONs
-            if analysis.seed_context:
-                _validate_seed_context_checks(analysis.seed_context, report)
-            if analysis.tests_structure:
-                _validate_tests_structure_checks(analysis.tests_structure, report)
-            if analysis.variant_jsons:
-                _validate_variant_jsons_checks(analysis.variant_jsons, report)
+            _apply_event_coverage_and_frontend_checks(report, analysis)
 
             phase_bar.update(1)
         return report, task_summaries, web_project
@@ -1681,6 +1592,103 @@ def _validate_variant_jsons_checks(variant_jsons, report: ProjectReport) -> None
             )
 
 
+def _add_event_coverage_checks(report: ProjectReport, analysis: WebProjectAnalysis) -> None:
+    """Add event coverage report entries (100% required). Centralizes duplicated coverage logic."""
+    if not analysis.event_coverage or analysis.event_coverage.total_events <= 0:
+        return
+    coverage = analysis.event_coverage
+    coverage_ok = coverage.coverage_percent >= 100.0
+    if not coverage_ok:
+        suffix = f" ... ({len(coverage.unused_events) - 5} more)" if len(coverage.unused_events) > 5 else ""
+        unused_preview = _format_list_preview(coverage.unused_events, 5, suffix)
+        report.add(
+            False,
+            EVENT_COVERAGE_MUST_BE_100,
+            f"Only {coverage.used_events}/{coverage.total_events} events used ({coverage.coverage_percent:.1f}%). Unused: {unused_preview}",
+            section=SECTION_PROCEDURAL,
+        )
+    else:
+        report.add(
+            True,
+            EVENT_COVERAGE_IS_100,
+            f"All {coverage.used_events}/{coverage.total_events} events are used",
+            section=SECTION_PROCEDURAL,
+        )
+
+
+def _apply_event_coverage_and_frontend_checks(report: ProjectReport, analysis: WebProjectAnalysis) -> None:
+    """Apply event coverage checks, Node.js tests, and media-priority validations. Reused after frontend analysis."""
+    _add_event_coverage_checks(report, analysis)
+    if report.frontend_dir:
+        _run_node_tests(report.frontend_dir, report)
+    if analysis.seed_context:
+        _validate_seed_context_checks(analysis.seed_context, report)
+    if analysis.tests_structure:
+        _validate_tests_structure_checks(analysis.tests_structure, report)
+    if analysis.variant_jsons:
+        _validate_variant_jsons_checks(analysis.variant_jsons, report)
+
+
+def _run_single_node_test(
+    frontend_dir: Path,
+    test_path: Path,
+    report: ProjectReport,
+    *,
+    label: str,
+    success_markers: list[str],
+    timeout_seconds: int = 60,
+    error_tail_chars: int = 500,
+    error_preview_chars: int = 300,
+    success_detail: str = "passed",
+) -> None:
+    """Run one Node.js test script and add pass/fail to report. Centralizes subprocess and error handling."""
+    if not test_path.exists():
+        report.add(
+            False,
+            f"{label} exists",
+            f"{test_path.name} not found in {test_path.parent}",
+            section=SECTION_PROCEDURAL,
+        )
+        return
+    try:
+        result = subprocess.run(
+            ["node", str(test_path)],
+            cwd=str(frontend_dir),
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+        )
+        output = result.stdout + result.stderr
+        passed = result.returncode == 0 and (any(marker in output for marker in success_markers) or "✅" in output[-200:])
+        failed = result.returncode != 0 or "❌" in output or "⚠️" in output
+        if failed and not passed:
+            error_summary = output[-error_tail_chars:] if len(output) > error_tail_chars else output
+            report.add(
+                False,
+                label,
+                f"{test_path.name} failed. Output: {error_summary[:error_preview_chars]}...",
+                section=SECTION_PROCEDURAL,
+            )
+        else:
+            report.add(True, label, f"{test_path.name} {success_detail}", section=SECTION_PROCEDURAL)
+    except subprocess.TimeoutExpired:
+        report.add(
+            False,
+            label,
+            f"{test_path.name} timed out after {timeout_seconds} seconds",
+            section=SECTION_PROCEDURAL,
+        )
+    except FileNotFoundError:
+        report.add(
+            False,
+            label,
+            f"Node.js not found in PATH. Cannot run {test_path.name}",
+            section=SECTION_PROCEDURAL,
+        )
+    except Exception as exc:
+        report.add(False, label, f"Error running {test_path.name}: {exc}", section=SECTION_PROCEDURAL)
+
+
 def _run_node_tests(frontend_dir: Path | None, report: ProjectReport) -> None:
     """
     HIGH PRIORITY: Execute Node.js tests (test-dynamic-system.js and test-events.js) if they exist.
@@ -1700,130 +1708,28 @@ def _run_node_tests(frontend_dir: Path | None, report: ProjectReport) -> None:
         )
         return
 
-    dynamic_test = tests_dir / "test-dynamic-system.js"
-    events_test = tests_dir / "test-events.js"
-
-    # Test 1: Dynamic system test
-    if dynamic_test.exists():
-        try:
-            result = subprocess.run(
-                ["node", str(dynamic_test)],
-                cwd=str(frontend_dir),
-                capture_output=True,
-                text=True,
-                timeout=60,
-            )
-            output = result.stdout + result.stderr
-
-            # Parse output for pass/fail
-            # Look for patterns like "✅ SISTEMA DINÁMICO: VALIDACIÓN EXITOSA" or "⚠️  SISTEMA DINÁMICO: REQUIERE ATENCIÓN"
-            passed = "✅ SISTEMA DINÁMICO: VALIDACIÓN EXITOSA" in output or "✅" in output[-200:]
-            failed = "❌" in output or "⚠️" in output or result.returncode != 0
-
-            if failed and not passed:
-                # Extract error summary (last 500 chars usually contain summary)
-                error_summary = output[-500:] if len(output) > 500 else output
-                report.add(
-                    False,
-                    NODEJS_DYNAMIC_SYSTEM_TEST_LABEL,
-                    f"test-dynamic-system.js failed. Output: {error_summary[:300]}...",
-                    section=SECTION_PROCEDURAL,
-                )
-            else:
-                report.add(
-                    True,
-                    NODEJS_DYNAMIC_SYSTEM_TEST_LABEL,
-                    "test-dynamic-system.js passed",
-                    section=SECTION_PROCEDURAL,
-                )
-        except subprocess.TimeoutExpired:
-            report.add(
-                False,
-                NODEJS_DYNAMIC_SYSTEM_TEST_LABEL,
-                "test-dynamic-system.js timed out after 60 seconds",
-                section=SECTION_PROCEDURAL,
-            )
-        except FileNotFoundError:
-            report.add(
-                False,
-                NODEJS_DYNAMIC_SYSTEM_TEST_LABEL,
-                "Node.js not found in PATH. Cannot run test-dynamic-system.js",
-                section=SECTION_PROCEDURAL,
-            )
-        except Exception as exc:
-            report.add(
-                False,
-                NODEJS_DYNAMIC_SYSTEM_TEST_LABEL,
-                f"Error running test-dynamic-system.js: {exc}",
-                section=SECTION_PROCEDURAL,
-            )
-    else:
-        report.add(
-            False,
-            f"{NODEJS_DYNAMIC_SYSTEM_TEST_LABEL} exists",
-            f"test-dynamic-system.js not found in {tests_dir}",
-            section=SECTION_PROCEDURAL,
-        )
-
-    # Test 2: Events test
-    if events_test.exists():
-        try:
-            result = subprocess.run(
-                ["node", str(events_test)],
-                cwd=str(frontend_dir),
-                capture_output=True,
-                text=True,
-                timeout=30,
-            )
-            output = result.stdout + result.stderr
-
-            # Parse output for 100% coverage
-            passed = "✅ Cobertura de eventos: 100%" in output or ("✅" in output and "100%" in output)
-            failed = "❌" in output or result.returncode != 0
-
-            if failed and not passed:
-                error_summary = output[-300:] if len(output) > 300 else output
-                report.add(
-                    False,
-                    NODEJS_EVENT_COVERAGE_TEST_LABEL,
-                    f"test-events.js failed. Output: {error_summary[:200]}...",
-                    section=SECTION_PROCEDURAL,
-                )
-            else:
-                report.add(
-                    True,
-                    NODEJS_EVENT_COVERAGE_TEST_LABEL,
-                    "test-events.js passed (100% coverage)",
-                    section=SECTION_PROCEDURAL,
-                )
-        except subprocess.TimeoutExpired:
-            report.add(
-                False,
-                NODEJS_EVENT_COVERAGE_TEST_LABEL,
-                "test-events.js timed out after 30 seconds",
-                section=SECTION_PROCEDURAL,
-            )
-        except FileNotFoundError:
-            report.add(
-                False,
-                NODEJS_EVENT_COVERAGE_TEST_LABEL,
-                "Node.js not found in PATH. Cannot run test-events.js",
-                section=SECTION_PROCEDURAL,
-            )
-        except Exception as exc:
-            report.add(
-                False,
-                NODEJS_EVENT_COVERAGE_TEST_LABEL,
-                f"Error running test-events.js: {exc}",
-                section=SECTION_PROCEDURAL,
-            )
-    else:
-        report.add(
-            False,
-            f"{NODEJS_EVENT_COVERAGE_TEST_LABEL} exists",
-            f"test-events.js not found in {tests_dir}",
-            section=SECTION_PROCEDURAL,
-        )
+    _run_single_node_test(
+        frontend_dir,
+        tests_dir / "test-dynamic-system.js",
+        report,
+        label=NODEJS_DYNAMIC_SYSTEM_TEST_LABEL,
+        success_markers=["✅ SISTEMA DINÁMICO: VALIDACIÓN EXITOSA"],
+        timeout_seconds=60,
+        error_tail_chars=500,
+        error_preview_chars=300,
+        success_detail="passed",
+    )
+    _run_single_node_test(
+        frontend_dir,
+        tests_dir / "test-events.js",
+        report,
+        label=NODEJS_EVENT_COVERAGE_TEST_LABEL,
+        success_markers=["✅ Cobertura de eventos: 100%"],
+        timeout_seconds=30,
+        error_tail_chars=300,
+        error_preview_chars=200,
+        success_detail="passed (100% coverage)",
+    )
 
 
 def _locate_frontend_dir(web_project: WebProject | None, frontend_root: Path | None = None) -> Path | None:
