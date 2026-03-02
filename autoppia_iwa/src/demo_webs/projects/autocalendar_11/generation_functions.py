@@ -42,6 +42,17 @@ async def _ensure_event_dataset(task_url: str | None = None, dataset: dict[str, 
     return []
 
 
+def _pick_different_value_from_dataset(
+    dataset: list[dict[str, Any]],
+    field: str,
+    field_value: Any,
+    fallback: Any = None,
+) -> Any:
+    """Return a random value from dataset that differs from field_value for the given field, or fallback if none."""
+    valid = [v[field] for v in dataset if v.get(field) is not None and v.get(field) != field_value]
+    return random.choice(valid) if valid else fallback
+
+
 def _generate_constraint_value(
     operator: ComparisonOperator,
     field_value: Any,
@@ -77,15 +88,13 @@ def _generate_constraint_value(
         if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS}:
             return field_value
         if operator == ComparisonOperator.NOT_EQUALS:
-            valid = [v[field] for v in dataset if v.get(field) and v.get(field) != field_value]
-            return random.choice(valid) if valid else add_minutes(field_value, delta_minutes + 5)
+            return _pick_different_value_from_dataset(dataset, field, field_value, add_minutes(field_value, delta_minutes + 5))
 
     if operator == ComparisonOperator.EQUALS:
         return field_value
 
     if operator == ComparisonOperator.NOT_EQUALS:
-        valid = [v[field] for v in dataset if v.get(field) and v.get(field) != field_value]
-        return random.choice(valid) if valid else None
+        return _pick_different_value_from_dataset(dataset, field, field_value, None)
 
     if operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
         longest = max(field_value.split(), key=len)
@@ -119,6 +128,16 @@ def _generate_constraint_value(
             return field_value
 
     return None
+
+
+def _generate_constraints_from_single_field(
+    field_name: str,
+    values: list[Any],
+    operators_map: dict[str, list],
+) -> list[dict[str, Any]]:
+    """Generate constraints for a single field with a fixed value list. Reduces duplication across single-field generators."""
+    field_map = {field_name: {"values": values}}
+    return _generate_constraints_for_event(field_map, operators_map)
 
 
 def _generate_constraints_for_event(field_map: dict[str, dict[str, Any]], operators_map: dict[str, list], special_handlers: dict[str, Callable] | None = None) -> list[dict[str, Any]]:
@@ -205,10 +224,7 @@ def generate_create_calendar_constraints() -> list[dict[str, Any]]:
 
 def generate_unselect_calendar_constraints() -> list[dict[str, Any]]:
     """Generate constraints for selecting/deselecting a calendar."""
-    field_map = {
-        "calendar_name": {"values": CALENDAR_NAMES},
-    }
-    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_UNSELECT_CALENDAR_MAP)
+    return _generate_constraints_from_single_field("calendar_name", CALENDAR_NAMES, FIELD_OPERATORS_UNSELECT_CALENDAR_MAP)
 
 
 def generate_cell_clicked_constraints() -> list[dict[str, Any]]:
@@ -358,17 +374,14 @@ async def generate_event_wizard_open_constraints(task_url: str | None = None, da
 
 def generate_search_submit_constraints() -> list[dict[str, Any]]:
     """Generate constraints for submitting a search query."""
-    field_map = {"query": {"values": CALENDAR_NAMES}}
-    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_SEARCH_SUBMIT_MAP)
+    return _generate_constraints_from_single_field("query", CALENDAR_NAMES, FIELD_OPERATORS_SEARCH_SUBMIT_MAP)
 
 
 def generate_event_reminder_constraints() -> list[dict[str, Any]]:
     """Generate constraints for adding an event reminder."""
-    field_map = {"minutes": {"values": REMINDER_MINUTES}}
-    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_EVENT_REMINDER_MAP)
+    return _generate_constraints_from_single_field("minutes", REMINDER_MINUTES, FIELD_OPERATORS_EVENT_REMINDER_MAP)
 
 
 def generate_event_attendee_constraints() -> list[dict[str, Any]]:
     """Generate constraints for adding an event attendee."""
-    field_map = {"email": {"values": ATTENDEE_EMAILS}}
-    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_EVENT_ATTENDEE_MAP)
+    return _generate_constraints_from_single_field("email", ATTENDEE_EMAILS, FIELD_OPERATORS_EVENT_ATTENDEE_MAP)
