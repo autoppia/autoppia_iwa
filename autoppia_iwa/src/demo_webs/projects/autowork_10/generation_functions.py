@@ -177,6 +177,57 @@ async def _ensure_dataset(
     return fetched_data
 
 
+def _constraint_value_for_datetime_date(
+    operator: ComparisonOperator, field_value: datetime | date
+) -> Any:
+    """Return constraint value for datetime/date operators (GREATER_THAN, LESS_THAN, etc.)."""
+    delta_days = random.randint(1, 5)
+    if operator == ComparisonOperator.GREATER_THAN:
+        return field_value - timedelta(days=delta_days)
+    if operator == ComparisonOperator.LESS_THAN:
+        return field_value + timedelta(days=delta_days)
+    if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS}:
+        return field_value
+    if operator == ComparisonOperator.NOT_EQUALS:
+        return field_value + timedelta(days=delta_days + 1)
+    return None
+
+
+def _constraint_value_for_time(
+    operator: ComparisonOperator, field_value: time, field: str, dataset: list[dict[str, Any]]
+) -> Any:
+    """Return constraint value for time operators."""
+
+    def add_minutes(t: time, mins: int) -> time:
+        full_dt = datetime.combine(date.today(), t) + timedelta(minutes=mins)
+        return full_dt.time()
+
+    delta_minutes = random.choice([5, 10, 15, 30, 60])
+    if operator == ComparisonOperator.GREATER_THAN:
+        return add_minutes(field_value, -delta_minutes)
+    if operator == ComparisonOperator.LESS_THAN:
+        return add_minutes(field_value, delta_minutes)
+    if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS}:
+        return field_value
+    if operator == ComparisonOperator.NOT_EQUALS:
+        return _pick_different_value_from_dataset(
+            dataset, field, field_value, add_minutes(field_value, delta_minutes + 5)
+        )
+    return None
+
+
+def _constraint_value_for_numeric(operator: ComparisonOperator, field_value: int | float) -> Any:
+    """Return constraint value for numeric comparison operators (rounds to 2 decimals)."""
+    delta = random.uniform(0.5, 2.0) if isinstance(field_value, float) else random.randint(1, 5)
+    if operator == ComparisonOperator.GREATER_THAN:
+        return round(field_value - delta, 2)
+    if operator == ComparisonOperator.LESS_THAN:
+        return round(field_value + delta, 2)
+    if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+        return field_value
+    return None
+
+
 def _generate_constraint_value(
     operator: ComparisonOperator,
     field_value: Any,
@@ -188,31 +239,10 @@ def _generate_constraint_value(
     Handles various data types and operators robustly.
     """
     if isinstance(field_value, datetime | date):
-        delta_days = random.randint(1, 5)
-        if operator == ComparisonOperator.GREATER_THAN:
-            return field_value - timedelta(days=delta_days)
-        if operator == ComparisonOperator.LESS_THAN:
-            return field_value + timedelta(days=delta_days)
-        if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS}:
-            return field_value
-        if operator == ComparisonOperator.NOT_EQUALS:
-            return field_value + timedelta(days=delta_days + 1)
+        return _constraint_value_for_datetime_date(operator, field_value)
 
     if isinstance(field_value, time):
-        delta_minutes = random.choice([5, 10, 15, 30, 60])
-
-        def add_minutes(t, mins):
-            full_dt = datetime.combine(date.today(), t) + timedelta(minutes=mins)
-            return full_dt.time()
-
-        if operator == ComparisonOperator.GREATER_THAN:
-            return add_minutes(field_value, -delta_minutes)
-        if operator == ComparisonOperator.LESS_THAN:
-            return add_minutes(field_value, delta_minutes)
-        if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS}:
-            return field_value
-        if operator == ComparisonOperator.NOT_EQUALS:
-            return _pick_different_value_from_dataset(dataset, field, field_value, add_minutes(field_value, delta_minutes + 5))
+        return _constraint_value_for_time(operator, field_value, field, dataset)
 
     if operator == ComparisonOperator.EQUALS:
         return field_value
@@ -254,13 +284,7 @@ def _generate_constraint_value(
         ComparisonOperator.GREATER_EQUAL,
         ComparisonOperator.LESS_EQUAL,
     } and isinstance(field_value, int | float):
-        delta = random.uniform(0.5, 2.0) if isinstance(field_value, float) else random.randint(1, 5)
-        if operator == ComparisonOperator.GREATER_THAN:
-            return round(field_value - delta, 2)
-        if operator == ComparisonOperator.LESS_THAN:
-            return round(field_value + delta, 2)
-        if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
-            return field_value
+        return _constraint_value_for_numeric(operator, field_value)
 
     return None
 
