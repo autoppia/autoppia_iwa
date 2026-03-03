@@ -40,8 +40,13 @@ def _pkg_from_key(key: str) -> str:
 
 
 def _count_from_dict(d: dict, direct: set[str]) -> int:
-    """Count vulns from pip-audit dict (dependency -> list of vulns)."""
+    """Count vulns from pip-audit dict. Handles both:
+    - {"dependencies": [{"name": "pkg", "vulns": [...]}, ...]}  (pip-audit 2.x)
+    - {"pkg==1.0": [...], ...}  (legacy dict of dep spec -> vulns)
+    """
     inner = d.get("dependencies", d.get("vulnerabilities", d))
+    if isinstance(inner, list):
+        return _count_from_list(inner, direct)
     if not isinstance(inner, dict):
         inner = d
     n = 0
