@@ -99,12 +99,6 @@ jobs:
           [ -n "$SARIF_PATHS" ] && echo "sonar_sarif_paths=$SARIF_PATHS" >> "$GITHUB_OUTPUT"
           ls -la reports/
 
-      - name: Fail if dependency vulnerabilities detected
-        if: steps.prepare_sarif.outputs.sarif_vuln_count != '0' || steps.prepare_sarif.outputs.pip_audit_vuln_count != '0'
-        run: |
-          echo "::error::Dependency vulnerabilities found (Dependency-Check: ${{ steps.prepare_sarif.outputs.sarif_vuln_count }}, pip-audit: ${{ steps.prepare_sarif.outputs.pip_audit_vuln_count }}). Fix them before merging."
-          exit 1
-
       - name: Upload SARIF reports
         if: steps.prepare_sarif.outputs.sonar_sarif_paths != ''
         uses: actions/upload-artifact@v4
@@ -120,3 +114,9 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: ${{ steps.prepare_sarif.outputs.sonar_sarif_paths != '' && format('-Dsonar.sarifReportPaths={0}', steps.prepare_sarif.outputs.sonar_sarif_paths) || '' }}
+
+      - name: Fail if dependency vulnerabilities detected
+        if: steps.prepare_sarif.outputs.sarif_vuln_count != '0' || steps.prepare_sarif.outputs.pip_audit_vuln_count != '0'
+        run: |
+          echo "::error::Dependency vulnerabilities found (Dependency-Check: ${{ steps.prepare_sarif.outputs.sarif_vuln_count }}, pip-audit: ${{ steps.prepare_sarif.outputs.pip_audit_vuln_count }}). Fix them before merging."
+          exit 1
