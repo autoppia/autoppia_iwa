@@ -44,7 +44,6 @@ jobs:
           pip install pytest pytest-cov
 
       - name: Audit Python dependencies (pip-audit)
-        id: pip_audit
         run: |
           pip install pip-audit
           mkdir -p reports

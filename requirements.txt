@@ -25,6 +25,3 @@ uvicorn==0.34.0
 httpx==0.28.1
 aiohttp>=3.10.0,<4.0.0
 orjson==3.11.4
-
-# TEMP: vulnerable dependency for testing OWASP Dependency-Check + SonarCloud (remove after verification)
-cryptography==3.3.2
