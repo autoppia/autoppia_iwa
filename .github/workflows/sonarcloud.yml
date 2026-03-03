@@ -89,13 +89,9 @@ jobs:
           else
             echo "sarif_vuln_count=0" >> "$GITHUB_OUTPUT"
           fi
-          if [ -f reports/pip-audit.json ]; then
-            PIP_AUDIT_COUNT=$(python3 -c "import json; d=json.load(open('reports/pip-audit.json')); deps=d if isinstance(d,list) else d.get('dependencies',[]); print(sum(len(dep.get('vulns',dep.get('vulnerabilities',[]))) for dep in deps))")
-            echo "pip_audit_vuln_count=$PIP_AUDIT_COUNT" >> "$GITHUB_OUTPUT"
-            echo "pip-audit vulnerability count: $PIP_AUDIT_COUNT"
-          else
-            echo "pip_audit_vuln_count=0" >> "$GITHUB_OUTPUT"
-          fi
+          PIP_AUDIT_COUNT=$(python3 .github/scripts/pip_audit_count.py 2>/dev/null || echo "0")
+          echo "pip_audit_vuln_count=$PIP_AUDIT_COUNT" >> "$GITHUB_OUTPUT"
+          echo "pip-audit vulnerability count: $PIP_AUDIT_COUNT"
           SARIF_PATHS=""
           [ -f reports/dependency-check-report.sarif ] && SARIF_PATHS="reports/dependency-check-report.sarif"
           [ -f reports/pip-audit.sarif ] && SARIF_PATHS="${SARIF_PATHS}${SARIF_PATHS:+,}reports/pip-audit.sarif"
