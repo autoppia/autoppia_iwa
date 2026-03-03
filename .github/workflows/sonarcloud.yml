@@ -44,9 +44,17 @@ jobs:
           pip install pytest pytest-cov
 
       - name: Audit Python dependencies (pip-audit)
+        id: pip_audit
         run: |
           pip install pip-audit
-          pip-audit
+          mkdir -p reports
+          pip-audit -f json > reports/pip-audit.json 2>&1 || true
+        continue-on-error: true
+
+      - name: Convert pip-audit JSON to SARIF
+        run: |
+          if [ ! -f reports/pip-audit.json ]; then exit 0; fi
+          python3 .github/scripts/pip_audit_to_sarif.py reports/pip-audit.json -o reports/pip-audit.sarif || true
 
       - name: Run tests with coverage
         run: |
@@ -69,30 +77,39 @@ jobs:
           mkdir -p reports
           if ls reports/*.sarif 1>/dev/null 2>&1; then
             f=$(ls reports/*.sarif 2>/dev/null | head -1)
-            # Only copy if source is different (Dependency-Check may already output dependency-check-report.sarif)
             if [ "$f" != "reports/dependency-check-report.sarif" ]; then
               cp "$f" reports/dependency-check-report.sarif
             fi
           fi
           echo "sarif_exists=$([ -f reports/dependency-check-report.sarif ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-          ls -la reports/
           if [ -f reports/dependency-check-report.sarif ]; then
             SARIF_COUNT=$(python3 -c "import json; d=json.load(open('reports/dependency-check-report.sarif')); print(len(d.get('runs',[{}])[0].get('results',[])))")
             echo "sarif_vuln_count=$SARIF_COUNT" >> "$GITHUB_OUTPUT"
-            echo "SARIF vulnerability count: $SARIF_COUNT"
+            echo "Dependency-Check SARIF vulnerability count: $SARIF_COUNT"
           else
             echo "sarif_vuln_count=0" >> "$GITHUB_OUTPUT"
-            echo "SARIF vulnerability count: 0 (no report)"
           fi
+          if [ -f reports/pip-audit.json ]; then
+            PIP_AUDIT_COUNT=$(python3 -c "import json; d=json.load(open('reports/pip-audit.json')); deps=d if isinstance(d,list) else d.get('dependencies',[]); print(sum(len(dep.get('vulns',dep.get('vulnerabilities',[]))) for dep in deps))")
+            echo "pip_audit_vuln_count=$PIP_AUDIT_COUNT" >> "$GITHUB_OUTPUT"
+            echo "pip-audit vulnerability count: $PIP_AUDIT_COUNT"
+          else
+            echo "pip_audit_vuln_count=0" >> "$GITHUB_OUTPUT"
+          fi
+          SARIF_PATHS=""
+          [ -f reports/dependency-check-report.sarif ] && SARIF_PATHS="reports/dependency-check-report.sarif"
+          [ -f reports/pip-audit.sarif ] && SARIF_PATHS="${SARIF_PATHS}${SARIF_PATHS:+,}reports/pip-audit.sarif"
+          [ -n "$SARIF_PATHS" ] && echo "sonar_sarif_paths=$SARIF_PATHS" >> "$GITHUB_OUTPUT"
+          ls -la reports/
 
       - name: Fail if dependency vulnerabilities detected
-        if: steps.prepare_sarif.outputs.sarif_vuln_count != '0'
+        if: steps.prepare_sarif.outputs.sarif_vuln_count != '0' || steps.prepare_sarif.outputs.pip_audit_vuln_count != '0'
         run: |
-          echo "::error::Dependency-Check found ${{ steps.prepare_sarif.outputs.sarif_vuln_count }} vulnerability(ies). Fix them before merging."
+          echo "::error::Dependency vulnerabilities found (Dependency-Check: ${{ steps.prepare_sarif.outputs.sarif_vuln_count }}, pip-audit: ${{ steps.prepare_sarif.outputs.pip_audit_vuln_count }}). Fix them before merging."
           exit 1
 
       - name: Upload SARIF reports
-        if: steps.prepare_sarif.outputs.sarif_exists == 'true'
+        if: steps.prepare_sarif.outputs.sonar_sarif_paths != ''
         uses: actions/upload-artifact@v4
         with:
           name: dependency-check-reports
@@ -103,7 +120,6 @@ jobs:
         uses: SonarSource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # SONAR_TOKEN must be configured in repository secrets
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          args: ${{ steps.prepare_sarif.outputs.sarif_exists == 'true' && '-Dsonar.sarifReportPaths=reports/dependency-check-report.sarif' || '' }}
+          args: ${{ steps.prepare_sarif.outputs.sonar_sarif_paths != '' && format('-Dsonar.sarifReportPaths={0}', steps.prepare_sarif.outputs.sonar_sarif_paths) || '' }}
