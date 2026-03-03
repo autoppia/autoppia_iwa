@@ -55,6 +55,7 @@ jobs:
           path: .
           format: SARIF
           out: reports
+          args: --enableExperimental
         continue-on-error: true  # Job continues if dependency-check fails (e.g. network)
 
       - name: Prepare SARIF report for SonarCloud
