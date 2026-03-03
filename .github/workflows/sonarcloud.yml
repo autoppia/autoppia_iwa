@@ -48,9 +48,39 @@ jobs:
           pytest tests/ --cov=autoppia_iwa --cov=modules --cov=scripts --cov-report=xml --cov-report=term
         continue-on-error: true  # Continue even if tests fail
 
+      - name: Run OWASP Dependency-Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: autoppia_autoppia_iwa
+          path: .
+          format: SARIF
+          out: reports
+        continue-on-error: true  # Job continues if dependency-check fails (e.g. network)
+
+      - name: Prepare SARIF report for SonarCloud
+        id: prepare_sarif
+        run: |
+          mkdir -p reports
+          if ls reports/*.sarif 1>/dev/null 2>&1; then
+            f=$(ls reports/*.sarif 2>/dev/null | head -1)
+            cp "$f" reports/dependency-check-report.sarif
+          fi
+          echo "sarif_exists=$([ -f reports/dependency-check-report.sarif ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          ls -la reports/
+
+      - name: Upload SARIF reports
+        if: steps.prepare_sarif.outputs.sarif_exists == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-reports
+          path: reports/
+          retention-days: 5
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # SONAR_TOKEN must be configured in repository secrets
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: ${{ steps.prepare_sarif.outputs.sarif_exists == 'true' && '-Dsonar.sarifReportPaths=reports/dependency-check-report.sarif' || '' }}
