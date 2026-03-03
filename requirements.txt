@@ -27,4 +27,4 @@ aiohttp>=3.10.0,<4.0.0
 orjson==3.11.4
 
 # TEMP: vulnerable dependency for testing OWASP Dependency-Check + SonarCloud (remove after verification)
-PyYAML==5.1
+cryptography==3.3.2

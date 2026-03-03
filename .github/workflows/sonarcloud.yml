@@ -71,6 +71,15 @@ jobs:
           fi
           echo "sarif_exists=$([ -f reports/dependency-check-report.sarif ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
           ls -la reports/
+          if [ -f reports/dependency-check-report.sarif ]; then
+            python3 -c "
+import json
+with open('reports/dependency-check-report.sarif') as f:
+    d = json.load(f)
+n = len(d.get('runs', [{}])[0].get('results', []))
+print(f'SARIF vulnerability count: {n}')
+"
+          fi
 
       - name: Upload SARIF reports
         if: steps.prepare_sarif.outputs.sarif_exists == 'true'
