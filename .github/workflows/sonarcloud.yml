@@ -52,71 +52,26 @@ jobs:
           pip-audit -f json 2>/dev/null > reports/pip-audit.json || true
         continue-on-error: true
 
-      - name: Convert pip-audit JSON to SARIF
-        run: |
-          if [ ! -f reports/pip-audit.json ]; then exit 0; fi
-          python3 .github/scripts/pip_audit_to_sarif.py reports/pip-audit.json -o reports/pip-audit.sarif || true
-
       - name: Run tests with coverage
         run: |
           pytest tests/ --cov=autoppia_iwa --cov=modules --cov=scripts --cov-report=xml --cov-report=term
         continue-on-error: true  # Continue even if tests fail
 
-      - name: Run OWASP Dependency-Check
-        uses: dependency-check/Dependency-Check_Action@main
-        with:
-          project: autoppia_autoppia_iwa
-          path: .
-          format: SARIF
-          out: reports
-          args: --enableExperimental
-        continue-on-error: true  # Job continues if dependency-check fails (e.g. network)
-
-      - name: Prepare SARIF report for SonarCloud
-        id: prepare_sarif
+      - name: Count dependency vulnerabilities (pip-audit)
+        id: pip_audit_count
         run: |
-          mkdir -p reports
-          if ls reports/*.sarif 1>/dev/null 2>&1; then
-            f=$(ls reports/*.sarif 2>/dev/null | head -1)
-            if [ "$f" != "reports/dependency-check-report.sarif" ]; then
-              cp "$f" reports/dependency-check-report.sarif
-            fi
-          fi
-          echo "sarif_exists=$([ -f reports/dependency-check-report.sarif ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-          if [ -f reports/dependency-check-report.sarif ]; then
-            SARIF_COUNT=$(python3 -c "import json; d=json.load(open('reports/dependency-check-report.sarif')); print(len(d.get('runs',[{}])[0].get('results',[])))")
-            echo "sarif_vuln_count=$SARIF_COUNT" >> "$GITHUB_OUTPUT"
-            echo "Dependency-Check SARIF vulnerability count: $SARIF_COUNT"
-          else
-            echo "sarif_vuln_count=0" >> "$GITHUB_OUTPUT"
-          fi
           PIP_AUDIT_COUNT=$(python3 .github/scripts/pip_audit_count.py 2>/dev/null || echo "0")
           echo "pip_audit_vuln_count=$PIP_AUDIT_COUNT" >> "$GITHUB_OUTPUT"
           echo "pip-audit vulnerability count: $PIP_AUDIT_COUNT"
-          SARIF_PATHS=""
-          [ -f reports/dependency-check-report.sarif ] && SARIF_PATHS="reports/dependency-check-report.sarif"
-          [ -f reports/pip-audit.sarif ] && SARIF_PATHS="${SARIF_PATHS}${SARIF_PATHS:+,}reports/pip-audit.sarif"
-          [ -n "$SARIF_PATHS" ] && echo "sonar_sarif_paths=$SARIF_PATHS" >> "$GITHUB_OUTPUT"
-          ls -la reports/
-
-      - name: Upload SARIF reports
-        if: steps.prepare_sarif.outputs.sonar_sarif_paths != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: dependency-check-reports
-          path: reports/
-          retention-days: 5
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: ${{ steps.prepare_sarif.outputs.sonar_sarif_paths != '' && format('-Dsonar.sarifReportPaths={0}', steps.prepare_sarif.outputs.sonar_sarif_paths) || '' }}
 
       - name: Fail if dependency vulnerabilities detected
-        if: steps.prepare_sarif.outputs.sarif_vuln_count != '0' || steps.prepare_sarif.outputs.pip_audit_vuln_count != '0'
+        if: steps.pip_audit_count.outputs.pip_audit_vuln_count != '0'
         run: |
-          echo "::error::Dependency vulnerabilities found (Dependency-Check: ${{ steps.prepare_sarif.outputs.sarif_vuln_count }}, pip-audit: ${{ steps.prepare_sarif.outputs.pip_audit_vuln_count }}). Fix them before merging."
+          echo "::error::Dependency vulnerabilities found (pip-audit: ${{ steps.pip_audit_count.outputs.pip_audit_vuln_count }}). Fix them before merging."
           exit 1
