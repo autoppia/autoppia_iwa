@@ -43,6 +43,11 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-cov
 
+      - name: Audit Python dependencies (pip-audit)
+        run: |
+          pip install pip-audit
+          pip-audit
+
       - name: Run tests with coverage
         run: |
           pytest tests/ --cov=autoppia_iwa --cov=modules --cov=scripts --cov-report=xml --cov-report=term
