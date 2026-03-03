@@ -63,7 +63,10 @@ jobs:
           mkdir -p reports
           if ls reports/*.sarif 1>/dev/null 2>&1; then
             f=$(ls reports/*.sarif 2>/dev/null | head -1)
-            cp "$f" reports/dependency-check-report.sarif
+            # Only copy if source is different (Dependency-Check may already output dependency-check-report.sarif)
+            if [ "$f" != "reports/dependency-check-report.sarif" ]; then
+              cp "$f" reports/dependency-check-report.sarif
+            fi
           fi
           echo "sarif_exists=$([ -f reports/dependency-check-report.sarif ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
           ls -la reports/
