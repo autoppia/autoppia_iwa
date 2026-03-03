@@ -10,10 +10,37 @@ import sys
 from pathlib import Path
 
 
+def _parse_vuln(v: dict, name: str, version: str) -> dict:
+    vuln_id = v.get("id") or v.get("advisory_id") or v.get("cve") or "unknown"
+    desc = v.get("description") or v.get("description_short") or f"Vulnerability {vuln_id}"
+    fix_versions = v.get("fix_versions") or v.get("fixed_versions") or v.get("fix_version") or []
+    if isinstance(fix_versions, str):
+        fix_versions = [fix_versions]
+    return {
+        "name": name,
+        "version": version,
+        "vuln_id": vuln_id,
+        "description": desc,
+        "fix_versions": fix_versions,
+    }
+
+
 def parse_pip_audit_json(data: dict | list) -> list[dict]:
     """Extract (name, version, vuln_id, description, fix_versions) from pip-audit JSON."""
     results = []
-    # pip-audit JSON: top-level list or {"dependencies": [...]}
+    # pip-audit 2.x: dict mapping "pkg==version" -> list of vuln objects
+    if isinstance(data, dict):
+        for dep_spec, vulns in data.items():
+            if not isinstance(vulns, list):
+                continue
+            parts = str(dep_spec).split("==", 1)
+            name = parts[0] if parts else "unknown"
+            version = parts[1] if len(parts) > 1 else ""
+            for v in vulns:
+                if isinstance(v, dict):
+                    results.append(_parse_vuln(v, name, version))
+        return results
+    # fallback: list of deps with "vulns" or "vulnerabilities"
     deps = data if isinstance(data, list) else data.get("dependencies", data.get("vulnerabilities", []))
     if not isinstance(deps, list):
         return results
@@ -22,20 +49,8 @@ def parse_pip_audit_json(data: dict | list) -> list[dict]:
         version = dep.get("version") or dep.get("installed_version") or ""
         vulns = dep.get("vulns") or dep.get("vulnerabilities") or dep.get("advisories") or []
         for v in vulns:
-            vuln_id = v.get("id") or v.get("advisory_id") or v.get("cve") or "unknown"
-            desc = v.get("description") or v.get("description_short") or f"Vulnerability {vuln_id}"
-            fix_versions = v.get("fix_versions") or v.get("fixed_versions") or v.get("fix_version") or []
-            if isinstance(fix_versions, str):
-                fix_versions = [fix_versions]
-            results.append(
-                {
-                    "name": name,
-                    "version": version,
-                    "vuln_id": vuln_id,
-                    "description": desc,
-                    "fix_versions": fix_versions,
-                }
-            )
+            if isinstance(v, dict):
+                results.append(_parse_vuln(v, name, version))
     return results
 
 
