@@ -24,4 +24,4 @@ fastapi>=0.110.1,<0.116
 uvicorn==0.34.0
 httpx==0.28.1
 aiohttp>=3.10.0,<4.0.0
-orjson==3.11.4
+orjson==3.11.7
