@@ -69,6 +69,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
+      - name: List dependency vulnerabilities (pip-audit)
+        if: steps.pip_audit_count.outputs.pip_audit_vuln_count != '0'
+        run: |
+          pip install -q pip-audit
+          pip-audit
+
       - name: Fail if dependency vulnerabilities detected
         if: steps.pip_audit_count.outputs.pip_audit_vuln_count != '0'
         run: |
