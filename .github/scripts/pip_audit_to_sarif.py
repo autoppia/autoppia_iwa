@@ -112,10 +112,18 @@ def main() -> None:
     if len(sys.argv) >= 2 and sys.argv[1] != "-":
         path = Path(sys.argv[1])
         out_path = Path(sys.argv[3]) if len(sys.argv) >= 4 and sys.argv[2] == "-o" else None
-        data = json.loads(path.read_text())
+        raw = path.read_text().strip()
+        start = max(raw.find("{"), raw.find("["))
+        raw = raw[start:] if start >= 0 else raw
+        data = json.loads(raw)
     else:
         out_path = None
         data = json.load(sys.stdin)
+    # Unwrap nested dict (e.g. {"dependencies": {"pkg==ver": [...]}})
+    if isinstance(data, dict):
+        inner = data.get("dependencies", data.get("vulnerabilities", data))
+        if isinstance(inner, dict) and inner is not data:
+            data = inner
     results = parse_pip_audit_json(data)
     sarif = build_sarif(results)
     out = json.dumps(sarif, indent=2)

@@ -48,7 +48,8 @@ jobs:
         run: |
           pip install pip-audit
           mkdir -p reports
-          pip-audit -f json > reports/pip-audit.json 2>&1 || true
+          # Capture only stdout (JSON); stderr would corrupt the file
+          pip-audit -f json 2>/dev/null > reports/pip-audit.json || true
         continue-on-error: true
 
       - name: Convert pip-audit JSON to SARIF
