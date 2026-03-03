@@ -63,9 +63,7 @@ def create_constraint_dict(field: str, operator: ComparisonOperator, value: Any)
     return {"field": field, "operator": operator, "value": value}
 
 
-def random_str_not_contained_in(
-    text: str, length: int = 3, max_attempts: int = 100, fallback: str = "xyz"
-) -> str:
+def random_str_not_contained_in(text: str, length: int = 3, max_attempts: int = 100, fallback: str = "xyz") -> str:
     """Return a random lowercase string of given length not contained in text (case-insensitive). Used for NOT_CONTAINS constraint value generation."""
     alphabet = "abcdefghijklmnopqrstuvwxyz"
     for _ in range(max_attempts):
@@ -86,9 +84,7 @@ def pick_different_value_from_dataset(
     return random.choice(valid) if valid else fallback
 
 
-def constraint_value_for_datetime_date(
-    operator: ComparisonOperator, field_value: datetime.datetime | datetime.date
-) -> Any:
+def constraint_value_for_datetime_date(operator: ComparisonOperator, field_value: datetime.datetime | datetime.date) -> Any:
     """Return constraint value for datetime/date operators (GREATER_THAN, LESS_THAN, etc.). Shared by generation_functions modules."""
     delta_days = random.randint(1, 5)
     if operator == ComparisonOperator.GREATER_THAN:
@@ -122,15 +118,11 @@ def constraint_value_for_time(
     if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS}:
         return field_value
     if operator == ComparisonOperator.NOT_EQUALS:
-        return pick_different_value_from_dataset(
-            dataset, field, field_value, add_minutes(field_value, delta_minutes + 5)
-        )
+        return pick_different_value_from_dataset(dataset, field, field_value, add_minutes(field_value, delta_minutes + 5))
     return None
 
 
-def constraint_value_for_numeric(
-    operator: ComparisonOperator, field_value: int | float, round_digits: int | None = None
-) -> Any:
+def constraint_value_for_numeric(operator: ComparisonOperator, field_value: int | float, round_digits: int | None = None) -> Any:
     """Return constraint value for numeric comparison operators. If round_digits is set (e.g. 2), values are rounded. Shared by generation_functions modules."""
     delta = random.uniform(0.5, 2.0) if isinstance(field_value, float) else random.randint(1, 5)
     if operator == ComparisonOperator.GREATER_THAN:

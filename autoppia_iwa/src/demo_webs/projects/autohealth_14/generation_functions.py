@@ -1,8 +1,9 @@
 import copy
 import random
+from collections.abc import Callable
 from datetime import date, datetime, time, timedelta
 from random import choice
-from typing import Any, Callable
+from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
@@ -134,49 +135,36 @@ async def _get_entity_data(
     method: str = "distribute",
 ) -> list[dict]:
     """Fetch entity data and return transformed list; empty if none available."""
-    dataset_dict = await _ensure_entity_dataset(
-        task_url, dataset, entity_type=entity_type, method=method, filter_key=filter_key
-    )
+    dataset_dict = await _ensure_entity_dataset(task_url, dataset, entity_type=entity_type, method=method, filter_key=filter_key)
     items = dataset_dict.get(entity_type, [])
     return transform_fn(items) if items else []
 
 
 async def _get_appointments_data(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict]:
     """Extract appointments data from the cache dataset, or fetch from server if not available."""
-    return await _get_entity_data(
-        task_url, dataset, "appointments", "specialty", transform_appointments_to_modified
-    )
+    return await _get_entity_data(task_url, dataset, "appointments", "specialty", transform_appointments_to_modified)
 
 
 async def _get_doctors_data(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict]:
     """Extract doctors data from the cache dataset, or fetch from server if not available."""
-    return await _get_entity_data(
-        task_url, dataset, "doctors", "specialty", transform_doctors_to_modified
-    )
+    return await _get_entity_data(task_url, dataset, "doctors", "specialty", transform_doctors_to_modified)
 
 
 async def _get_prescriptions_data(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict]:
     """Extract prescriptions data from the cache dataset, or fetch from server if not available."""
-    return await _get_entity_data(
-        task_url, dataset, "prescriptions", "category", transform_prescriptions_to_modified
-    )
+    return await _get_entity_data(task_url, dataset, "prescriptions", "category", transform_prescriptions_to_modified)
 
 
 async def _get_medical_records_data(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict]:
     """Extract medical records data from the cache dataset, or fetch from server if not available."""
-    return await _get_entity_data(
-        task_url, dataset, "medical-records", "type", transform_medical_records_to_modified
-    )
+    return await _get_entity_data(task_url, dataset, "medical-records", "type", transform_medical_records_to_modified)
 
 
 def _filter_eligible_refill_prescriptions(
     prescriptions_data: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     """Return prescriptions with refills remaining; if none, return original list as fallback."""
-    eligible = [
-        copy.deepcopy(d) for d in prescriptions_data
-        if d.get("refills_remaining", 0) != 0 or d.get("refillsRemaining", 0) != 0
-    ]
+    eligible = [copy.deepcopy(d) for d in prescriptions_data if d.get("refills_remaining", 0) != 0 or d.get("refillsRemaining", 0) != 0]
     return eligible if eligible else prescriptions_data
 
 
@@ -190,21 +178,14 @@ def _get_nested_value(obj: dict, dotted_key: str, default: Any = None) -> Any:
     return obj
 
 
-def _collect_field_values_from_dataset(
-    dataset: list[dict[str, Any]], field: str
-) -> list[Any]:
+def _collect_field_values_from_dataset(dataset: list[dict[str, Any]], field: str) -> list[Any]:
     """Return unique non-None values for field across dataset rows."""
     return list({v.get(field) for v in dataset if field in v and v.get(field) is not None})
 
 
-def _pick_different_value_from_dataset(
-    dataset: list[dict[str, Any]], field: str, exclude_value: Any, fallback: Any = None
-) -> Any:
+def _pick_different_value_from_dataset(dataset: list[dict[str, Any]], field: str, exclude_value: Any, fallback: Any = None) -> Any:
     """Return a random value for field from dataset that is not exclude_value, or fallback."""
-    valid = [
-        v[field] for v in dataset
-        if v.get(field) is not None and v.get(field) != exclude_value
-    ]
+    valid = [v[field] for v in dataset if v.get(field) is not None and v.get(field) != exclude_value]
     return choice(valid) if valid else fallback
 
 
@@ -284,9 +265,7 @@ def _generate_constraint_value(
         if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS}:
             return field_value
         if operator == ComparisonOperator.NOT_EQUALS:
-            return _pick_different_value_from_dataset(
-                dataset, field, field_value, add_minutes(field_value, delta_minutes + 5)
-            )
+            return _pick_different_value_from_dataset(dataset, field, field_value, add_minutes(field_value, delta_minutes + 5))
 
     if operator == ComparisonOperator.EQUALS:
         return field_value
@@ -414,9 +393,7 @@ async def _generate_from_entity(
 ) -> list[dict[str, Any]]:
     """Fetch entity data and generate constraints; avoids repeating get_data + _generate_constraints in each generator."""
     data = await get_data_fn(task_url, dataset)
-    return _generate_constraints(
-        data, field_operators, selected_fields=selected_fields, field_map=field_map, **kwargs
-    )
+    return _generate_constraints(data, field_operators, selected_fields=selected_fields, field_map=field_map, **kwargs)
 
 
 async def _generate_doctor_profile_constraints(
@@ -438,8 +415,12 @@ async def _generate_doctor_profile_constraints(
 async def generate_open_appointment_form_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Generate constraints for OPEN_APPOINTMENT_FORM: doctor_name, speciality, date, time from appointments (DB first). num_constraints=0..1 to keep reviewer consistency while allowing lateral field picks."""
     return await _generate_from_entity(
-        task_url, dataset, _get_appointments_data, FIELD_OPERATORS_MAP_OPEN_APPOINTMENT_FORM,
-        ["doctor_name", "speciality", "date", "time"], num_constraints=random.randint(0, 1),
+        task_url,
+        dataset,
+        _get_appointments_data,
+        FIELD_OPERATORS_MAP_OPEN_APPOINTMENT_FORM,
+        ["doctor_name", "speciality", "date", "time"],
+        num_constraints=random.randint(0, 1),
     )
 
 
@@ -490,8 +471,12 @@ async def generate_request_quick_appointment_constraints(task_url: str | None = 
 async def generate_search_appointment_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Generate constraints for SEARCH_APPOINTMENT: doctor_name, speciality, date from appointments (DB first)."""
     return await _generate_from_entity(
-        task_url, dataset, _get_appointments_data, FIELD_OPERATORS_MAP_SEARCH_APPOINTMENT,
-        ["doctor_name", "speciality", "date"], field_map={"speciality": "speciality"},
+        task_url,
+        dataset,
+        _get_appointments_data,
+        FIELD_OPERATORS_MAP_SEARCH_APPOINTMENT,
+        ["doctor_name", "speciality", "date"],
+        field_map={"speciality": "speciality"},
     )
 
 
@@ -510,7 +495,10 @@ async def generate_search_doctors_constraints(task_url: str | None = None, datas
 async def generate_search_prescription_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Generate constraints for SEARCH_PRESCRIPTION: medicine_name, doctor_name from prescriptions (DB first)."""
     return await _generate_from_entity(
-        task_url, dataset, _get_prescriptions_data, FIELD_OPERATORS_MAP_SEARCH_PRESCRIPTION,
+        task_url,
+        dataset,
+        _get_prescriptions_data,
+        FIELD_OPERATORS_MAP_SEARCH_PRESCRIPTION,
         ["medicine_name", "doctor_name"],
     )
 
@@ -518,7 +506,10 @@ async def generate_search_prescription_constraints(task_url: str | None = None, 
 async def generate_view_prescription_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Generate constraints for VIEW_PRESCRIPTION: medicine_name, doctor_name, start_date, dosage, status, category from prescriptions."""
     return await _generate_from_entity(
-        task_url, dataset, _get_prescriptions_data, FIELD_OPERATORS_MAP_VIEW_PRESCRIPTION,
+        task_url,
+        dataset,
+        _get_prescriptions_data,
+        FIELD_OPERATORS_MAP_VIEW_PRESCRIPTION,
         ["medicine_name", "doctor_name", "start_date"],
     )
 
@@ -538,7 +529,10 @@ async def generate_refill_prescription_constraints(task_url: str | None = None, 
 async def generate_search_medical_analysis_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Generate constraints for SEARCH_MEDICAL_ANALYSIS: record_title, doctor_name from medical records (DB first)."""
     return await _generate_from_entity(
-        task_url, dataset, _get_medical_records_data, FIELD_OPERATORS_MAP_SEARCH_MEDICAL_ANALYSIS,
+        task_url,
+        dataset,
+        _get_medical_records_data,
+        FIELD_OPERATORS_MAP_SEARCH_MEDICAL_ANALYSIS,
         ["record_title", "doctor_name"],
     )
 
@@ -546,7 +540,10 @@ async def generate_search_medical_analysis_constraints(task_url: str | None = No
 async def generate_view_medical_analysis_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Generate constraints for VIEW_MEDICAL_ANALYSIS: record_title, doctor_name, record_type from medical records (DB first)."""
     return await _generate_from_entity(
-        task_url, dataset, _get_medical_records_data, FIELD_OPERATORS_MAP_VIEW_MEDICAL_ANALYSIS,
+        task_url,
+        dataset,
+        _get_medical_records_data,
+        FIELD_OPERATORS_MAP_VIEW_MEDICAL_ANALYSIS,
         ["record_title", "doctor_name", "record_type"],
     )
 

@@ -36,9 +36,7 @@ async def _ensure_task_dataset(task_url: str | None = None, dataset: dict[str, l
     return []
 
 
-def _collect_field_values_from_dataset_flat(
-    dataset: list[dict[str, Any]], source_key: str
-) -> list[Any]:
+def _collect_field_values_from_dataset_flat(dataset: list[dict[str, Any]], source_key: str) -> list[Any]:
     """Collect unique values for source_key from dataset; flatten list values into a single list."""
     all_values: list[Any] = []
     for v in dataset:
@@ -51,14 +49,9 @@ def _collect_field_values_from_dataset_flat(
     return list(set(all_values))
 
 
-def _pick_different_value_from_dataset(
-    dataset: list[dict[str, Any]], source_key: str, exclude_value: Any, fallback: Any = None
-) -> Any:
+def _pick_different_value_from_dataset(dataset: list[dict[str, Any]], source_key: str, exclude_value: Any, fallback: Any = None) -> Any:
     """Return a random value for source_key from dataset that is not exclude_value, or fallback."""
-    valid = [
-        v[source_key] for v in dataset
-        if v.get(source_key) is not None and v.get(source_key) != exclude_value
-    ]
+    valid = [v[source_key] for v in dataset if v.get(source_key) is not None and v.get(source_key) != exclude_value]
     return random.choice(valid) if valid else fallback
 
 

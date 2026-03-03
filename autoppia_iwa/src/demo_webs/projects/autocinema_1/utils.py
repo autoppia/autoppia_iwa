@@ -1,4 +1,5 @@
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from ..criterion_helper import ComparisonOperator
 from ..operators import CONTAINS, EQUALS, IN_LIST, NOT_CONTAINS, NOT_EQUALS, NOT_IN_LIST
@@ -32,9 +33,7 @@ _DIRECTOR_LIST_OPS = (IN_LIST, NOT_IN_LIST)
 _DIRECTOR_STRING_OPS = (EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS)
 
 
-def _valid_operators_for_field(
-    field: str, valid_operators: list, solution_movie: dict
-) -> list:
+def _valid_operators_for_field(field: str, valid_operators: list, solution_movie: dict) -> list:
     """Return valid operators for field; for 'director' filter by list vs string type."""
     if field != "director":
         return valid_operators
@@ -92,9 +91,7 @@ def _constraint_to_part(idx: int, constraint: dict[str, Any]) -> str:
 
 def _build_constraints_string(constraint_list: list[dict[str, Any]]) -> str:
     """Build the constraint string from a list of constraint dicts (e.g. '1) year equals 2014 AND 2) genres contains Sci-Fi')."""
-    return " AND ".join(
-        _constraint_to_part(idx, c) for idx, c in enumerate(constraint_list, start=1)
-    )
+    return " AND ".join(_constraint_to_part(idx, c) for idx, c in enumerate(constraint_list, start=1))
 
 
 def build_constraints_info(data: list[dict], max_attempts: int = 10) -> str | None:
@@ -125,9 +122,7 @@ def build_constraints_info(data: list[dict], max_attempts: int = 10) -> str | No
     constraint_list = []
 
     for field in selected_fields:
-        valid_operators = _valid_operators_for_field(
-            field, FIELD_OPERATORS_MAP_FILM[field], solution_movie
-        )
+        valid_operators = _valid_operators_for_field(field, FIELD_OPERATORS_MAP_FILM[field], solution_movie)
         if not valid_operators:
             continue  # Skip if no valid operators
         operator = random.choice(valid_operators)

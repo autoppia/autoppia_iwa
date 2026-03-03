@@ -34,9 +34,7 @@ def _validate_criteria_fields(validator: BaseEventValidator, criteria: BaseModel
     """Reusable validation: if no criteria, return True; else all(_validate_field(validator.x, criteria.x) for each name)."""
     if not criteria:
         return True
-    return all(
-        validator._validate_field(getattr(validator, name), getattr(criteria, name)) for name in field_names
-    )
+    return all(validator._validate_field(getattr(validator, name), getattr(criteria, name)) for name in field_names)
 
 
 def _base_event_kwargs(base_event: Event, **extra: object) -> dict:
@@ -78,7 +76,18 @@ class BookAConsultationEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "BookAConsultationEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        return cls(**_base_event_kwargs(base_event, country=data.get("country"), name=data.get("expertName"), jobs=data.get("jobs"), rate=data.get("rate"), rating=data.get("rating"), role=data.get("role"), slug=data.get("expertSlug")))
+        return cls(
+            **_base_event_kwargs(
+                base_event,
+                country=data.get("country"),
+                name=data.get("expertName"),
+                jobs=data.get("jobs"),
+                rate=data.get("rate"),
+                rating=data.get("rating"),
+                role=data.get("role"),
+                slug=data.get("expertSlug"),
+            )
+        )
 
 
 class HireButtonClickedEvent(Event, BaseEventValidator):
@@ -143,9 +152,7 @@ class HireConsultantEvent(Event, BaseEventValidator):
         role: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        return _validate_criteria_fields(
-            self, criteria, ["country", "name", "increaseWhen", "increaseHowMuch", "paymentType", "role"]
-        )
+        return _validate_criteria_fields(self, criteria, ["country", "name", "increaseWhen", "increaseHowMuch", "paymentType", "role"])
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "HireConsultantEvent":
@@ -254,9 +261,7 @@ class QuickHireEvent(Event, BaseEventValidator):
         slug: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        return _validate_criteria_fields(
-            self, criteria, ["country", "name", "jobs", "rate", "rating", "role", "slug"]
-        )
+        return _validate_criteria_fields(self, criteria, ["country", "name", "jobs", "rate", "rating", "role", "slug"])
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "QuickHireEvent":
@@ -515,9 +520,7 @@ class FavoriteExpertSelectedEvent(Event, BaseEventValidator):
         role: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        return _validate_criteria_fields(
-            self, criteria, ["expert_name", "expert_slug", "source", "country", "role"]
-        )
+        return _validate_criteria_fields(self, criteria, ["expert_name", "expert_slug", "source", "country", "role"])
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "FavoriteExpertSelectedEvent":

@@ -78,9 +78,7 @@ async def _get_crm_entity_list(
     filter_key: str | None = None,
 ) -> list[dict[str, Any]]:
     """Fetch CRM dataset for entity_type and return the list. Reduces repeated ensure+get pattern."""
-    data_dict = await _ensure_crm_dataset(
-        task_url, dataset, entity_type=entity_type, method=method, filter_key=filter_key
-    )
+    data_dict = await _ensure_crm_dataset(task_url, dataset, entity_type=entity_type, method=method, filter_key=filter_key)
     return data_dict.get(entity_type, [])
 
 
@@ -189,9 +187,7 @@ async def generate_view_matter_constraints(task_url: str | None = None, dataset:
     if not data:
         print(ERROR_NO_DATASET_MSG)
         return constraints_list
-    return _generate_constraints_from_sample(
-        data, ["name", "client", "status", "updated"], FIELD_OPERATORS_MAP_CLIENT_VIEW_MATTER, num_constraints=random.randint(2, 4)
-    )
+    return _generate_constraints_from_sample(data, ["name", "client", "status", "updated"], FIELD_OPERATORS_MAP_CLIENT_VIEW_MATTER, num_constraints=random.randint(2, 4))
 
 
 def generate_add_matter_constraints() -> list[dict[str, Any]]:
@@ -385,11 +381,7 @@ async def generate_document_deleted_constraints(task_url: str | None = None, dat
             continue
         operator = ComparisonOperator(random.choice(allowed_ops))
         field_value = document_data.get(field)
-        value = (
-            _generate_value_for_document_field(field, field_value, operator, data)
-            if field == "size"
-            else _generate_constraint_value(operator, field_value, field, dataset=data)
-        )
+        value = _generate_value_for_document_field(field, field_value, operator, data) if field == "size" else _generate_constraint_value(operator, field_value, field, dataset=data)
         if value is not None:
             constraints_list.append(create_constraint_dict(field, operator, value))
     return constraints_list
@@ -397,11 +389,24 @@ async def generate_document_deleted_constraints(task_url: str | None = None, dat
 
 # Document rename: allowed new names for constraint generation
 NEW_DOCUMENT_NAMES = [
-    "Report-102.pdf", "Invoice-511.docx", "Statement-743.xlsx", "Summary-928.pdf",
-    "Agreement-337.docx", "Form-684.xlsx", "Proposal-219.pdf", "Record-570.docx",
-    "Analysis-803.xlsx", "Notes-445.pdf", "Plan-122.docx", "Schedule-699.xlsx",
-    "Brief-911.pdf", "Memo-318.docx", "Budget-472.xlsx", "Guide-856.pdf",
-    "Outline-394.docx", "Registry-640.xlsx",
+    "Report-102.pdf",
+    "Invoice-511.docx",
+    "Statement-743.xlsx",
+    "Summary-928.pdf",
+    "Agreement-337.docx",
+    "Form-684.xlsx",
+    "Proposal-219.pdf",
+    "Record-570.docx",
+    "Analysis-803.xlsx",
+    "Notes-445.pdf",
+    "Plan-122.docx",
+    "Schedule-699.xlsx",
+    "Brief-911.pdf",
+    "Memo-318.docx",
+    "Budget-472.xlsx",
+    "Guide-856.pdf",
+    "Outline-394.docx",
+    "Registry-640.xlsx",
 ]
 
 
@@ -486,16 +491,51 @@ async def generate_filter_clients_constraints(task_url: str | None = None, datas
 
 
 ALLOWED_EVENT_LABELS = [
-    "Client Meeting", "Sales Call", "Follow-up Call", "Lead Qualification", "Product Demo",
-    "Contract Review", "Proposal Sent", "Negotiation Meeting", "Deal Closed", "Customer Onboarding",
-    "Account Review", "Renewal Discussion", "Upsell Opportunity", "Cross-sell Discussion", "Support Call",
-    "Customer Feedback Session", "Billing Discussion", "Churn Risk Review", "QBR Meeting", "Welcome Call",
-    "Lead Assignment", "Marketing Campaign Review", "Email Outreach Scheduled", "Pipeline Review", "CRM Data Cleanup",
-    "Client Training Session", "Technical Walkthrough", "Internal Strategy Sync", "Team Performance Review",
-    "Monthly Sales Review", "Weekly Client Check-in", "Cold Outreach Call", "Warm Lead Follow-up",
-    "Trial Expiry Notification", "Subscription Renewal", "Invoice Review", "NDA Signing", "Kickoff Call",
-    "Client Escalation", "Feature Discussion", "CSAT Follow-up", "Implementation Review", "Introductory Meeting",
-    "Decision Maker Call", "Referral Discussion",
+    "Client Meeting",
+    "Sales Call",
+    "Follow-up Call",
+    "Lead Qualification",
+    "Product Demo",
+    "Contract Review",
+    "Proposal Sent",
+    "Negotiation Meeting",
+    "Deal Closed",
+    "Customer Onboarding",
+    "Account Review",
+    "Renewal Discussion",
+    "Upsell Opportunity",
+    "Cross-sell Discussion",
+    "Support Call",
+    "Customer Feedback Session",
+    "Billing Discussion",
+    "Churn Risk Review",
+    "QBR Meeting",
+    "Welcome Call",
+    "Lead Assignment",
+    "Marketing Campaign Review",
+    "Email Outreach Scheduled",
+    "Pipeline Review",
+    "CRM Data Cleanup",
+    "Client Training Session",
+    "Technical Walkthrough",
+    "Internal Strategy Sync",
+    "Team Performance Review",
+    "Monthly Sales Review",
+    "Weekly Client Check-in",
+    "Cold Outreach Call",
+    "Warm Lead Follow-up",
+    "Trial Expiry Notification",
+    "Subscription Renewal",
+    "Invoice Review",
+    "NDA Signing",
+    "Kickoff Call",
+    "Client Escalation",
+    "Feature Discussion",
+    "CSAT Follow-up",
+    "Implementation Review",
+    "Introductory Meeting",
+    "Decision Maker Call",
+    "Referral Discussion",
 ]
 
 

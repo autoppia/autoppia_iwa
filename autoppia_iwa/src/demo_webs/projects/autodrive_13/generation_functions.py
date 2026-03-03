@@ -79,15 +79,11 @@ async def _get_drive_entity_list(
     method: str | None = None,
 ) -> list[dict[str, Any]]:
     """Load entity list for the given type (e.g. 'places', 'rides') and return the list."""
-    dataset_dict = await _ensure_drive_dataset(
-        task_url, dataset, entity_type=entity_type, method=method
-    )
+    dataset_dict = await _ensure_drive_dataset(task_url, dataset, entity_type=entity_type, method=method)
     return dataset_dict.get(entity_type, [])
 
 
-def _collect_field_values_from_dataset(
-    dataset: list[dict[str, Any]], field: str
-) -> list[Any]:
+def _collect_field_values_from_dataset(dataset: list[dict[str, Any]], field: str) -> list[Any]:
     """Return unique non-None values for field across dataset rows."""
     return list({v.get(field) for v in dataset if field in v and v.get(field) is not None})
 
@@ -183,9 +179,7 @@ def random_datetime(days: int | None = None, end: datetime | None = None, start:
     return start + timedelta(seconds=random_second)
 
 
-def _random_future_date(
-    current_dt: datetime, min_days: int = 1, max_days: int = 7
-) -> tuple[date, Any]:
+def _random_future_date(current_dt: datetime, min_days: int = 1, max_days: int = 7) -> tuple[date, Any]:
     """Return (date_obj, parsed_date) for a random date in [current + min_days, current + max_days]."""
     offset = randint(min_days, max_days)
     new_date = current_dt.date() + timedelta(days=offset)
@@ -200,9 +194,7 @@ def _apply_less_than_date_guard(parsed_date: Any, current_datetime: datetime) ->
     return parsed_date
 
 
-def _build_date_constraint(
-    field: str, ops: list, min_days: int = 1, max_days: int = 7
-) -> dict[str, Any]:
+def _build_date_constraint(field: str, ops: list, min_days: int = 1, max_days: int = 7) -> dict[str, Any]:
     """Build a single date constraint with random future date and optional LESS_THAN guard."""
     current_datetime = datetime.now()
     _, new_date = _random_future_date(current_datetime, min_days=min_days, max_days=max_days)
@@ -225,9 +217,7 @@ def _random_future_time_from_now(current_datetime: datetime) -> time:
     offset_hours = randint(0, max(0, 23 - current_datetime.hour))
     minute_slot = randrange(0, max(1, 60 - current_datetime.minute), 10)
     future_dt = current_datetime + timedelta(hours=offset_hours)
-    if future_dt.hour < current_datetime.hour or (
-        future_dt.hour == current_datetime.hour and minute_slot < current_datetime.minute
-    ):
+    if future_dt.hour < current_datetime.hour or (future_dt.hour == current_datetime.hour and minute_slot < current_datetime.minute):
         future_dt = current_datetime
         minute_slot = ((current_datetime.minute + 9) // 10) * 10
         if minute_slot >= 60:
@@ -317,9 +307,7 @@ def _generate_constraints(
                 if custom_dataset and new_field_name:
                     field_value = choice(custom_dataset).get(new_field_name)
                     if field_value is not None:
-                        constraint_value = _generate_constraint_value(
-                            op, field_value, new_field_name, dataset=custom_dataset
-                        )
+                        constraint_value = _generate_constraint_value(op, field_value, new_field_name, dataset=custom_dataset)
                 new_field = new_field_name
 
         if field_value is None:
@@ -356,15 +344,11 @@ def _places_location_destination_field_map(places_data: list[dict[str, Any]]) ->
 
 
 async def generate_enter_location_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    return await _generate_from_places(
-        task_url, dataset, FIELD_OPERATORS_MAP_ENTER_LOCATION, {"location": "label"}
-    )
+    return await _generate_from_places(task_url, dataset, FIELD_OPERATORS_MAP_ENTER_LOCATION, {"location": "label"})
 
 
 async def generate_enter_destination_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    return await _generate_from_places(
-        task_url, dataset, FIELD_OPERATORS_MAP_ENTER_DESTINATION, {"destination": "label"}
-    )
+    return await _generate_from_places(task_url, dataset, FIELD_OPERATORS_MAP_ENTER_DESTINATION, {"destination": "label"})
 
 
 async def generate_see_prices_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
@@ -378,20 +362,12 @@ async def generate_see_prices_constraints(task_url: str | None = None, dataset: 
 
 
 def generate_select_date_constraints() -> list[dict[str, Any]]:
-    return [
-        _build_date_constraint(field, ops)
-        for field, ops in FIELD_OPERATORS_MAP_SELECT_DATE.items()
-        if field == "date"
-    ]
+    return [_build_date_constraint(field, ops) for field, ops in FIELD_OPERATORS_MAP_SELECT_DATE.items() if field == "date"]
 
 
 def generate_select_time_constraints() -> list[dict[str, Any]]:
     current_datetime = datetime.now()
-    return [
-        _build_time_constraint(field, ops, current_datetime)
-        for field, ops in FIELD_OPERATORS_MAP_SELECT_TIME.items()
-        if field == "time"
-    ]
+    return [_build_time_constraint(field, ops, current_datetime) for field, ops in FIELD_OPERATORS_MAP_SELECT_TIME.items() if field == "time"]
 
 
 def generate_next_pickup_constraints() -> list[dict[str, Any]]:
@@ -400,9 +376,7 @@ def generate_next_pickup_constraints() -> list[dict[str, Any]]:
     selected_date: date | None = None
 
     if "date" in FIELD_OPERATORS_MAP_NEXT_PICKUP:
-        constraint = _build_date_constraint(
-            "date", FIELD_OPERATORS_MAP_NEXT_PICKUP["date"], min_days=0, max_days=7
-        )
+        constraint = _build_date_constraint("date", FIELD_OPERATORS_MAP_NEXT_PICKUP["date"], min_days=0, max_days=7)
         selected_date = constraint.get("value")
         all_constraints.append(constraint)
 
