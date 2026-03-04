@@ -20,9 +20,12 @@ logger.level("TASK_GENERATION", TASK_GENERATION_LEVEL_NUM, color="<magenta>")
 # ======= LOGGING SETUP ============
 # ==================================
 
+_logging_initialized = False
+
 
 def setup_logging(log_file: str):
     """Configure loguru logger with enhanced formatting"""
+    global _logging_initialized
     logger.remove()
 
     # Uniform timestamp format (with milliseconds) for all logs
@@ -50,8 +53,10 @@ def setup_logging(log_file: str):
         enqueue=True,  # Thread-safe logging
     )
 
-    # Log startup message
-    logger.info("Benchmark logging initialized")
+    # Log startup message only once per process (avoid duplicate when main + Benchmark both call setup_logging)
+    if not _logging_initialized:
+        _logging_initialized = True
+        logger.info("Benchmark logging initialized")
 
 
 # ==================================

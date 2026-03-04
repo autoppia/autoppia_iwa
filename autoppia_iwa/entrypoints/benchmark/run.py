@@ -136,7 +136,7 @@ def main():
     """
     try:
         setup_logging(str(CFG.benchmark_log_file))
-        logger.info("Selected %d projects: %s", len(CFG.projects), [p.name for p in CFG.projects])
+        logger.info(f"Selected {len(CFG.projects)} projects: {[p.name for p in CFG.projects]}")
         logger.info("Initializing benchmark...")
 
         # Validate configuration early
