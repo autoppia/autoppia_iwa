@@ -47,7 +47,13 @@ class AgentConfig(BaseModel):
     max_steps_per_task: int = 50  # Used only when evaluator_mode == "stateful"
 
 
-@app.post("/test-your-agent")
+@app.post(
+    "/test-your-agent",
+    responses={
+        400: {"description": "Invalid project IDs provided"},
+        500: {"description": "Internal server error during benchmark execution"},
+    },
+)
 async def test_your_agent(config: AgentConfig):
     """
     Endpoint to test a web agent against specified projects and use cases.

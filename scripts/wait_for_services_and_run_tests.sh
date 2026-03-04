@@ -22,7 +22,7 @@ wait_for_service() {
 
     echo -n "   Esperando $name..."
 
-    while [ $attempt -le $max_attempts ]; do
+    while [[ $attempt -le $max_attempts ]]; do
         if curl -s "$url" > /dev/null 2>&1; then
             echo " ✅ OK!"
             return 0

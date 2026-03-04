@@ -58,10 +58,10 @@ def clean_html(html_content: str) -> str:
                         tag.decompose()
                     continue
                 # Remove inline event handlers and style/id/class attributes
-                for attr in list(tag.attrs):
-                    if attr.startswith("on") or attr in ["class", "id", "style"]:
-                        with contextlib.suppress(Exception):
-                            del tag[attr]
+                attrs_to_remove = [attr for attr in tag.attrs if attr.startswith("on") or attr in ["class", "id", "style"]]
+                for attr in attrs_to_remove:
+                    with contextlib.suppress(Exception):
+                        del tag[attr]
             except Exception:
                 pass
     except Exception:

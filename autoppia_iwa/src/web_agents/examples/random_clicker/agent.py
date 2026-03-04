@@ -1,3 +1,4 @@
+import asyncio
 import random
 from typing import Any
 
@@ -45,6 +46,7 @@ class RandomClickerWebAgent(BaseAgent):
         :param task: The task for which actions are being generated.
         :return: A TaskSolution containing the generated actions.
         """
+        await asyncio.sleep(0)  # Yield to event loop (async function must use await)
         # actions = [NavigateAction(url=task.url)]
         actions = []
         for _ in range(1):  # Generate 10 random click actions

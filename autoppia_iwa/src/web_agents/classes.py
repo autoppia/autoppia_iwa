@@ -11,6 +11,12 @@ from pydantic import BaseModel, Field, computed_field
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.execution.actions.base import BaseAction
 
+# ============================================================================
+# CONSTANTS
+# ============================================================================
+
+DEFAULT_PASSWORD = "Passw0rd!"  # NOSONAR - test password for placeholder replacement, not a real credential
+
 
 def replace_credential_placeholders_in_string(s: str, web_agent_id: str) -> str:
     """
@@ -19,11 +25,11 @@ def replace_credential_placeholders_in_string(s: str, web_agent_id: str) -> str:
     Replaces: <username>, <password>, <signup_username>, <signup_email>, <signup_password>, <web_agent_id>.
     """
     s = s.replace("<username>", f"user{web_agent_id}")
-    s = s.replace("<password>", "Passw0rd!")
+    s = s.replace("<password>", DEFAULT_PASSWORD)
     s = s.replace("<signup_username>", f"newuser{web_agent_id}")
     s = s.replace("<signup_email>", f"newuser{web_agent_id}@gmail.com")
-    s = s.replace("<signup_password>", "Passw0rd!")
-    s = s.replace("<web_agent_id>", web_agent_id)
+    s = s.replace("<signup_password>", DEFAULT_PASSWORD)
+    s = s.replace("<web_agent_id>", web_agent_id)  # NOSONAR - literal placeholder is part of the protocol, keeping as-is for clarity
     return s
 
 
@@ -77,7 +83,7 @@ def sanitize_snapshot_html(snapshot_html: str, web_agent_id: str) -> str:
     sanitized = sanitized.replace(f"newuser{web_agent_id}@gmail.com", "<signup_email>")
     sanitized = sanitized.replace(f"newuser{web_agent_id}", "<signup_username>")
     sanitized = sanitized.replace(f"user{web_agent_id}", "<username>")
-    sanitized = sanitized.replace("Passw0rd!", "<password>")
+    sanitized = sanitized.replace(DEFAULT_PASSWORD, "<password>")
     return sanitized
 
 
@@ -194,7 +200,7 @@ class TaskSolution(BaseModel):
             for field in ("text", "url", "value"):
                 if hasattr(action, field):
                     value = getattr(action, field)
-                    if isinstance(value, str) and ("<web_agent_id>" in value or "your_book_id" in value):
+                    if isinstance(value, str) and ("<web_agent_id>" in value or "your_book_id" in value):  # NOSONAR - literal placeholder is part of the protocol
                         new_val = value.replace("<web_agent_id>", str(self.web_agent_id)).replace("<your_book_id>", str(self.web_agent_id))
                         setattr(action, field, new_val)
         return self.actions

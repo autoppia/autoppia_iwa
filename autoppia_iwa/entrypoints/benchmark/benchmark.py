@@ -88,6 +88,7 @@ class Benchmark:
             max_consecutive_action_failures=2,
             verbose_logging=False,
             debug_mode=False,
+            headless=self.config.headless,
         )
 
         logger.debug(f"Creating ConcurrentEvaluator for project {project.id}")
@@ -122,6 +123,7 @@ class Benchmark:
             web_agent_id=agent.id,
             should_record_gif=self.config.record_gif,
             capture_screenshot=False,
+            headless=self.config.headless,
         )
 
         start_ts = time.time()
