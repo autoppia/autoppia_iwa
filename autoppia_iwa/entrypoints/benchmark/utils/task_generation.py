@@ -25,7 +25,7 @@ def _write_tasks_to_file(filename: Path, cache_data: dict) -> None:
     """Synchronous helper to write tasks to JSON file."""
     filename.parent.mkdir(parents=True, exist_ok=True)
     with open(filename, "w", encoding="utf-8") as f:
-        json.dump(cache_data, f, indent=2)
+        json.dump(cache_data, f, indent=2, ensure_ascii=False, default=str)
 
 
 async def save_tasks_to_json(tasks: list[Task], project: WebProject, task_cache_dir: str) -> bool:
@@ -43,7 +43,7 @@ async def save_tasks_to_json(tasks: list[Task], project: WebProject, task_cache_
 
         logger.info(f"Tasks for project '{project.name}' saved to {filename}")
         return True
-    except (OSError, json.JSONEncodeError) as e:
+    except (OSError, TypeError) as e:
         logger.error(f"Error saving tasks to {filename}: {e!s}")
         return False
 
