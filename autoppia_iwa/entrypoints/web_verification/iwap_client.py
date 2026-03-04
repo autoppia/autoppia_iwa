@@ -246,7 +246,7 @@ class IWAPClient:
             print("\n📡 IWAP API Request:")
             print(f"   URL: {endpoint}")
             print("   Parameters:")
-            print(f"     - key: {self.api_key}")
+            # print(f"     - key: {self.api_key}")
             print(f"     - website: {website}")
             print(f"     - useCase: {use_case_name}")
             if page is not None:
