@@ -73,7 +73,21 @@ AGENTS = [
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
-    "autocinema",
+    # "autocinema",
+    # "autobooks",
+    # "autozone",
+    # "autodining",
+    # "autocrm",
+    # "automail",
+    # "autolodge",
+    # "autodelivery",
+    # "autowork",
+    # "autoconnect",
+    # "autocalendar",
+    "autolist",
+    "autodrive",
+    "autohealth",
+    "autostats",
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 USE_CASES = None  # None = all use cases

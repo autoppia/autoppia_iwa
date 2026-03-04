@@ -28,6 +28,7 @@ if str(_project_root) not in sys.path:
 
 from loguru import logger
 
+from autoppia_iwa.entrypoints.benchmark.utils.logging import setup_logging
 from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
@@ -262,19 +263,11 @@ async def main():
     """Main entry point"""
     args = parse_args()
 
-    # Setup logging
-    if args.verbose:
-        logger.add(
-            sys.stderr,
-            format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan> - <level>{message}</level>",
-            level="DEBUG",
-        )
-    else:
-        logger.add(
-            sys.stderr,
-            format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <level>{message}</level>",
-            level="INFO",
-        )
+    # Standardized logging (same format as benchmark: YYYY-MM-DD HH:mm:ss.SSS, single handler, no duplicates)
+    log_dir = Path(args.output_dir) / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_file = log_dir / "web_verification.log"
+    setup_logging(str(log_file), console_level="DEBUG" if args.verbose else "INFO")
 
     # Bootstrap application
     AppBootstrap()
