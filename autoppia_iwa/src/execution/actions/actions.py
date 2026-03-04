@@ -313,6 +313,51 @@ class DoneAction(BaseAction):
         return None
 
 
+class ReportResultAction(BaseAction):
+    """Report final textual output from the operator as an explicit tool/action."""
+
+    type: Literal["ReportResultAction"] = "ReportResultAction"
+    content: str = Field(..., description="Final result text for the user.")
+    success: bool = Field(True, description="Whether the task is considered successful.")
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_content(cls, values):
+        if not isinstance(values, dict):
+            return values
+        if "content" not in values or not str(values.get("content") or "").strip():
+            for key in ("final_text", "final_answer", "summary", "answer", "result", "output", "text", "message"):
+                candidate = values.get(key)
+                if isinstance(candidate, str) and candidate.strip():
+                    values["content"] = candidate
+                    break
+        if "content" not in values or not str(values.get("content") or "").strip():
+            values["content"] = "Task completed."
+        return values
+
+    @log_action("ReportResultAction")
+    async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
+        # Reporting is consumed by higher-level runners/UI; no browser side-effect.
+        return None
+
+
+class RequestUserInputAction(BaseAction):
+    """Request structured input from the user before continuing execution."""
+
+    type: Literal["RequestUserInputAction"] = "RequestUserInputAction"
+    prompt: str = Field(..., description="Prompt/question presented to the user.")
+    options: list[str] | None = Field(None, description="Optional list of suggested choices.")
+    allow_free_form: bool = Field(True, description="Whether the user can answer outside the suggested options.")
+    question_id: str | None = Field(None, description="Optional stable identifier for mapping the answer.")
+    required: bool = Field(True, description="Whether answering this question is required to continue.")
+
+    @log_action("RequestUserInputAction")
+    async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
+        # Browser executor cannot prompt users directly; higher layers should
+        # intercept this action and perform the interaction.
+        return None
+
+
 class TypeAction(BaseAction):
     """Fills an input field identified by a selector with the given text. Clears the field first."""
 

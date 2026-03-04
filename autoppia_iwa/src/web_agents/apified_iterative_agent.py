@@ -8,8 +8,9 @@ import aiohttp
 
 from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT
 from autoppia_iwa.src.data_generation.tasks.classes import Task
-from autoppia_iwa.src.execution.actions.actions import BaseAction, NavigateAction
+from autoppia_iwa.src.execution.actions.actions import BaseAction, DoneAction, NavigateAction
 from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
+from autoppia_iwa.src.web_agents.act_protocol import ActExecutionMode, ActRequest, ActResponse
 from autoppia_iwa.src.web_agents.classes import IWebAgent
 
 
@@ -30,6 +31,7 @@ class ApifiedWebAgent(IWebAgent):
         timeout: float = 180,
         base_url: str | None = None,
         request_reasoning: bool = False,
+        max_actions_per_step: int | None = None,
     ):
         self.id = id or generate_random_web_agent_id()
         self.name = name or f"Agent {self.id}"
@@ -46,6 +48,9 @@ class ApifiedWebAgent(IWebAgent):
 
         self.timeout = float(timeout)
         self.request_reasoning = bool(request_reasoning)
+        if max_actions_per_step is not None and int(max_actions_per_step) <= 0:
+            raise ValueError("max_actions_per_step must be greater than 0 when provided.")
+        self.max_actions_per_step = int(max_actions_per_step) if max_actions_per_step is not None else None
         self.last_reasoning: str | None = None
         self.last_act_response: dict[str, Any] | None = None
 
@@ -62,18 +67,18 @@ class ApifiedWebAgent(IWebAgent):
         """
         Call the remote /act endpoint and translate the response into BaseAction instances.
         """
-        payload: dict[str, Any] = {
-            "task_id": getattr(task, "id", None),
-            "prompt": getattr(task, "prompt", None),
-            "url": self._force_localhost(url),
-            "snapshot_html": snapshot_html,
-            "screenshot": screenshot,
-            "step_index": int(step_index),
-            "web_project_id": getattr(task, "web_project_id", None),
-        }
-        if history is not None:
-            payload["history"] = history
-        payload["include_reasoning"] = self.request_reasoning
+        request = ActRequest(
+            task_id=getattr(task, "id", None),
+            prompt=getattr(task, "prompt", None),
+            url=self._force_localhost(url),
+            snapshot_html=snapshot_html,
+            screenshot=screenshot,
+            step_index=int(step_index),
+            web_project_id=getattr(task, "web_project_id", None),
+            history=history,
+            include_reasoning=self.request_reasoning,
+        )
+        payload = request.model_dump(mode="json", exclude_none=True)
 
         timeout = aiohttp.ClientTimeout(total=self.timeout)
         async with aiohttp.ClientSession(timeout=timeout) as session:
@@ -83,12 +88,9 @@ class ApifiedWebAgent(IWebAgent):
                     async with session.post(f"{self.base_url}{path}", json=payload) as response:
                         response.raise_for_status()
                         data = await response.json()
-                        self.last_act_response = data if isinstance(data, dict) else None
-                        self.last_reasoning = (
-                            str(data.get("reasoning")).strip()
-                            if isinstance(data, dict) and isinstance(data.get("reasoning"), str)
-                            else None
-                        )
+                        parsed_response = ActResponse.from_raw(data if isinstance(data, dict) else {})
+                        self.last_act_response = parsed_response.model_dump(mode="json", exclude_none=True)
+                        self.last_reasoning = parsed_response.reasoning.strip() if isinstance(parsed_response.reasoning, str) else None
                         return self._parse_actions_response(data)
                 except Exception:
                     continue
@@ -120,42 +122,34 @@ class ApifiedWebAgent(IWebAgent):
     # Helpers
     # ------------------------------------------------------------------ #
     def _parse_actions_response(self, data: dict[str, Any]) -> list[BaseAction]:
-        """
-        Accepts a flexible response format:
-          - {"actions": [ {type: "...", ...}, ... ]}
-          - {"action": { ... }}
-          - {"navigate_url": "http://..." }  (converted to NavigateAction)
-        """
-        actions_payload: list[dict[str, Any]] = []
-
-        if isinstance(data.get("actions"), list):
-            actions_payload = [a for a in data["actions"] if isinstance(a, dict)]
-        elif isinstance(data.get("action"), dict):
-            actions_payload = [data["action"]]
-        elif isinstance(data.get("navigate_url"), str):
-            actions_payload = [
-                {
-                    "type": "NavigateAction",
-                    "url": self._rewrite_to_remote(data["navigate_url"]),
-                }
-            ]
-
-        if not actions_payload:
+        try:
+            parsed = ActResponse.from_raw(data if isinstance(data, dict) else {})
+        except Exception:
             return []
+        actions_payload = parsed.actions
 
         actions: list[BaseAction] = []
         for raw in actions_payload:
             try:
-                if isinstance(raw, dict) and raw.get("type") in {"NavigateAction", "navigate"}:
-                    url = raw.get("url")
-                    raw["url"] = self._rewrite_to_remote(url)
                 action = BaseAction.create_action(raw)
+                if action is None:
+                    continue
                 if isinstance(action, NavigateAction):
                     # Ensure any navigate URLs are rewritten consistently.
                     action.url = self._rewrite_to_remote(getattr(action, "url", None))
                 actions.append(action)
             except Exception:
                 continue
+
+        if parsed.done and not actions:
+            actions.append(DoneAction(reason=parsed.reasoning))
+
+        if parsed.execution_mode == ActExecutionMode.SINGLE_STEP and actions:
+            actions = actions[:1]
+
+        if self.max_actions_per_step is not None and actions:
+            actions = actions[: self.max_actions_per_step]
+
         return actions
 
     @staticmethod

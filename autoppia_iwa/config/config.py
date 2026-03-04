@@ -38,10 +38,25 @@ CHUTES_TEMPERATURE = float(os.getenv("CHUTES_TEMPERATURE", 0.7))
 CHUTES_USE_BEARER = bool(strtobool(os.getenv("CHUTES_USE_BEARER", "False")))
 
 # Validate critical environment variables
-if LLM_PROVIDER == "openai" and not OPENAI_API_KEY:
-    raise ValueError("OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.")
-if LLM_PROVIDER == "chutes" and not CHUTES_API_KEY:
-    raise ValueError("CHUTES_API_KEY is required when LLM_PROVIDER is set to 'chutes'.")
+has_openai_credentials = bool(OPENAI_API_KEY)
+has_chutes_credentials = bool(CHUTES_API_KEY)
+
+if not has_openai_credentials and not has_chutes_credentials:
+    raise ValueError(
+        "No LLM credentials configured. Set OPENAI_API_KEY or CHUTES_API_KEY "
+        "(and LLM_PROVIDER=chutes if you want to use Chutes for generation)."
+    )
+
+if LLM_PROVIDER == "openai" and not has_openai_credentials:
+    raise ValueError(
+        "LLM_PROVIDER is set to 'openai' but OPENAI_API_KEY is missing. "
+        "Set OPENAI_API_KEY or switch to LLM_PROVIDER='chutes' with CHUTES_API_KEY."
+    )
+if LLM_PROVIDER == "chutes" and not has_chutes_credentials:
+    raise ValueError(
+        "LLM_PROVIDER is set to 'chutes' but CHUTES_API_KEY is missing. "
+        "Set CHUTES_API_KEY or switch to LLM_PROVIDER='openai' with OPENAI_API_KEY."
+    )
 
 # ============================
 # Application Configuration

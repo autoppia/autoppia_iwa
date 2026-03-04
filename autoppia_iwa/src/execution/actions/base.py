@@ -1,4 +1,5 @@
-# base.py
+import json
+import re
 from enum import Enum
 from typing import Any, ClassVar, Optional
 
@@ -114,20 +115,32 @@ class ActionRegistry:
 
     _registry: ClassVar[dict[str, type["BaseAction"]]] = {}
 
+    @staticmethod
+    def _normalize_action_key(action_type: str) -> str:
+        key = str(action_type).strip()
+        if key.endswith("Action"):
+            key = key[: -len("Action")]
+        # Allow function/tool style names like "request_user_input" or "request-user-input".
+        return re.sub(r"[\s_\-]", "", key).lower()
+
     @classmethod
     def register(cls, action_type: str, action_class: type["BaseAction"]):
         """Register an action class with a simplified key."""
-        # Register with a lowercase version of action_type without "Action"
-        action_key = action_type.replace("Action", "").lower()
+        action_key = cls._normalize_action_key(action_type)
         cls._registry[action_key] = action_class
 
     @classmethod
     def get(cls, action_type: str) -> type["BaseAction"]:
         """Retrieve an action class by its simplified key."""
-        action_key = action_type.replace("Action", "").lower()
+        action_key = cls._normalize_action_key(action_type)
         if action_key not in cls._registry:
             raise ValueError(f"Unsupported action type: {action_key}")
         return cls._registry[action_key]
+
+    @classmethod
+    def values(cls) -> list[type["BaseAction"]]:
+        """Return registered action classes without duplicates."""
+        return list(dict.fromkeys(cls._registry.values()))
 
 
 # ------------------------------------------------------
@@ -152,8 +165,9 @@ class BaseAction(BaseModel):
     def __init_subclass__(cls, **kwargs):
         """Automatically register subclasses in the ActionRegistry."""
         super().__init_subclass__(**kwargs)
-        if hasattr(cls, "type") and cls.type:
-            ActionRegistry.register(cls.type, cls)
+        action_type = getattr(cls, "type", None)
+        if isinstance(action_type, str) and action_type:
+            ActionRegistry.register(action_type, cls)
 
     async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         """
@@ -213,34 +227,128 @@ class BaseAction(BaseModel):
             logger.error(f"Invalid action_data: {action_data}. Expected a dictionary.")
             raise ValueError("action_data must be a dictionary.")
 
-        new_action_data = {}
-
-        if "selector" in action_data:
-            new_action_data["selector"] = action_data["selector"]
-        if "action" in action_data:
-            new_action_data.update({**action_data["action"]})
-        else:
-            new_action_data = action_data
-        action_type = new_action_data.get("type", "")
+        new_action_data = cls._normalize_action_data(action_data)
+        action_type = str(new_action_data.get("type", "")).strip()
 
         if not action_type:
             logger.error("Missing 'type' in action data.")
             raise ValueError("Action data is missing 'type' field.")
-        if action_type == "type":
+        if action_type == "type" and "text" not in new_action_data:
             new_action_data["text"] = new_action_data.get("value", "")
-
-        # Ensure the action type ends with "Action" for consistency
-        if not action_type.endswith("Action"):
-            new_action_data["type"] = f"{action_type.capitalize()}Action"
 
         try:
             # Retrieve the appropriate action class from the registry
             action_class = ActionRegistry.get(action_type)
+            canonical_type = None
+            type_field = getattr(action_class, "model_fields", {}).get("type")
+            if type_field is not None:
+                canonical_type = getattr(type_field, "default", None)
+            if not isinstance(canonical_type, str):
+                canonical_type = getattr(action_class, "type", None)
+            if isinstance(canonical_type, str):
+                new_action_data["type"] = canonical_type
             return action_class(**new_action_data)
         except ValueError as ve:
             logger.error(f"Failed to create action of type '{action_type}': {ve!s}")
         except Exception as e:
             logger.error(f"Error creating action of type '{action_type}': {e!s}")
+
+    @classmethod
+    def _normalize_action_data(cls, action_data: dict[str, Any]) -> dict[str, Any]:
+        payload = dict(action_data)
+
+        # Legacy wrapper: {"action": {...}, "selector": {...}}
+        if isinstance(payload.get("action"), dict):
+            action_payload = dict(payload["action"])
+            if "selector" in payload and "selector" not in action_payload:
+                action_payload["selector"] = payload["selector"]
+            payload = action_payload
+
+        # Function-calling payloads:
+        # {"name":"navigate","arguments":{...}}
+        # {"function":{"name":"navigate","arguments":"{...json...}"}}
+        function_payload = payload.get("function")
+        if isinstance(function_payload, dict):
+            payload = {
+                "name": function_payload.get("name"),
+                "arguments": function_payload.get("arguments"),
+            }
+
+        if "name" in payload and "type" not in payload:
+            name = payload.get("name")
+            arguments = cls._coerce_arguments(payload.get("arguments"))
+            normalized = dict(arguments)
+            normalized["type"] = normalized.get("type", name)
+            return normalized
+
+        return payload
+
+    @staticmethod
+    def _coerce_arguments(raw_arguments: Any) -> dict[str, Any]:
+        if isinstance(raw_arguments, dict):
+            return dict(raw_arguments)
+        if isinstance(raw_arguments, str):
+            raw_arguments = raw_arguments.strip()
+            if not raw_arguments:
+                return {}
+            try:
+                parsed = json.loads(raw_arguments)
+                if isinstance(parsed, dict):
+                    return parsed
+            except Exception:
+                return {}
+        return {}
+
+    @staticmethod
+    def _to_snake_case(name: str) -> str:
+        base = name[: -len("Action")] if name.endswith("Action") else name
+        return re.sub(r"(?<!^)(?=[A-Z])", "_", base).lower()
+
+    @classmethod
+    def tool_name(cls) -> str:
+        action_type = getattr(cls, "type", cls.__name__)
+        return cls._to_snake_case(action_type)
+
+    @classmethod
+    def tool_description(cls) -> str:
+        doc = (cls.__doc__ or "").strip().splitlines()
+        return doc[0] if doc else f"Execute {cls.tool_name()}."
+
+    @classmethod
+    def tool_parameters_schema(cls) -> dict[str, Any]:
+        schema = cls.model_json_schema()
+        properties = dict(schema.get("properties", {}))
+        properties.pop("type", None)
+        schema["properties"] = properties
+
+        required = [field for field in schema.get("required", []) if field != "type"]
+        if required:
+            schema["required"] = required
+        else:
+            schema.pop("required", None)
+        schema.pop("title", None)
+        return schema
+
+    @classmethod
+    def to_function_definition(cls) -> dict[str, Any]:
+        return {
+            "type": "function",
+            "function": {
+                "name": cls.tool_name(),
+                "description": cls.tool_description(),
+                "parameters": cls.tool_parameters_schema(),
+            },
+        }
+
+    @classmethod
+    def all_function_definitions(cls) -> list[dict[str, Any]]:
+        return [action_cls.to_function_definition() for action_cls in ActionRegistry.values()]
+
+    def to_tool_call(self) -> dict[str, Any]:
+        return {
+            "name": self.__class__.tool_name(),
+            "arguments": self.model_dump(mode="json", exclude={"type"}, exclude_none=True),
+        }
 
 
 class BaseActionWithSelector(BaseAction):
