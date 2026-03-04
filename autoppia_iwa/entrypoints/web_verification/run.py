@@ -37,7 +37,7 @@ from .web_verification_pipeline import WebVerificationPipeline
 
 
 def _is_development() -> bool:
-    """True when running in local development (DEVELOPMENT=1 or DEVELOPMENT=true)."""
+    """True when running in local development (DEMO_WEBS_DEPLOYMENT=local)."""
     return os.environ.get("DEMO_WEBS_DEPLOYMENT", "").lower() in ("local")
 
 
@@ -71,7 +71,7 @@ def validate_project_setup(web_project) -> tuple[bool, list[str]]:
     if not web_project.name:
         errors.append("❌ Project name is missing")
 
-    # 2. Validate URLs (https only in remote; http allowed in development)
+    # 2. Validate URLs (https only when not local; http allowed when DEMO_WEBS_DEPLOYMENT=local)
     is_development = _is_development()
     allowed_schemes = ("http://") if is_development else ("https://",)
     if not web_project.frontend_url:
