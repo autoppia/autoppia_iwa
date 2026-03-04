@@ -29,6 +29,7 @@ class ApifiedWebAgent(IWebAgent):
         name: str | None = None,
         timeout: float = 180,
         base_url: str | None = None,
+        request_reasoning: bool = False,
     ):
         self.id = id or generate_random_web_agent_id()
         self.name = name or f"Agent {self.id}"
@@ -44,6 +45,9 @@ class ApifiedWebAgent(IWebAgent):
                 self.base_url = f"http://{host}"
 
         self.timeout = float(timeout)
+        self.request_reasoning = bool(request_reasoning)
+        self.last_reasoning: str | None = None
+        self.last_act_response: dict[str, Any] | None = None
 
     async def act(
         self,
@@ -69,6 +73,7 @@ class ApifiedWebAgent(IWebAgent):
         }
         if history is not None:
             payload["history"] = history
+        payload["include_reasoning"] = self.request_reasoning
 
         timeout = aiohttp.ClientTimeout(total=self.timeout)
         async with aiohttp.ClientSession(timeout=timeout) as session:
@@ -78,6 +83,12 @@ class ApifiedWebAgent(IWebAgent):
                     async with session.post(f"{self.base_url}{path}", json=payload) as response:
                         response.raise_for_status()
                         data = await response.json()
+                        self.last_act_response = data if isinstance(data, dict) else None
+                        self.last_reasoning = (
+                            str(data.get("reasoning")).strip()
+                            if isinstance(data, dict) and isinstance(data.get("reasoning"), str)
+                            else None
+                        )
                         return self._parse_actions_response(data)
                 except Exception:
                     continue

@@ -298,6 +298,21 @@ class NavigateAction(BaseAction):
             raise ValueError("Invalid state: NavigateAction has no target.")
 
 
+class DoneAction(BaseAction):
+    """Explicit completion signal for step-wise agent loops.
+
+    This action intentionally has no browser side-effects. Executors can treat
+    it as a successful no-op and higher-level runners can stop deterministically.
+    """
+
+    type: Literal["DoneAction"] = "DoneAction"
+    reason: str | None = Field(None, description="Optional completion reason for logs/debugging.")
+
+    @log_action("DoneAction")
+    async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
+        return None
+
+
 class TypeAction(BaseAction):
     """Fills an input field identified by a selector with the given text. Clears the field first."""
 
