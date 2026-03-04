@@ -1,0 +1,82 @@
+name: SonarCloud Analysis
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - fix/**
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  sonarcloud:
+    name: SonarCloud Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write  # Required for PR comments
+      issues: write  # Required for issue comments
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for better analysis
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: Audit Python dependencies (pip-audit)
+        run: |
+          pip install pip-audit
+          mkdir -p reports
+          # Capture only stdout (JSON); stderr would corrupt the file
+          pip-audit -f json 2>/dev/null > reports/pip-audit.json || true
+        continue-on-error: true
+
+      - name: Run tests with coverage
+        run: |
+          pytest tests/ --cov=autoppia_iwa --cov=modules --cov=scripts --cov-report=xml --cov-report=term
+        continue-on-error: true  # Continue even if tests fail
+
+      - name: Count dependency vulnerabilities (pip-audit)
+        id: pip_audit_count
+        run: |
+          PIP_AUDIT_COUNT=$(python3 .github/scripts/pip_audit_count.py 2>/dev/null || echo "0")
+          echo "pip_audit_vuln_count=$PIP_AUDIT_COUNT" >> "$GITHUB_OUTPUT"
+          echo "pip-audit vulnerability count: $PIP_AUDIT_COUNT"
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: List dependency vulnerabilities (pip-audit)
+        if: steps.pip_audit_count.outputs.pip_audit_vuln_count != '0'
+        run: |
+          pip install -q pip-audit
+          pip-audit
+
+      - name: Fail if dependency vulnerabilities detected
+        if: steps.pip_audit_count.outputs.pip_audit_vuln_count != '0'
+        run: |
+          echo "::error::Dependency vulnerabilities found (pip-audit: ${{ steps.pip_audit_count.outputs.pip_audit_vuln_count }}). Fix them before merging."
+          exit 1

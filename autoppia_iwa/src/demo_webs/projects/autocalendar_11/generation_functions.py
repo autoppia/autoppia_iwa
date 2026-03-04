@@ -3,8 +3,18 @@ from collections.abc import Callable
 from datetime import date, datetime, time, timedelta
 from typing import Any
 
+from loguru import logger
+
 from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
-from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_dict, parse_datetime
+from autoppia_iwa.src.demo_webs.projects.shared_utils import (
+    constraint_value_for_datetime_date,
+    constraint_value_for_numeric,
+    constraint_value_for_time,
+    create_constraint_dict,
+    parse_datetime,
+    pick_different_value_from_dataset,
+    random_str_not_contained_in,
+)
 
 from ..criterion_helper import ComparisonOperator
 from .data import (
@@ -32,12 +42,11 @@ from .data_utils import fetch_data
 
 async def _ensure_event_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Extract events data from the cache, or fetch from server if not available."""
+    _ = dataset  # Unused parameter kept for backward compatibility
     seed = get_seed_from_url(task_url)
     events = await fetch_data(seed_value=seed)
-    dataset = {"events": events}
-
-    if dataset and "events" in dataset:
-        return dataset["events"]
+    if isinstance(events, list):
+        return events
     return []
 
 
@@ -52,39 +61,16 @@ def _generate_constraint_value(
     Handles various data types and operators robustly.
     """
     if isinstance(field_value, datetime | date):
-        delta_days = random.randint(1, 5)
-        if operator == ComparisonOperator.GREATER_THAN:
-            return field_value - timedelta(days=delta_days)
-        if operator == ComparisonOperator.LESS_THAN:
-            return field_value + timedelta(days=delta_days)
-        if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS}:
-            return field_value
-        if operator == ComparisonOperator.NOT_EQUALS:
-            return field_value + timedelta(days=delta_days + 1)
+        return constraint_value_for_datetime_date(operator, field_value)
 
     if isinstance(field_value, time):
-        delta_minutes = random.choice([5, 10, 15, 30, 60])
-
-        def add_minutes(t, mins):
-            full_dt = datetime.combine(date.today(), t) + timedelta(minutes=mins)
-            return full_dt.time()
-
-        if operator == ComparisonOperator.GREATER_THAN:
-            return add_minutes(field_value, -delta_minutes)
-        if operator == ComparisonOperator.LESS_THAN:
-            return add_minutes(field_value, delta_minutes)
-        if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS}:
-            return field_value
-        if operator == ComparisonOperator.NOT_EQUALS:
-            valid = [v[field] for v in dataset if v.get(field) and v.get(field) != field_value]
-            return random.choice(valid) if valid else add_minutes(field_value, delta_minutes + 5)
+        return constraint_value_for_time(operator, field_value, field, dataset)
 
     if operator == ComparisonOperator.EQUALS:
         return field_value
 
     if operator == ComparisonOperator.NOT_EQUALS:
-        valid = [v[field] for v in dataset if v.get(field) and v.get(field) != field_value]
-        return random.choice(valid) if valid else None
+        return pick_different_value_from_dataset(dataset, field, field_value, None)
 
     if operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
         longest = max(field_value.split(), key=len)
@@ -92,17 +78,11 @@ def _generate_constraint_value(
 
         if random_picker_start == len(longest) - 1:
             return longest[random_picker_start]  # just return last char
-        else:
-            random_picker_end = random.randint(random_picker_start + 1, len(longest))
-            return longest[random_picker_start:random_picker_end]
+        random_picker_end = random.randint(random_picker_start + 1, len(longest))
+        return longest[random_picker_start:random_picker_end]
 
     if operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
-        alphabet = "abcdefghijklmnopqrstuvwxyz"
-        for _ in range(100):
-            test_str = "".join(random.choice(alphabet) for _ in range(3))
-            if test_str.lower() not in field_value.lower():
-                return test_str
-        return "xyz"  # fallback
+        return random_str_not_contained_in(field_value)
 
     if operator in {
         ComparisonOperator.GREATER_THAN,
@@ -110,15 +90,19 @@ def _generate_constraint_value(
         ComparisonOperator.GREATER_EQUAL,
         ComparisonOperator.LESS_EQUAL,
     } and isinstance(field_value, int | float):
-        delta = random.uniform(0.5, 2.0) if isinstance(field_value, float) else random.randint(1, 5)
-        if operator == ComparisonOperator.GREATER_THAN:
-            return field_value - delta
-        if operator == ComparisonOperator.LESS_THAN:
-            return field_value + delta
-        if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
-            return field_value
+        return constraint_value_for_numeric(operator, field_value)
 
     return None
+
+
+def _generate_constraints_from_single_field(
+    field_name: str,
+    values: list[Any],
+    operators_map: dict[str, list],
+) -> list[dict[str, Any]]:
+    """Generate constraints for a single field with a fixed value list. Reduces duplication across single-field generators."""
+    field_map = {field_name: {"values": values}}
+    return _generate_constraints_for_event(field_map, operators_map)
 
 
 def _generate_constraints_for_event(field_map: dict[str, dict[str, Any]], operators_map: dict[str, list], special_handlers: dict[str, Callable] | None = None) -> list[dict[str, Any]]:
@@ -162,8 +146,6 @@ def _handle_time_constraints(context: dict) -> list[dict[str, Any]]:
     start_minute = random.choice([0, 30])
 
     end_hour = start_hour
-    end_minute = start_minute
-
     if start_minute == 0:
         end_minute = 30
     else:
@@ -207,10 +189,7 @@ def generate_create_calendar_constraints() -> list[dict[str, Any]]:
 
 def generate_unselect_calendar_constraints() -> list[dict[str, Any]]:
     """Generate constraints for selecting/deselecting a calendar."""
-    field_map = {
-        "calendar_name": {"values": CALENDAR_NAMES},
-    }
-    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_UNSELECT_CALENDAR_MAP)
+    return _generate_constraints_from_single_field("calendar_name", CALENDAR_NAMES, FIELD_OPERATORS_UNSELECT_CALENDAR_MAP)
 
 
 def generate_cell_clicked_constraints() -> list[dict[str, Any]]:
@@ -328,7 +307,7 @@ async def generate_event_wizard_open_constraints(task_url: str | None = None, da
     event_data = await _ensure_event_dataset(task_url, dataset)
     constraints_list = []
     if not event_data:
-        print("[ERROR] No event data provided")
+        logger.error("No event data provided")
         return constraints_list
     possible_fields = list(FIELD_OPERATORS_WIZARD_OPEN.keys())
     selected_fields = random.sample(possible_fields, k=random.randint(1, len(possible_fields)))
@@ -360,17 +339,14 @@ async def generate_event_wizard_open_constraints(task_url: str | None = None, da
 
 def generate_search_submit_constraints() -> list[dict[str, Any]]:
     """Generate constraints for submitting a search query."""
-    field_map = {"query": {"values": CALENDAR_NAMES}}
-    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_SEARCH_SUBMIT_MAP)
+    return _generate_constraints_from_single_field("query", CALENDAR_NAMES, FIELD_OPERATORS_SEARCH_SUBMIT_MAP)
 
 
 def generate_event_reminder_constraints() -> list[dict[str, Any]]:
     """Generate constraints for adding an event reminder."""
-    field_map = {"minutes": {"values": REMINDER_MINUTES}}
-    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_EVENT_REMINDER_MAP)
+    return _generate_constraints_from_single_field("minutes", REMINDER_MINUTES, FIELD_OPERATORS_EVENT_REMINDER_MAP)
 
 
 def generate_event_attendee_constraints() -> list[dict[str, Any]]:
     """Generate constraints for adding an event attendee."""
-    field_map = {"email": {"values": ATTENDEE_EMAILS}}
-    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_EVENT_ATTENDEE_MAP)
+    return _generate_constraints_from_single_field("email", ATTENDEE_EMAILS, FIELD_OPERATORS_EVENT_ATTENDEE_MAP)

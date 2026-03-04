@@ -52,6 +52,10 @@ def _log_task_generation(message: str, context: str = "TASK_GENERATION") -> None
 
 
 class SimpleTaskGenerator:
+    # ============================================================================
+    # INITIALIZATION
+    # ============================================================================
+
     def __init__(
         self,
         web_project: WebProject,
@@ -61,6 +65,10 @@ class SimpleTaskGenerator:
         self.llm_service = llm_service
         self._seed_cache: dict[str, int] = {}
         self._dataset_cache: dict[tuple, Any] = {}
+
+    # ============================================================================
+    # PUBLIC METHODS - TASK GENERATION
+    # ============================================================================
 
     async def generate(self, prompts_per_use_case: int = 1, use_cases: list[str] | None = None, dynamic: bool = True) -> list[Task]:
         """
@@ -100,7 +108,6 @@ class SimpleTaskGenerator:
                 traceback.print_exc()
                 continue
 
-        _log_task_generation(f"Total generated tasks across all use cases: {len(all_tasks)}", context="SUMMARY")
         return all_tasks
 
     async def generate_tasks_for_use_case(self, use_case: UseCase, number_of_prompts: int = 1, dynamic: bool = True) -> list[Task]:
@@ -202,6 +209,10 @@ class SimpleTaskGenerator:
 
         random.shuffle(tasks)
         return tasks
+
+    # ============================================================================
+    # DATASET LOADING
+    # ============================================================================
 
     async def _preload_dataset_for_use_case(self, use_case: UseCase, seed: int) -> Any:
         """
@@ -409,6 +420,10 @@ class SimpleTaskGenerator:
 
         return None
 
+    # ============================================================================
+    # URL AND SEED UTILITIES
+    # ============================================================================
+
     def _get_base_url(self) -> str:
         return self.web_project.urls[0] if self.web_project.urls else self.web_project.frontend_url
 
@@ -426,12 +441,12 @@ class SimpleTaskGenerator:
         new_query = urlencode(query_params, doseq=True)
         return urlunparse(parsed._replace(query=new_query))
 
-    async def _build_constraint_context(self, base_url: str, dynamic: bool | None) -> ConstraintContext:
+    def _build_constraint_context(self, base_url: str, dynamic: bool | None) -> ConstraintContext:
         constraint_url = self._build_constraint_url(base_url, dynamic)
-        base_seed = await self._resolve_seed(constraint_url)
+        base_seed = self._resolve_seed(constraint_url)
         return ConstraintContext(url=constraint_url, seed=base_seed)
 
-    async def _resolve_seed(self, url: str) -> int:
+    def _resolve_seed(self, url: str) -> int:
         if url in self._seed_cache:
             return self._seed_cache[url]
         seed = get_seed_from_url(url)
@@ -465,7 +480,7 @@ class SimpleTaskGenerator:
             return
 
         try:
-            base_seed = await self._resolve_seed(base_url)
+            base_seed = self._resolve_seed(base_url)
             gen_module_path = f"autoppia_iwa.src.demo_webs.projects.{module_name}.generation_functions"
             dataset = await self._load_dataset_for_module(gen_module_path, base_seed)
             dataset_count = self._dataset_length(dataset)
@@ -474,37 +489,6 @@ class SimpleTaskGenerator:
             logger.debug(f"Updated use cases prompt info for {self.web_project.id} with API data")
         except Exception as exc:
             logger.debug(f"Could not update use cases prompt info for {self.web_project.id}: {exc}")
-
-    async def _call_llm_with_retry(self, llm_prompt: str, additional_system_prompt: str | None = None) -> list[str]:
-        """
-        Calls the LLM with the given prompt, parsing the response as a list of strings with retry.
-        Returns a list of prompt strings.
-        """
-        base_system_prompt = "You are a helpful assistant that generates user tasks as a list of strings."
-        system_prompt = f"{base_system_prompt} {additional_system_prompt}" if additional_system_prompt else base_system_prompt
-
-        messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": llm_prompt}]
-
-        # Print temperature being used for task generation
-        task_gen_temp = self.llm_service.config.temperature if hasattr(self.llm_service, "config") else "unknown"
-        print(f"🌡️  Task Generation: Calling LLM with temperature={task_gen_temp}")
-
-        for attempt in range(self.max_retries):
-            try:
-                resp_text = await self.llm_service.async_predict(messages=messages, json_format=True)
-                parsed_data = self._parse_llm_response(resp_text)
-                if parsed_data:
-                    return parsed_data
-                logger.warning(f"Attempt {attempt + 1}: Could not parse LLM response, retrying...")
-                if attempt < self.max_retries - 1:
-                    await asyncio.sleep(self.retry_delay * (attempt + 1))
-            except Exception as e:
-                logger.error(f"Error on LLM call attempt {attempt + 1}: {e!s}")
-                if attempt < self.max_retries - 1:
-                    await asyncio.sleep(self.retry_delay * (attempt + 1))
-
-        logger.error(f"All {self.max_retries} attempts to parse LLM response have failed.")
-        return []
 
     def _build_task_url_with_seed(self, dynamic: bool = True) -> str:
         """Build the task URL with random seed if dynamic generation is enabled."""
@@ -531,9 +515,8 @@ class SimpleTaskGenerator:
         system_prompt = "You are a helpful assistant that generates user tasks as a list of strings."
         messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": llm_prompt}]
 
-        # Print temperature being used for task generation
         task_gen_temp = self.llm_service.config.temperature if hasattr(self.llm_service, "config") else "unknown"
-        print(f"🌡️  Task Generation: Calling LLM with temperature={task_gen_temp}")
+        _log_task_generation(f"Calling LLM (temperature={task_gen_temp})", context="LLM")
 
         for attempt in range(max_retries):
             try:

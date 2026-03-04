@@ -26,7 +26,7 @@ class WebVerificationConfig:
 
     # Dynamic verification
     dynamic_verification_enabled: bool = True
-    seed_values: list[int] = None  # Default seeds to test
+    seed_values: list[int] | None = None  # Default seeds to test
 
     # Output
     output_dir: str = "./verification_results"

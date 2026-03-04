@@ -61,7 +61,7 @@ class RealWebTaskConfig(BaseModel):
             raise ValueError("Payload validation failed: " + "; ".join(errors))
 
 
-@app.post("/test-judge-agent")
+@app.post("/test-judge-agent", responses={500: {"description": "Internal server error - benchmark execution failed"}})
 async def run_real_web_task(config: RealWebTaskConfig):
     try:
         # Generate unique agent id and name
