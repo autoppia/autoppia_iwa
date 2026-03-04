@@ -108,7 +108,6 @@ class SimpleTaskGenerator:
                 traceback.print_exc()
                 continue
 
-        _log_task_generation(f"Total generated tasks across all use cases: {len(all_tasks)}", context="SUMMARY")
         return all_tasks
 
     async def generate_tasks_for_use_case(self, use_case: UseCase, number_of_prompts: int = 1, dynamic: bool = True) -> list[Task]:
@@ -516,9 +515,8 @@ class SimpleTaskGenerator:
         system_prompt = "You are a helpful assistant that generates user tasks as a list of strings."
         messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": llm_prompt}]
 
-        # Print temperature being used for task generation
         task_gen_temp = self.llm_service.config.temperature if hasattr(self.llm_service, "config") else "unknown"
-        print(f"🌡️  Task Generation: Calling LLM with temperature={task_gen_temp}")
+        _log_task_generation(f"Calling LLM (temperature={task_gen_temp})", context="LLM")
 
         for attempt in range(max_retries):
             try:

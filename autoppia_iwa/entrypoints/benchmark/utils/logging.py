@@ -25,22 +25,25 @@ def setup_logging(log_file: str):
     """Configure loguru logger with enhanced formatting"""
     logger.remove()
 
+    # Uniform timestamp format (with milliseconds) for all logs
+    time_fmt = "YYYY-MM-DD HH:mm:ss.SSS"
+
     # Console logging with colors and better formatting
     logger.add(
         sys.stderr,
         level="INFO",
-        format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+        format=f"<green>{{time:{time_fmt}}}</green> | <level>{{level: <8}}</level> | <cyan>{{name}}</cyan>:<cyan>{{function}}</cyan>:<cyan>{{line}}</cyan> - <level>{{message}}</level>",
         colorize=True,
         backtrace=True,
         diagnose=True,
         filter=lambda record: record["level"].name in ["INFO", "WARNING", "ERROR", "SUCCESS", "DEBUG", "EVALUATION"],
     )
 
-    # File logging with more detail
+    # File logging with more detail (same timestamp format)
     logger.add(
         log_file,
         level="DEBUG",
-        format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}",
+        format=f"{{time:{time_fmt}}} | {{level: <8}} | {{name}}:{{function}}:{{line}} - {{message}}",
         rotation="10 MB",
         retention="7 days",
         compression="zip",
