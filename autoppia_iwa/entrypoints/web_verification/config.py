@@ -38,7 +38,7 @@ class WebVerificationConfig:
             self.seed_values = [1, 50, 100, 200, 300]
 
         if self.iwap_base_url is None:
-            # Try to get from environment variable or use default IWAP API URL
+            # Try to get from environment variable or use default local IWAP API URL
             import os
 
             self.iwap_base_url = os.getenv("IWAP_BASE_URL", "https://api-leaderboard.autoppia.com")
