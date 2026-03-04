@@ -3,7 +3,7 @@ markdownify
 matplotlib==3.9.3
 networkx==3.3
 numpy==2.0.2
-gymnasium==0.29.1
+gymnasium==1.2.3
 playwright==1.49.0
 pydantic==2.11.5
 python-dotenv==1.0.1
