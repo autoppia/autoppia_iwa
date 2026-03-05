@@ -26,7 +26,7 @@ def _alias_submodule(name: str) -> None:
 _alias_submodule("src")
 _alias_submodule("config")
 
-__all__ = ["AffineEnvConfig"]
+__all__: list[str] = []
 
 
 def __getattr__(name):
