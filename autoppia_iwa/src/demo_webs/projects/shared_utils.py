@@ -1,4 +1,5 @@
 import datetime
+import random
 from typing import Any
 
 from dateutil import parser
@@ -62,6 +63,81 @@ def create_constraint_dict(field: str, operator: ComparisonOperator, value: Any)
     return {"field": field, "operator": operator, "value": value}
 
 
+def random_str_not_contained_in(text: str, length: int = 3, max_attempts: int = 100, fallback: str = "xyz") -> str:
+    """Return a random lowercase string of given length not contained in text (case-insensitive). Used for NOT_CONTAINS constraint value generation."""
+    alphabet = "abcdefghijklmnopqrstuvwxyz"
+    for _ in range(max_attempts):
+        test_str = "".join(random.choice(alphabet) for _ in range(length))
+        if test_str.lower() not in text.lower():
+            return test_str
+    return fallback
+
+
+def pick_different_value_from_dataset(
+    dataset: list[dict],
+    field: str,
+    exclude_value: Any,
+    fallback: Any = None,
+) -> Any:
+    """Return a random value for field from dataset that is not exclude_value, or fallback. Shared by generation_functions modules."""
+    valid = [v[field] for v in dataset if v.get(field) is not None and v.get(field) != exclude_value]
+    return random.choice(valid) if valid else fallback
+
+
+def constraint_value_for_datetime_date(operator: ComparisonOperator, field_value: datetime.datetime | datetime.date) -> Any:
+    """Return constraint value for datetime/date operators (GREATER_THAN, LESS_THAN, etc.). Shared by generation_functions modules."""
+    delta_days = random.randint(1, 5)
+    if operator == ComparisonOperator.GREATER_THAN:
+        return field_value - datetime.timedelta(days=delta_days)
+    if operator == ComparisonOperator.LESS_THAN:
+        return field_value + datetime.timedelta(days=delta_days)
+    if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS}:
+        return field_value
+    if operator == ComparisonOperator.NOT_EQUALS:
+        return field_value + datetime.timedelta(days=delta_days + 1)
+    return None
+
+
+def constraint_value_for_time(
+    operator: ComparisonOperator,
+    field_value: datetime.time,
+    field: str,
+    dataset: list[dict],
+) -> Any:
+    """Return constraint value for time operators. Shared by generation_functions modules."""
+
+    def add_minutes(t: datetime.time, mins: int) -> datetime.time:
+        full_dt = datetime.datetime.combine(datetime.date.today(), t) + datetime.timedelta(minutes=mins)
+        return full_dt.time()
+
+    delta_minutes = random.choice([5, 10, 15, 30, 60])
+    if operator == ComparisonOperator.GREATER_THAN:
+        return add_minutes(field_value, -delta_minutes)
+    if operator == ComparisonOperator.LESS_THAN:
+        return add_minutes(field_value, delta_minutes)
+    if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS}:
+        return field_value
+    if operator == ComparisonOperator.NOT_EQUALS:
+        return pick_different_value_from_dataset(dataset, field, field_value, add_minutes(field_value, delta_minutes + 5))
+    return None
+
+
+def constraint_value_for_numeric(operator: ComparisonOperator, field_value: int | float, round_digits: int | None = None) -> Any:
+    """Return constraint value for numeric comparison operators. If round_digits is set (e.g. 2), values are rounded. Shared by generation_functions modules."""
+    delta = random.uniform(0.5, 2.0) if isinstance(field_value, float) else random.randint(1, 5)
+    if operator == ComparisonOperator.GREATER_THAN:
+        out = field_value - delta
+    elif operator == ComparisonOperator.LESS_THAN:
+        out = field_value + delta
+    elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+        return field_value
+    else:
+        return None
+    if round_digits is not None:
+        return round(out, round_digits)
+    return out
+
+
 def generate_mock_dates():
     """
     Generates a list of mock dates strictly in the future for the next 20 days,
@@ -74,7 +150,7 @@ def generate_mock_dates():
         future_date = today + datetime.timedelta(days=i)
         mock_dates_raw.append(future_date.replace(hour=19, minute=0, second=0, microsecond=0))
 
-    return sorted(list(set(mock_dates_raw)))
+    return sorted(set(mock_dates_raw))
 
 
 def generate_mock_date_strings(dates: list):
@@ -85,7 +161,7 @@ def generate_mock_date_strings(dates: list):
     for d in dates:
         if isinstance(d, datetime.datetime | datetime.date):
             date_strings.append(d.strftime("%b %d"))
-    return sorted(list(set(date_strings)))
+    return sorted(set(date_strings))
 
 
 def parse_datetime(value: str | None) -> datetime.datetime | None:
@@ -135,7 +211,7 @@ def validate_date_field(field_value, criterion):
         if isinstance(val, str):
             try:
                 return datetime.fromisoformat(val).date() if "T" in val else date.fromisoformat(val)
-            except Exception:
+            except (ValueError, TypeError):
                 return None
         elif isinstance(val, datetime):
             return val.date()
@@ -154,7 +230,7 @@ def validate_date_field(field_value, criterion):
         except KeyError:
             logger.error("Unknown comparison operator for date field: %s", op)
             return False
-        except Exception as e:
+        except (TypeError, ValueError) as e:
             logger.error(f"Error validating date field: {e}")
             return False
     elif isinstance(criterion, datetime) and isinstance(field_value, datetime):
@@ -195,7 +271,7 @@ def validate_time_field(field_value, criterion):
             try:
                 # Accepts "HH:MM[:SS[.ffffff]]"
                 return time.fromisoformat(val)
-            except Exception:
+            except (ValueError, TypeError):
                 return None
         elif isinstance(val, datetime):
             return val.time()
@@ -214,7 +290,7 @@ def validate_time_field(field_value, criterion):
         except KeyError:
             logger.error("Unknown comparison operator for time field: %s", op)
             return False
-        except Exception as e:
+        except (TypeError, ValueError) as e:
             logger.error(f"Error validating time field: {e}")
             return False
     elif isinstance(criterion, datetime) and isinstance(field_value, datetime):

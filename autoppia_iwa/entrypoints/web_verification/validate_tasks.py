@@ -1,3 +1,4 @@
+import asyncio
 import json
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
@@ -7,6 +8,19 @@ VERIFICATION_DIR = PROJECT_BASE_DIR.parent / "verification_results"
 PROJECT_IDS = [
     "autohealth",
 ]
+
+
+def _read_json_file(file_path):
+    """Synchronous helper function for reading JSON file."""
+    with open(file_path, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _write_json_file(file_path, data):
+    """Synchronous helper function for writing JSON file."""
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(file_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
 
 
 async def validate_operator_with_llm(prompt, constraint, llm_service):
@@ -77,8 +91,8 @@ async def run_validation(project_id, llm_service):
         print(f"❌ No existe el archivo de errores para: {project_id}")
         return
 
-    with open(input_file) as f:
-        data = json.load(f)
+    # Use async file I/O to avoid blocking event loop
+    data = await asyncio.to_thread(_read_json_file, input_file)
     use_cases = data.get("use_cases", {})
 
     all_results = {"project_id": project_id, "summary": {"total": 0, "correct": 0, "incorrect": 0}, "details": []}
@@ -102,8 +116,8 @@ async def run_validation(project_id, llm_service):
                 print(f"   ⚠️ Tarea {task.get('task_id')[:8]}... MAL: {msg}")
 
     # Guardamos el nuevo archivo JSON
-    with open(output_file, "w", encoding="utf-8") as f:
-        json.dump(all_results, f, indent=2, ensure_ascii=False)
+    # Use async file I/O to avoid blocking event loop
+    await asyncio.to_thread(_write_json_file, output_file, all_results)
 
     print(f"\n💾 Resultados guardados en: {output_file}")
 

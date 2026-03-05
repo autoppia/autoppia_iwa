@@ -57,7 +57,7 @@ def _generate_allowed_years_list(books_data: list[dict]) -> list[int]:
     """Generate a list of unique years from books data."""
     if not books_data:
         return []
-    return sorted(list(set(book.get("year") for book in books_data if book.get("year") is not None)))
+    return sorted({book.get("year") for book in books_data if book.get("year") is not None})
 
 
 def _generate_allowed_genres_list(books_data: list[dict]) -> list[str]:
@@ -71,7 +71,7 @@ def _generate_allowed_genres_list(books_data: list[dict]) -> list[str]:
             genres.update(book_genres)
         elif isinstance(book_genres, str):
             genres.add(book_genres)
-    return sorted(list(genres))
+    return sorted(genres)
 
 
 ###############################################################################
@@ -79,8 +79,8 @@ def _generate_allowed_genres_list(books_data: list[dict]) -> list[str]:
 ###############################################################################
 REGISTRATION_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Be sure to add instruction to register using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
-2. Only phrase it like: "Register with the following username:<username>,email:<email> and password:<password>" etc
+1. Be sure to add instruction to register using username '<signup_username>' and password '<signup_password> (**strictly** containing both the username and password placeholders)'.
+2. Only phrase it like: "Register with the following username:<signup_username>,email:<signup_email> and password:<signup_password>" etc
 3. Avoid mentioning anything other than mentioned above.
 All email must finish with @gmail.com, so pay attention to the constraints.
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
@@ -96,16 +96,16 @@ REGISTRATION_USE_CASE = UseCase(
     additional_prompt_info=REGISTRATION_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
-            "prompt_for_task_generation": "Register with the following username:<username>,email:<email> and password:<password>",
+            "prompt": "Register with the following username:<signup_username>,email:<signup_email> and password:<signup_password>",
+            "prompt_for_task_generation": "Register with the following username:<signup_username>,email:<signup_email> and password:<signup_password>",
         },
         {
-            "prompt": "Create a new account with username:<username>,email:<email> and password:<password>",
-            "prompt_for_task_generation": "Create a new account with username:<username>,email:<email> and password:<password>",
+            "prompt": "Create a new account with username:<signup_username>,email:<signup_email> and password:<signup_password>",
+            "prompt_for_task_generation": "Create a new account with username:<signup_username>,email:<signup_email> and password:<signup_password>",
         },
         {
-            "prompt": "Fill the registration form with username:<username>, email:<email> and password:<password>",
-            "prompt_for_task_generation": "Fill the registration form with username:<username>, email:<email> and password:<password>",
+            "prompt": "Fill the registration form with username:<signup_username>, email:<signup_email> and password:<signup_password>",
+            "prompt_for_task_generation": "Fill the registration form with username:<signup_username>, email:<signup_email> and password:<signup_password>",
         },
     ],
 )
@@ -496,43 +496,43 @@ ADD_TO_READING_LIST_USE_CASE = UseCase(
     event=AddToReadingListEvent,
     event_source_code=AddToReadingListEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
-    constraints_generator=generate_book_details_constraints,
+    constraints_generator=generate_book_constraints,
     examples=[
         {
-            "prompt": "Add to reading list 'The Housemaid Is Watching' book",
-            "prompt_for_task_generation": "Add to reading list <book> book",
+            "prompt": "First, login for the following username:<username> and password:<password> and then add to reading list 'The Housemaid Is Watching' book",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list <book> book",
         },
         {
-            "prompt": "Add to reading list a book 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
-            "prompt_for_task_generation": "Add to reading list a book <book> by <author>",
+            "prompt": "First, login for the following username:<username> and password:<password> and then add to reading list a book 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a book <book> by <author>",
         },
         {
-            "prompt": "Add to reading list a Science book from 2022",
-            "prompt_for_task_generation": "Add to reading list a <genre> book from <year>",
+            "prompt": "First, login for the following username:<username> and password:<password> and then add to reading list a Science book from 2022",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a <genre> book from <year>",
         },
         {
-            "prompt": "Add to reading list a book with rating above 4.5",
-            "prompt_for_task_generation": "Add to reading list a book with rating above <rating>",
+            "prompt": "First, login for the following username:<username> and password:<password> and then add to reading list a book with rating above 4.5",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a book with rating above <rating>",
         },
         {
-            "prompt": "Add to reading list a 'Fourth Wing' book",
-            "prompt_for_task_generation": "Add to reading list a <book> book",
+            "prompt": "First, login for the following username:<username> and password:<password> and then add to reading list a 'Fourth Wing' book",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a <book> book",
         },
         {
-            "prompt": "Add to reading list a 'Magazine' book less than 1000 pages long",
-            "prompt_for_task_generation": "Add to reading list a <genre> book less than <page_count> pages long",
+            "prompt": "First, login for the following username:<username> and password:<password> and then add to reading list a 'Magazine' book less than 1000 pages long",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a <genre> book less than <page_count> pages long",
         },
         {
-            "prompt": "Add to reading list a book from the 2010s directed by 'Ron Larson'",
-            "prompt_for_task_generation": "Add to reading list a book from the <decade> directed by '<author>'",
+            "prompt": "First, login for the following username:<username> and password:<password> and then add to reading list a book from the 2010s directed by 'Ron Larson'",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a book from the <decade> directed by '<author>'",
         },
         {
-            "prompt": "Add to reading list a 'Science' book not written by 'Grant Morrison'",
-            "prompt_for_task_generation": "Add to reading list a <genre> book not written by <author>",
+            "prompt": "First, login for the following username:<username> and password:<password> and then add to reading list a 'Science' book not written by 'Grant Morrison'",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a <genre> book not written by <author>",
         },
         {
-            "prompt": "Add to reading list a highest-rated 'Lidia Matticchio Bastianich' book",
-            "prompt_for_task_generation": "Add to reading list a highest-rated <author> book",
+            "prompt": "First, login for the following username:<username> and password:<password> and then add to reading list a highest-rated 'Lidia Matticchio Bastianich' book",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a highest-rated <author> book",
         },
     ],
 )
@@ -566,23 +566,23 @@ REMOVE_FROM_READING_LIST_USE_CASE = UseCase(
     event=RemoveFromReadingListEvent,
     event_source_code=RemoveFromReadingListEvent.get_source_code_of_class(),
     additional_prompt_info=None,
-    constraints_generator=generate_book_details_constraints,
+    constraints_generator=generate_book_constraints,
     examples=[
         {
-            "prompt": "Remove from reading list 'The Housemaid Is Watching' book",
-            "prompt_for_task_generation": "Remove from reading list <book> book",
+            "prompt": "First, login for the following username:<username> and password:<password> and then remove from reading list 'The Housemaid Is Watching' book",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then remove from reading list <book> book",
         },
         {
-            "prompt": "Remove from reading list a book 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
-            "prompt_for_task_generation": "Remove from reading list a book <book> by <author>",
+            "prompt": "First, login for the following username:<username> and password:<password> and then remove from reading list a book 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then remove from reading list a book <book> by <author>",
         },
         {
-            "prompt": "Remove from reading list a Science book from 2022",
-            "prompt_for_task_generation": "Remove from reading list a <genre> book from <year>",
+            "prompt": "First, login for the following username:<username> and password:<password> and then remove from reading list a Science book from 2022",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then remove from reading list a <genre> book from <year>",
         },
         {
-            "prompt": "Remove from reading list a book with rating above 4.5",
-            "prompt_for_task_generation": "Remove from reading list a book with rating above <rating>",
+            "prompt": "First, login for the following username:<username> and password:<password> and then remove from reading list a book with rating above 4.5",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then remove from reading list a book with rating above <rating>",
         },
     ],
 )

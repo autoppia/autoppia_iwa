@@ -138,16 +138,16 @@ def _generate_constraints_static(
     return constraints
 
 
-async def generate_view_subnet_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+def generate_view_subnet_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Generate constraints for VIEW_SUBNET from static subnet names and metrics."""
-    del task_url, dataset
+    _ = task_url, dataset  # Unused parameters kept for backward compatibility
     data = _build_subnet_dataset()
     return _generate_constraints_static(data, FIELD_OPERATORS_MAP_VIEW_SUBNET, SELECTED_FIELDS_VIEW_SUBNET, num_constraints=2)
 
 
-async def generate_view_validator_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+def generate_view_validator_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Generate constraints for VIEW_VALIDATOR from synthetic validator data."""
-    del task_url, dataset
+    _ = task_url, dataset  # Unused parameters kept for backward compatibility
     data = _build_validator_dataset()
     return _generate_constraints_static(
         data,
@@ -158,9 +158,9 @@ async def generate_view_validator_constraints(task_url: str | None = None, datas
     )
 
 
-async def generate_view_block_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+def generate_view_block_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Generate constraints for VIEW_BLOCK from synthetic block data."""
-    del task_url, dataset
+    _ = task_url, dataset  # Unused parameters kept for backward compatibility
     data = _build_block_dataset()
     return _generate_constraints_static(
         data,
@@ -171,9 +171,9 @@ async def generate_view_block_constraints(task_url: str | None = None, dataset: 
     )
 
 
-async def generate_view_account_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+def generate_view_account_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Generate constraints for VIEW_ACCOUNT from synthetic account data."""
-    del task_url, dataset
+    _ = task_url, dataset  # Unused parameters kept for backward compatibility
     data = _build_account_dataset()
     return _generate_constraints_static(
         data,
@@ -214,9 +214,9 @@ def _build_execute_sell_dataset() -> list[dict[str, Any]]:
     ]
 
 
-async def generate_execute_buy_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+def generate_execute_buy_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Generate constraints for EXECUTE_BUY (subnet_name + amountTAU/amountAlpha) so prompts are verifiable."""
-    del task_url, dataset
+    _ = task_url, dataset  # Unused parameters kept for backward compatibility
     data = _build_execute_buy_dataset()
     return _generate_constraints_static(
         data,
@@ -227,9 +227,9 @@ async def generate_execute_buy_constraints(task_url: str | None = None, dataset:
     )
 
 
-async def generate_execute_sell_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+def generate_execute_sell_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Generate constraints for EXECUTE_SELL (subnet_name + amountAlpha/maxDelegatedAlpha) so prompts are verifiable."""
-    del task_url, dataset
+    _ = task_url, dataset  # Unused parameters kept for backward compatibility
     data = _build_execute_sell_dataset()
     return _generate_constraints_static(
         data,
@@ -269,9 +269,9 @@ def _build_favorite_subnet_dataset() -> list[dict[str, Any]]:
     return [{"subnet_id": i, "subnet_name": name} for i, name in enumerate(SUBNET_NAMES)]
 
 
-async def generate_connect_wallet_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+def generate_connect_wallet_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Generate constraints for CONNECT_WALLET (wallet_name, address)."""
-    del task_url, dataset
+    _ = task_url, dataset  # Unused parameters kept for backward compatibility
     data = _build_connect_wallet_dataset()
     return _generate_constraints_static(
         data,
@@ -281,9 +281,9 @@ async def generate_connect_wallet_constraints(task_url: str | None = None, datas
     )
 
 
-async def generate_disconnect_wallet_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+def generate_disconnect_wallet_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Generate constraints for DISCONNECT_WALLET (wallet_name, address)."""
-    del task_url, dataset
+    _ = task_url, dataset  # Unused parameters kept for backward compatibility
     data = _build_disconnect_wallet_dataset()
     return _generate_constraints_static(
         data,
@@ -293,9 +293,9 @@ async def generate_disconnect_wallet_constraints(task_url: str | None = None, da
     )
 
 
-async def generate_transfer_complete_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+def generate_transfer_complete_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Generate constraints for TRANSFER_COMPLETE (to, amount, block_number)."""
-    del task_url, dataset
+    _ = task_url, dataset  # Unused parameters kept for backward compatibility
     data = _build_transfer_complete_dataset()
     return _generate_constraints_static(
         data,
@@ -306,9 +306,9 @@ async def generate_transfer_complete_constraints(task_url: str | None = None, da
     )
 
 
-async def generate_favorite_subnet_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+def generate_favorite_subnet_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Generate constraints for FAVORITE_SUBNET (subnet_name, subnet_id)."""
-    del task_url, dataset
+    _ = task_url, dataset  # Unused parameters kept for backward compatibility
     data = _build_favorite_subnet_dataset()
     return _generate_constraints_static(
         data,
