@@ -1,7 +1,7 @@
 import json
 import re
 from enum import Enum
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar, Optional, Type
 
 from loguru import logger
 from playwright.async_api import Page
@@ -227,31 +227,25 @@ class BaseAction(BaseModel):
             logger.error(f"Invalid action_data: {action_data}. Expected a dictionary.")
             raise ValueError("action_data must be a dictionary.")
 
-        new_action_data = cls._normalize_action_data(action_data)
-        action_type = str(new_action_data.get("type", "")).strip()
+        normalized_action_data = cls._normalize_action_data(action_data)
+        action_type = str(normalized_action_data.get("type", "")).strip()
 
         if not action_type:
             logger.error("Missing 'type' in action data.")
             raise ValueError("Action data is missing 'type' field.")
-        if action_type == "type" and "text" not in new_action_data:
-            new_action_data["text"] = new_action_data.get("value", "")
+        if action_type == "type" and "text" not in normalized_action_data:
+            normalized_action_data["text"] = normalized_action_data.get("value", "")
 
         try:
             # Retrieve the appropriate action class from the registry
             action_class = ActionRegistry.get(action_type)
-            canonical_type = None
-            type_field = getattr(action_class, "model_fields", {}).get("type")
-            if type_field is not None:
-                canonical_type = getattr(type_field, "default", None)
-            if not isinstance(canonical_type, str):
-                canonical_type = getattr(action_class, "type", None)
-            if isinstance(canonical_type, str):
-                new_action_data["type"] = canonical_type
-            return action_class(**new_action_data)
+            cls._inject_canonical_action_type(normalized_action_data, action_class)
+            return action_class(**normalized_action_data)
         except ValueError as ve:
             logger.error(f"Failed to create action of type '{action_type}': {ve!s}")
         except Exception as e:
             logger.error(f"Error creating action of type '{action_type}': {e!s}")
+        return None
 
     @classmethod
     def _normalize_action_data(cls, action_data: dict[str, Any]) -> dict[str, Any]:
@@ -269,19 +263,26 @@ class BaseAction(BaseModel):
         # {"function":{"name":"navigate","arguments":"{...json...}"}}
         function_payload = payload.get("function")
         if isinstance(function_payload, dict):
-            payload = {
-                "name": function_payload.get("name"),
-                "arguments": function_payload.get("arguments"),
-            }
+            payload = cls._normalize_named_payload(
+                {
+                    "name": function_payload.get("name"),
+                    "arguments": function_payload.get("arguments"),
+                }
+            )
+            return payload
 
         if "name" in payload and "type" not in payload:
-            name = payload.get("name")
-            arguments = cls._coerce_arguments(payload.get("arguments"))
-            normalized = dict(arguments)
-            normalized["type"] = normalized.get("type", name)
-            return normalized
+            return cls._normalize_named_payload(payload)
 
         return payload
+
+    @classmethod
+    def _normalize_named_payload(cls, payload: dict[str, Any]) -> dict[str, Any]:
+        name = payload.get("name")
+        arguments = cls._coerce_arguments(payload.get("arguments"))
+        normalized = dict(arguments)
+        normalized["type"] = normalized.get("type", name)
+        return normalized
 
     @staticmethod
     def _coerce_arguments(raw_arguments: Any) -> dict[str, Any]:
@@ -303,6 +304,22 @@ class BaseAction(BaseModel):
     def _to_snake_case(name: str) -> str:
         base = name[: -len("Action")] if name.endswith("Action") else name
         return re.sub(r"(?<!^)(?=[A-Z])", "_", base).lower()
+
+    @staticmethod
+    def _canonical_action_type(action_class: Type["BaseAction"]) -> str | None:
+        canonical_type = None
+        type_field = getattr(action_class, "model_fields", {}).get("type")
+        if type_field is not None:
+            canonical_type = getattr(type_field, "default", None)
+        if not isinstance(canonical_type, str):
+            canonical_type = getattr(action_class, "type", None)
+        return canonical_type if isinstance(canonical_type, str) else None
+
+    @classmethod
+    def _inject_canonical_action_type(cls, payload: dict[str, Any], action_class: Type["BaseAction"]) -> None:
+        canonical_type = cls._canonical_action_type(action_class)
+        if canonical_type is not None:
+            payload["type"] = canonical_type
 
     @classmethod
     def tool_name(cls) -> str:

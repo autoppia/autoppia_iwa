@@ -96,12 +96,7 @@ class ApifiedWebAgent(IWebAgent):
                     response.raise_for_status()
                     data = await response.json()
                     parsed_response = ActResponse.from_raw(data if isinstance(data, dict) else {})
-                    self.last_act_response = parsed_response.model_dump(mode="json", exclude_none=True)
-                    self.last_reasoning = parsed_response.reasoning.strip() if isinstance(parsed_response.reasoning, str) else None
-                    self.last_content = parsed_response.content.strip() if isinstance(parsed_response.content, str) and parsed_response.content.strip() else None
-                    self.last_done = bool(parsed_response.done)
-                    if isinstance(parsed_response.state_out, dict):
-                        self._task_state = dict(parsed_response.state_out)
+                    self._cache_parsed_response(parsed_response)
                     return self._parse_actions_response(parsed_response)
             except Exception:
                 pass
@@ -134,25 +129,47 @@ class ApifiedWebAgent(IWebAgent):
     # ------------------------------------------------------------------ #
     # Helpers
     # ------------------------------------------------------------------ #
+    def _cache_parsed_response(self, parsed: ActResponse) -> None:
+        self.last_act_response = parsed.model_dump(mode="json", exclude_none=True)
+        self.last_reasoning = self._strip_optional_text(parsed.reasoning, allow_empty=True)
+        self.last_content = self._strip_optional_text(parsed.content, allow_empty=False)
+        self.last_done = bool(parsed.done)
+        if isinstance(parsed.state_out, dict):
+            self._task_state = dict(parsed.state_out)
+
+    @staticmethod
+    def _strip_optional_text(value: Any, *, allow_empty: bool) -> str | None:
+        if not isinstance(value, str):
+            return None
+        stripped = value.strip()
+        if stripped or allow_empty:
+            return stripped
+        return None
+
     def _parse_actions_response(self, parsed: ActResponse) -> list[BaseAction]:
         actions: list[BaseAction] = []
         for tool_call in parsed.tool_calls:
-            try:
-                action_payload = self._tool_call_to_action_payload(tool_call)
-                action = BaseAction.create_action(action_payload)
-                if action is None:
-                    continue
-                if isinstance(action, NavigateAction):
-                    # Ensure any navigate URLs are rewritten consistently.
-                    action.url = self._rewrite_to_remote(getattr(action, "url", None))
+            action = self._build_action_from_tool_call(tool_call)
+            if action is not None:
                 actions.append(action)
-            except Exception:
-                continue
 
         if self.max_actions_per_step is not None and actions:
             actions = actions[: self.max_actions_per_step]
 
         return actions
+
+    def _build_action_from_tool_call(self, tool_call: ActToolCall) -> BaseAction | None:
+        try:
+            action_payload = self._tool_call_to_action_payload(tool_call)
+            action = BaseAction.create_action(action_payload)
+            if action is None:
+                return None
+            if isinstance(action, NavigateAction):
+                # Ensure any navigate URLs are rewritten consistently.
+                action.url = self._rewrite_to_remote(getattr(action, "url", None))
+            return action
+        except Exception:
+            return None
 
     def _tool_call_to_action_payload(self, tool_call: ActToolCall) -> dict[str, Any]:
         name = str(tool_call.name or "").strip().lower()
@@ -202,27 +219,31 @@ class ApifiedWebAgent(IWebAgent):
         except Exception:
             return out
         for item in defs if isinstance(defs, list) else []:
-            if not isinstance(item, dict):
-                continue
-            fn = item.get("function") if isinstance(item.get("function"), dict) else {}
-            tool_name = str(fn.get("name") or "").strip()
-            if not tool_name:
-                continue
-            # Keep content/done outside tool_calls.
-            if tool_name in {"done"}:
-                continue
-            if tool_name == "request_user_input":
-                namespaced = "user.request_input"
-            else:
-                namespaced = f"browser.{tool_name}"
-            out.append(
-                {
-                    "name": namespaced,
-                    "description": str(fn.get("description") or ""),
-                    "parameters": fn.get("parameters") if isinstance(fn.get("parameters"), dict) else {},
-                }
-            )
+            normalized = ApifiedWebAgent._normalize_allowed_tool(item)
+            if normalized is not None:
+                out.append(normalized)
         return out
+
+    @staticmethod
+    def _normalize_allowed_tool(item: Any) -> dict[str, Any] | None:
+        if not isinstance(item, dict):
+            return None
+        fn = item.get("function") if isinstance(item.get("function"), dict) else {}
+        tool_name = str(fn.get("name") or "").strip()
+        if not tool_name:
+            return None
+        # Keep content/done outside tool_calls.
+        if tool_name in {"done"}:
+            return None
+        if tool_name == "request_user_input":
+            namespaced = "user.request_input"
+        else:
+            namespaced = f"browser.{tool_name}"
+        return {
+            "name": namespaced,
+            "description": str(fn.get("description") or ""),
+            "parameters": fn.get("parameters") if isinstance(fn.get("parameters"), dict) else {},
+        }
 
     @staticmethod
     def _force_localhost(original_url: str | None) -> str | None:
