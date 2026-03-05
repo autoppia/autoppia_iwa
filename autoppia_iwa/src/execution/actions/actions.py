@@ -313,34 +313,6 @@ class DoneAction(BaseAction):
         return None
 
 
-class ReportResultAction(BaseAction):
-    """Report final textual output from the operator as an explicit tool/action."""
-
-    type: Literal["ReportResultAction"] = "ReportResultAction"
-    content: str = Field(..., description="Final result text for the user.")
-    success: bool = Field(True, description="Whether the task is considered successful.")
-
-    @model_validator(mode="before")
-    @classmethod
-    def normalize_content(cls, values):
-        if not isinstance(values, dict):
-            return values
-        if "content" not in values or not str(values.get("content") or "").strip():
-            for key in ("final_text", "final_answer", "summary", "answer", "result", "output", "text", "message"):
-                candidate = values.get(key)
-                if isinstance(candidate, str) and candidate.strip():
-                    values["content"] = candidate
-                    break
-        if "content" not in values or not str(values.get("content") or "").strip():
-            values["content"] = "Task completed."
-        return values
-
-    @log_action("ReportResultAction")
-    async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
-        # Reporting is consumed by higher-level runners/UI; no browser side-effect.
-        return None
-
-
 class RequestUserInputAction(BaseAction):
     """Request structured input from the user before continuing execution."""
 

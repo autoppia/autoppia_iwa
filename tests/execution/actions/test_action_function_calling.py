@@ -1,6 +1,6 @@
 import asyncio
 
-from autoppia_iwa.src.execution.actions.actions import ReportResultAction, RequestUserInputAction, TypeAction
+from autoppia_iwa.src.execution.actions.actions import RequestUserInputAction, TypeAction
 from autoppia_iwa.src.execution.actions.base import BaseAction
 
 
@@ -41,17 +41,3 @@ def test_request_user_input_action_metadata_and_execution() -> None:
         assert result is None
 
     asyncio.run(run())
-
-
-def test_report_result_action_from_function_call_payload() -> None:
-    action = BaseAction.create_action(
-        {
-            "function": {
-                "name": "report_result",
-                "arguments": '{"content": "Portfolio value: $12,034.55", "success": true}',
-            }
-        }
-    )
-    assert isinstance(action, ReportResultAction)
-    assert action.content == "Portfolio value: $12,034.55"
-    assert action.success is True

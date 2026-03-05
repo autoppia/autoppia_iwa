@@ -209,7 +209,7 @@ class ApifiedWebAgent(IWebAgent):
             if not tool_name:
                 continue
             # Keep content/done outside tool_calls.
-            if tool_name in {"done", "report_result"}:
+            if tool_name in {"done"}:
                 continue
             if tool_name == "request_user_input":
                 namespaced = "user.request_input"
