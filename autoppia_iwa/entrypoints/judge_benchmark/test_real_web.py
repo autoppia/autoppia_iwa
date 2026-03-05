@@ -111,6 +111,26 @@ class WebVoyagerBenchmark:
             await self._update_judge_feedback_log(task, result)
         return result
 
+    def _read_and_update_log_file(self, log_file: Path, task_prompt_hash: str, total_iterations: int, evaluation_feedback: dict) -> list[dict]:
+        """Synchronous helper to read and update log file."""
+        updated_entries = []
+        with log_file.open("r", encoding="utf-8") as f:
+            for line in f:
+                try:
+                    entry = json.loads(line.strip())
+                    if generate_hash(entry.get("task")) == task_prompt_hash and entry["total_iteration"] == total_iterations:
+                        entry["evaluation_feedback"] = evaluation_feedback
+                    updated_entries.append(entry)
+                except json.JSONDecodeError:
+                    logger.warning(f"Skipping invalid JSON line in {log_file}")
+        return updated_entries
+
+    def _write_log_file(self, log_file: Path, updated_entries: list[dict]) -> None:
+        """Synchronous helper to write log file."""
+        with log_file.open("w", encoding="utf-8") as f:
+            for entry in updated_entries:
+                f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
     async def _update_judge_feedback_log(self, task: Task, result: EvaluationResult):
         """Update the judge feedback log with evaluation feedback."""
         evaluation_feedback = result.feedback.model_dump()
@@ -123,21 +143,11 @@ class WebVoyagerBenchmark:
 
         task_prompt_hash = generate_hash(task.prompt)
         total_iterations = len(result.execution_history)
-        updated_entries = []
 
-        with log_file.open("r", encoding="utf-8") as f:
-            for line in f:
-                try:
-                    entry = json.loads(line.strip())
-                    if generate_hash(entry.get("task")) == task_prompt_hash and entry["total_iteration"] == total_iterations:
-                        entry["evaluation_feedback"] = evaluation_feedback
-                    updated_entries.append(entry)
-                except json.JSONDecodeError:
-                    logger.warning(f"Skipping invalid JSON line in {log_file}")
+        # Use async file I/O to avoid blocking event loop
+        updated_entries = await asyncio.to_thread(self._read_and_update_log_file, log_file, task_prompt_hash, total_iterations, evaluation_feedback)
 
-        with log_file.open("w", encoding="utf-8") as f:
-            for entry in updated_entries:
-                f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+        await asyncio.to_thread(self._write_log_file, log_file, updated_entries)
 
     # ------------------------------------------------------------------------
     # SOLUTION GENERATION

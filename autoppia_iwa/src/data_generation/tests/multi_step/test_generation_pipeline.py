@@ -1,6 +1,6 @@
+import asyncio
 import json
 import re
-import time
 from typing import Any
 
 from dependency_injector.wiring import Provide
@@ -27,6 +27,10 @@ class GlobalTestGenerationPipeline:
       - Attaches them to the task
     """
 
+    # ============================================================================
+    # INITIALIZATION
+    # ============================================================================
+
     def __init__(
         self,
         web_project: WebProject,
@@ -40,6 +44,10 @@ class GlobalTestGenerationPipeline:
         self.max_retries = max_retries
         self.retry_delay = retry_delay
         self.truncate_html_chars = truncate_html_chars
+
+    # ============================================================================
+    # PUBLIC METHODS - TEST GENERATION
+    # ============================================================================
 
     async def add_tests_to_tasks(self, tasks: list[Task]) -> list[Task]:
         """
@@ -67,6 +75,10 @@ class GlobalTestGenerationPipeline:
                 continue
 
         return tasks
+
+    # ============================================================================
+    # TEST GENERATION HELPERS
+    # ============================================================================
 
     async def _generate_check_event_tests(self, task: Task) -> list[dict[str, Any]]:
         """
@@ -101,10 +113,10 @@ class GlobalTestGenerationPipeline:
                     return test_dicts
 
                 logger.warning(f"Attempt {attempt + 1}: Received empty or invalid test list for Task {task.id}. Retrying...")
-                time.sleep(self.retry_delay)
+                await asyncio.sleep(self.retry_delay)
             except Exception as e:
                 logger.warning(f"Attempt {attempt + 1} failed for Task {task.id}: {e!s}. Retrying...")
-                time.sleep(self.retry_delay)
+                await asyncio.sleep(self.retry_delay)
 
         # If we reach here, all attempts failed
         logger.error(f"All {self.max_retries} attempts to generate tests for Task {task.id} have failed.")
@@ -156,6 +168,10 @@ class GlobalTestGenerationPipeline:
 
         logger.warning(f"Unexpected type for LLM response: {type(response)}")
         return []
+
+    # ============================================================================
+    # TEST VALIDATION AND INSTANTIATION
+    # ============================================================================
 
     def _validate_test_list(self, test_list: list[Any]) -> list[dict[str, Any]]:
         """

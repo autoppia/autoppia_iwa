@@ -1,1 +1,0 @@
-"""Visual capture CLI helpers."""

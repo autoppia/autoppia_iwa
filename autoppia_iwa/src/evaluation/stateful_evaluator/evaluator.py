@@ -107,6 +107,10 @@ def _is_navigation_url_allowed(*, is_web_real: bool, task_url: str | None, candi
             return True, None
         if target_host in {"localhost", "127.0.0.1", "::1"}:
             return True, None
+        # Allow the task URL's host so remote demo webs (e.g. DEMO_WEBS_ENDPOINT on another machine) work
+        allowed_host = _url_hostname(task_url)
+        if allowed_host and target_host == allowed_host:
+            return True, None
         return False, f"NavigateAction host '{target_host}' is not allowed for demo webs"
 
     allowed_host = _url_hostname(task_url)
@@ -129,12 +133,14 @@ class AsyncStatefulEvaluator(AsyncWebAgentSession):
         should_record_gif: bool = False,
         capture_screenshot: bool = False,
         config: EvaluatorConfig | None = None,
+        headless: bool | None = None,
     ) -> None:
         self.task = task
         self.web_agent_id = web_agent_id
         self.should_record_gif = should_record_gif
         self.capture_screenshot = capture_screenshot
         self.config = config or EvaluatorConfig()
+        self._headless = headless
 
         self._playwright = None
         self._browser = None
@@ -216,8 +222,9 @@ class AsyncStatefulEvaluator(AsyncWebAgentSession):
         logger.info("[AsyncStatefulEvaluator] launching browser")
         self._playwright = await async_playwright().start()
         specs = self.task.specifications or BrowserSpecification()
+        headless = self._headless if self._headless is not None else EVALUATOR_HEADLESS
         self._browser = await self._playwright.chromium.launch(
-            headless=EVALUATOR_HEADLESS,
+            headless=headless,
             args=[f"--window-size={specs.screen_width},{specs.screen_height}"],
         )
         validator_id = VALIDATOR_ID or os.getenv("VALIDATOR_ID", "validator_001")

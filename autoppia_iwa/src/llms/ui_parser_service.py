@@ -5,9 +5,10 @@
 
 class UIParserService:
     def __init__(self):
+        # Intentionally empty - placeholder for future implementation
         pass
 
-    def summarize_image(self, file):
+    def summarize_image(self, _file):
         return ""
 
 

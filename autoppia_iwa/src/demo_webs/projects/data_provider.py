@@ -36,7 +36,7 @@ def get_seed_from_url(task_url: str | None) -> int:
         # Clamp to valid range
         return max(1, min(seed, 999))
 
-    except Exception as e:
+    except (ValueError, IndexError, KeyError, AttributeError) as e:
         logger.warning(f"Failed to extract seed from URL {task_url}: {e}")
         return 1
 
@@ -47,7 +47,8 @@ _ASYNC_CACHE: dict[tuple, list[dict]] = {}
 _ASYNC_LOCK = asyncio.Lock()
 
 
-async def _get_async_session() -> "aiohttp.ClientSession":  # type: ignore
+def _get_async_session() -> "aiohttp.ClientSession":  # type: ignore
+    """Get or create the shared aiohttp session. Synchronous function as ClientSession creation is synchronous."""
     if aiohttp is None:
         raise RuntimeError("aiohttp is not installed but load_dataset_data was called")
     global _ASYNC_SESSION
@@ -108,7 +109,7 @@ async def load_dataset_data(
             return _ASYNC_CACHE[cache_key]
 
     try:
-        session = await _get_async_session()
+        session = _get_async_session()
         async with session.get(url, params=params, timeout=10) as resp:
             resp.raise_for_status()
             body = await resp.json()
@@ -120,10 +121,7 @@ async def load_dataset_data(
             logger.warning("Unexpected response structure from /datasets/load: {}", type(body))
             return []
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
-        logger.warning("Failed to fetch dataset (async) from {} with params {}: {}", url, params, e)
+        logger.exception("Failed to fetch dataset (async) from {} with params {}: {}", url, params, e)
         return []
 
 
@@ -133,7 +131,7 @@ async def close_async_session() -> None:
     if _ASYNC_SESSION is not None and not _ASYNC_SESSION.closed:
         try:
             await _ASYNC_SESSION.close()
-        except Exception:
+        except Exception:  # Catch all exceptions when closing session to ensure cleanup
             pass
         finally:
             _ASYNC_SESSION = None

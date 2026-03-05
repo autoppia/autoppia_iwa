@@ -61,7 +61,7 @@ def _generate_allowed_years_list(movies_data: list[dict]) -> list[int]:
     """Generate a list of unique years from movies data."""
     if not movies_data:
         return []
-    return sorted(list(set(movie.get("year") for movie in movies_data if movie.get("year") is not None)))
+    return sorted({movie.get("year") for movie in movies_data if movie.get("year") is not None})
 
 
 def _generate_allowed_genres_list(movies_data: list[dict]) -> list[str]:
@@ -75,7 +75,7 @@ def _generate_allowed_genres_list(movies_data: list[dict]) -> list[str]:
             genres.update(movie_genres)
         elif isinstance(movie_genres, str):
             genres.add(movie_genres)
-    return sorted(list(genres))
+    return sorted(genres)
 
 
 ###############################################################################
@@ -272,8 +272,9 @@ FILM_DETAIL_USE_CASE = UseCase(
 )
 
 
-def _get_add_to_watchlist_info(movies_data: list[dict]) -> str:
+def _get_add_to_watchlist_info(movies_data: list[dict] | None = None) -> str:
     """Generate add to watchlist / remove from watchlist info dynamically from API data (auth required)."""
+    _ = movies_data  # Unused parameter kept for backward compatibility
     return f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Begin with a login instruction using username equals <username> and password equals <password> (exact constraint values).
@@ -385,8 +386,9 @@ REMOVE_FROM_WATCHLIST_USE_CASE = UseCase(
 )
 
 
-def _get_share_film_info(movies_data: list[dict]) -> str:
+def _get_share_film_info(movies_data: list[dict] | None = None) -> str:
     """Generate share film info dynamically from API data."""
+    _ = movies_data  # Unused parameter kept for backward compatibility
     return f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above (field, operator, and value).
@@ -450,8 +452,9 @@ SHARE_FILM_USE_CASE = UseCase(
 )
 
 
-def _get_watch_trailer_info(movies_data: list[dict]) -> str:
+def _get_watch_trailer_info(movies_data: list[dict] | None = None) -> str:
     """Generate watch trailer info dynamically from API data."""
+    _ = movies_data  # Unused parameter kept for backward compatibility
     return f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above (field, operator, and value).
@@ -856,8 +859,9 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
 ###############################################################################
 # FILTER_FILM_USE_CASE
 ###############################################################################
-def _get_filter_film_info(movies_data: list[dict]) -> str:
+def _get_filter_film_info(movies_data: list[dict] | None = None) -> str:
     """Generate filter film info dynamically from API data."""
+    _ = movies_data  # Unused parameter kept for backward compatibility
     return f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above (field, operator, and value).
