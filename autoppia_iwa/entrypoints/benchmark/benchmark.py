@@ -73,6 +73,38 @@ class Benchmark:
         if self.config.evaluator_mode == "stateful":
             logger.info(f"Stateful mode: max {self.config.max_steps_per_task} steps per task")
 
+    @staticmethod
+    def _build_compact_history(execution_history: list[Any]) -> list[dict[str, Any]]:
+        """Build a compact history payload for /act requests."""
+        out: list[dict[str, Any]] = []
+        for idx, event in enumerate(execution_history):
+            action_payload: dict[str, Any] | None = None
+            with contextlib.suppress(Exception):
+                raw_action = getattr(event, "action", None)
+                if raw_action is not None and hasattr(raw_action, "model_dump"):
+                    action_payload = raw_action.model_dump()
+
+            browser_url = None
+            browser_timestamp = None
+            snapshot = getattr(event, "browser_snapshot", None)
+            if snapshot is not None:
+                browser_url = getattr(snapshot, "current_url", None)
+                ts = getattr(snapshot, "timestamp", None)
+                if ts is not None:
+                    browser_timestamp = ts.isoformat() if hasattr(ts, "isoformat") else str(ts)
+
+            out.append(
+                {
+                    "index": idx,
+                    "action": action_payload,
+                    "success": bool(getattr(event, "successfully_executed", False)),
+                    "error": getattr(event, "error", None),
+                    "url": browser_url,
+                    "timestamp": browser_timestamp,
+                }
+            )
+        return out
+
     # ---------------------------------------------------------------------
     # Evaluator creation
     # ---------------------------------------------------------------------
@@ -103,18 +135,18 @@ class Benchmark:
         Evalúa un agente usando AsyncStatefulEvaluator en modo iterativo.
 
         ✅ El agente debe implementar IWebAgent con método act().
-        Típicamente es un ApifiedIterativeWebAgent (agente HTTP) corriendo en un servidor.
+        Típicamente es un ApifiedWebAgent (agente HTTP) corriendo en un servidor.
 
         El agente debe estar corriendo en un servidor HTTP y responder en:
-        POST /act con: {task, snapshot_html, url, step_index}
-        Responde: {actions: [...]}
+        POST /act con: {task, snapshot_html, url, step_index, history, state_in, allowed_tools}
+        Responde: {tool_calls: [...], content, done, state_out, reasoning}
         """
         # Verificar que el agente tenga método act()
         if not hasattr(agent, "act") or not callable(getattr(agent, "act", None)):
             raise ValueError(
                 f"❌ El agente '{agent.name}' no implementa IWebAgent correctamente.\n"
                 f"Debe tener el método act() que recibe el estado del browser.\n"
-                f"Usa: ApifiedIterativeWebAgent(base_url='http://localhost:PORT')"
+                f"Usa: ApifiedWebAgent(base_url='http://localhost:PORT')"
             )
 
         evaluator = AsyncStatefulEvaluator(
@@ -152,6 +184,7 @@ class Benchmark:
                         snapshot_html=html,
                         url=current_url,
                         step_index=step_index,
+                        history=self._build_compact_history(execution_history),
                     )
                 except Exception as exc:
                     logger.warning(f"[stateful_eval] agent {agent.name} /act failed: {exc}")

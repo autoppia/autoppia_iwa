@@ -86,7 +86,7 @@ For each project in PROJECT_IDS:
      For each agent in AGENTS:
        For each task:
          ├─ Call agent (POST /act; in concurrent mode once with step_index=0)
-         └─ Receive actions and build TaskSolution
+         └─ Receive `tool_calls` and build TaskSolution actions
 
   3. Evaluation
      For each solution:
@@ -115,13 +115,11 @@ All benchmark settings configured in code (no CLI):
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
 from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.web_agents.apified_one_shot_agent import ApifiedOneShotWebAgent
-
 # 1) Agents to evaluate (all expose POST /act)
-from autoppia_iwa.src.web_agents.cua import ApifiedIterativeWebAgent
+from autoppia_iwa.src.web_agents.cua import ApifiedWebAgent
 
 AGENTS = [
-    ApifiedIterativeWebAgent(base_url="http://localhost:5000", id="1", name="MyAgent", timeout=120),
+    ApifiedWebAgent(base_url="http://localhost:5000", id="1", name="MyAgent", timeout=120),
 ]
 
 # 2) Projects to test
@@ -183,10 +181,10 @@ There is **one entrypoint**, `run.py`. All agents expose **POST /act**; you choo
 | Aspect | Concurrent | Stateful |
 |--------|------------|----------|
 | **Agent API** | `POST /act` (same for all) | `POST /act` |
-| **Calls** | Once per task: `step_index=0`, agent returns full action list | Repeated: each call gets current `snapshot_html`, agent returns next action(s) |
+| **Calls** | Once per task: `step_index=0`, agent returns full `tool_calls` plan | Repeated: each call gets current `snapshot_html`, agent returns next `tool_calls` |
 | **Typical use** | Agent plans full sequence in one go | Agent decides step-by-step (same as subnet miners) |
 
-**How to switch in `run.py`:** Use the first `CFG` block for concurrent, or the commented stateful block for stateful. In both cases use `ApifiedIterativeWebAgent` with your agent’s base URL (agent must expose `POST /act`).
+**How to switch in `run.py`:** Use the first `CFG` block for concurrent, or the commented stateful block for stateful. In both cases use `ApifiedWebAgent` with your agent’s base URL (agent must expose `POST /act`).
 
 **`/act` endpoint (POST) — used for both modes:**
 
@@ -198,22 +196,33 @@ Request body:
   "url": "http://localhost:8000/login",
   "snapshot_html": "<html>...</html>",
   "step_index": 0,
-  "web_project_id": "autobooks"
+  "web_project_id": "autobooks",
+  "history": [],
+  "state_in": {},
+  "allowed_tools": [
+    {"name": "browser.navigate", "description": "Navigate browser", "parameters": {"type": "object"}}
+  ],
+  "include_reasoning": true
 }
 ```
 
 Response:
 ```json
 {
-  "actions": [
-    {"type": "ClickAction", "selector": "#login"},
-    {"type": "TypeAction", "selector": "#username", "text": "user1"},
-    {"type": "TypeAction", "selector": "#password", "text": "Passw0rd!"}
-  ]
+  "tool_calls": [
+    {"name": "browser.click", "arguments": {"selector": {"type": "css", "value": "#login"}}},
+    {"name": "browser.type", "arguments": {"selector": {"type": "css", "value": "#username"}, "text": "user1"}},
+    {"name": "browser.type", "arguments": {"selector": {"type": "css", "value": "#password"}, "text": "Passw0rd!"}}
+  ],
+  "content": "Filled login credentials.",
+  "done": false,
+  "state_out": {"phase": "login_submitted"},
+  "reasoning": "Login form detected and fields completed."
 }
 ```
 
-Return an empty `actions` array when the task is done. Supported action types include `NavigateAction`, `ClickAction`, `TypeAction`, `ScrollAction`, etc. (see Available Actions below).
+Use `tool_calls` as canonical output. `actions` is accepted only as an alias for `tool_calls` (same shape: `[{name, arguments}]`).  
+When the task is done, return `done: true` and optionally include final user-facing text in `content`.
 
 ### **Paths (Auto-configured)**
 
@@ -350,7 +359,7 @@ A web agent is an application that:
 
 1. Receives tasks from IWA
 2. Analyzes the requirements
-3. Returns a list of actions to execute
+3. Returns `tool_calls` for browser execution (plus optional `content/reasoning/state_out`)
 
 ### **Task Structure**
 
@@ -417,27 +426,27 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-@app.route('/solve_task', methods=['POST'])
-def solve_task():
-    task = request.get_json()
+@app.route('/act', methods=['POST'])
+def act():
+    req = request.get_json() or {}
 
     # Your agent logic here
-    # Analyze task, decide actions
+    # Analyze task and decide next tool calls.
 
     return jsonify({
-        "task_id": task["id"],
-        "web_agent_id": "my_agent",
-        "actions": [
+        "tool_calls": [
             {
-                "type": "NavigateAction",
-                "url": task["url"]
+                "name": "browser.navigate",
+                "arguments": {"url": req.get("url")}
             },
             {
-                "type": "ClickAction",
-                "x": 150,
-                "y": 200
+                "name": "browser.click",
+                "arguments": {"x": 150, "y": 200}
             }
-        ]
+        ],
+        "content": "Navigating and clicking first CTA.",
+        "done": False,
+        "state_out": {}
     })
 
 @app.route('/health', methods=['GET'])

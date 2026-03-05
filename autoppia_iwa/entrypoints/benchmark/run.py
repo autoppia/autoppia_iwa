@@ -21,7 +21,7 @@ from autoppia_iwa.src.web_agents.cua import ApifiedWebAgent
 # 1) AGENTS
 # =============================================================================
 # Standard: all agents expose POST /act. Use ApifiedWebAgent for both modes.
-# - Concurrent: benchmark calls /act once (step_index=0); agent returns full action list.
+# - Concurrent: benchmark calls /act once (step_index=0); agent returns full tool_calls plan.
 # - Stateful:   benchmark calls /act repeatedly with browser snapshot each step.
 # Legacy: if your agent only exposes POST /solve_task, use ApifiedOneShotWebAgent instead.
 
@@ -40,7 +40,7 @@ USE_CASES = ["FILM_DETAIL"]  # or None for all use cases
 # =============================================================================
 # 3) EVALUATOR MODE: choose one block (concurrent or stateful)
 # =============================================================================
-# Both use POST /act. Concurrent: call /act once (step_index=0), agent returns all actions.
+# Both use POST /act. Concurrent: call /act once (step_index=0), agent returns all tool_calls.
 # Stateful: call /act repeatedly with snapshot_html each step.
 
 # --- CONCURRENT (default): agent generates full action sequence in one go ---

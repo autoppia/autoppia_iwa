@@ -1,8 +1,7 @@
-import json
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 ACT_PROTOCOL_VERSION = "1.0"
 
@@ -28,92 +27,73 @@ class ActRequest(BaseModel):
     step_index: int = Field(default=0, ge=0)
     web_project_id: str | int | None = None
     history: list[dict[str, Any]] | None = None
+    state_in: dict[str, Any] = Field(default_factory=dict)
+    allowed_tools: list[dict[str, Any]] = Field(default_factory=list)
     include_reasoning: bool = False
+
+
+class ActToolCall(BaseModel):
+    """Canonical tool call payload used by `/act` response."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str
+    arguments: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str) -> str:
+        name = str(value or "").strip()
+        if not name:
+            raise ValueError("tool call `name` must be a non-empty string.")
+        return name
+
+    @field_validator("arguments", mode="before")
+    @classmethod
+    def normalize_arguments(cls, value: Any) -> dict[str, Any]:
+        if value is None:
+            return {}
+        if isinstance(value, dict):
+            return dict(value)
+        raise ValueError("tool call `arguments` must be a JSON object.")
 
 
 class ActResponse(BaseModel):
     """Canonical response payload returned by `/act` endpoints."""
 
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="forbid")
 
     protocol_version: str = Field(default=ACT_PROTOCOL_VERSION)
-    execution_mode: ActExecutionMode = Field(default=ActExecutionMode.BATCH)
-    actions: list[dict[str, Any]] = Field(default_factory=list)
+    tool_calls: list[ActToolCall]
+    content: str | None = None
     reasoning: str | None = None
-    done: bool = False
+    state_out: dict[str, Any] = Field(default_factory=dict)
+    done: bool
     error: str | None = None
 
     @model_validator(mode="before")
     @classmethod
-    def normalize_payload(cls, payload: Any) -> Any:
-        if not isinstance(payload, dict):
-            raise ValueError("ActResponse payload must be a JSON object.")
+    def normalize_tool_calls_alias(cls, value: Any) -> Any:
+        if not isinstance(value, dict):
+            return value
+        payload = dict(value)
+        # `actions` is accepted as an alias for `tool_calls`, using the same
+        # schema: [{"name": "...", "arguments": {...}}].
+        if "actions" in payload:
+            alias_payload = payload.pop("actions")
+            if "tool_calls" not in payload:
+                payload["tool_calls"] = alias_payload
+        return payload
 
-        normalized = dict(payload)
-        normalized.setdefault("protocol_version", ACT_PROTOCOL_VERSION)
-        normalized["actions"] = _extract_actions(normalized)
-        return normalized
+    @field_validator("state_out", mode="before")
+    @classmethod
+    def normalize_state_out(cls, value: Any) -> dict[str, Any]:
+        if value is None:
+            return {}
+        if isinstance(value, dict):
+            return dict(value)
+        raise ValueError("`state_out` must be a JSON object.")
 
     @classmethod
     def from_raw(cls, payload: dict[str, Any]) -> "ActResponse":
         return cls.model_validate(payload)
-
-
-def _extract_actions(payload: dict[str, Any]) -> list[dict[str, Any]]:
-    if isinstance(payload.get("actions"), list):
-        return [action for action in payload["actions"] if isinstance(action, dict)]
-
-    if isinstance(payload.get("action"), dict):
-        return [payload["action"]]
-
-    if isinstance(payload.get("navigate_url"), str):
-        return [{"type": "NavigateAction", "url": payload["navigate_url"]}]
-
-    function_call = payload.get("function_call")
-    if function_call:
-        normalized = _normalize_tool_call(function_call)
-        return [normalized] if normalized else []
-
-    tool_calls = payload.get("tool_calls")
-    if isinstance(tool_calls, list):
-        actions: list[dict[str, Any]] = []
-        for tool_call in tool_calls:
-            normalized = _normalize_tool_call(tool_call)
-            if normalized:
-                actions.append(normalized)
-        return actions
-
-    return []
-
-
-def _normalize_tool_call(tool_call: Any) -> dict[str, Any] | None:
-    if not isinstance(tool_call, dict):
-        return None
-
-    function_payload = tool_call.get("function") if isinstance(tool_call.get("function"), dict) else tool_call
-    name = function_payload.get("name")
-    if not isinstance(name, str) or not name.strip():
-        return None
-
-    arguments = _parse_tool_arguments(function_payload.get("arguments"))
-    normalized = dict(arguments)
-    normalized["type"] = normalized.get("type", name.strip())
-    return normalized
-
-
-def _parse_tool_arguments(raw_arguments: Any) -> dict[str, Any]:
-    if isinstance(raw_arguments, dict):
-        return dict(raw_arguments)
-
-    if isinstance(raw_arguments, str):
-        serialized = raw_arguments.strip()
-        if not serialized:
-            return {}
-        try:
-            parsed = json.loads(serialized)
-            if isinstance(parsed, dict):
-                return parsed
-        except Exception:
-            return {}
-
-    return {}

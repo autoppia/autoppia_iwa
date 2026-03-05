@@ -25,6 +25,7 @@ class RandomClickerWebAgent(BaseAgent):
         url: str,
         step_index: int,
         history: list[dict[str, Any]] | None = None,
+        state: dict[str, Any] | None = None,
     ) -> list[BaseAction]:
         """
         Act method for stateful mode. For concurrent mode agents, this returns
