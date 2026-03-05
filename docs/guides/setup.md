@@ -12,7 +12,7 @@ To ensure proper project functioning, **three essential components** must run si
 
 | Component | Purpose | Setup Reference |
 |-----------|---------|-----------------|
-| 🤖 **`LLM`** | Local Or External model server | [Model Deployment Guide](../../modules/llm_local/setup.md) |
+| 🤖 **`LLM`** | External LLM API (OpenAI or Chutes) | Configure via `.env` below |
 | 🌐 **Demo webapps** | Demo application for testing | Check its own **setup.md** |
 | 🕷️ **Web Agent** | Browser automation agent | Configured via AGENT_PORT |
 
@@ -126,17 +126,22 @@ touch .env
 #### **Add required environment variables:**
 ```env
 # LLM Provider Configuration
-# Can be "serverless", "local", or "openai"
-LLM_PROVIDER="local"
-
-# Local LLM Configuration
-LOCAL_MODEL_ENDPOINT="http://192.168.0.103:6000/generate"
+# Can be "openai" or "chutes"
+LLM_PROVIDER="openai"
 
 # OpenAI Configuration
 OPENAI_API_KEY=""  # We suggest using an API key for simplicity
 OPENAI_MODEL="gpt-4o-mini"
 OPENAI_MAX_TOKENS="2000"
 OPENAI_TEMPERATURE="0.7"
+
+# Chutes Configuration (optional)
+CHUTES_BASE_URL="https://api.chutes.ai/"
+CHUTES_API_KEY="cpk_your_api_key"
+CHUTES_MODEL="meta-llama/Llama-3.1-8B-Instruct"
+CHUTES_MAX_TOKENS="2048"
+CHUTES_TEMPERATURE="0.7"
+CHUTES_USE_BEARER="false"
 
 # Demo Webs Endpoint Configuration
 DEMO_WEBS_ENDPOINT="http://localhost"

@@ -1,5 +1,3 @@
-import os
-
 from dependency_injector import containers, providers
 
 from autoppia_iwa.config.config import (
@@ -47,22 +45,6 @@ class DIContainer(containers.DeclarativeContainer):
                 llm_type="openai",
                 config=config,
                 api_key=OPENAI_API_KEY,
-            )
-        elif LLM_PROVIDER == "local":
-            config = LLMConfig(
-                model="local",
-                temperature=OPENAI_TEMPERATURE,
-                max_tokens=OPENAI_MAX_TOKENS,
-            )
-            endpoint_url = os.getenv("LOCAL_MODEL_ENDPOINT")
-            parallel_endpoint_url = os.getenv("LOCAL_PARALLEL_MODEL_ENDPOINT")
-            if not endpoint_url:
-                raise ValueError("LOCAL_MODEL_ENDPOINT must be set when LLM_PROVIDER='local'")
-            return LLMFactory.create_llm(
-                llm_type="local",
-                config=config,
-                endpoint_url=endpoint_url,
-                parallel_endpoint_url=parallel_endpoint_url,
             )
         elif LLM_PROVIDER == "chutes":
             config = LLMConfig(

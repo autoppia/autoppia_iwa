@@ -55,7 +55,7 @@ def get_web_version(project_id: str, frontend_url: str | None = None) -> str | N
                     version = data.get("version")
                     if version and version != "unknown":
                         return str(version)
-        except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, json.JSONDecodeError, KeyError, ImportError):
+        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, KeyError, ImportError):
             # HTTP request failed or urllib not available, continue to fallback
             pass
         except Exception:
@@ -79,6 +79,7 @@ def get_web_version(project_id: str, frontend_url: str | None = None) -> str | N
         "autolist": "web_12_autolist",
         "autodrive": "web_13_autodrive",
         "autohealth": "web_14_autohealth",
+        "autostats": "web_15_autostats",
         "autodiscord": "web_16_autodiscord",
     }
 

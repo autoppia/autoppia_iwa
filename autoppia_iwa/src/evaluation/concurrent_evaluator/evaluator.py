@@ -4,6 +4,12 @@ import contextlib
 import os
 import time
 from collections import defaultdict
+from urllib.parse import urlparse
+
+try:
+    from autoppia_web_agents_subnet.validator.config import TESTING as SUBNET_TESTING
+except Exception:
+    SUBNET_TESTING = False
 
 from loguru import logger
 from playwright.async_api import async_playwright
@@ -28,11 +34,14 @@ from autoppia_iwa.src.execution.actions.actions import NavigateAction
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.execution.browser_executor import PlaywrightBrowserExecutor
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
-from autoppia_iwa.src.execution.dynamic import DynamicPlaywrightExecutor
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 EVALUATION_LEVEL_NAME = "EVALUATION"
 EVALUATION_LEVEL_NO = 25
+
+
+def _is_testing_mode() -> bool:
+    return bool(SUBNET_TESTING)
 
 
 def _ensure_evaluation_level() -> None:
@@ -78,6 +87,46 @@ def _log_evaluation_event(message: str, context: str = "GENERAL"):
         log_evaluation_event(message, context=context)
     except ImportError:
         _log_evaluation_fallback(message if context == "GENERAL" else f"[{context}] {message}")
+
+
+def _url_hostname(url: str | None) -> str | None:
+    if not url:
+        return None
+    parsed = urlparse(url)
+    return parsed.hostname.lower() if parsed.hostname else None
+
+
+def _is_navigation_url_allowed(*, is_web_real: bool, task_url: str | None, candidate_url: str | None) -> tuple[bool, str | None]:
+    # Relative/invalid URLs (no host) are allowed to preserve compatibility with
+    # action payloads that may use local-only or in-page navigation semantics.
+    if not candidate_url:
+        return True, None
+
+    parsed = urlparse(candidate_url)
+    if parsed.scheme and parsed.scheme not in {"http", "https"}:
+        return False, f"NavigateAction scheme '{parsed.scheme}' is not allowed"
+
+    target_host = parsed.hostname.lower() if parsed.hostname else None
+    if target_host is None:
+        return True, None
+
+    if not is_web_real:
+        if _is_testing_mode():
+            return True, None
+        if target_host in {"localhost", "127.0.0.1", "::1"}:
+            return True, None
+        # Allow the task URL's host so remote demo webs (e.g. DEMO_WEBS_ENDPOINT on another machine) work
+        allowed_host = _url_hostname(task_url)
+        if allowed_host and target_host == allowed_host:
+            return True, None
+        return False, f"NavigateAction host '{target_host}' is not allowed for demo webs"
+
+    allowed_host = _url_hostname(task_url)
+    if allowed_host is None:
+        return False, "Task URL host could not be determined"
+    if target_host != allowed_host:
+        return False, f"NavigateAction to host '{target_host}' not allowed for task host '{allowed_host}'"
+    return True, None
 
 
 class ConcurrentEvaluator(IEvaluator):
@@ -187,30 +236,54 @@ class ConcurrentEvaluator(IEvaluator):
                 gif_recording="",
             )
 
-        # Validate NavigateAction seed usage against assigned seed in task.url
+        # Validate NavigateAction target host and seed usage against task.url
         try:
             assigned_seed = extract_seed_from_url(task.url)
         except Exception:
             assigned_seed = None
+        for a in actions:
+            if not isinstance(a, NavigateAction):
+                continue
+            target_url = a.url
+            if not target_url:
+                continue
 
-        if assigned_seed is not None:
-            has_navigate = any(isinstance(a, NavigateAction) for a in actions)
-            if has_navigate:
-                violation = False
-                for a in actions:
-                    if isinstance(a, NavigateAction) and getattr(a, "url", None):
-                        nav_seed = extract_seed_from_url(a.url)  # type: ignore[arg-type]
-                        if nav_seed is None or nav_seed != assigned_seed:
-                            violation = True
-                            break
-                if violation:
+            is_allowed, reason = _is_navigation_url_allowed(
+                is_web_real=bool(getattr(task, "is_web_real", False)),
+                task_url=task.url,
+                candidate_url=target_url,
+            )
+            if not is_allowed:
+                stats.total_time = time.time() - stats.start_time
+                stats.had_errors = False
+                stats.error_message = "NavigateAction target violates task domain constraints."
+                _log_evaluation_event(
+                    f"NAVIGATE BLOCKED - {reason} | Skipping browser execution (expected host={_url_hostname(task.url)}, got={_url_hostname(target_url)})",
+                    context=f"ACTION EXECUTION | agent={web_agent_id}",
+                )
+                test_results = initialize_test_results(task)
+                return EvaluationResult(
+                    web_agent_id=web_agent_id,
+                    final_score=0,
+                    raw_score=0,
+                    test_results=test_results,
+                    feedback=None,
+                    execution_history=[],
+                    evaluation_time=stats.total_time,
+                    stats=stats,
+                    gif_recording="",
+                )
+
+            if assigned_seed is not None:
+                nav_seed = extract_seed_from_url(target_url)
+                if nav_seed is None or nav_seed != assigned_seed:
                     stats.total_time = time.time() - stats.start_time
                     stats.had_errors = False
                     stats.error_message = "Seed missing or mismatched in NavigateAction URL(s)."
-
-                    # Log seed mismatch early return
-                    _log_evaluation_event(f"SEED MISMATCH - Skipping browser execution (expected seed={assigned_seed})", context=f"ACTION EXECUTION | agent={web_agent_id}")
-
+                    _log_evaluation_event(
+                        f"SEED MISMATCH - Skipping browser execution (expected seed={assigned_seed}, received={nav_seed})",
+                        context=f"ACTION EXECUTION | agent={web_agent_id}",
+                    )
                     test_results = initialize_test_results(task)
                     return EvaluationResult(
                         web_agent_id=web_agent_id,
@@ -511,7 +584,8 @@ class ConcurrentEvaluator(IEvaluator):
             browser, context = None, None
             try:
                 browser_specifications = task.specifications or BrowserSpecification()
-                browser = await playwright.chromium.launch(headless=EVALUATOR_HEADLESS, args=[f"--window-size={browser_specifications.screen_width},{browser_specifications.screen_height}"])
+                headless = self.config.headless if self.config.headless is not None else EVALUATOR_HEADLESS
+                browser = await playwright.chromium.launch(headless=headless, args=[f"--window-size={browser_specifications.screen_width},{browser_specifications.screen_height}"])
                 # browser = await playwright.chromium.launch(headless=EVALUATOR_HEADLESS, slow_mo=2000)
                 context = await browser.new_context(
                     extra_http_headers={"X-WebAgent-Id": web_agent_id, "X-Validator-Id": VALIDATOR_ID},
@@ -541,23 +615,7 @@ class ConcurrentEvaluator(IEvaluator):
                     page.on("request", _on_request)
                     page.on("response", _on_response)
 
-                dynamic_config = self.config.dynamic_phase_config
-                dynamic_enabled = dynamic_config.any_enabled() if dynamic_config else False
-                if dynamic_enabled:
-                    try:
-                        seed_value = extract_seed_from_url(task.url)
-                    except Exception:
-                        seed_value = None
-                    browser_executor = DynamicPlaywrightExecutor(
-                        browser_specifications,
-                        page,
-                        self.backend_demo_webs_service,
-                        dynamic_config=dynamic_config,
-                        project_id=self.web_project.id,
-                        seed=seed_value,
-                    )
-                else:
-                    browser_executor = PlaywrightBrowserExecutor(browser_specifications, page, self.backend_demo_webs_service)
+                browser_executor = PlaywrightBrowserExecutor(browser_specifications, page, self.backend_demo_webs_service)
 
                 _log_action_execution(f"🎬 Starting execution of {len(actions)} actions", web_agent_id=web_agent_id)
 

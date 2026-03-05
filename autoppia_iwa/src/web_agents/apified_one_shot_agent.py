@@ -12,6 +12,12 @@ from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
 from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution
 
 
+def _parse_remote_demo_endpoint():
+    """Return parsed URL for the configured remote demo webs endpoint (scheme + netloc)."""
+    remote = DEMO_WEBS_ENDPOINT if DEMO_WEBS_ENDPOINT.startswith("http") else f"https://{DEMO_WEBS_ENDPOINT}"
+    return urlparse(remote)
+
+
 class ApifiedOneShotWebAgent(IWebAgent):
     """
     One-shot agent that calls a remote /solve_task endpoint and rebuilds a TaskSolution.
@@ -40,6 +46,7 @@ class ApifiedOneShotWebAgent(IWebAgent):
         *,
         task: Task,
         snapshot_html: str,
+        screenshot: str | bytes | None = None,
         url: str,
         step_index: int,
         history: list[dict[str, Any]] | None = None,
@@ -76,18 +83,13 @@ class ApifiedOneShotWebAgent(IWebAgent):
                 payload = task.clean_task()
                 payload["url"] = self._force_localhost(payload.get("url"))
 
-                async with session.post(f"{self.base_url}/solve_task", json=payload) as response:
+                async with session.post(f"{self.base_url}/solve_task_at_once", json=payload) as response:
                     response.raise_for_status()
                     response_json = await response.json()
             except Exception as e:
-                raise RuntimeError(f"Error during HTTP request to {self.base_url}/solve_task: {e}") from e
+                raise RuntimeError(f"Error during HTTP request to {self.base_url}/solve_task_at_once: {e}") from e
 
             actions_data = response_json.get("actions", [])
-            for action in actions_data:
-                if isinstance(action, dict) and action.get("type") in {"NavigateAction", "navigate"}:
-                    action_url = action.get("url")
-                    action["url"] = self._rewrite_to_remote(action_url)
-
             web_agent_id = response_json.get("web_agent_id", "unknown")
             recording_str = response_json.get("recording", "")
             rebuilt_actions: list[BaseAction] = []
@@ -118,12 +120,10 @@ class ApifiedOneShotWebAgent(IWebAgent):
     @staticmethod
     def _rewrite_to_remote(original_url: str | None) -> str | None:
         """Rewrite agent-produced URLs to point at the configured remote demo webs endpoint."""
-
         if not original_url:
             return original_url
 
-        remote = DEMO_WEBS_ENDPOINT if DEMO_WEBS_ENDPOINT.startswith("http") else f"http://{DEMO_WEBS_ENDPOINT}"
-        remote_parsed = urlparse(remote)
+        remote_parsed = _parse_remote_demo_endpoint()
 
         # Relative paths from the agent should be anchored to the remote host
         if original_url.startswith("/"):

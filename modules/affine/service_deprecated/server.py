@@ -23,7 +23,7 @@ from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
-from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
+from autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.web_agents.apified_one_shot_agent import ApifiedOneShotWebAgent
 
 
@@ -66,18 +66,15 @@ class _TaskStore:
     async def _generate_for_project(self, project: WebProject) -> list[Task]:
         default_cache = Path(__file__).resolve().parents[1] / "data" / "affine" / "tasks"
         cache_dir = os.getenv("AFFINE_TASK_CACHE_DIR", str(default_cache))
-        use_cached = bool(int(os.getenv("AFFINE_USE_CACHED_TASKS", "1")))
         prompts_per_use_case = int(os.getenv("AFFINE_PROMPTS_PER_USE_CASE", "1"))
         # Removed num_use_cases: use use_cases=None to get all use cases
         enable_dynamic_html = bool(int(os.getenv("AFFINE_ENABLE_DYNAMIC_HTML", "0")))
 
         tasks = await generate_tasks_for_project(
             project,
-            use_cached=use_cached,
-            cache_dir=cache_dir,
             prompts_per_use_case=prompts_per_use_case,
             use_cases=None,
-            enable_dynamic_html=enable_dynamic_html,
+            dynamic=enable_dynamic_html,
         )
         if tasks:
             return tasks
@@ -91,6 +88,7 @@ class _TaskStore:
                 return
 
             wanted_ids = self._wanted_project_ids()
+            # Extract nested conditional expression
             projects = [self._projects_by_id()[pid] for pid in wanted_ids if pid in self._projects_by_id()] if wanted_ids else list(demo_web_projects)
             tasks: list[tuple[Task, WebProject]] = []
             for project in projects:
@@ -122,28 +120,28 @@ async def _startup() -> None:
     await task_store.ensure_tasks()
 
 
-@app.get("/healthz")
+@app.get("/healthz", responses={500: {"description": "Internal server error during health check"}})
 async def health() -> dict:
     try:
         await task_store.ensure_tasks()
         return {"status": "ok", "tasks": len(task_store._tasks)}
-    except Exception as exc:  # pragma: no cover - best effort
+    except (RuntimeError, KeyError, ValueError) as exc:  # pragma: no cover - best effort
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
-@app.post("/evaluate", response_model=EvaluateResponse)
+@app.post("/evaluate", responses={503: {"description": "Task loading failed"}})
 async def evaluate(req: EvaluateRequest) -> EvaluateResponse:
     try:
         await task_store.ensure_tasks()
         task, project, resolved_idx = task_store.get(req.task_id)
-    except Exception as exc:
+    except (RuntimeError, KeyError, IndexError, ValueError) as exc:
         raise HTTPException(status_code=503, detail=f"Task loading failed: {exc}") from exc
 
     agent = ApifiedOneShotWebAgent(base_url=str(req.base_url), timeout=req.timeout or 600)
 
     try:
         task_solution = await agent.solve_task(task)
-    except Exception as exc:
+    except (RuntimeError, TimeoutError, ValueError, ConnectionError) as exc:
         return EvaluateResponse(score=0.0, success=False, error=f"solve_task failed: {exc}", extra={"task_index": resolved_idx})
 
     cfg = EvaluatorConfig(
@@ -170,7 +168,7 @@ async def evaluate(req: EvaluateRequest) -> EvaluateResponse:
             "tests_total": getattr(result.stats, "total_tests", None),
         }
         return EvaluateResponse(score=score, success=success, error=error, extra=extra)
-    except Exception as exc:
+    except (RuntimeError, ValueError, TypeError, AttributeError) as exc:
         return EvaluateResponse(score=0.0, success=False, error=f"evaluation failed: {exc}", extra={"task_index": resolved_idx})
 
 
@@ -178,9 +176,11 @@ def run() -> None:
     """CLI entrypoint: python -m autoppia_iwa.affine_service.server"""
     import uvicorn
 
+    # Default 127.0.0.1; set AFFINE_SERVICE_HOST=0.0.0.0 for containerized deployments
+    host = os.getenv("AFFINE_SERVICE_HOST", "127.0.0.1")
     uvicorn.run(
         "autoppia_iwa.affine_service.server:app",
-        host="0.0.0.0",
+        host=host,
         port=int(os.getenv("PORT", "8000")),
         reload=False,
     )

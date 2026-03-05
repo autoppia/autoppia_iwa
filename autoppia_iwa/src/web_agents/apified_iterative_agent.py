@@ -10,10 +10,10 @@ from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.execution.actions.actions import BaseAction, NavigateAction
 from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
-from autoppia_iwa.src.web_agents.classes import IWebAgent
+from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution
 
 
-class ApifiedIterativeWebAgent(IWebAgent):
+class ApifiedWebAgent(IWebAgent):
     """
     Iterative agent that calls a remote /act (or /step) endpoint to get next actions.
 
@@ -50,6 +50,7 @@ class ApifiedIterativeWebAgent(IWebAgent):
         *,
         task: Task,
         snapshot_html: str,
+        screenshot: str | bytes | None = None,
         url: str,
         step_index: int,
         history: list[dict[str, Any]] | None = None,
@@ -62,6 +63,7 @@ class ApifiedIterativeWebAgent(IWebAgent):
             "prompt": getattr(task, "prompt", None),
             "url": self._force_localhost(url),
             "snapshot_html": snapshot_html,
+            "screenshot": screenshot,
             "step_index": int(step_index),
             "web_project_id": getattr(task, "web_project_id", None),
         }
@@ -87,6 +89,7 @@ class ApifiedIterativeWebAgent(IWebAgent):
         *,
         task: Task,
         snapshot_html: str,
+        screenshot: str | bytes | None = None,
         url: str,
         step_index: int,
         history: list[dict[str, Any]] | None = None,
@@ -95,11 +98,16 @@ class ApifiedIterativeWebAgent(IWebAgent):
             self.act(
                 task=task,
                 snapshot_html=snapshot_html,
+                screenshot=screenshot,
                 url=url,
                 step_index=step_index,
                 history=history,
             )
         )
+
+    async def solve_task(self, task: Task) -> TaskSolution:
+        """Not supported: this agent only supports act(). Use ApifiedOneShotWebAgent for one-shot solve_task."""
+        raise NotImplementedError("ApifiedWebAgent only supports act(). Use ApifiedOneShotWebAgent for one-shot solve_task.")
 
     # ------------------------------------------------------------------ #
     # Helpers
@@ -163,7 +171,7 @@ class ApifiedIterativeWebAgent(IWebAgent):
         if not original_url:
             return original_url
 
-        remote = DEMO_WEBS_ENDPOINT if DEMO_WEBS_ENDPOINT.startswith("http") else f"http://{DEMO_WEBS_ENDPOINT}"
+        remote = DEMO_WEBS_ENDPOINT if DEMO_WEBS_ENDPOINT.startswith("http") else f"https://{DEMO_WEBS_ENDPOINT}"
         remote_parsed = urlparse(remote)
 
         # Relative paths from the agent should be anchored to the remote host
@@ -179,4 +187,6 @@ class ApifiedIterativeWebAgent(IWebAgent):
         return urlunparse(new_url)
 
 
-__all__ = ["ApifiedIterativeWebAgent"]
+ApifiedIterativeWebAgent = ApifiedWebAgent
+
+__all__ = ["ApifiedIterativeWebAgent", "ApifiedWebAgent"]

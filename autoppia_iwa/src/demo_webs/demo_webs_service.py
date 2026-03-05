@@ -13,6 +13,9 @@ from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
 EVALUATION_LEVEL_NAME = "EVALUATION"
 EVALUATION_LEVEL_NO = 25
 
+# Constants
+RESETTING_DB_CONTEXT = "RESETTING DB"
+
 
 def _log_evaluation_event(message: str, context: str = "GENERAL") -> None:
     """Log generic evaluation events with INFO level."""
@@ -52,6 +55,10 @@ class BackendDemoWebService:
     - Support for both real and demo web projects
     """
 
+    # ============================================================================
+    # INITIALIZATION
+    # ============================================================================
+
     def __init__(self, web_project: WebProject, web_agent_id: str = "unknown_agent") -> None:
         self._session: aiohttp.ClientSession | None = None
         self.web_project = web_project
@@ -64,6 +71,10 @@ class BackendDemoWebService:
 
         # Configure JSON parser (prefer orjson for performance)
         self._configure_json_parser()
+
+    # ============================================================================
+    # JSON PARSER CONFIGURATION
+    # ============================================================================
 
     def _configure_json_parser(self) -> None:
         """Configure the JSON parser, preferring orjson if available."""
@@ -80,7 +91,11 @@ class BackendDemoWebService:
             self._read_mode = "rb"
             logger.debug("Using orjson for faster JSON processing")
 
-    async def _get_session(self) -> aiohttp.ClientSession:
+    # ============================================================================
+    # SESSION MANAGEMENT
+    # ============================================================================
+
+    def _get_session(self) -> aiohttp.ClientSession:
         """Lazy creation of aiohttp session, re-using it if open."""
 
         if self._session is None or self._session.closed:
@@ -96,6 +111,10 @@ class BackendDemoWebService:
                 await self._session.close()
             self._session = None
             logger.debug("Closed aiohttp session")
+
+    # ============================================================================
+    # BACKEND API METHODS
+    # ============================================================================
 
     async def get_backend_events(self, web_agent_id: str) -> list[BackendEvent]:
         """
@@ -116,7 +135,7 @@ class BackendDemoWebService:
                 "validator_id": VALIDATOR_ID,
             }
 
-            session = await self._get_session()
+            session = self._get_session()
 
             async with session.get(endpoint, params=params) as response:
                 response.raise_for_status()
@@ -130,18 +149,17 @@ class BackendDemoWebService:
             logger.warning(f"Failed to get events from API: {e}. Falling back to file cache.")
             return []
 
-    async def reset_database(self, override_url: str | None = None, web_agent_id: str | None = None) -> bool:
+    async def reset_database(self, web_agent_id: str | None = None) -> bool:
         """
         Reset the entire database (requires admin/superuser permissions).
 
         Args:
-            override_url: Optional endpoint override (e.g., http://.../reset_db/).
             web_agent_id: Optional agent id; defaults to the instance's id.
         """
 
-        _log_evaluation_event("Starting Reset Database", context="RESETTING DB")
+        _log_evaluation_event("Starting Reset Database", context=RESETTING_DB_CONTEXT)
         if self.web_project.is_web_real:
-            _log_evaluation_event("Not resetting DB as it's a real website", context="RESETTING DB")
+            _log_evaluation_event("Not resetting DB as it's a real website", context=RESETTING_DB_CONTEXT)
             return False
 
         try:
@@ -151,11 +169,11 @@ class BackendDemoWebService:
                 "web_agent_id": web_agent_id or self.web_agent_id,
                 "validator_id": VALIDATOR_ID,
             }
-            session = await self._get_session()
+            session = self._get_session()
 
             async with session.delete(endpoint, params=params) as response:
                 if response.status in (200, 202):
-                    _log_evaluation_event("Database reset via API successful", context="RESETTING DB")
+                    _log_evaluation_event("Database reset via API successful", context=RESETTING_DB_CONTEXT)
                     return True
         except Exception as e:
             logger.warning(f"API reset failed: {e}. Falling back to file reset.")

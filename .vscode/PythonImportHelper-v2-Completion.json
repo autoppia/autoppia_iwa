@@ -20762,7 +20762,7 @@
         "documentation": {}
     },
     {
-        "label": "LLM_PROVIDER",
+        "label": "",
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
         "isExtraImport": true,
@@ -38281,16 +38281,16 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "_PROJECT_ROOT = Path(__file__).resolve().parents[2]\nload_dotenv(_PROJECT_ROOT / \".env\", override=True)\n# ============================\n# LLM CONFIGURATION\n# ============================\nLLM_PROVIDER = os.getenv(\"LLM_PROVIDER\", \"local\")  # Can be \"local\", \"openai\", or \"chutes\"\nLLM_THRESHOLD = 100\nLLM_CONTEXT_WINDOW = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 10000))\n# OpenAI Configuration\nOPENAI_API_KEY = os.getenv(\"OPENAI_API_KEY\")",
+        "peekOfCode": "_PROJECT_ROOT = Path(__file__).resolve().parents[2]\nload_dotenv(_PROJECT_ROOT / \".env\", override=True)\n# ============================\n# LLM CONFIGURATION\n# ============================\n = os.getenv(\"\", \"local\")  # Can be \"local\", \"openai\", or \"chutes\"\nLLM_THRESHOLD = 100\nLLM_CONTEXT_WINDOW = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 10000))\n# OpenAI Configuration\nOPENAI_API_KEY = os.getenv(\"OPENAI_API_KEY\")",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
     {
-        "label": "LLM_PROVIDER",
+        "label": "",
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "LLM_PROVIDER = os.getenv(\"LLM_PROVIDER\", \"local\")  # Can be \"local\", \"openai\", or \"chutes\"\nLLM_THRESHOLD = 100\nLLM_CONTEXT_WINDOW = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 10000))\n# OpenAI Configuration\nOPENAI_API_KEY = os.getenv(\"OPENAI_API_KEY\")\nOPENAI_MODEL = os.getenv(\"OPENAI_MODEL\", \"gpt-4o-mini\")\nOPENAI_MAX_TOKENS = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 2000))\nOPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.8))\n# Chutes Configuration\nCHUTES_BASE_URL = os.getenv(\"CHUTES_BASE_URL\", \"https://your-username-your-chute.chutes.ai/v1\")",
+        "peekOfCode": " = os.getenv(\"\", \"local\")  # Can be \"local\", \"openai\", or \"chutes\"\nLLM_THRESHOLD = 100\nLLM_CONTEXT_WINDOW = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 10000))\n# OpenAI Configuration\nOPENAI_API_KEY = os.getenv(\"OPENAI_API_KEY\")\nOPENAI_MODEL = os.getenv(\"OPENAI_MODEL\", \"gpt-4o-mini\")\nOPENAI_MAX_TOKENS = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 2000))\nOPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.8))\n# Chutes Configuration\nCHUTES_BASE_URL = os.getenv(\"CHUTES_BASE_URL\", \"https://your-username-your-chute.chutes.ai/v1\")",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -38344,7 +38344,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "OPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.8))\n# Chutes Configuration\nCHUTES_BASE_URL = os.getenv(\"CHUTES_BASE_URL\", \"https://your-username-your-chute.chutes.ai/v1\")\nCHUTES_API_KEY = os.getenv(\"CHUTES_API_KEY\")\nCHUTES_MODEL = os.getenv(\"CHUTES_MODEL\", \"meta-llama/Llama-3.1-8B-Instruct\")\nCHUTES_MAX_TOKENS = int(os.getenv(\"CHUTES_MAX_TOKENS\", 2048))\nCHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:",
+        "peekOfCode": "OPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.8))\n# Chutes Configuration\nCHUTES_BASE_URL = os.getenv(\"CHUTES_BASE_URL\", \"https://your-username-your-chute.chutes.ai/v1\")\nCHUTES_API_KEY = os.getenv(\"CHUTES_API_KEY\")\nCHUTES_MODEL = os.getenv(\"CHUTES_MODEL\", \"meta-llama/Llama-3.1-8B-Instruct\")\nCHUTES_MAX_TOKENS = int(os.getenv(\"CHUTES_MAX_TOKENS\", 2048))\nCHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif  == \"openai\" and not OPENAI_API_KEY:",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -38353,7 +38353,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "CHUTES_BASE_URL = os.getenv(\"CHUTES_BASE_URL\", \"https://your-username-your-chute.chutes.ai/v1\")\nCHUTES_API_KEY = os.getenv(\"CHUTES_API_KEY\")\nCHUTES_MODEL = os.getenv(\"CHUTES_MODEL\", \"meta-llama/Llama-3.1-8B-Instruct\")\nCHUTES_MAX_TOKENS = int(os.getenv(\"CHUTES_MAX_TOKENS\", 2048))\nCHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\nif LLM_PROVIDER == \"chutes\" and not CHUTES_API_KEY:",
+        "peekOfCode": "CHUTES_BASE_URL = os.getenv(\"CHUTES_BASE_URL\", \"https://your-username-your-chute.chutes.ai/v1\")\nCHUTES_API_KEY = os.getenv(\"CHUTES_API_KEY\")\nCHUTES_MODEL = os.getenv(\"CHUTES_MODEL\", \"meta-llama/Llama-3.1-8B-Instruct\")\nCHUTES_MAX_TOKENS = int(os.getenv(\"CHUTES_MAX_TOKENS\", 2048))\nCHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif  == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when  is set to 'openai'.\")\nif  == \"chutes\" and not CHUTES_API_KEY:",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -38362,7 +38362,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "CHUTES_API_KEY = os.getenv(\"CHUTES_API_KEY\")\nCHUTES_MODEL = os.getenv(\"CHUTES_MODEL\", \"meta-llama/Llama-3.1-8B-Instruct\")\nCHUTES_MAX_TOKENS = int(os.getenv(\"CHUTES_MAX_TOKENS\", 2048))\nCHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\nif LLM_PROVIDER == \"chutes\" and not CHUTES_API_KEY:\n    raise ValueError(\"CHUTES_API_KEY is required when LLM_PROVIDER is set to 'chutes'.\")",
+        "peekOfCode": "CHUTES_API_KEY = os.getenv(\"CHUTES_API_KEY\")\nCHUTES_MODEL = os.getenv(\"CHUTES_MODEL\", \"meta-llama/Llama-3.1-8B-Instruct\")\nCHUTES_MAX_TOKENS = int(os.getenv(\"CHUTES_MAX_TOKENS\", 2048))\nCHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif  == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when  is set to 'openai'.\")\nif  == \"chutes\" and not CHUTES_API_KEY:\n    raise ValueError(\"CHUTES_API_KEY is required when  is set to 'chutes'.\")",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -38371,7 +38371,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "CHUTES_MODEL = os.getenv(\"CHUTES_MODEL\", \"meta-llama/Llama-3.1-8B-Instruct\")\nCHUTES_MAX_TOKENS = int(os.getenv(\"CHUTES_MAX_TOKENS\", 2048))\nCHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\nif LLM_PROVIDER == \"chutes\" and not CHUTES_API_KEY:\n    raise ValueError(\"CHUTES_API_KEY is required when LLM_PROVIDER is set to 'chutes'.\")\n# ============================",
+        "peekOfCode": "CHUTES_MODEL = os.getenv(\"CHUTES_MODEL\", \"meta-llama/Llama-3.1-8B-Instruct\")\nCHUTES_MAX_TOKENS = int(os.getenv(\"CHUTES_MAX_TOKENS\", 2048))\nCHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif  == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when  is set to 'openai'.\")\nif  == \"chutes\" and not CHUTES_API_KEY:\n    raise ValueError(\"CHUTES_API_KEY is required when  is set to 'chutes'.\")\n# ============================",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -38380,7 +38380,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "CHUTES_MAX_TOKENS = int(os.getenv(\"CHUTES_MAX_TOKENS\", 2048))\nCHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\nif LLM_PROVIDER == \"chutes\" and not CHUTES_API_KEY:\n    raise ValueError(\"CHUTES_API_KEY is required when LLM_PROVIDER is set to 'chutes'.\")\n# ============================\n# Application Configuration",
+        "peekOfCode": "CHUTES_MAX_TOKENS = int(os.getenv(\"CHUTES_MAX_TOKENS\", 2048))\nCHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif  == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when  is set to 'openai'.\")\nif  == \"chutes\" and not CHUTES_API_KEY:\n    raise ValueError(\"CHUTES_API_KEY is required when  is set to 'chutes'.\")\n# ============================\n# Application Configuration",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -38389,7 +38389,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "CHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\nif LLM_PROVIDER == \"chutes\" and not CHUTES_API_KEY:\n    raise ValueError(\"CHUTES_API_KEY is required when LLM_PROVIDER is set to 'chutes'.\")\n# ============================\n# Application Configuration\n# ============================",
+        "peekOfCode": "CHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif  == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when  is set to 'openai'.\")\nif  == \"chutes\" and not CHUTES_API_KEY:\n    raise ValueError(\"CHUTES_API_KEY is required when  is set to 'chutes'.\")\n# ============================\n# Application Configuration\n# ============================",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -38398,7 +38398,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "CHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\nif LLM_PROVIDER == \"chutes\" and not CHUTES_API_KEY:\n    raise ValueError(\"CHUTES_API_KEY is required when LLM_PROVIDER is set to 'chutes'.\")\n# ============================\n# Application Configuration\n# ============================\nEVALUATOR_HEADLESS = bool(strtobool(os.getenv(\"EVALUATOR_HEADLESS\", \"True\")))",
+        "peekOfCode": "CHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif  == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when  is set to 'openai'.\")\nif  == \"chutes\" and not CHUTES_API_KEY:\n    raise ValueError(\"CHUTES_API_KEY is required when  is set to 'chutes'.\")\n# ============================\n# Application Configuration\n# ============================\nEVALUATOR_HEADLESS = bool(strtobool(os.getenv(\"EVALUATOR_HEADLESS\", \"True\")))",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -48127,7 +48127,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.web_agents.examples.browser_use.agent",
         "description": "autoppia_iwa.src.web_agents.examples.browser_use.agent",
-        "peekOfCode": "class BrowserUseConfig(BaseModel):\n    llm_provider: Literal[\"anthropic\", \"openai\"] = \"openai\"\n    llm_model: str = OPENAI_MODEL\n    max_steps: int = 15\n    use_vision: bool = False\n    headless: bool = False\nclass BrowserUseWebAgent(BaseAgent):\n    \"\"\"Web agent that integrates with browser-use for solving web-based tasks.\"\"\"\n    def __init__(self, config: BrowserUseConfig | None = None):\n        super().__init__()",
+        "peekOfCode": "class BrowserUseConfig(BaseModel):\n    : Literal[\"anthropic\", \"openai\"] = \"openai\"\n    llm_model: str = OPENAI_MODEL\n    max_steps: int = 15\n    use_vision: bool = False\n    headless: bool = False\nclass BrowserUseWebAgent(BaseAgent):\n    \"\"\"Web agent that integrates with browser-use for solving web-based tasks.\"\"\"\n    def __init__(self, config: BrowserUseConfig | None = None):\n        super().__init__()",
         "detail": "autoppia_iwa.src.web_agents.examples.browser_use.agent",
         "documentation": {}
     },
@@ -48136,7 +48136,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.web_agents.examples.browser_use.agent",
         "description": "autoppia_iwa.src.web_agents.examples.browser_use.agent",
-        "peekOfCode": "class BrowserUseWebAgent(BaseAgent):\n    \"\"\"Web agent that integrates with browser-use for solving web-based tasks.\"\"\"\n    def __init__(self, config: BrowserUseConfig | None = None):\n        super().__init__()\n        config = config or BrowserUseConfig()\n        self.llm_provider = config.llm_provider\n        self.llm_model = config.llm_model\n        self._max_steps = config.max_steps\n        self._use_vision = config.use_vision\n        self.isheadless = config.headless",
+        "peekOfCode": "class BrowserUseWebAgent(BaseAgent):\n    \"\"\"Web agent that integrates with browser-use for solving web-based tasks.\"\"\"\n    def __init__(self, config: BrowserUseConfig | None = None):\n        super().__init__()\n        config = config or BrowserUseConfig()\n        self. = config.\n        self.llm_model = config.llm_model\n        self._max_steps = config.max_steps\n        self._use_vision = config.use_vision\n        self.isheadless = config.headless",
         "detail": "autoppia_iwa.src.web_agents.examples.browser_use.agent",
         "documentation": {}
     },
@@ -48226,16 +48226,16 @@
         "kind": 5,
         "importPath": "build.lib.autoppia_iwa.config.config",
         "description": "build.lib.autoppia_iwa.config.config",
-        "peekOfCode": "_PROJECT_ROOT = Path(__file__).resolve().parents[2]\nload_dotenv(_PROJECT_ROOT / \".env\", override=True)\n# ============================\n# LLM CONFIGURATION\n# ============================\nLLM_PROVIDER = os.getenv(\"LLM_PROVIDER\", \"local\")  # Can be \"local\", \"openai\", or \"chutes\"\nLLM_THRESHOLD = 100\nLLM_CONTEXT_WINDOW = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 10000))\n# OpenAI Configuration\nOPENAI_API_KEY = os.getenv(\"OPENAI_API_KEY\")",
+        "peekOfCode": "_PROJECT_ROOT = Path(__file__).resolve().parents[2]\nload_dotenv(_PROJECT_ROOT / \".env\", override=True)\n# ============================\n# LLM CONFIGURATION\n# ============================\n = os.getenv(\"\", \"local\")  # Can be \"local\", \"openai\", or \"chutes\"\nLLM_THRESHOLD = 100\nLLM_CONTEXT_WINDOW = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 10000))\n# OpenAI Configuration\nOPENAI_API_KEY = os.getenv(\"OPENAI_API_KEY\")",
         "detail": "build.lib.autoppia_iwa.config.config",
         "documentation": {}
     },
     {
-        "label": "LLM_PROVIDER",
+        "label": "",
         "kind": 5,
         "importPath": "build.lib.autoppia_iwa.config.config",
         "description": "build.lib.autoppia_iwa.config.config",
-        "peekOfCode": "LLM_PROVIDER = os.getenv(\"LLM_PROVIDER\", \"local\")  # Can be \"local\", \"openai\", or \"chutes\"\nLLM_THRESHOLD = 100\nLLM_CONTEXT_WINDOW = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 10000))\n# OpenAI Configuration\nOPENAI_API_KEY = os.getenv(\"OPENAI_API_KEY\")\nOPENAI_MODEL = os.getenv(\"OPENAI_MODEL\", \"gpt-4o-mini\")\nOPENAI_MAX_TOKENS = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 2000))\nOPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.8))\n# Chutes Configuration\nCHUTES_BASE_URL = os.getenv(\"CHUTES_BASE_URL\", \"https://your-username-your-chute.chutes.ai/v1\")",
+        "peekOfCode": " = os.getenv(\"\", \"local\")  # Can be \"local\", \"openai\", or \"chutes\"\nLLM_THRESHOLD = 100\nLLM_CONTEXT_WINDOW = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 10000))\n# OpenAI Configuration\nOPENAI_API_KEY = os.getenv(\"OPENAI_API_KEY\")\nOPENAI_MODEL = os.getenv(\"OPENAI_MODEL\", \"gpt-4o-mini\")\nOPENAI_MAX_TOKENS = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 2000))\nOPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.8))\n# Chutes Configuration\nCHUTES_BASE_URL = os.getenv(\"CHUTES_BASE_URL\", \"https://your-username-your-chute.chutes.ai/v1\")",
         "detail": "build.lib.autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -48289,7 +48289,7 @@
         "kind": 5,
         "importPath": "build.lib.autoppia_iwa.config.config",
         "description": "build.lib.autoppia_iwa.config.config",
-        "peekOfCode": "OPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.8))\n# Chutes Configuration\nCHUTES_BASE_URL = os.getenv(\"CHUTES_BASE_URL\", \"https://your-username-your-chute.chutes.ai/v1\")\nCHUTES_API_KEY = os.getenv(\"CHUTES_API_KEY\")\nCHUTES_MODEL = os.getenv(\"CHUTES_MODEL\", \"meta-llama/Llama-3.1-8B-Instruct\")\nCHUTES_MAX_TOKENS = int(os.getenv(\"CHUTES_MAX_TOKENS\", 2048))\nCHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:",
+        "peekOfCode": "OPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.8))\n# Chutes Configuration\nCHUTES_BASE_URL = os.getenv(\"CHUTES_BASE_URL\", \"https://your-username-your-chute.chutes.ai/v1\")\nCHUTES_API_KEY = os.getenv(\"CHUTES_API_KEY\")\nCHUTES_MODEL = os.getenv(\"CHUTES_MODEL\", \"meta-llama/Llama-3.1-8B-Instruct\")\nCHUTES_MAX_TOKENS = int(os.getenv(\"CHUTES_MAX_TOKENS\", 2048))\nCHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif  == \"openai\" and not OPENAI_API_KEY:",
         "detail": "build.lib.autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -48298,7 +48298,7 @@
         "kind": 5,
         "importPath": "build.lib.autoppia_iwa.config.config",
         "description": "build.lib.autoppia_iwa.config.config",
-        "peekOfCode": "CHUTES_BASE_URL = os.getenv(\"CHUTES_BASE_URL\", \"https://your-username-your-chute.chutes.ai/v1\")\nCHUTES_API_KEY = os.getenv(\"CHUTES_API_KEY\")\nCHUTES_MODEL = os.getenv(\"CHUTES_MODEL\", \"meta-llama/Llama-3.1-8B-Instruct\")\nCHUTES_MAX_TOKENS = int(os.getenv(\"CHUTES_MAX_TOKENS\", 2048))\nCHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\nif LLM_PROVIDER == \"chutes\" and not CHUTES_API_KEY:",
+        "peekOfCode": "CHUTES_BASE_URL = os.getenv(\"CHUTES_BASE_URL\", \"https://your-username-your-chute.chutes.ai/v1\")\nCHUTES_API_KEY = os.getenv(\"CHUTES_API_KEY\")\nCHUTES_MODEL = os.getenv(\"CHUTES_MODEL\", \"meta-llama/Llama-3.1-8B-Instruct\")\nCHUTES_MAX_TOKENS = int(os.getenv(\"CHUTES_MAX_TOKENS\", 2048))\nCHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif  == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when  is set to 'openai'.\")\nif  == \"chutes\" and not CHUTES_API_KEY:",
         "detail": "build.lib.autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -48307,7 +48307,7 @@
         "kind": 5,
         "importPath": "build.lib.autoppia_iwa.config.config",
         "description": "build.lib.autoppia_iwa.config.config",
-        "peekOfCode": "CHUTES_API_KEY = os.getenv(\"CHUTES_API_KEY\")\nCHUTES_MODEL = os.getenv(\"CHUTES_MODEL\", \"meta-llama/Llama-3.1-8B-Instruct\")\nCHUTES_MAX_TOKENS = int(os.getenv(\"CHUTES_MAX_TOKENS\", 2048))\nCHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\nif LLM_PROVIDER == \"chutes\" and not CHUTES_API_KEY:\n    raise ValueError(\"CHUTES_API_KEY is required when LLM_PROVIDER is set to 'chutes'.\")",
+        "peekOfCode": "CHUTES_API_KEY = os.getenv(\"CHUTES_API_KEY\")\nCHUTES_MODEL = os.getenv(\"CHUTES_MODEL\", \"meta-llama/Llama-3.1-8B-Instruct\")\nCHUTES_MAX_TOKENS = int(os.getenv(\"CHUTES_MAX_TOKENS\", 2048))\nCHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif  == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when  is set to 'openai'.\")\nif  == \"chutes\" and not CHUTES_API_KEY:\n    raise ValueError(\"CHUTES_API_KEY is required when  is set to 'chutes'.\")",
         "detail": "build.lib.autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -48316,7 +48316,7 @@
         "kind": 5,
         "importPath": "build.lib.autoppia_iwa.config.config",
         "description": "build.lib.autoppia_iwa.config.config",
-        "peekOfCode": "CHUTES_MODEL = os.getenv(\"CHUTES_MODEL\", \"meta-llama/Llama-3.1-8B-Instruct\")\nCHUTES_MAX_TOKENS = int(os.getenv(\"CHUTES_MAX_TOKENS\", 2048))\nCHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\nif LLM_PROVIDER == \"chutes\" and not CHUTES_API_KEY:\n    raise ValueError(\"CHUTES_API_KEY is required when LLM_PROVIDER is set to 'chutes'.\")\n# ============================",
+        "peekOfCode": "CHUTES_MODEL = os.getenv(\"CHUTES_MODEL\", \"meta-llama/Llama-3.1-8B-Instruct\")\nCHUTES_MAX_TOKENS = int(os.getenv(\"CHUTES_MAX_TOKENS\", 2048))\nCHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif  == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when  is set to 'openai'.\")\nif  == \"chutes\" and not CHUTES_API_KEY:\n    raise ValueError(\"CHUTES_API_KEY is required when  is set to 'chutes'.\")\n# ============================",
         "detail": "build.lib.autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -48325,7 +48325,7 @@
         "kind": 5,
         "importPath": "build.lib.autoppia_iwa.config.config",
         "description": "build.lib.autoppia_iwa.config.config",
-        "peekOfCode": "CHUTES_MAX_TOKENS = int(os.getenv(\"CHUTES_MAX_TOKENS\", 2048))\nCHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\nif LLM_PROVIDER == \"chutes\" and not CHUTES_API_KEY:\n    raise ValueError(\"CHUTES_API_KEY is required when LLM_PROVIDER is set to 'chutes'.\")\n# ============================\n# Application Configuration",
+        "peekOfCode": "CHUTES_MAX_TOKENS = int(os.getenv(\"CHUTES_MAX_TOKENS\", 2048))\nCHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif  == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when  is set to 'openai'.\")\nif  == \"chutes\" and not CHUTES_API_KEY:\n    raise ValueError(\"CHUTES_API_KEY is required when  is set to 'chutes'.\")\n# ============================\n# Application Configuration",
         "detail": "build.lib.autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -48334,7 +48334,7 @@
         "kind": 5,
         "importPath": "build.lib.autoppia_iwa.config.config",
         "description": "build.lib.autoppia_iwa.config.config",
-        "peekOfCode": "CHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\nif LLM_PROVIDER == \"chutes\" and not CHUTES_API_KEY:\n    raise ValueError(\"CHUTES_API_KEY is required when LLM_PROVIDER is set to 'chutes'.\")\n# ============================\n# Application Configuration\n# ============================",
+        "peekOfCode": "CHUTES_TEMPERATURE = float(os.getenv(\"CHUTES_TEMPERATURE\", 0.7))\nCHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif  == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when  is set to 'openai'.\")\nif  == \"chutes\" and not CHUTES_API_KEY:\n    raise ValueError(\"CHUTES_API_KEY is required when  is set to 'chutes'.\")\n# ============================\n# Application Configuration\n# ============================",
         "detail": "build.lib.autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -48343,7 +48343,7 @@
         "kind": 5,
         "importPath": "build.lib.autoppia_iwa.config.config",
         "description": "build.lib.autoppia_iwa.config.config",
-        "peekOfCode": "CHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\nif LLM_PROVIDER == \"chutes\" and not CHUTES_API_KEY:\n    raise ValueError(\"CHUTES_API_KEY is required when LLM_PROVIDER is set to 'chutes'.\")\n# ============================\n# Application Configuration\n# ============================\nEVALUATOR_HEADLESS = bool(strtobool(os.getenv(\"EVALUATOR_HEADLESS\", \"True\")))",
+        "peekOfCode": "CHUTES_USE_BEARER = bool(strtobool(os.getenv(\"CHUTES_USE_BEARER\", \"False\")))\n# Validate critical environment variables\nif  == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when  is set to 'openai'.\")\nif  == \"chutes\" and not CHUTES_API_KEY:\n    raise ValueError(\"CHUTES_API_KEY is required when  is set to 'chutes'.\")\n# ============================\n# Application Configuration\n# ============================\nEVALUATOR_HEADLESS = bool(strtobool(os.getenv(\"EVALUATOR_HEADLESS\", \"True\")))",
         "detail": "build.lib.autoppia_iwa.config.config",
         "documentation": {}
     },

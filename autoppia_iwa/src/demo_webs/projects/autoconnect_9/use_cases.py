@@ -51,17 +51,17 @@ from .generation_functions import (
     generate_view_user_profile_constraints,
 )
 
-ADDITIONAL_PROMPT_INFO = """
-IMPORTANT REQUIREMENTS:
-1. Start prompt with View user profile or view the profile of user
-2. Always include specific user identifier (e.g., username, full name) in the prompt
- Example:
-    {'username': {'operator': 'not_equals', 'value': 'sarahlee'}}
-Incorrect:
- Prompt:  View the profile of user 'janedoe' where the username is NOT 'sarahlee'.
-Correct:
-    Prompt:  View the profile of user where the username is not equal to 'sarahlee'.
- """
+VIEW_USER_PROFILE_INFO = """
+Critical requirements:
+1. The request must start with "View user profile" or "View the profile of user" (or similar).
+2. Include ALL mentioned constraints in the prompt.
+3. Do not add additional information that is not in the constraints.
+4. All constraint values must be copied exactly as provided (e.g., in single quotes).
+
+EXAMPLES:
+✅ CORRECT: View the profile of user where name not equals 'Smith'.
+❌ INCORRECT: View the profile of user 'janedoe' where the name is NOT 'sarahlee'. (Do not invent user identifiers not in constraints; use exact constraint field and value.)
+""".strip()
 
 VIEW_USER_PROFILE_USE_CASE = UseCase(
     name="VIEW_USER_PROFILE",
@@ -69,21 +69,29 @@ VIEW_USER_PROFILE_USE_CASE = UseCase(
     event=ViewUserProfileEvent,
     event_source_code=ViewUserProfileEvent.get_source_code_of_class(),
     constraints_generator=generate_view_user_profile_constraints,
+    additional_prompt_info=VIEW_USER_PROFILE_INFO,
     examples=[
         {
-            "prompt": "View the profile of user 'janedoe'.",
-            "prompt_for_task_generation": "View the profile of user 'janedoe'.",
+            "prompt": "View the profile of user where name equals 'janedoe'.",
+            "prompt_for_task_generation": "View the profile of user where name equals 'janedoe'.",
         },
         {
-            "prompt": "View the profile of user where user's name is not equal to 'Smith'.",
-            "prompt_for_task_generation": "View the profile of user where user's name is not equal to 'Smith'.",
+            "prompt": "View the profile of user where name is not equal to 'Smith'.",
+            "prompt_for_task_generation": "View the profile of user where name is not equal to 'Smith'.",
         },
         {
-            "prompt": "Open Jane Doe's profile from a post header.",
-            "prompt_for_task_generation": "Open Jane Doe's profile from a post header.",
+            "prompt": "Open the profile of user where name contains 'Jane'.",
+            "prompt_for_task_generation": "View the profile of user where name contains 'Jane'.",
         },
     ],
 )
+
+BACK_TO_ALL_JOBS_INFO = """
+Critical requirements:
+1. The request must start with "Go back to all jobs" (or equivalent).
+2. Include ALL mentioned constraints in the prompt.
+3. Copy constraint values exactly in single quotes; do not reformat or paraphrase.
+""".strip()
 
 BACK_TO_ALL_JOBS_USE_CASE = UseCase(
     name="BACK_TO_ALL_JOBS",
@@ -91,6 +99,7 @@ BACK_TO_ALL_JOBS_USE_CASE = UseCase(
     event=BackToAllJobsEvent,
     event_source_code=BackToAllJobsEvent.get_source_code_of_class(),
     constraints_generator=generate_back_to_all_jobs_constraints,
+    additional_prompt_info=BACK_TO_ALL_JOBS_INFO,
     examples=[
         {
             "prompt": "Go back to all jobs from a job detail page.",
@@ -107,12 +116,20 @@ BACK_TO_ALL_JOBS_USE_CASE = UseCase(
     ],
 )
 
+CONNECT_WITH_USER_INFO = """
+Critical requirements:
+1. The request must start with "Connect with" or "Send connection request to" (or equivalent).
+2. Include ALL mentioned constraints in the prompt.
+3. Copy constraint values exactly in single quotes.
+""".strip()
+
 CONNECT_WITH_USER_USE_CASE = UseCase(
     name="CONNECT_WITH_USER",
     description="The user sends a connection request to another user.",
     event=ConnectWithUserEvent,
     event_source_code=ConnectWithUserEvent.get_source_code_of_class(),
     constraints_generator=generate_connect_with_user_constraints,
+    additional_prompt_info=CONNECT_WITH_USER_INFO,
     examples=[
         {
             "prompt": "Connect with Jane Doe.",
@@ -122,19 +139,37 @@ CONNECT_WITH_USER_USE_CASE = UseCase(
 )
 
 
+POST_STATUS_INFO = """
+Critical requirements:
+1. The request must start with "Post a status" or "Post" (or equivalent).
+2. Include the content constraint with its value in single quotes; copy exactly.
+""".strip()
+
 POST_STATUS_USE_CASE = UseCase(
     name="POST_STATUS",
     description="The user posts a new status update.",
     event=PostStatusEvent,
     event_source_code=PostStatusEvent.get_source_code_of_class(),
     constraints_generator=generate_post_status_constraints,
+    additional_prompt_info=POST_STATUS_INFO,
     examples=[
         {
-            "prompt": "Post a status saying 'hi' ",
-            "prompt_for_task_generation": "Post a status saying 'hi'",
+            "prompt": "Post a status where content equals 'hi'.",
+            "prompt_for_task_generation": "Post a status where content equals 'hi'.",
+        },
+        {
+            "prompt": "Post a status saying 'Just shipped a new feature!'",
+            "prompt_for_task_generation": "Post a status where content contains 'shipped'.",
         },
     ],
 )
+
+LIKE_POST_INFO = """
+Critical requirements:
+1. The request must start with "Like the post" (or equivalent).
+2. Include ALL mentioned constraints in the prompt.
+3. Copy constraint values exactly in single quotes.
+""".strip()
 
 LIKE_POST_USE_CASE = UseCase(
     name="LIKE_POST",
@@ -142,38 +177,41 @@ LIKE_POST_USE_CASE = UseCase(
     event=LikePostEvent,
     event_source_code=LikePostEvent.get_source_code_of_class(),
     constraints_generator=generate_like_post_constraints,
+    additional_prompt_info=LIKE_POST_INFO,
     examples=[
         {
-            "prompt": "Like the post where the poster wrote 'I finally got my AWS certification!'",
-            "prompt_for_task_generation": "Like the post where the poster wrote 'I finally got my AWS certification!'",
+            "prompt": "Like the post where poster_content contains 'I finally got my AWS certification!'",
+            "prompt_for_task_generation": "Like the post where poster_content contains 'I finally got my AWS certification!'",
         },
         {
-            "prompt": "Like the post that includes the phrase 'Launching my first startup today!'",
-            "prompt_for_task_generation": "Like the post that includes the phrase 'Launching my first startup today!'",
+            "prompt": "Like the post where poster_content contains 'Launching my first startup today!'",
+            "prompt_for_task_generation": "Like the post where poster_content contains 'Launching my first startup today!'",
         },
         {
-            "prompt": "Like the post where the content is exactly 'Grateful for everyone who supported me on this journey.'",
-            "prompt_for_task_generation": "Like the post where the content is exactly 'Grateful for everyone who supported me on this journey.'",
+            "prompt": "Like the post where poster_content equals 'Grateful for everyone who supported me on this journey.'",
+            "prompt_for_task_generation": "Like the post where poster_content equals 'Grateful for everyone who supported me on this journey.'",
         },
         {
-            "prompt": "Like the post which does not include the sentence 'Looking for job opportunities.'",
-            "prompt_for_task_generation": "Like the post which does not include the sentence 'Looking for job opportunities.'",
+            "prompt": "Like the post where poster_content not contains 'Looking for job opportunities.'",
+            "prompt_for_task_generation": "Like the post where poster_content not contains 'Looking for job opportunities.'",
         },
         {
-            "prompt": "Like the post with content not equal to 'Just completed my first year at TechCorp!'",
-            "prompt_for_task_generation": "Like the post with content not equal to 'Just completed my first year at TechCorp!'",
-        },
-        {"prompt": "Like the post that contains 'Excited to attend PyCon this year!'", "prompt_for_task_generation": "Like the post that contains 'Excited to attend PyCon this year!'"},
-        {
-            "prompt": "Like the post where the user said 'Pushed a major UI update to the product today.'",
-            "prompt_for_task_generation": "Like the post where the user said 'Pushed a major UI update to the product today.'",
+            "prompt": "Like the post where poster_content not equals 'Just completed my first year at TechCorp!'",
+            "prompt_for_task_generation": "Like the post where poster_content not equals 'Just completed my first year at TechCorp!'",
         },
         {
-            "prompt": "Like the post which includes the line 'Remote work has been a game changer for me.'",
-            "prompt_for_task_generation": "Like the post which includes the line 'Remote work has been a game changer for me.'",
+            "prompt": "Like the post where poster_content contains 'Excited to attend PyCon this year!'",
+            "prompt_for_task_generation": "Like the post where poster_content contains 'Excited to attend PyCon this year!'",
         },
     ],
 )
+
+COMMENT_ON_POST_INFO = """
+Critical requirements:
+1. The request must start with "Comment" and include the comment text and post constraint (e.g., poster_content).
+2. Include ALL mentioned constraints in the prompt.
+3. Copy constraint values exactly in single quotes.
+""".strip()
 
 COMMENT_ON_POST_USE_CASE = UseCase(
     name="COMMENT_ON_POST",
@@ -181,42 +219,34 @@ COMMENT_ON_POST_USE_CASE = UseCase(
     event=CommentOnPostEvent,
     event_source_code=CommentOnPostEvent.get_source_code_of_class(),
     constraints_generator=generate_comment_on_post_constraints,
+    additional_prompt_info=COMMENT_ON_POST_INFO,
     examples=[
         {
-            "prompt": "Comment 'Great work!' on the post with poster content 'Just released a new app version!'",
-            "prompt_for_task_generation": "Comment 'Great work!' on the post with poster content 'Just released a new app version!'",
+            "prompt": "Comment 'Great work!' on the post where poster_content contains 'Just released a new app version!'",
+            "prompt_for_task_generation": "Comment 'Great work!' on the post where poster_content contains 'Just released a new app version!'",
         },
         {
-            "prompt": "Comment 'Congrats!' on the post where the poster said 'I just got promoted to Senior Developer.'",
-            "prompt_for_task_generation": "Comment 'Congrats!' on the post where the poster said 'I just got promoted to Senior Developer.'",
+            "prompt": "Comment 'Congrats!' on the post where poster_content contains 'I just got promoted to Senior Developer.'",
+            "prompt_for_task_generation": "Comment 'Congrats!' on the post where poster_content contains 'I just got promoted to Senior Developer.'",
         },
         {
-            "prompt": "Comment 'Very insightful!' on the post with poster content 'Here's what I learned from switching to microservices.'",
-            "prompt_for_task_generation": "Comment 'Very insightful!' on the post with poster content 'Here's what I learned from switching to microservices.'",
+            "prompt": "Comment 'Very insightful!' on the post where poster_content contains 'Here's what I learned from switching to microservices.'",
+            "prompt_for_task_generation": "Comment 'Very insightful!' on the post where poster_content contains 'Here's what I learned from switching to microservices.'",
         },
         {
-            "prompt": "Comment 'Thanks for sharing!' on the post that says '5 tips for improving frontend performance.'",
-            "prompt_for_task_generation": "Comment 'Thanks for sharing!' on the post that says '5 tips for improving frontend performance.'",
-        },
-        {
-            "prompt": "Comment 'Wishing you luck!' on the post with content 'Starting my new role at DevX this Monday!'",
-            "prompt_for_task_generation": "Comment 'Wishing you luck!' on the post with content 'Starting my new role at DevX this Monday!'",
-        },
-        {
-            "prompt": "Comment 'Love this!' on the post that includes the sentence 'Diversity makes us stronger.'",
-            "prompt_for_task_generation": "Comment 'Love this!' on the post that includes the sentence 'Diversity makes us stronger.'",
-        },
-        {
-            "prompt": "Comment 'Well done' on the post where the poster shared 'Finally completed my AWS certification!'",
-            "prompt_for_task_generation": "Comment 'Well done' on the post where the poster shared 'Finally completed my AWS certification!'",
-        },
-        {
-            "prompt": "Comment 'Following this for updates.' on the post with poster content 'Experimenting with fine-tuning LLMs on medical datasets.'",
-            "prompt_for_task_generation": "Comment 'Following this for updates.' on the post with poster content 'Experimenting with fine-tuning LLMs on medical datasets.'",
+            "prompt": "Comment 'Thanks for sharing!' on the post where poster_content contains '5 tips for improving frontend performance.'",
+            "prompt_for_task_generation": "Comment 'Thanks for sharing!' on the post where poster_content contains '5 tips for improving frontend performance.'",
         },
     ],
 )
 
+
+APPLY_FOR_JOB_INFO = """
+Critical requirements:
+1. The request must start with "Apply for" or "Submit application" (or equivalent).
+2. Include ALL mentioned constraints in the prompt.
+3. Copy constraint values exactly in single quotes.
+""".strip()
 
 APPLY_FOR_JOB_USE_CASE = UseCase(
     name="APPLY_FOR_JOB",
@@ -224,50 +254,33 @@ APPLY_FOR_JOB_USE_CASE = UseCase(
     event=ApplyForJobEvent,
     event_source_code=ApplyForJobEvent.get_source_code_of_class(),
     constraints_generator=generate_apply_for_job_constraints,
+    additional_prompt_info=APPLY_FOR_JOB_INFO,
     examples=[
         {
-            "prompt": "Apply for the Frontend Developer job at Tech Innovations (Remote).",
-            "prompt_for_task_generation": "Apply for the Frontend Developer job at Tech Innovations (Remote).",
+            "prompt": "Apply for a job where job_title equals 'Frontend Developer', company equals 'Tech Innovations', and location equals 'Remote'.",
+            "prompt_for_task_generation": "Apply for a job where job_title equals 'Frontend Developer', company equals 'Tech Innovations', and location equals 'Remote'.",
         },
         {
-            "prompt": "Submit an application for the Product Designer position in New York, NY.",
-            "prompt_for_task_generation": "Submit an application for the Product Designer position in New York, NY.",
+            "prompt": "Apply for a job where job_title contains 'Product Designer' and location equals 'New York, NY'.",
+            "prompt_for_task_generation": "Apply for a job where job_title contains 'Product Designer' and location equals 'New York, NY'.",
         },
         {
-            "prompt": "Apply to Creative Studio for the Product Designer role.",
-            "prompt_for_task_generation": "Apply to Creative Studio for the Product Designer role.",
+            "prompt": "Apply for a job where company equals 'Creative Studio' and job_title contains 'Product Designer'.",
+            "prompt_for_task_generation": "Apply for a job where company equals 'Creative Studio' and job_title contains 'Product Designer'.",
         },
         {
-            "prompt": "Send my resume for the Marketing Specialist job at Startup Hub.",
-            "prompt_for_task_generation": "Send my resume for the Marketing Specialist job at Startup Hub.",
-        },
-        {
-            "prompt": "Apply for a job in San Francisco, CA.",
-            "prompt_for_task_generation": "Apply for a job in San Francisco, CA.",
-        },
-        {
-            "prompt": "Apply for the Backend Engineer position at DataStream Inc. in Boston, MA.",
-            "prompt_for_task_generation": "Apply for the Backend Engineer position at DataStream Inc. in Boston, MA.",
-        },
-        {
-            "prompt": "Apply for a job where the title is not 'Backend Engineer', the location is not remote, and the company name contains the letter 'o'.",
-            "prompt_for_task_generation": "Apply for a job where the title is not 'Backend Engineer', the location is not remote, and the company name contains the letter 'o'.",
-        },
-        {
-            "prompt": "Apply to QualityFirst for the QA Tester opening.",
-            "prompt_for_task_generation": "Apply to QualityFirst for the QA Tester opening.",
-        },
-        {
-            "prompt": "Apply for the UI/UX Designer job.",
-            "prompt_for_task_generation": "Apply for the UI/UX Designer job.",
-        },
-        {
-            "prompt": "Apply to MediaWorks in Seattle, WA.",
-            "prompt_for_task_generation": "Apply to MediaWorks in Seattle, WA.",
+            "prompt": "Apply for a job where job_title not equals 'Backend Engineer', location not equals 'Remote', and company contains 'o'.",
+            "prompt_for_task_generation": "Apply for a job where job_title not equals 'Backend Engineer', location not equals 'Remote', and company contains 'o'.",
         },
     ],
 )
 
+
+SEARCH_USERS_INFO = """
+Critical requirements:
+1. The request must start with "Search for users" or "Find users" (or equivalent).
+2. Include the query constraint with its value in single quotes; copy exactly.
+""".strip()
 
 SEARCH_USERS_USE_CASE = UseCase(
     name="SEARCH_USERS",
@@ -275,14 +288,26 @@ SEARCH_USERS_USE_CASE = UseCase(
     event=SearchUsersEvent,
     event_source_code=SearchUsersEvent.get_source_code_of_class(),
     constraints_generator=generate_search_users_constraints,
+    additional_prompt_info=SEARCH_USERS_INFO,
     examples=[
         {
-            "prompt": "Search for users with the query 'al'.",
-            "prompt_for_task_generation": "Search for users with the query '<query>'.",
+            "prompt": "Search for users where query equals 'al'.",
+            "prompt_for_task_generation": "Search for users where query equals 'al'.",
+        },
+        {
+            "prompt": "Find users where query contains 'engineer'.",
+            "prompt_for_task_generation": "Search for users where query contains 'engineer'.",
         },
     ],
 )
 
+
+FOLLOW_PAGE_INFO = """
+Critical requirements:
+1. The request must start with "Follow" and reference a company page (or equivalent).
+2. Include ALL mentioned constraints in the prompt.
+
+""".strip()
 
 FOLLOW_PAGE_USE_CASE = UseCase(
     name="FOLLOW_PAGE",
@@ -290,13 +315,20 @@ FOLLOW_PAGE_USE_CASE = UseCase(
     event=FollowPageEvent,
     event_source_code=FollowPageEvent.get_source_code_of_class(),
     constraints_generator=generate_follow_page_constraints,
+    additional_prompt_info=FOLLOW_PAGE_INFO,
     examples=[
         {
             "prompt": "Follow the Adobe company page.",
-            "prompt_for_task_generation": "Follow the <company> company page.",
+            "prompt_for_task_generation": "Follow the company page where recommendation equals 'Adobe'.",
         },
     ],
 )
+
+UNFOLLOW_PAGE_INFO = """
+Critical requirements:
+1. The request must start with "Unfollow" and reference a company page (or equivalent).
+2. Include the company constraint with its value in single quotes; copy exactly.
+""".strip()
 
 UNFOLLOW_PAGE_USE_CASE = UseCase(
     name="UNFOLLOW_PAGE",
@@ -304,13 +336,21 @@ UNFOLLOW_PAGE_USE_CASE = UseCase(
     event=UnfollowPageEvent,
     event_source_code=UnfollowPageEvent.get_source_code_of_class(),
     constraints_generator=generate_unfollow_page_constraints,
+    additional_prompt_info=UNFOLLOW_PAGE_INFO,
     examples=[
         {
             "prompt": "Unfollow the Adobe company page.",
-            "prompt_for_task_generation": "Unfollow the <company> company page.",
+            "prompt_for_task_generation": "Unfollow the company page where company equals 'Adobe'.",
         },
     ],
 )
+
+SEARCH_JOBS_INFO = """
+Critical requirements:
+1. The request must start with "Search for jobs" or "Find jobs" (or equivalent).
+2. Include ALL mentioned constraints in the prompt.
+3. Copy constraint values exactly in single quotes.
+""".strip()
 
 SEARCH_JOBS_USE_CASE = UseCase(
     name="SEARCH_JOBS",
@@ -318,6 +358,7 @@ SEARCH_JOBS_USE_CASE = UseCase(
     event=SearchJobsEvent,
     event_source_code=SearchJobsEvent.get_source_code_of_class(),
     constraints_generator=generate_search_jobs_constraints,
+    additional_prompt_info=SEARCH_JOBS_INFO,
     examples=[
         # Query (STRING_OPERATORS)
         {
@@ -383,23 +424,38 @@ SEARCH_JOBS_USE_CASE = UseCase(
     ],
 )
 
+FILTER_JOBS_INFO = """
+Critical requirements:
+1. The request must start with "Filter jobs" (or equivalent).
+2. Include ALL mentioned constraints in the prompt.
+3. Copy constraint values exactly in single quotes.
+""".strip()
+
 FILTER_JOBS_USE_CASE = UseCase(
     name="FILTER_JOBS",
     description="The user applies filters to job listings.",
     event=FilterJobsEvent,
     event_source_code=FilterJobsEvent.get_source_code_of_class(),
     constraints_generator=generate_filter_jobs_constraints,
+    additional_prompt_info=FILTER_JOBS_INFO,
     examples=[
         {
-            "prompt": "Filter jobs to show remote roles only.",
-            "prompt_for_task_generation": "Filter jobs to show remote roles only.",
+            "prompt": "Filter jobs where remote equals 'true'.",
+            "prompt_for_task_generation": "Filter jobs where remote equals 'true'.",
         },
         {
-            "prompt": "Filter jobs with salary between 100000 and 125000.",
-            "prompt_for_task_generation": "Filter jobs with salary between 100000 and 125000.",
+            "prompt": "Filter jobs where salary equals '100000-125000'.",
+            "prompt_for_task_generation": "Filter jobs where salary equals '100000-125000'.",
         },
     ],
 )
+
+VIEW_JOB_INFO = """
+Critical requirements:
+1. The request must start with "View the job" or "Open job details" (or equivalent).
+2. Include ALL mentioned constraints in the prompt.
+3. Copy constraint values exactly in single quotes.
+""".strip()
 
 VIEW_JOB_USE_CASE = UseCase(
     name="VIEW_JOB",
@@ -407,18 +463,19 @@ VIEW_JOB_USE_CASE = UseCase(
     event=ViewJobEvent,
     event_source_code=ViewJobEvent.get_source_code_of_class(),
     constraints_generator=generate_view_job_constraints,
+    additional_prompt_info=VIEW_JOB_INFO,
     examples=[
         {
-            "prompt": "View the job posting for 'Senior Frontend Developer' at Tech Innovations.",
-            "prompt_for_task_generation": "View the job posting for 'Senior Frontend Developer' at Tech Innovations.",
+            "prompt": "View the job where job_title equals 'Senior Frontend Developer' and company equals 'Tech Innovations'.",
+            "prompt_for_task_generation": "View the job where job_title equals 'Senior Frontend Developer' and company equals 'Tech Innovations'.",
         },
         {
-            "prompt": "Open the detailed job description for a remote Backend Engineer role.",
-            "prompt_for_task_generation": "Open the detailed job description for a remote Backend Engineer role.",
+            "prompt": "Open the job where job_title contains 'Backend Engineer' and location equals 'Remote'.",
+            "prompt_for_task_generation": "View the job where job_title contains 'Backend Engineer' and location equals 'Remote'.",
         },
         {
-            "prompt": "Check the job details for a Frontend Developer position located in San Francisco.",
-            "prompt_for_task_generation": "Check the job details for a Frontend Developer position located in San Francisco.",
+            "prompt": "View the job where job_title contains 'Frontend Developer' and location contains 'San Francisco'.",
+            "prompt_for_task_generation": "View the job where job_title contains 'Frontend Developer' and location contains 'San Francisco'.",
         },
     ],
 )
@@ -450,18 +507,31 @@ JOBS_NAVBAR_USE_CASE = UseCase(
 )
 
 
+SAVE_POST_INFO = """
+Critical requirements:
+1. The request must start with "Save the post" or "Bookmark" (or equivalent).
+2. Include ALL mentioned constraints in the prompt when present; copy values in single quotes.
+""".strip()
+
 SAVE_POST_USE_CASE = UseCase(
     name="SAVE_POST",
     description="The user saves a post to view later.",
     event=SavePostEvent,
     event_source_code=SavePostEvent.get_source_code_of_class(),
     constraints_generator=generate_save_post_constraints,
+    additional_prompt_info=SAVE_POST_INFO,
     examples=[
-        {"prompt": "Save this post about AI trends.", "prompt_for_task_generation": "Save this post about AI trends."},
-        {"prompt": "Bookmark the hiring announcement post.", "prompt_for_task_generation": "Bookmark the hiring announcement post."},
-        {"prompt": "Add the product launch post to my saved list.", "prompt_for_task_generation": "Add the product launch post to my saved list."},
+        {"prompt": "Save the post where content contains 'AI trends'.", "prompt_for_task_generation": "Save the post where content contains 'AI trends'."},
+        {"prompt": "Bookmark the post where content contains 'hiring announcement'.", "prompt_for_task_generation": "Save the post where content contains 'hiring announcement'."},
+        {"prompt": "Save the post where author equals 'Alex'.", "prompt_for_task_generation": "Save the post where author equals 'Alex'."},
     ],
 )
+
+HIDE_POST_INFO = """
+Critical requirements:
+1. The request must start with "Hide the post" or "Hide this post" (or equivalent).
+2. Include ALL mentioned constraints in the prompt when present; copy values in single quotes.
+""".strip()
 
 HIDE_POST_USE_CASE = UseCase(
     name="HIDE_POST",
@@ -469,10 +539,11 @@ HIDE_POST_USE_CASE = UseCase(
     event=HidePostEvent,
     event_source_code=HidePostEvent.get_source_code_of_class(),
     constraints_generator=generate_save_post_constraints,
+    additional_prompt_info=HIDE_POST_INFO,
     examples=[
-        {"prompt": "Hide this irrelevant post.", "prompt_for_task_generation": "Hide this irrelevant post."},
-        {"prompt": "Remove this duplicate post from my feed.", "prompt_for_task_generation": "Remove this duplicate post from my feed."},
-        {"prompt": "Hide the promotional post I keep seeing.", "prompt_for_task_generation": "Hide the promotional post I keep seeing."},
+        {"prompt": "Hide the post where content contains 'irrelevant'.", "prompt_for_task_generation": "Hide the post where content contains 'irrelevant'."},
+        {"prompt": "Hide the post where content contains 'duplicate'.", "prompt_for_task_generation": "Hide the post where content contains 'duplicate'."},
+        {"prompt": "Hide the post where author equals 'Marketing'.", "prompt_for_task_generation": "Hide the post where author equals 'Marketing'."},
     ],
 )
 
@@ -500,17 +571,30 @@ VIEW_APPLIED_JOBS_USE_CASE = UseCase(
     ],
 )
 
+CANCEL_APPLICATION_INFO = """
+Critical requirements:
+1. The request must start with "Cancel application" or "Withdraw application" (or equivalent).
+2. Include ALL mentioned constraints in the prompt; copy values in single quotes.
+""".strip()
+
 CANCEL_APPLICATION_USE_CASE = UseCase(
     name="CANCEL_APPLICATION",
     description="The user cancels a job application.",
     event=CancelApplicationEvent,
     event_source_code=CancelApplicationEvent.get_source_code_of_class(),
     constraints_generator=generate_cancel_application_constraints,
+    additional_prompt_info=CANCEL_APPLICATION_INFO,
     examples=[
-        {"prompt": "Cancel my application for the Product Designer job.", "prompt_for_task_generation": "Cancel my application for the Product Designer job."},
-        {"prompt": "Withdraw the application I sent to Stripe.", "prompt_for_task_generation": "Withdraw the application I sent to Stripe."},
+        {"prompt": "Cancel application for job where job_title equals 'Product Designer'.", "prompt_for_task_generation": "Cancel application for job where job_title equals 'Product Designer'."},
+        {"prompt": "Withdraw application where company equals 'Stripe'.", "prompt_for_task_generation": "Cancel application where company equals 'Stripe'."},
     ],
 )
+
+EDIT_PROFILE_INFO = """
+Critical requirements:
+1. The request must start with "Edit profile" or "Update profile" (or equivalent).
+2. Include ALL mentioned constraints in the prompt; copy values in single quotes.
+""".strip()
 
 EDIT_PROFILE_USE_CASE = UseCase(
     name="EDIT_PROFILE",
@@ -518,11 +602,18 @@ EDIT_PROFILE_USE_CASE = UseCase(
     event=EditProfileEvent,
     event_source_code=EditProfileEvent.get_source_code_of_class(),
     constraints_generator=generate_edit_profile_constraints,
+    additional_prompt_info=EDIT_PROFILE_INFO,
     examples=[
-        {"prompt": "Update my profile bio and headline.", "prompt_for_task_generation": "Update my profile bio and headline."},
-        {"prompt": "Change my displayed name on the profile.", "prompt_for_task_generation": "Change my displayed name on the profile."},
+        {"prompt": "Edit profile where bio contains 'engineer'.", "prompt_for_task_generation": "Edit profile where bio contains 'engineer'."},
+        {"prompt": "Update profile where name equals 'Alex Smith'.", "prompt_for_task_generation": "Edit profile where name equals 'Alex Smith'."},
     ],
 )
+
+EDIT_EXPERIENCE_INFO = """
+Critical requirements:
+1. The request must start with "Edit experience" or "Update experience" (or equivalent).
+2. Include ALL mentioned constraints in the prompt; copy values in single quotes.
+""".strip()
 
 EDIT_EXPERIENCE_USE_CASE = UseCase(
     name="EDIT_EXPERIENCE",
@@ -530,12 +621,21 @@ EDIT_EXPERIENCE_USE_CASE = UseCase(
     event=EditExperienceEvent,
     event_source_code=EditExperienceEvent.get_source_code_of_class(),
     constraints_generator=generate_edit_experience_constraints,
+    additional_prompt_info=EDIT_EXPERIENCE_INFO,
     examples=[
-        {"prompt": "Edit an experience to my profile.", "prompt_for_task_generation": "Edit an experience to my profile."},
-        {"prompt": "Edit my current experience to name equal 'Alex'.", "prompt_for_task_generation": "Edit my current experience to name equals 'Alex'."},
-        {"prompt": "Update the description of my experience.", "prompt_for_task_generation": "Update the description of my experience."},
+        {"prompt": "Edit experience where name equals 'Alex'.", "prompt_for_task_generation": "Edit experience where name equals 'Alex'."},
+        {
+            "prompt": "Edit experience where company contains 'Tech' and title equals 'Developer'.",
+            "prompt_for_task_generation": "Edit experience where company contains 'Tech' and title equals 'Developer'.",
+        },
     ],
 )
+
+ADD_EXPERIENCE_INFO = """
+Critical requirements:
+1. The request must start with "Add experience" or "Add new experience" (or equivalent).
+2. Include ALL mentioned constraints in the prompt when present; copy values in single quotes.
+""".strip()
 
 ADD_EXPERIENCE_USE_CASE = UseCase(
     name="ADD_EXPERIENCE",
@@ -543,11 +643,18 @@ ADD_EXPERIENCE_USE_CASE = UseCase(
     event=AddExperienceEvent,
     event_source_code=AddExperienceEvent.get_source_code_of_class(),
     constraints_generator=generate_add_experience_constraints,
+    additional_prompt_info=ADD_EXPERIENCE_INFO,
     examples=[
-        {"prompt": "Add a new experience entry to my profile.", "prompt_for_task_generation": "Add a new experience entry to my profile."},
-        {"prompt": "Create a new job experience on my profile.", "prompt_for_task_generation": "Create a new job experience on my profile."},
+        {"prompt": "Add experience where name equals 'TechCorp'.", "prompt_for_task_generation": "Add experience where name equals 'TechCorp'."},
+        {"prompt": "Add new experience to my profile.", "prompt_for_task_generation": "Add new experience to my profile."},
     ],
 )
+
+REMOVE_POST_INFO = """
+Critical requirements:
+1. The request must start with "Remove post" or "Delete saved post" (or equivalent).
+2. Include ALL mentioned constraints in the prompt; copy values in single quotes.
+""".strip()
 
 REMOVE_POST_USE_CASE = UseCase(
     name="REMOVE_POST",
@@ -555,12 +662,13 @@ REMOVE_POST_USE_CASE = UseCase(
     event=RemovePostEvent,
     event_source_code=RemovePostEvent.get_source_code_of_class(),
     constraints_generator=generate_remove_post_constraints,
+    additional_prompt_info=REMOVE_POST_INFO,
     examples=[
         {
-            "prompt": "Remove saved post from my list that content contains 'Just wrapped up!'.",
-            "prompt_for_task_generation": "Remove saved post from my list that content contains 'Just wrapped up!'.",
+            "prompt": "Remove saved post where content contains 'Just wrapped up!'.",
+            "prompt_for_task_generation": "Remove saved post where content contains 'Just wrapped up!'.",
         },
-        {"prompt": "Delete the saved post authored by Alex.", "prompt_for_task_generation": "Delete the saved post authored by Alex."},
+        {"prompt": "Remove saved post where author equals 'Alex'.", "prompt_for_task_generation": "Remove saved post where author equals 'Alex'."},
     ],
 )
 
@@ -576,15 +684,22 @@ VIEW_HIDDEN_POSTS_USE_CASE = UseCase(
     ],
 )
 
+UNHIDE_POST_INFO = """
+Critical requirements:
+1. The request must start with "Unhide the post" or "Restore post" (or equivalent).
+2. Include ALL mentioned constraints in the prompt when present; copy values in single quotes.
+""".strip()
+
 UNHIDE_POST_USE_CASE = UseCase(
     name="UNHIDE_POST",
     description="The user restores a previously hidden post.",
     event=UnhidePostEvent,
     event_source_code=UnhidePostEvent.get_source_code_of_class(),
     constraints_generator=generate_unhide_post_constraints,
+    additional_prompt_info=UNHIDE_POST_INFO,
     examples=[
         {"prompt": "Unhide the post where content contains 'Just wrapped up'.", "prompt_for_task_generation": "Unhide the post where content contains 'Just wrapped up'."},
-        {"prompt": "Restore a hidden post to my feed.", "prompt_for_task_generation": "Restore a hidden post to my feed."},
+        {"prompt": "Restore hidden post to my feed.", "prompt_for_task_generation": "Unhide the post."},
     ],
 )
 

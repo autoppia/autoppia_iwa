@@ -19,7 +19,7 @@ except ImportError:
 # ============================
 # LLM CONFIGURATION
 # ============================
-LLM_PROVIDER = os.getenv("LLM_PROVIDER", "local")  # Can be "local", "openai", or "chutes"
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "openai")  # Can be "openai" or "chutes"
 LLM_THRESHOLD = int(os.getenv("LLM_THRESHOLD", 100))
 LLM_CONTEXT_WINDOW = int(os.getenv("LLM_CONTEXT_WINDOW", 10000))
 

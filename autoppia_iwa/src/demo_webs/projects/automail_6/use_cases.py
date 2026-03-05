@@ -168,10 +168,10 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
    - Use phrases like: "mark as read", or "flag as read", ONLY when 'is_read' is True.
    - Use phrases like: "mark as unread", ONLY when 'is_read' is False.
 
-2. Do **NOT** mention is_read in the prompt.
 2. Mention the Subject, Email ID, or Sender if available.
 3. Vary wording across prompts but keep meaning intact.
 4. Make sure the constraints for the fields are mentioned like contains, not_contains, equals, not_equals, etc.
+5. Include ALL constraints in the prompt, including is_read.
 Examples:
 CORRECT: Mark the email unread where from email equals 'emma.davis@yahoo.com' and subject equals 'Community Forum Update' and is_read equals false.
 INCORRECT: Mark the email unread 'emma.davis@yahoo.com'.
@@ -829,10 +829,18 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 3. Make sure the constraints for the fields are mentioned like contains, not_contains, equals, not_equals, etc.
 4. Do not mention a single constraint more than once in the request.
 5. Do not add additional information in the prompt that is not mentioned in the constraints.
+
+⚠️ CRITICAL: PRESERVE PLACEHOLDERS ⚠️
+If a constraint value contains placeholders like <name>, <date>, <email>, you MUST keep them EXACTLY as they appear.
+DO NOT remove them. DO NOT replace them with actual values. DO NOT add spaces where they were.
+Example: If body equals 'Hi <name>, welcome!' then the prompt MUST include 'Hi <name>, welcome!' with <name> intact.
+
 Examples:
     Correct: Update the body text of the template where template_name equals 'Warm Introduction' and subject equals 'Introduction & Next Steps'.
     Correct: Edit the body of the template where template_name contains 'Introduction'.
+    Correct: Edit the body where body equals 'Hi <name>, welcome!' (placeholder preserved).
     Incorrect: Update the body text of the template where template_name equals 'Warm Introduction' and name equals 'Warm Introduction' (mentioned template_name twice).
+    Incorrect: Edit the body where body equals 'Hi , welcome!' (placeholder removed - WRONG!).
 """.strip()
 
 TEMPLATE_BODY_EDITED_USE_CASE = UseCase(
@@ -852,8 +860,8 @@ TEMPLATE_BODY_EDITED_USE_CASE = UseCase(
             "prompt_for_task_generation": "Update the body text of the template where subject equals 'Thank you for your time'.",
         },
         {
-            "prompt": "Edit the body of the template where template_name contains 'Introduction' and body contains 'connecting'.",
-            "prompt_for_task_generation": "Edit the body of the template where template_name contains 'Introduction' and body contains 'connecting'.",
+            "prompt": "Edit the body of the template where body equals 'Hi <name>, thank you for connecting!'.",
+            "prompt_for_task_generation": "Edit the body of the template where body equals 'Hi <name>, thank you for connecting!'.",
         },
     ],
 )
@@ -865,10 +873,18 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 3. Make sure the constraints for the fields are mentioned like contains, not_contains, equals, not_equals, etc.
 4. Do not mention a single constraint more than once in the request.
 5. Do not add additional information in the prompt that is not mentioned in the constraints.
+
+⚠️ CRITICAL: PRESERVE PLACEHOLDERS ⚠️
+If a constraint value contains placeholders like <name>, <date>, <email>, you MUST keep them EXACTLY as they appear.
+DO NOT remove them. DO NOT replace them with actual values. DO NOT add spaces where they were.
+Example: If body equals 'Hello <name>, welcome!' then the prompt MUST include 'Hello <name>, welcome!' with <name> intact.
+
 Examples:
     Correct: Send an email using the template where template_name equals 'Friendly Follow Up' and to equals 'john.doe@gmail.com'.
     Correct: Send the template where subject contains 'follow-up' and to contains 'john'.
+    Correct: Send the template where body equals 'Hello <name>, welcome!' (placeholder preserved).
     Incorrect: Send an email using the template where template_name equals 'Friendly Follow Up' and name equals 'Friendly Follow Up' (mentioned template_name twice).
+    Incorrect: Send the template where body equals 'Hello , welcome!' (placeholder removed - WRONG!).
 """.strip()
 
 TEMPLATE_SENT_USE_CASE = UseCase(
@@ -888,8 +904,8 @@ TEMPLATE_SENT_USE_CASE = UseCase(
             "prompt_for_task_generation": "Send an email using the template where template_name equals 'Warm Introduction' and to equals 'alice@company.com'.",
         },
         {
-            "prompt": "Send the template where subject equals 'Recap: key notes from our meeting' and to contains 'john'.",
-            "prompt_for_task_generation": "Send the template where subject equals 'Recap: key notes from our meeting' and to contains 'john'.",
+            "prompt": "Send the template where body equals 'Hello <name>, I hope this message finds you well!'.",
+            "prompt_for_task_generation": "Send the template where body equals 'Hello <name>, I hope this message finds you well!'.",
         },
     ],
 )
@@ -901,10 +917,18 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 3. Make sure the constraints for the fields are mentioned like contains, not_contains, equals, not_equals, etc.
 4. Do not mention a single constraint more than once in the request.
 5. Do not add additional information in the prompt that is not mentioned in the constraints.
+
+⚠️ CRITICAL: PRESERVE PLACEHOLDERS ⚠️
+If a constraint value contains placeholders like <name>, <date>, <email>, you MUST keep them EXACTLY as they appear.
+DO NOT remove them. DO NOT replace them with actual values. DO NOT add spaces where they were.
+Example: If body equals 'Hello <name>, welcome!' then the prompt MUST include 'Hello <name>, welcome!' with <name> intact.
+
 Examples:
     Correct: Save the template as draft where template_name equals 'Warm Introduction' and to equals 'john.doe@gmail.com'.
     Correct: Keep the template as draft where subject contains 'follow-up'.
+    Correct: Save template as draft where body equals 'Hello <name>, welcome!' (placeholder preserved).
     Incorrect: Save the template as draft where template_name equals 'Warm Introduction' and name equals 'Warm Introduction' (mentioned template_name twice).
+    Incorrect: Save template as draft where body equals 'Hello , welcome!' (placeholder removed - WRONG!).
 """.strip()
 
 TEMPLATE_SAVED_DRAFT_USE_CASE = UseCase(
@@ -924,8 +948,8 @@ TEMPLATE_SAVED_DRAFT_USE_CASE = UseCase(
             "prompt_for_task_generation": "Save the template as draft where template_name equals 'Meeting Recap' and to equals 'alice@company.com'.",
         },
         {
-            "prompt": "Keep the template as draft where subject contains 'follow-up' and body contains 'check in'.",
-            "prompt_for_task_generation": "Keep the template as draft where subject contains 'follow-up' and body contains 'check in'.",
+            "prompt": "Keep the template as draft where body equals 'Dear <name>, thank you for your time!'.",
+            "prompt_for_task_generation": "Keep the template as draft where body equals 'Dear <name>, thank you for your time!'.",
         },
     ],
 )
@@ -937,10 +961,18 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 3. Make sure the constraints for the fields are mentioned like contains, not_contains, equals, not_equals, etc.
 4. Do not mention a single constraint more than once in the request.
 5. Do not add additional information in the prompt that is not mentioned in the constraints.
+
+⚠️ CRITICAL: PRESERVE PLACEHOLDERS ⚠️
+If a constraint value contains placeholders like <name>, <date>, <email>, you MUST keep them EXACTLY as they appear.
+DO NOT remove them. DO NOT replace them with actual values. DO NOT add spaces where they were.
+Example: If body equals 'Hi <name>, thank you!' then the prompt MUST include 'Hi <name>, thank you!' with <name> intact.
+
 Examples:
     Correct: Cancel changes on the template where template_name equals 'Thank You' and subject equals 'Thank you for your time'.
     Correct: Discard changes to the template where template_name contains 'Follow Up'.
+    Correct: Cancel template where body equals 'Hi <name>, thank you!' (placeholder preserved).
     Incorrect: Cancel changes on the template where template_name equals 'Thank You' and name equals 'Thank You' (mentioned template_name twice).
+    Incorrect: Cancel template where body equals 'Hi , thank you!' (placeholder removed - WRONG!).
 """.strip()
 
 TEMPLATE_CANCELED_USE_CASE = UseCase(
@@ -960,8 +992,8 @@ TEMPLATE_CANCELED_USE_CASE = UseCase(
             "prompt_for_task_generation": "Cancel changes on the template where template_name equals 'Meeting Recap' and subject contains 'Recap'.",
         },
         {
-            "prompt": "Discard changes to the template where subject equals 'Friendly reminder' and to equals 'john@example.com'.",
-            "prompt_for_task_generation": "Discard changes to the template where subject equals 'Friendly reminder' and to equals 'john@example.com'.",
+            "prompt": "Discard changes to the template where body equals 'Hi <name>, looking forward to our meeting!'.",
+            "prompt_for_task_generation": "Discard changes to the template where body equals 'Hi <name>, looking forward to our meeting!'.",
         },
     ],
 )

@@ -6,28 +6,7 @@ from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator, CriterionValue
 
-
-# Helpers
-def _extract_genres(data: dict, key: str = "genres") -> list[str]:
-    genres: list[str] = []
-    if key in data and isinstance(data[key], list):
-        for item in data[key]:
-            if isinstance(item, dict):
-                if "name" in item:
-                    genres.append(str(item.get("name", "")))
-            elif isinstance(item, str):
-                genres.append(item)
-    return genres
-
-
-def _get_author(data: dict) -> str:
-    # Accept either "author" or legacy "director"
-    return data.get("author", data.get("director", "")) or ""
-
-
-def _get_pages(data: dict) -> Any:
-    # Accept either "pages" or legacy "duration"
-    return data.get("pages", data.get("duration"))
+from .utils import extract_genres_from_data, get_author_from_data, get_pages_from_data
 
 
 def _matches_list_criteria(values: list[str], crit: CriterionValue, negate: bool = False) -> bool:
@@ -57,6 +36,36 @@ def _matches_list_criteria(values: list[str], crit: CriterionValue, negate: bool
         match = False
 
     return not match if negate else match
+
+
+def _validate_genre_criteria(book_genres: list[str], criteria_genre: str | CriterionValue | None) -> bool:
+    """
+    Validate that book_genres satisfies the given genre criterion (str or CriterionValue).
+    Returns True if criteria_genre is None or the criterion is satisfied.
+    Centralizes repeated genre validation logic across book-related events.
+    """
+    if criteria_genre is None:
+        return True
+    if isinstance(criteria_genre, str):
+        return any(criteria_genre.lower() in genre.lower() for genre in book_genres)
+    crit = criteria_genre
+    if crit.operator == ComparisonOperator.EQUALS:
+        return any(crit.value.lower() == genre.lower() for genre in book_genres)
+    if crit.operator == ComparisonOperator.CONTAINS:
+        return any(crit.value.lower() in genre.lower() for genre in book_genres)
+    if crit.operator == ComparisonOperator.NOT_CONTAINS:
+        return not any(crit.value.lower() in genre.lower() for genre in book_genres)
+    if crit.operator == ComparisonOperator.IN_LIST:
+        val = crit.value
+        if isinstance(val, str):
+            val_list = [val]
+        elif isinstance(val, list):
+            val_list = val
+        else:
+            val_list = []
+        val_lower = [str(v).lower() for v in val_list]
+        return any(genre.lower() in val_lower for genre in book_genres)
+    return False
 
 
 # =============================================================================
@@ -161,26 +170,15 @@ class EditUserEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "EditUserEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-
-        favorite_genres = []
-        if "favorite_genres" in data and isinstance(data["favorite_genres"], list):
-            for genre_item in data["favorite_genres"]:
-                if isinstance(genre_item, dict) and "name" in genre_item:
-                    favorite_genres.append(genre_item["name"])
-                elif isinstance(genre_item, str):
-                    favorite_genres.append(genre_item)
+        favorite_genres = extract_genres_from_data(data, "favorite_genres")
 
         # Handle previous_values properly
         previous_values = data.get("previous_values", {})
 
         # Process previous_values favorite_genres if present
-        if "favorite_genres" in previous_values and isinstance(previous_values["favorite_genres"], list):
-            # If it's already a list of strings, keep it
-            if all(isinstance(item, str) for item in previous_values["favorite_genres"]):
-                pass
-            # If it's a list of objects, extract the names
-            else:
-                previous_values["favorite_genres"] = [item["name"] if isinstance(item, dict) and "name" in item else str(item) for item in previous_values["favorite_genres"]]
+        if "favorite_genres" in previous_values and isinstance(previous_values["favorite_genres"], list) and not all(isinstance(item, str) for item in previous_values["favorite_genres"]):
+            # If it's not a list of strings, extract the names from objects
+            previous_values["favorite_genres"] = [item["name"] if isinstance(item, dict) and "name" in item else str(item) for item in previous_values["favorite_genres"]]
 
         return cls(
             event_name=base_event.event_name,
@@ -219,26 +217,8 @@ class BookDetailEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        if criteria.genre is not None:
-            if isinstance(criteria.genre, str):
-                if not any(criteria.genre.lower() in genre.lower() for genre in self.book_genres):
-                    return False
-            else:
-                crit = criteria.genre
-                if crit.operator == ComparisonOperator.EQUALS:
-                    if not any(crit.value.lower() == genre.lower() for genre in self.book_genres):
-                        return False
-                elif crit.operator == ComparisonOperator.CONTAINS:
-                    if not any(crit.value.lower() in genre.lower() for genre in self.book_genres):
-                        return False
-                elif crit.operator == ComparisonOperator.NOT_CONTAINS:
-                    if any(crit.value.lower() in genre.lower() for genre in self.book_genres):
-                        return False
-                elif crit.operator == ComparisonOperator.IN_LIST:
-                    if not isinstance(crit.value, list):
-                        return False
-                    if not any(genre.lower() in [v.lower() for v in crit.value] for genre in self.book_genres):
-                        return False
+        if not _validate_genre_criteria(self.book_genres, criteria.genre):
+            return False
         return all(
             [
                 self._validate_field(self.book_name, criteria.name),
@@ -251,7 +231,7 @@ class BookDetailEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "BookDetailEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        genres = _extract_genres(data, "genres")
+        genres = extract_genres_from_data(data, "genres")
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
@@ -309,27 +289,8 @@ class AddBookEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        if criteria.genre is not None:
-            if isinstance(criteria.genre, str):
-                if not any(criteria.genre.lower() in genre.lower() for genre in self.book_genres):
-                    return False
-            else:
-                crit = criteria.genre
-                if crit.operator == ComparisonOperator.EQUALS:
-                    if not any(crit.value.lower() == genre.lower() for genre in self.book_genres):
-                        return False
-                elif crit.operator == ComparisonOperator.CONTAINS:
-                    if not any(crit.value.lower() in genre.lower() for genre in self.book_genres):
-                        return False
-                elif crit.operator == ComparisonOperator.NOT_CONTAINS:
-                    if any(crit.value.lower() in genre.lower() for genre in self.book_genres):
-                        return False
-                elif crit.operator == ComparisonOperator.IN_LIST:
-                    if not isinstance(crit.value, list):
-                        return False
-                    if not any(genre.lower() in [v.lower() for v in crit.value] for genre in self.book_genres):
-                        return False
-
+        if not _validate_genre_criteria(self.book_genres, criteria.genre):
+            return False
         return all(
             [
                 self._validate_field(self.book_author, criteria.author),
@@ -343,17 +304,17 @@ class AddBookEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "AddBookEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        genres = _extract_genres(data, "genres")
+        genres = extract_genres_from_data(data, "genres")
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            book_author=_get_author(data),
+            book_author=get_author_from_data(data),
             book_year=data.get("year"),
             book_genres=genres,
             book_rating=data.get("rating"),
-            book_pages=_get_pages(data),
+            book_pages=get_pages_from_data(data),
         )
 
 
@@ -382,26 +343,8 @@ class EditBookEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        if criteria.genre is not None:
-            if isinstance(criteria.genre, str):
-                if not any(criteria.genre.lower() in genre.lower() for genre in self.book_genres):
-                    return False
-            else:
-                crit = criteria.genre
-                if crit.operator == ComparisonOperator.EQUALS:
-                    if not any(crit.value.lower() == genre.lower() for genre in self.book_genres):
-                        return False
-                elif crit.operator == ComparisonOperator.CONTAINS:
-                    if not any(crit.value.lower() in genre.lower() for genre in self.book_genres):
-                        return False
-                elif crit.operator == ComparisonOperator.NOT_CONTAINS:
-                    if any(crit.value.lower() in genre.lower() for genre in self.book_genres):
-                        return False
-                elif crit.operator == ComparisonOperator.IN_LIST:
-                    if not isinstance(crit.value, list):
-                        return False
-                    if not any(genre.lower() in [v.lower() for v in crit.value] for genre in self.book_genres):
-                        return False
+        if not _validate_genre_criteria(self.book_genres, criteria.genre):
+            return False
         if criteria.changed_field is not None:
             if isinstance(criteria.changed_field, str):
                 if criteria.changed_field not in self.changed_fields:
@@ -429,7 +372,7 @@ class EditBookEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "EditBookEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        genres = _extract_genres(data, "genres")
+        genres = extract_genres_from_data(data, "genres")
 
         previous_values = data.get("previous_values", {})
         changed = data.get("changed_fields", []) or []
@@ -440,11 +383,11 @@ class EditBookEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             book_name=data.get("name", ""),
-            book_author=_get_author(data),
+            book_author=get_author_from_data(data),
             book_year=data.get("year"),
             book_genres=genres,
             book_rating=data.get("rating"),
-            book_pages=_get_pages(data),
+            book_pages=get_pages_from_data(data),
             previous_values=previous_values,
             changed_fields=list(changed),
         )
@@ -471,18 +414,8 @@ class DeleteBookEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        if criteria.genre is not None:
-            if isinstance(criteria.genre, str) and not any(criteria.genre.lower() in genre.lower() for genre in self.book_genres):
-                return False
-            else:
-                crit = criteria.genre
-                if (
-                    (crit.operator == ComparisonOperator.EQUALS and not any(crit.value.lower() == genre.lower() for genre in self.book_genres))
-                    or (crit.operator == ComparisonOperator.CONTAINS and not any(crit.value.lower() in genre.lower() for genre in self.book_genres))
-                    or (crit.operator == ComparisonOperator.NOT_CONTAINS and any(crit.value.lower() in genre.lower() for genre in self.book_genres))
-                    or (crit.operator == ComparisonOperator.IN_LIST and not any(genre.lower() in [str(v).lower() for v in crit.value] for genre in self.book_genres))
-                ):
-                    return False
+        if not _validate_genre_criteria(self.book_genres, criteria.genre):
+            return False
         return all(
             [
                 self._validate_field(self.book_name, criteria.name),
@@ -495,18 +428,18 @@ class DeleteBookEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "DeleteBookEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        genres = _extract_genres(data, "genres")
+        genres = extract_genres_from_data(data, "genres")
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             book_name=data.get("name", ""),
-            book_author=_get_author(data),
+            book_author=get_author_from_data(data),
             book_year=data.get("year"),
             book_genres=genres,
             book_rating=data.get("rating"),
-            book_pages=_get_pages(data),
+            book_pages=get_pages_from_data(data),
         )
 
 
@@ -678,18 +611,8 @@ class PurchaseBookEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        if criteria.genre is not None:
-            if isinstance(criteria.genre, str) and not any(criteria.genre.lower() in genre.lower() for genre in self.book_genres):
-                return False
-            else:
-                crit = criteria.genre
-                if (
-                    (crit.operator == ComparisonOperator.EQUALS and not any(crit.value.lower() == genre.lower() for genre in self.book_genres))
-                    or (crit.operator == ComparisonOperator.CONTAINS and not any(crit.value.lower() in genre.lower() for genre in self.book_genres))
-                    or (crit.operator == ComparisonOperator.NOT_CONTAINS and any(crit.value.lower() in genre.lower() for genre in self.book_genres))
-                    or (crit.operator == ComparisonOperator.IN_LIST and not any(genre.lower() in [str(v).lower() for v in crit.value] for genre in self.book_genres))
-                ):
-                    return False
+        if not _validate_genre_criteria(self.book_genres, criteria.genre):
+            return False
         return all(
             [
                 self._validate_field(self.book_name, criteria.name),
@@ -702,7 +625,7 @@ class PurchaseBookEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "PurchaseBookEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        genres = _extract_genres(data, "genres")
+        genres = extract_genres_from_data(data, "genres")
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
@@ -777,7 +700,7 @@ class PurchaseBookEvent(Event, BaseEventValidator):
 #     def parse(cls, backend_event: "BackendEvent") -> "ShoppingCartEvent":
 #         base_event = Event.parse(backend_event)
 #         data = backend_event.data
-#         genres = _extract_genres(data, "genres")
+#         genres = extract_genres_from_data(data, "genres")
 #         return cls(
 #             event_name=base_event.event_name,
 #             timestamp=base_event.timestamp,

@@ -40,6 +40,9 @@ DYNAMIC = True  # Set to False if you don't want dynamic seeds
 # Cache directory (same as benchmark uses)
 CACHE_DIR = str(PROJECT_BASE_DIR.parent / "benchmark-output" / "cache" / "tasks")
 
+# Maximum number of runs allowed in one request (loop bound not set directly from user input)
+MAX_GENERATION_RUNS = 10
+
 router = APIRouter()
 
 
@@ -52,12 +55,12 @@ class GenerateTaskConfig(BaseModel):
     """
 
     projects: list[str] = Field(..., description="List of project IDs to generate tasks for")
-    prompts_per_use_case: int = Field(1, description="Number of prompts per use case")
+    prompts_per_use_case: int = Field(1, ge=1, le=100, description="Number of prompts per use case (max 100)")
     selective_use_cases: list[str] = Field(
         default_factory=list,
         description="List of specific use cases to include. If empty, uses all available use cases.",
     )
-    runs: int = Field(1, description="Number of runs for each task generation")
+    runs: int = Field(1, ge=1, le=10, description="Number of runs for each task generation (max 10)")
     dynamic: bool = Field(False, description="If True, tasks will include random seeds for dynamic content generation")
 
 
@@ -75,8 +78,10 @@ async def generate_tasks(config: GenerateTaskConfig) -> Any:
 
     all_results = {}
 
-    for run_index in range(1, config.runs + 1):
-        print(f"▶️ Run {run_index}/{config.runs}")
+    # Use capped value for loop bound (Sonar: do not set loop bounds directly from user-controlled data)
+    num_runs = min(config.runs, MAX_GENERATION_RUNS)
+    for run_index in range(1, num_runs + 1):
+        logger.info(f"▶️ Run {run_index}/{num_runs}")
 
         # Generate tasks per project
         for project in web_projects:
