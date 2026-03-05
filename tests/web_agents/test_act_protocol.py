@@ -62,3 +62,14 @@ def test_act_request_default_state_is_empty_dict() -> None:
 def test_act_response_normalizes_state_out_none_to_empty_dict() -> None:
     parsed = ActResponse.from_raw({"tool_calls": [], "done": True, "state_out": None})
     assert parsed.state_out == {}
+
+
+def test_act_response_rejects_legacy_actions_shape_with_type_payload() -> None:
+    with pytest.raises(ValidationError):
+        ActResponse.from_raw(
+            {
+                "actions": [{"type": "ClickAction", "selector": {"type": "attributeValueSelector", "attribute": "id", "value": "go"}}],
+                "done": False,
+                "state_out": {},
+            }
+        )
