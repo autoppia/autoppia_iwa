@@ -4,8 +4,6 @@ Aligned with USE_CASES.md and iwa-module/use_cases.json in the demo-webs repo.
 Each use case has a name, description, event type, and example prompts for task generation.
 """
 
-from typing import Type
-
 from autoppia_iwa.src.demo_webs.classes import UseCase
 from autoppia_iwa.src.demo_webs.projects.base_events import Event
 
@@ -14,7 +12,6 @@ from .events import (
     CreateServerEvent,
     DeleteServerEvent,
     OpenServerSettingsEvent,
-    OpenSettingsEvent,
     SelectChannelEvent,
     SelectDmEvent,
     SelectServerEvent,
@@ -22,8 +19,6 @@ from .events import (
     SendMessageEvent,
     SettingsAccountEvent,
     SettingsAppearanceEvent,
-    SettingsNotificationsEvent,
-    ViewDmsEvent,
     ViewServersEvent,
 )
 
@@ -31,15 +26,12 @@ from .events import (
 def _make_use_case(
     name: str,
     description: str,
-    event_class: Type[Event],
+    event_class: type[Event],
     *example_prompts: str,
 ) -> UseCase:
     if not example_prompts:
         raise ValueError(f"Use case {name} must have at least one example prompt")
-    examples = [
-        {"prompt": p, "prompt_for_task_generation": p}
-        for p in example_prompts
-    ]
+    examples = [{"prompt": p, "prompt_for_task_generation": p} for p in example_prompts]
     return UseCase(
         name=name,
         description=description,
