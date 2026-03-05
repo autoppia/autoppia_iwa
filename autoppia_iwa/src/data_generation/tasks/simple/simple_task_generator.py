@@ -52,6 +52,10 @@ def _log_task_generation(message: str, context: str = "TASK_GENERATION") -> None
 
 
 class SimpleTaskGenerator:
+    # ============================================================================
+    # INITIALIZATION
+    # ============================================================================
+
     def __init__(
         self,
         web_project: WebProject,
@@ -65,6 +69,10 @@ class SimpleTaskGenerator:
         self.retry_delay = retry_delay
         self._seed_cache: dict[str, int] = {}
         self._dataset_cache: dict[tuple, Any] = {}
+
+    # ============================================================================
+    # PUBLIC METHODS - TASK GENERATION
+    # ============================================================================
 
     async def generate(self, prompts_per_use_case: int = 1, use_cases: list[str] | None = None, dynamic: bool = True) -> list[Task]:
         """
@@ -104,7 +112,6 @@ class SimpleTaskGenerator:
                 traceback.print_exc()
                 continue
 
-        _log_task_generation(f"Total generated tasks across all use cases: {len(all_tasks)}", context="SUMMARY")
         return all_tasks
 
     async def generate_tasks_for_use_case(self, use_case: UseCase, number_of_prompts: int = 1, dynamic: bool = True) -> list[Task]:
@@ -206,6 +213,10 @@ class SimpleTaskGenerator:
 
         random.shuffle(tasks)
         return tasks
+
+    # ============================================================================
+    # DATASET LOADING
+    # ============================================================================
 
     async def _preload_dataset_for_use_case(self, use_case: UseCase, seed: int) -> Any:
         """
@@ -413,6 +424,10 @@ class SimpleTaskGenerator:
 
         return None
 
+    # ============================================================================
+    # URL AND SEED UTILITIES
+    # ============================================================================
+
     def _get_base_url(self) -> str:
         return self.web_project.urls[0] if self.web_project.urls else self.web_project.frontend_url
 
@@ -430,12 +445,12 @@ class SimpleTaskGenerator:
         new_query = urlencode(query_params, doseq=True)
         return urlunparse(parsed._replace(query=new_query))
 
-    async def _build_constraint_context(self, base_url: str, dynamic: bool | None) -> ConstraintContext:
+    def _build_constraint_context(self, base_url: str, dynamic: bool | None) -> ConstraintContext:
         constraint_url = self._build_constraint_url(base_url, dynamic)
-        base_seed = await self._resolve_seed(constraint_url)
+        base_seed = self._resolve_seed(constraint_url)
         return ConstraintContext(url=constraint_url, seed=base_seed)
 
-    async def _resolve_seed(self, url: str) -> int:
+    def _resolve_seed(self, url: str) -> int:
         if url in self._seed_cache:
             return self._seed_cache[url]
         seed = get_seed_from_url(url)
@@ -469,7 +484,7 @@ class SimpleTaskGenerator:
             return
 
         try:
-            base_seed = await self._resolve_seed(base_url)
+            base_seed = self._resolve_seed(base_url)
             gen_module_path = f"autoppia_iwa.src.demo_webs.projects.{module_name}.generation_functions"
             dataset = await self._load_dataset_for_module(gen_module_path, base_seed)
             dataset_count = self._dataset_length(dataset)

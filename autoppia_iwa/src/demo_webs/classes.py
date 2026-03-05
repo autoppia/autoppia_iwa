@@ -5,6 +5,9 @@ from typing import Any
 
 from pydantic import BaseModel, Field, ValidationError
 
+# Constants
+CONSTRAINTS_INFO_PLACEHOLDER = "<constraints_info>"
+
 
 class UseCase(BaseModel):
     """Represents a use case in the application"""
@@ -29,10 +32,16 @@ class UseCase(BaseModel):
     )
     additional_prompt_info: str | None = Field(default=None)
 
+    # ============================================================================
+    # TEXT REPLACEMENT
+    # ============================================================================
+
     def apply_replacements(self, text: str, *args, **kwargs) -> str:
         if self.replace_func and isinstance(text, str):
-            kwargs_with_constraints = {**kwargs, "constraints": self.constraints}
-            result = self.replace_func(text, *args, **kwargs_with_constraints)
+            kwargs_for_replace = {**kwargs}
+            if "constraints" in inspect.signature(self.replace_func).parameters:
+                kwargs_for_replace["constraints"] = self.constraints
+            result = self.replace_func(text, *args, **kwargs_for_replace)
             # Support both sync and async replace functions
             if asyncio.iscoroutine(result):
                 # If called in sync context, run to completion
@@ -44,25 +53,31 @@ class UseCase(BaseModel):
             return result
 
         # Also replace constraints_info if needed
-        if isinstance(text, str) and "<constraints_info>" in text and self.constraints:
-            text = text.replace("<constraints_info>", self.constraints_to_str())
+        if isinstance(text, str) and CONSTRAINTS_INFO_PLACEHOLDER in text and self.constraints:
+            text = text.replace(CONSTRAINTS_INFO_PLACEHOLDER, self.constraints_to_str())
 
         return text
 
     async def apply_replacements_async(self, text: str, *args, **kwargs) -> str:
         """Async version that awaits async replace functions when provided."""
         if self.replace_func and isinstance(text, str):
-            kwargs_with_constraints = {**kwargs, "constraints": self.constraints}
-            result = self.replace_func(text, *args, **kwargs_with_constraints)
+            kwargs_for_replace = {**kwargs}
+            if "constraints" in inspect.signature(self.replace_func).parameters:
+                kwargs_for_replace["constraints"] = self.constraints
+            result = self.replace_func(text, *args, **kwargs_for_replace)
             if asyncio.iscoroutine(result):
                 return await result
             return result
 
         # Also replace constraints_info if needed
-        if isinstance(text, str) and "<constraints_info>" in text and self.constraints:
-            text = text.replace("<constraints_info>", self.constraints_to_str())
+        if isinstance(text, str) and CONSTRAINTS_INFO_PLACEHOLDER in text and self.constraints:
+            text = text.replace(CONSTRAINTS_INFO_PLACEHOLDER, self.constraints_to_str())
 
         return text
+
+    # ============================================================================
+    # CONSTRAINTS GENERATION
+    # ============================================================================
 
     def generate_constraints(self):
         """
@@ -133,6 +148,10 @@ class UseCase(BaseModel):
                 self.constraints = result
         return self.constraints_to_str() if self.constraints else ""
 
+    # ============================================================================
+    # CONSTRAINTS FORMATTING
+    # ============================================================================
+
     def constraints_to_str(self) -> str:
         """
         Converts the constraints list to a human-readable string.
@@ -172,6 +191,10 @@ class UseCase(BaseModel):
 
         return " AND ".join(parts)
 
+    # ============================================================================
+    # EXAMPLES
+    # ============================================================================
+
     def get_example_prompts_from_use_case(self) -> list[str]:
         """
         Extract all prompt strings from the examples
@@ -183,6 +206,10 @@ class UseCase(BaseModel):
         Get all example prompts as a single string with the specified separator
         """
         return separator.join(self.get_example_prompts_from_use_case())
+
+    # ============================================================================
+    # SERIALIZATION
+    # ============================================================================
 
     def serialize(self) -> dict:
         """Serialize a UseCase object to a dictionary."""

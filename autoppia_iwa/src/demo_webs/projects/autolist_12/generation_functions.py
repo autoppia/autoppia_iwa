@@ -36,6 +36,25 @@ async def _ensure_task_dataset(task_url: str | None = None, dataset: dict[str, l
     return []
 
 
+def _collect_field_values_from_dataset_flat(dataset: list[dict[str, Any]], source_key: str) -> list[Any]:
+    """Collect unique values for source_key from dataset; flatten list values into a single list."""
+    all_values: list[Any] = []
+    for v in dataset:
+        if source_key in v:
+            val = v.get(source_key)
+            if isinstance(val, list):
+                all_values.extend(val)
+            elif val is not None:
+                all_values.append(val)
+    return list(set(all_values))
+
+
+def _pick_different_value_from_dataset(dataset: list[dict[str, Any]], source_key: str, exclude_value: Any, fallback: Any = None) -> Any:
+    """Return a random value for source_key from dataset that is not exclude_value, or fallback."""
+    valid = [v[source_key] for v in dataset if v.get(source_key) is not None and v.get(source_key) != exclude_value]
+    return random.choice(valid) if valid else fallback
+
+
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, source_key: str, dataset: list[dict[str, Any]]) -> Any:
     """
     Generate a constraint value for a given operator, field, and dataset.
@@ -55,8 +74,7 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, s
         return field_value
 
     if operator == ComparisonOperator.NOT_EQUALS:
-        valid = [v[source_key] for v in dataset if v.get(source_key) and v.get(source_key) != field_value]
-        return random.choice(valid) if valid else None
+        return _pick_different_value_from_dataset(dataset, source_key, field_value, None)
 
     if operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
         longest = max(field_value.split(), key=len)
@@ -77,16 +95,7 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, s
         return "xyz"  # fallback
 
     elif operator == ComparisonOperator.IN_LIST:
-        all_values = []
-        for v in dataset:
-            if source_key in v:
-                val = v.get(source_key)
-                if isinstance(val, list):
-                    all_values.extend(val)
-                elif val is not None:
-                    all_values.append(val)
-        all_values = list(set(all_values))
-
+        all_values = _collect_field_values_from_dataset_flat(dataset, source_key)
         if not all_values:
             return [field_value]
         random.shuffle(all_values)
@@ -96,16 +105,7 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, s
         return list(set(subset))
 
     elif operator == ComparisonOperator.NOT_IN_LIST:
-        all_values = []
-        for v in dataset:
-            if source_key in v:
-                val = v.get(source_key)
-                if isinstance(val, list):
-                    all_values.extend(val)
-                elif val is not None:
-                    all_values.append(val)
-        all_values = list(set(all_values))
-
+        all_values = _collect_field_values_from_dataset_flat(dataset, source_key)
         if field_value in all_values:
             all_values.remove(field_value)
         return random.sample(all_values, min(2, len(all_values))) if all_values else []
@@ -185,7 +185,7 @@ async def generate_select_date_for_task_constraints(task_url: str | None = None,
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_SELECT_DATE_MAP)
 
 
-async def generate_select_task_priority_constraints() -> list[dict[str, Any]]:
+def generate_select_task_priority_constraints() -> list[dict[str, Any]]:
     """Generate constraints for selecting a task priority."""
     field_map = {
         "priority": {"dataset": PRIORITIES},
@@ -206,7 +206,7 @@ async def generate_task_constraints(task_url: str | None = None, dataset: list[d
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_TASK_MAP)
 
 
-async def generate_team_members_added_constraints() -> list[dict[str, Any]]:
+def generate_team_members_added_constraints() -> list[dict[str, Any]]:
     """Generate constraints for adding team members, including member_count and members."""
     num_members = random.randint(1, 3)
     selected_members = random.sample([m["label"] for m in TEAM_MEMBERS_OPTIONS], k=num_members)
@@ -221,7 +221,7 @@ async def generate_team_members_added_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_team_role_assigned_constraints() -> list[dict[str, Any]]:
+def generate_team_role_assigned_constraints() -> list[dict[str, Any]]:
     """Generate constraints for assigning a role to a team member."""
     field_map = {
         "_dataset": TEAMS,
@@ -231,7 +231,7 @@ async def generate_team_role_assigned_constraints() -> list[dict[str, Any]]:
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_TEAM_ROLE_ASSIGNED_MAP)
 
 
-async def generate_team_created_constraints() -> list[dict[str, Any]]:
+def generate_team_created_constraints() -> list[dict[str, Any]]:
     """Generate constraints for creating a team."""
     field_map = {
         "_dataset": TEAMS,

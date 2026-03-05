@@ -667,10 +667,6 @@ CONTACT_EXPERT_OPENED_USE_CASE = UseCase(
             "prompt": "Contact an expert where name not equals 'Chris Martinez' and role contains 'Austra'.",
             "prompt_for_task_generation": "Contact an expert where name not equals 'Chris Martinez' and role contains 'Austra'.",
         },
-        {
-            "prompt": "Contact an expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
-            "prompt_for_task_generation": "Contact an expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
-        },
     ],
 )
 
