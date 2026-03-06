@@ -2,5 +2,31 @@
 # relative_files = True ensures paths in coverage.xml are relative to repo root,
 # so sonar.coverage.exclusions in sonar-project.properties can match and exclude
 # untested entrypoints/demo code from the coverage metric.
+# omit = exclude these from the run entirely so TOTAL and % only count testable code.
 [run]
 relative_files = True
+omit =
+    */tests/*
+    */test_*.py
+    */conftest.py
+    */__init__.py
+    autoppia_iwa/entrypoints/benchmark/benchmark.py
+    autoppia_iwa/entrypoints/benchmark/run.py
+    autoppia_iwa/entrypoints/benchmark/config.py
+    autoppia_iwa/entrypoints/evaluation/client.py
+    autoppia_iwa/entrypoints/evaluation/endpoint.py
+    autoppia_iwa/entrypoints/judge_benchmark/*
+    autoppia_iwa/entrypoints/judge_benchmark/**
+    autoppia_iwa/entrypoints/judge_benchmark_endpoint/*
+    autoppia_iwa/entrypoints/judge_benchmark_endpoint/**
+    autoppia_iwa/entrypoints/technical_test_agent/*
+    autoppia_iwa/entrypoints/technical_test_agent/**
+    autoppia_iwa/entrypoints/test_task.py
+    autoppia_iwa/entrypoints/test_your_agent/*
+    autoppia_iwa/entrypoints/test_your_agent/**
+    autoppia_iwa/entrypoints/web_verification/*
+    autoppia_iwa/entrypoints/web_verification/**
+    autoppia_iwa/src/demo_webs/projects/*/generation_functions.py
+    autoppia_iwa/src/demo_webs/projects/*/*/generation_functions.py
+    autoppia_iwa/src/demo_webs/projects/*/replace_functions.py
+    autoppia_iwa/src/demo_webs/projects/*/*/replace_functions.py
