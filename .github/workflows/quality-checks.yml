@@ -61,6 +61,12 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-cov pytest-asyncio pip-audit
 
+      - name: Install Playwright browsers
+        run: playwright install chromium
+
+      - name: Install Playwright system dependencies
+        run: playwright install-deps chromium
+
       - name: Audit Python dependencies (pip-audit)
         id: pip_audit
         run: |
