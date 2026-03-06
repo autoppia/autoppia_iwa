@@ -60,9 +60,13 @@ class SimpleTaskGenerator:
         self,
         web_project: WebProject,
         llm_service: ILLM = Provide[DIContainer.llm_service],
+        max_retries: int = 3,
+        retry_delay: float = 0.1,
     ):
         self.web_project = web_project
         self.llm_service = llm_service
+        self.max_retries = max_retries
+        self.retry_delay = retry_delay
         self._seed_cache: dict[str, int] = {}
         self._dataset_cache: dict[tuple, Any] = {}
 
@@ -509,30 +513,28 @@ class SimpleTaskGenerator:
         Calls the LLM with the given prompt, parsing the response as a list of strings with retry.
         Returns a list of prompt strings.
         """
-        max_retries = 3
-        retry_delay = 0.1
-
         system_prompt = "You are a helpful assistant that generates user tasks as a list of strings."
         messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": llm_prompt}]
 
+        # Print temperature being used for task generation
         task_gen_temp = self.llm_service.config.temperature if hasattr(self.llm_service, "config") else "unknown"
-        _log_task_generation(f"Calling LLM (temperature={task_gen_temp})", context="LLM")
+        print(f"🌡️  Task Generation: Calling LLM with temperature={task_gen_temp}")
 
-        for attempt in range(max_retries):
+        for attempt in range(self.max_retries):
             try:
                 resp_text = await self.llm_service.async_predict(messages=messages, json_format=True)
                 parsed_data = self._parse_llm_response(resp_text)
                 if parsed_data:
                     return parsed_data
                 logger.warning(f"Attempt {attempt + 1}: Could not parse LLM response, retrying...")
-                if attempt < max_retries - 1:
-                    await asyncio.sleep(retry_delay * (attempt + 1))
+                if attempt < self.max_retries - 1:
+                    await asyncio.sleep(self.retry_delay * (attempt + 1))
             except Exception as e:
                 logger.error(f"Error on LLM call attempt {attempt + 1}: {e!s}")
-                if attempt < max_retries - 1:
-                    await asyncio.sleep(retry_delay * (attempt + 1))
+                if attempt < self.max_retries - 1:
+                    await asyncio.sleep(self.retry_delay * (attempt + 1))
 
-        logger.error(f"All {max_retries} attempts to parse LLM response have failed.")
+        logger.error(f"All {self.max_retries} attempts to parse LLM response have failed.")
         return []
 
     def _parse_llm_response(self, resp_text: Any) -> list[str]:
