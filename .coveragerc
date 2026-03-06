@@ -1,0 +1,6 @@
+# Coverage configuration for pytest-cov and SonarCloud.
+# relative_files = True ensures paths in coverage.xml are relative to repo root,
+# so sonar.coverage.exclusions in sonar-project.properties can match and exclude
+# untested entrypoints/demo code from the coverage metric.
+[run]
+relative_files = True
