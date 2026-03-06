@@ -20,6 +20,15 @@ def _skip_if_backend_unavailable(reason: str):
     pytest.skip(reason)
 
 
+@pytest.fixture(autouse=True)
+async def reset_http_session_after_test():
+    """Close the global aiohttp session after each test so the next test creates a new one in its own event loop."""
+    yield
+    from autoppia_iwa.src.demo_webs.projects.data_provider import close_async_session
+
+    await close_async_session()
+
+
 # Test para autocinema (web 1) - real data from backend
 @pytest.mark.integration
 async def test_autocinema_constraints():
