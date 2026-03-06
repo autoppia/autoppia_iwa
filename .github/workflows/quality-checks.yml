@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - fix/** # TOOD: remove this line once integration is done
   pull_request:
     types: [opened, synchronize, reopened]
 
