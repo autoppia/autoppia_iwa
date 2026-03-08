@@ -211,8 +211,8 @@ Response:
 {
   "tool_calls": [
     {"name": "browser.click", "arguments": {"selector": {"type": "css", "value": "#login"}}},
-    {"name": "browser.type", "arguments": {"selector": {"type": "css", "value": "#username"}, "text": "user1"}},
-    {"name": "browser.type", "arguments": {"selector": {"type": "css", "value": "#password"}, "text": "Passw0rd!"}}
+    {"name": "browser.input", "arguments": {"selector": {"type": "css", "value": "#username"}, "text": "user1"}},
+    {"name": "browser.input", "arguments": {"selector": {"type": "css", "value": "#password"}, "text": "Passw0rd!"}}
   ],
   "content": "Filled login credentials.",
   "done": false,

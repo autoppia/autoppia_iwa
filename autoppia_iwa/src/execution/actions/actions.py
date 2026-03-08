@@ -1,7 +1,8 @@
-# actions.py
 import json
+import re
+import urllib.parse
 from functools import wraps
-from typing import Any, Literal
+from typing import Any, ClassVar, Literal
 
 from loguru import logger
 from playwright.async_api import Page, TimeoutError as PWTimeout
@@ -106,6 +107,7 @@ class ClickAction(BaseClickAction):
     """Clicks an element identified by a selector, or at specific coordinates."""
 
     type: Literal["ClickAction"] = "ClickAction"
+    browser_use_tool_name: ClassVar[str] = "click"
 
     @log_action("ClickAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
@@ -130,6 +132,7 @@ class DoubleClickAction(BaseClickAction):
     """Double-clicks an element identified by a selector or coordinates."""
 
     type: Literal["DoubleClickAction"] = "DoubleClickAction"
+    browser_use_tool_name: ClassVar[str] = "dblclick"
 
     @log_action("DoubleClickAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
@@ -152,6 +155,7 @@ class RightClickAction(BaseClickAction):
     """Right-clicks an element identified by a selector or coordinates."""
 
     type: Literal["RightClickAction"] = "RightClickAction"
+    browser_use_tool_name: ClassVar[str] = "rightclick"
 
     @log_action("RightClickAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
@@ -174,6 +178,7 @@ class MiddleClickAction(BaseClickAction):
     """Middle-clicks an element identified by a selector or coordinates."""
 
     type: Literal["MiddleClickAction"] = "MiddleClickAction"
+    browser_use_tool_name: ClassVar[str] = "middleclick"
 
     @log_action("MiddleClickAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
@@ -196,6 +201,7 @@ class TripleClickAction(BaseClickAction):
     """Triple-clicks an element identified by a selector or coordinates."""
 
     type: Literal["TripleClickAction"] = "TripleClickAction"
+    browser_use_tool_name: ClassVar[str] = "tripleclick"
 
     @log_action("TripleClickAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
@@ -270,6 +276,7 @@ class NavigateAction(BaseAction):
     """Navigates the browser to a URL, or goes back/forward in history."""
 
     type: Literal["NavigateAction"] = "NavigateAction"
+    browser_use_tool_name: ClassVar[str] = "navigate"
     url: str | None = Field(None, description="The URL to navigate to. Required unless go_back or go_forward is true.")
     go_back: bool = Field(False, description="If true, navigates to the previous page in history.")
     go_forward: bool = Field(False, description="If true, navigates to the next page in history.")
@@ -298,6 +305,43 @@ class NavigateAction(BaseAction):
             raise ValueError("Invalid state: NavigateAction has no target.")
 
 
+class GoBackAction(BaseAction):
+    """Navigates to the previous page in browser history."""
+
+    type: Literal["GoBackAction"] = "GoBackAction"
+    browser_use_tool_name: ClassVar[str] = "go_back"
+
+    @log_action("GoBackAction")
+    async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
+        page = _ensure_page(page, "GoBackAction")
+        await page.go_back()
+
+
+class SearchAction(BaseAction):
+    """Searches the web using a search engine and opens the results page."""
+
+    type: Literal["SearchAction"] = "SearchAction"
+    browser_use_tool_name: ClassVar[str] = "search"
+    query: str = Field(..., description="Search query to run.")
+    engine: str = Field(default="duckduckgo", description="Search engine: duckduckgo, google, or bing.")
+
+    @log_action("SearchAction")
+    async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
+        page = _ensure_page(page, "SearchAction")
+        engine = str(self.engine or "duckduckgo").strip().lower()
+        query = urllib.parse.quote_plus(str(self.query or "").strip())
+        if not query:
+            raise ValueError("SearchAction requires a non-empty query.")
+        search_urls = {
+            "duckduckgo": f"https://duckduckgo.com/?q={query}",
+            "google": f"https://www.google.com/search?q={query}&udm=14",
+            "bing": f"https://www.bing.com/search?q={query}",
+        }
+        if engine not in search_urls:
+            raise ValueError("SearchAction engine must be one of: duckduckgo, google, bing.")
+        await page.goto(search_urls[engine])
+
+
 class DoneAction(BaseAction):
     """Explicit completion signal for step-wise agent loops.
 
@@ -306,6 +350,7 @@ class DoneAction(BaseAction):
     """
 
     type: Literal["DoneAction"] = "DoneAction"
+    browser_use_tool_name: ClassVar[str] = "done"
     reason: str | None = Field(None, description="Optional completion reason for logs/debugging.")
 
     @log_action("DoneAction")
@@ -334,6 +379,7 @@ class TypeAction(BaseAction):
     """Fills an input field identified by a selector with the given text. Clears the field first."""
 
     type: Literal["TypeAction"] = "TypeAction"
+    browser_use_tool_name: ClassVar[str] = "input"
     text: str = Field(..., description="The text to type into the element.")
     selector: Selector | None = Field(None, description="Selector for the element to type into. Required if 'text' is not provided.")
 
@@ -377,6 +423,7 @@ class HoverAction(BaseActionWithSelector):
     """Hovers the mouse cursor over an element identified by a selector."""
 
     type: Literal["HoverAction"] = "HoverAction"
+    browser_use_tool_name: ClassVar[str] = "hover"
 
     @log_action("HoverAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
@@ -389,6 +436,7 @@ class WaitAction(BaseAction):
     """Waits for a specific condition: an element to appear or a fixed duration."""
 
     type: Literal["WaitAction"] = "WaitAction"
+    browser_use_tool_name: ClassVar[str] = "wait"
     selector: Selector | None = Field(None, description="Selector for an element to wait for. If provided, waits for the element.")
     time_seconds: float | None = Field(None, description="Duration in seconds to wait. If provided without a selector, pauses execution.")
     timeout_seconds: float = Field(5.0, description="Maximum time in seconds to wait for the selector.")
@@ -423,6 +471,7 @@ class ScrollAction(BaseAction):
     """Scrolls the page up, down, left, right, to a text, or by a specific amount."""
 
     type: Literal["ScrollAction"] = "ScrollAction"
+    browser_use_tool_name: ClassVar[str] = "scroll"
 
     value: str | int | None = Field(
         None,
@@ -675,6 +724,7 @@ class ScreenshotAction(BaseAction):
     """Takes a screenshot of the current page."""
 
     type: Literal["ScreenshotAction"] = "ScreenshotAction"
+    browser_use_tool_name: ClassVar[str] = "screenshot"
     file_path: str = Field(default="", description="The file path where the screenshot should be saved.")
     full_page: bool = Field(False, description="Whether to capture the full scrollable page.")
 
@@ -691,6 +741,7 @@ class SendKeysIWAAction(BaseAction):
     """Presses keyboard keys. Can be used for shortcuts or special keys."""
 
     type: Literal["SendKeysIWAAction"] = "SendKeysIWAAction"
+    browser_use_tool_name: ClassVar[str] = "send_keys"
     keys: str = Field(..., description="The key or key combination to press (e.g., 'Enter', 'Control+C', 'ArrowDown'). See Playwright docs for key names.")
 
     @log_action("SendKeysIWAAction")
@@ -740,6 +791,7 @@ class GetDropDownOptionsAction(BaseActionWithSelector):
     """Retrieves all options (text and value) from a <select> dropdown element."""
 
     type: Literal["GetDropDownOptionsAction"] = "GetDropDownOptionsAction"
+    browser_use_tool_name: ClassVar[str] = "dropdown_options"
 
     @log_action("GetDropDownOptionsAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
@@ -851,6 +903,7 @@ class SelectDropDownOptionAction(BaseActionWithSelector):
     """Selects a specific option within a <select> dropdown element by its visible text."""
 
     type: Literal["SelectDropDownOptionAction"] = "SelectDropDownOptionAction"
+    browser_use_tool_name: ClassVar[str] = "select_dropdown"
     text: str = Field(..., description="The exact visible text of the option to select.")
     timeout_ms: int = Field(1000, description="Maximum time in milliseconds to wait for the element and option.")
 
@@ -939,6 +992,83 @@ class SelectDropDownOptionAction(BaseActionWithSelector):
             if clean_text in option_text:
                 return idx
         return -1
+
+
+class EvaluateAction(BaseAction):
+    """Executes JavaScript on the current page and returns the raw result."""
+
+    type: Literal["EvaluateAction"] = "EvaluateAction"
+    browser_use_tool_name: ClassVar[str] = "evaluate"
+    script: str = Field(..., description="JavaScript expression or function body to evaluate in the page context.")
+    arg: Any = Field(default=None, description="Optional argument passed to the evaluated script.")
+
+    @model_validator(mode="before")
+    @classmethod
+    def _normalize_script_aliases(cls, values):
+        if "expression" in values and "script" not in values:
+            values["script"] = values.pop("expression")
+        return values
+
+    @log_action("EvaluateAction")
+    async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
+        page = _ensure_page(page, "EvaluateAction")
+        if self.arg is None:
+            return await page.evaluate(self.script)
+        return await page.evaluate(self.script, self.arg)
+
+
+class ExtractAction(BaseAction):
+    """Extracts deterministic text from the page, optionally filtered by a query or selector."""
+
+    type: Literal["ExtractAction"] = "ExtractAction"
+    browser_use_tool_name: ClassVar[str] = "extract"
+    query: str = Field(default="", description="Optional query used to filter the extracted content.")
+    selector: Selector | None = Field(None, description="Optional selector to scope extraction.")
+    include_html: bool = Field(False, description="If true, returns HTML instead of visible text.")
+    max_chars: int = Field(4000, description="Maximum characters to return.")
+
+    @staticmethod
+    def _query_terms(query: str) -> list[str]:
+        return [term for term in re.findall(r"[A-Za-z0-9]{3,}", str(query or "").lower()) if term]
+
+    @classmethod
+    def _filter_text(cls, text: str, query: str, max_chars: int) -> str:
+        collapsed = "\n".join(line.strip() for line in str(text or "").splitlines() if line.strip())
+        if not query.strip():
+            return collapsed[:max_chars]
+        terms = cls._query_terms(query)
+        if not terms:
+            return collapsed[:max_chars]
+        matched_lines: list[str] = []
+        for line in collapsed.splitlines():
+            lowered = line.lower()
+            if any(term in lowered for term in terms):
+                matched_lines.append(line)
+        if matched_lines:
+            return "\n".join(matched_lines)[:max_chars]
+        return collapsed[:max_chars]
+
+    @log_action("ExtractAction")
+    async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
+        page = _ensure_page(page, "ExtractAction")
+        max_chars = max(200, min(int(self.max_chars or 4000), 20000))
+        if self.selector:
+            selector_str = self.selector.to_playwright_selector()
+            locator = page.locator(selector_str).first
+            if await locator.count() == 0:
+                raise ValueError("ExtractAction selector did not match any element.")
+            if self.include_html:
+                content = await locator.evaluate("(el) => el.outerHTML")
+            else:
+                content = await locator.inner_text()
+            return self._filter_text(str(content or ""), self.query, max_chars)
+
+        if self.include_html:
+            content = await page.content()
+        else:
+            body = page.locator("body").first
+            content = await body.inner_text() if await body.count() else await page.content()
+        return self._filter_text(str(content or ""), self.query, max_chars)
 
 
 class UndefinedAction(BaseAction):

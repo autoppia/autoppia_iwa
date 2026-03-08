@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 
-from autoppia_iwa.src.execution.actions.actions import NavigateAction, RequestUserInputAction
+from autoppia_iwa.src.execution.actions.actions import GoBackAction, NavigateAction, RequestUserInputAction, TypeAction
 from autoppia_iwa.src.web_agents.act_protocol import ActResponse
 from autoppia_iwa.src.web_agents.apified_iterative_agent import ApifiedWebAgent
 
@@ -119,3 +119,22 @@ def test_parse_actions_response_maps_user_request_input_tool() -> None:
     parsed_actions = agent._parse_actions_response(parsed)
     assert len(parsed_actions) == 1
     assert isinstance(parsed_actions[0], RequestUserInputAction)
+
+
+def test_parse_actions_response_supports_new_browser_use_tool_names() -> None:
+    agent = ApifiedWebAgent(base_url="http://127.0.0.1:5060")
+    parsed = ActResponse.from_raw(
+        {
+            "tool_calls": [
+                {"name": "browser.input", "arguments": {"text": "hello"}},
+                {"name": "browser.go_back", "arguments": {}},
+            ],
+            "done": False,
+            "state_out": {},
+        }
+    )
+
+    parsed_actions = agent._parse_actions_response(parsed)
+    assert len(parsed_actions) == 2
+    assert isinstance(parsed_actions[0], TypeAction)
+    assert isinstance(parsed_actions[1], GoBackAction)

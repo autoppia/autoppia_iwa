@@ -168,6 +168,12 @@ class BaseAction(BaseModel):
         action_type = getattr(cls, "type", None)
         if isinstance(action_type, str) and action_type:
             ActionRegistry.register(action_type, cls)
+        tool_name = cls.tool_name()
+        if isinstance(tool_name, str) and tool_name:
+            ActionRegistry.register(tool_name, cls)
+        for alias in cls.tool_aliases():
+            if isinstance(alias, str) and alias.strip():
+                ActionRegistry.register(alias, cls)
 
     async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         """
@@ -323,8 +329,22 @@ class BaseAction(BaseModel):
 
     @classmethod
     def tool_name(cls) -> str:
+        custom_tool_name = getattr(cls, "browser_use_tool_name", None)
+        if isinstance(custom_tool_name, str) and custom_tool_name.strip():
+            return str(custom_tool_name).strip()
         action_type = getattr(cls, "type", cls.__name__)
         return cls._to_snake_case(action_type)
+
+    @classmethod
+    def tool_aliases(cls) -> list[str]:
+        aliases = getattr(cls, "tool_alias_names", None)
+        if isinstance(aliases, (list, tuple, set)):
+            out: list[str] = []
+            for alias in aliases:
+                if isinstance(alias, str) and alias.strip():
+                    out.append(alias.strip())
+            return out
+        return []
 
     @classmethod
     def tool_description(cls) -> str:

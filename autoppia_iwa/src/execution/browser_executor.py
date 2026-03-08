@@ -1,6 +1,7 @@
 import asyncio
 import base64
 import contextlib
+import json
 from datetime import UTC, datetime
 from typing import Any
 
@@ -25,6 +26,20 @@ class PlaywrightBrowserExecutor:
         self.page: Page | None = page
         self.action_execution_results: list[ActionExecutionResult] = []
         self.backend_demo_webs_service: BackendDemoWebService = backend_demo_webs_service
+
+    @staticmethod
+    def _normalize_action_output(value: Any) -> Any:
+        if value is None or isinstance(value, (str, int, float, bool)):
+            return value
+        if isinstance(value, list):
+            return [PlaywrightBrowserExecutor._normalize_action_output(item) for item in value]
+        if isinstance(value, dict):
+            return {str(key): PlaywrightBrowserExecutor._normalize_action_output(item) for key, item in value.items()}
+        try:
+            json.dumps(value)
+            return value
+        except Exception:
+            return str(value)
 
     async def execute_single_action(self, action: BaseAction, web_agent_id: str, iteration: int, is_web_real: bool, should_record: bool = False) -> ActionExecutionResult:
         """
@@ -74,7 +89,7 @@ class PlaywrightBrowserExecutor:
             start_time = datetime.now(UTC)
 
             # Execute the action
-            await action.execute(self.page, self.backend_demo_webs_service, web_agent_id)
+            action_output = await action.execute(self.page, self.backend_demo_webs_service, web_agent_id)
             execution_time = (datetime.now(UTC) - start_time).total_seconds()
 
             # Capture backend events and updated browser state
@@ -136,6 +151,7 @@ class PlaywrightBrowserExecutor:
             return ActionExecutionResult(
                 action_event=action.__class__.__name__,
                 successfully_executed=True,
+                action_output=self._normalize_action_output(action_output),
                 execution_time=execution_time,
                 browser_snapshot=browser_snapshot,
                 action=action,
@@ -197,6 +213,7 @@ class PlaywrightBrowserExecutor:
                 action=action,
                 successfully_executed=False,
                 error=str(e),
+                action_output=None,
                 execution_time=0,
                 browser_snapshot=browser_snapshot,
             )
