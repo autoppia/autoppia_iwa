@@ -48,8 +48,8 @@ async def _get_films_data(task_url: str | None = None, dataset: dict[str, list[d
 def _login_constraints() -> list[dict]:
     """Return fixed login constraints (username, password) for auth-required use cases. Aligned with login_replace_func."""
     return [
-        create_constraint_dict("username", ComparisonOperator.EQUALS, "<web_agent_id>"),
-        create_constraint_dict("password", ComparisonOperator.EQUALS, "password123"),
+        create_constraint_dict("username", ComparisonOperator.EQUALS, "user<web_agent_id>"),
+        create_constraint_dict("password", ComparisonOperator.EQUALS, "Passw0rd!"),
     ]
 
 
@@ -226,7 +226,7 @@ def generate_registration_constraints(dataset: list[dict] | None = None):
     _ = dataset  # Unused parameter kept for backward compatibility
     from .utils import parse_constraints_str
 
-    constraints_str = "username equals newuser<web_agent_id> AND email equals newuser<web_agent_id>@gmail.com AND password equals password123"
+    constraints_str = "username equals newuser<web_agent_id> AND email equals newuser<web_agent_id>@gmail.com AND password equals Passw0rd!"
 
     return parse_constraints_str(constraints_str)
 
@@ -240,7 +240,7 @@ def generate_login_constraints(dataset: list[dict] | None = None):
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "username equals <web_agent_id> AND password equals password123"
+    constraints_str = "username equals user<web_agent_id> AND password equals Passw0rd!"
 
     return parse_constraints_str(constraints_str)
 
@@ -254,7 +254,7 @@ def generate_logout_constraints(dataset: list[dict] | None = None):
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "username equals <web_agent_id> AND password equals password123"
+    constraints_str = "username equals user<web_agent_id> AND password equals Passw0rd!"
     return parse_constraints_str(constraints_str)
 
 
@@ -484,4 +484,4 @@ def generate_edit_profile_constraints(dataset: list[dict] | None = None):
     if "website" not in selected:
         selected.append("website")
     profile_constraints = _generate_constraints(profile_dataset, FIELD_OPERATORS_MAP_EDIT_USER, num_constraints=len(selected), selected_fields=selected)
-    return [create_constraint_dict("username", ComparisonOperator.EQUALS, "<web_agent_id>"), create_constraint_dict("password", ComparisonOperator.EQUALS, "password123"), *profile_constraints]
+    return [create_constraint_dict("username", ComparisonOperator.EQUALS, "user<web_agent_id>"), create_constraint_dict("password", ComparisonOperator.EQUALS, "Passw0rd!"), *profile_constraints]
