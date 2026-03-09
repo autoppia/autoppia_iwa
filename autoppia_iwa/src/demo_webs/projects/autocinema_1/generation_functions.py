@@ -45,11 +45,14 @@ async def _get_films_data(task_url: str | None = None, dataset: dict[str, list[d
     return []
 
 
+DEFAULT_PASSWORD = "Passw0rd!"
+
+
 def _login_constraints() -> list[dict]:
     """Return fixed login constraints (username, password) for auth-required use cases. Aligned with login_replace_func."""
     return [
         create_constraint_dict("username", ComparisonOperator.EQUALS, "user<web_agent_id>"),
-        create_constraint_dict("password", ComparisonOperator.EQUALS, "Passw0rd!"),
+        create_constraint_dict("password", ComparisonOperator.EQUALS, DEFAULT_PASSWORD),
     ]
 
 
