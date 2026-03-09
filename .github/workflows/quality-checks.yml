@@ -113,4 +113,4 @@ jobs:
             -Dsonar.sources=autoppia_iwa
             -Dsonar.tests=tests
             -Dsonar.python.version=3.11
-            -Dsonar.python.coverage.reportPaths=coverage.xml
+            -Dsonar.python.coverage.reportPaths=${{ github.workspace }}/coverage.xml
