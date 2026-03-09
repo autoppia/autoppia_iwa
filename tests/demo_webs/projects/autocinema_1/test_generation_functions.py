@@ -1,5 +1,6 @@
 """Tests for autocinema_1 generation_functions."""
 
+import random
 from typing import ClassVar
 from unittest.mock import AsyncMock, patch
 
@@ -104,6 +105,7 @@ class TestAsyncGenerationFunctions:
     ]
 
     async def test_generate_film_constraints_with_dataset(self):
+        random.seed(42)
         dataset = {"movies": self._SAMPLE_FILMS}
         result = await gen.generate_film_constraints(task_url=None, dataset=dataset)
         assert isinstance(result, list)
