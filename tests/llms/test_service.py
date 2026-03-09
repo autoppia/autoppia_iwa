@@ -1,6 +1,6 @@
 """Unit tests for llms.service (_prepare_payload, LLMFactory, predict with mocks)."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -71,6 +71,33 @@ class TestOpenAIServicePreparePayload:
             svc.predict([{"role": "user", "content": "Hi"}])
         assert "OpenAI Sync Error" in str(exc_info.value)
 
+    def test_predict_return_raw_returns_response_object(self):
+        config = LLMConfig(model="gpt-4o-mini", temperature=0.0, max_tokens=100)
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = "text"
+        with patch("autoppia_iwa.src.llms.service.OpenAI") as MockOpenAI:
+            mock_client = MagicMock()
+            mock_client.chat.completions.create.return_value = mock_response
+            MockOpenAI.return_value = mock_client
+            svc = OpenAIService(config, api_key="sk-test")
+        result = svc.predict([{"role": "user", "content": "Hi"}], return_raw=True)
+        assert result is mock_response
+
+    @pytest.mark.asyncio
+    async def test_async_predict_return_raw_returns_response_object(self):
+        config = LLMConfig(model="gpt-4o-mini", temperature=0.0, max_tokens=100)
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = "async text"
+        with patch("autoppia_iwa.src.llms.service.AsyncOpenAI") as MockAsyncOpenAI:
+            mock_client = MagicMock()
+            mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
+            MockAsyncOpenAI.return_value = mock_client
+            svc = OpenAIService(config, api_key="sk-test")
+        result = await svc.async_predict([{"role": "user", "content": "Hi"}], return_raw=True)
+        assert result is mock_response
+
 
 class TestLocalLLMServicePreparePayload:
     """Tests for LocalLLMService._prepare_payload."""
@@ -111,6 +138,45 @@ class TestChutesLLMService:
         config = LLMConfig(model="m", temperature=0, max_tokens=10)
         svc = ChutesLLMService(config, base_url="https://x.chutes.ai/v1", api_key="mykey", use_bearer=True)
         assert svc._headers()["Authorization"] == "Bearer mykey"
+
+    def test_prepare_payload_with_system_message_and_json_format(self):
+        """Covers Chutes _prepare_payload when messages have system role and json_format/schema (lines 166-182)."""
+        config = LLMConfig(model="m", temperature=0, max_tokens=10)
+        svc = ChutesLLMService(config, base_url="https://x.chutes.ai/v1", api_key="key", use_bearer=False)
+        messages = [
+            {"role": "system", "content": "You are helpful."},
+            {"role": "user", "content": "List items"},
+        ]
+        payload = svc._prepare_payload(messages, json_format=True, schema={"type": "array"})
+        assert payload["messages"][0]["role"] == "system"
+        assert "CRITICAL" in payload["messages"][0]["content"] or "JSON" in payload["messages"][0]["content"]
+        assert len(payload["messages"]) == 2
+
+    def test_predict_return_raw_returns_full_response(self):
+        config = LLMConfig(model="m", temperature=0, max_tokens=10)
+        full_data = {"choices": [{"message": {"content": "hi"}}], "usage": {}}
+        with patch("autoppia_iwa.src.llms.service.httpx") as mock_httpx:
+            mock_httpx.Client.return_value.__enter__.return_value.post.return_value.json.return_value = full_data
+            mock_httpx.Client.return_value.__enter__.return_value.post.return_value.raise_for_status = MagicMock()
+            svc = ChutesLLMService(config, base_url="https://x.chutes.ai/v1", api_key="key")
+            result = svc.predict([{"role": "user", "content": "Hi"}], return_raw=True)
+        assert result == full_data
+
+    @pytest.mark.asyncio
+    async def test_async_predict_return_raw_returns_full_response(self):
+        config = LLMConfig(model="m", temperature=0, max_tokens=10)
+        full_data = {"choices": [{"message": {"content": "hi"}}], "usage": {}}
+        mock_post = MagicMock()
+        mock_post.raise_for_status = MagicMock()
+        mock_post.json = MagicMock(return_value=full_data)
+        mock_client = MagicMock()
+        mock_client.post = AsyncMock(return_value=mock_post)
+        with patch("autoppia_iwa.src.llms.service.httpx") as mock_httpx:
+            mock_httpx.AsyncClient.return_value.__aenter__ = AsyncMock(return_value=mock_client)
+            mock_httpx.AsyncClient.return_value.__aexit__ = AsyncMock(return_value=None)
+            svc = ChutesLLMService(config, base_url="https://x.chutes.ai/v1", api_key="key")
+            result = await svc.async_predict([{"role": "user", "content": "Hi"}], return_raw=True)
+        assert result == full_data
 
 
 class TestLLMFactory:

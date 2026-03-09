@@ -1,6 +1,24 @@
 """Unit tests for benchmark.utils.logging."""
 
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
+
+
+class TestEvaluationLevelFilter:
+    """Test the evaluation_level filter function (line 12 coverage)."""
+
+    def test_evaluation_level_filter_returns_true_when_level_ge_25(self):
+        from autoppia_iwa.entrypoints.benchmark.utils.logging import evaluation_level
+
+        record = {"level": MagicMock(no=25)}
+        assert evaluation_level(record) is True
+        record["level"].no = 30
+        assert evaluation_level(record) is True
+
+    def test_evaluation_level_filter_returns_false_when_level_lt_25(self):
+        from autoppia_iwa.entrypoints.benchmark.utils.logging import evaluation_level
+
+        record = {"level": MagicMock(no=20)}
+        assert evaluation_level(record) is False
 
 
 class TestSetupLogging:

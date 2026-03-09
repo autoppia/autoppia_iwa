@@ -533,3 +533,84 @@ class TestLogTaskGeneration:
 
         with patch.object(m, "_ensure_task_generation_level"), patch.object(m.logger, "log"), patch("builtins.__import__", fake_import):
             m._log_task_generation("fallback message", context="TASK_GENERATION")
+
+
+# -----------------------------------------------------------------------------
+# _dataset_length, _load_dataset_for_module import error, _call_llm no config, _parse_llm exception, _clean_list_response
+# -----------------------------------------------------------------------------
+
+
+class TestDatasetLength:
+    """Tests for _dataset_length static method."""
+
+    def test_returns_none_for_none(self):
+        assert SimpleTaskGenerator._dataset_length(None) is None
+
+    def test_returns_len_for_list(self):
+        assert SimpleTaskGenerator._dataset_length([1, 2, 3]) == 3
+
+    def test_returns_none_for_type_error(self):
+        """Covers lines 466-467: when len(dataset) raises TypeError, return None."""
+
+        class NoLen:
+            pass
+
+        assert SimpleTaskGenerator._dataset_length(NoLen()) is None
+
+
+class TestLoadDatasetForModuleImportError:
+    """Covers _load_dataset_for_module when import_module raises."""
+
+    @pytest.mark.asyncio
+    async def test_returns_none_when_import_raises(self):
+        project = _make_project()
+        gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
+        with patch("importlib.import_module", side_effect=ImportError("no module")):
+            result = await gen._load_dataset_for_module("nonexistent.module", 1)
+        assert result is None
+
+
+class TestCallLlmWithRetryNoConfig:
+    """Covers _call_llm_with_retry when llm_service has no config (line 518)."""
+
+    @pytest.mark.asyncio
+    async def test_uses_unknown_temp_when_no_config(self):
+        project = _make_project()
+        mock_llm = MagicMock()
+        del mock_llm.config
+        mock_llm.async_predict = AsyncMock(return_value=json.dumps(["ok"]))
+        gen = SimpleTaskGenerator(web_project=project, llm_service=mock_llm)
+        with patch("builtins.print", MagicMock()):
+            result = await gen._call_llm_with_retry("prompt")
+        assert result == ["ok"]
+
+
+class TestParseLlmResponseException:
+    """Covers _parse_llm_response exception branch (lines 570-572)."""
+
+    def test_returns_empty_on_exception(self):
+        project = _make_project()
+        gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
+        with patch.object(gen, "_clean_list_response", side_effect=RuntimeError("parse error")):
+            result = gen._parse_llm_response("some string")
+        assert result == []
+
+
+class TestCleanListResponseCodePaths:
+    """Covers _clean_list_response <think> and code block removal, non-list wrap."""
+
+    def test_removes_think_blocks_and_parses(self):
+        project = _make_project()
+        gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
+        content = '<think>reasoning</think>\n["a","b"]'
+        result = gen._clean_list_response(content)
+        parsed = json.loads(result)
+        assert parsed == ["a", "b"]
+
+    def test_removes_markdown_code_blocks(self):
+        project = _make_project()
+        gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
+        content = '```json\n["x"]\n```'
+        result = gen._clean_list_response(content)
+        parsed = json.loads(result)
+        assert parsed == ["x"]

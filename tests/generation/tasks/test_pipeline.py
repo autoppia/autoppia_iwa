@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from autoppia_iwa.src.data_generation.tasks.classes import TaskGenerationConfig
 from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
@@ -140,3 +140,23 @@ def test_pipeline_generate_returns_empty_on_exception():
     with patch.object(pipeline.task_generator, "generate", side_effect=raise_error):
         result = asyncio.run(pipeline.generate())
     assert result == []
+
+
+def test_log_task_generation_import_error_fallback():
+    """Covers pipeline _log_task_generation ImportError branch (lines 31-34) and _ensure_task_generation_level ValueError branch (19-22)."""
+    from autoppia_iwa.src.data_generation.tasks import pipeline as pipeline_module
+
+    def fake_import(name, *args, **kwargs):
+        if "entrypoints.benchmark.utils.logging" in (name or ""):
+            raise ImportError("no benchmark logging")
+        return __import__(name, *args, **kwargs)
+
+    with patch.object(pipeline_module.logger, "level", side_effect=[ValueError("level missing"), None]):
+        mock_log = MagicMock()
+        with patch.object(pipeline_module.logger, "log", mock_log), patch("builtins.__import__", fake_import):
+            pipeline_module._log_task_generation("fallback message", context="CUSTOM_CTX")
+        mock_log.assert_called_once()
+        call_args = mock_log.call_args[0]
+        assert call_args[0] == "TASK_GENERATION"
+        assert "[CUSTOM_CTX]" in call_args[1]
+        assert "fallback message" in call_args[1]

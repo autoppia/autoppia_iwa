@@ -1,6 +1,11 @@
 """Unit tests for config.config (read-only checks; config is loaded at import time)."""
 
+import importlib
+import os
 from pathlib import Path
+from unittest.mock import patch
+
+import pytest
 
 
 class TestConfigValues:
@@ -50,3 +55,21 @@ class TestConfigValues:
         from autoppia_iwa.config.config import USE_APIFIED_AGENT
 
         assert isinstance(USE_APIFIED_AGENT, bool)
+
+
+class TestConfigValidation:
+    """Test config validation (OPENAI_API_KEY / CHUTES_API_KEY required by LLM_PROVIDER)."""
+
+    def test_raises_when_openai_provider_and_no_api_key(self):
+        import autoppia_iwa.config.config as config_module
+
+        with pytest.raises(ValueError, match="OPENAI_API_KEY is required"), patch.dict(os.environ, {"OPENAI_API_KEY": "", "LLM_PROVIDER": "openai"}, clear=False):
+            importlib.reload(config_module)
+        importlib.reload(config_module)  # restore module with normal env for other tests
+
+    def test_raises_when_chutes_provider_and_no_api_key(self):
+        import autoppia_iwa.config.config as config_module
+
+        with pytest.raises(ValueError, match="CHUTES_API_KEY is required"), patch.dict(os.environ, {"CHUTES_API_KEY": "", "LLM_PROVIDER": "chutes"}, clear=False):
+            importlib.reload(config_module)
+        importlib.reload(config_module)  # restore module with normal env for other tests

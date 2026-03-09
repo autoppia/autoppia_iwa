@@ -33,6 +33,13 @@ def test_task_model_dump_hides_screenshot():
         assert dump["screenshot"] == "None"
 
 
+def test_task_model_dump_replaces_screenshot_with_placeholder():
+    """Covers classes.py line 61: when dump contains screenshot (extra field), it is replaced with 'None'."""
+    task = Task(url="https://example.com", prompt="p", screenshot="base64data")
+    dump = task.model_dump()
+    assert dump.get("screenshot") == "None"
+
+
 def test_task_nested_model_dump_serializes_tests():
     task = Task(
         url="https://example.com",
@@ -138,3 +145,13 @@ def test_task_generation_config_prompts_per_use_case_int():
     assert config.prompts_per_use_case == 5
     assert config.use_cases == ["A"]
     assert config.dynamic is False
+
+
+def test_task_assign_seed_to_url_exception_fallback():
+    """Covers lines 146-150: when urlparse/parse_qs fails, seed is appended with ? or &."""
+    from unittest.mock import patch
+
+    task = Task(url="https://example.com/page", prompt="p")
+    with patch("autoppia_iwa.src.data_generation.tasks.classes.urlparse", side_effect=Exception("parse error")):
+        task.assign_seed_to_url(seed_value=100)
+    assert "seed=100" in task.url
