@@ -114,3 +114,126 @@ def test_post_generate_tasks_invalid_body_returns_422(client):
     # Empty projects list is invalid (min 1 item implied by usage)
     response = client.post("/generate-tasks", json={})
     assert response.status_code == 422
+
+
+def test_post_generate_tasks_multiple_projects(client, mock_generate_tasks):
+    """POST with multiple projects calls generator for each project."""
+    payload = {
+        "projects": ["autobooks", "autocinema"],
+        "prompts_per_use_case": 1,
+        "selective_use_cases": [],
+        "runs": 1,
+        "dynamic": False,
+    }
+    response = client.post("/generate-tasks", json=payload)
+    assert response.status_code == 200
+    assert mock_generate_tasks.call_count == 2
+    data = response.json()
+    assert len(data["generated_tasks"]) == 2
+    project_ids = {t["project_id"] for t in data["generated_tasks"]}
+    assert project_ids == {"autobooks", "autocinema"}
+
+
+def test_post_generate_tasks_runs_capped_at_max(client, mock_generate_tasks):
+    """runs=10 (max allowed) results in 10 generator calls."""
+    from autoppia_iwa.entrypoints.generate_tasks.generate_tasks_endpoint import MAX_GENERATION_RUNS
+
+    payload = {
+        "projects": ["autobooks"],
+        "prompts_per_use_case": 1,
+        "selective_use_cases": [],
+        "runs": MAX_GENERATION_RUNS,
+        "dynamic": False,
+    }
+    response = client.post("/generate-tasks", json=payload)
+    assert response.status_code == 200
+    assert mock_generate_tasks.call_count == MAX_GENERATION_RUNS
+
+
+def test_generate_task_config_model():
+    """GenerateTaskConfig validates and defaults."""
+    from autoppia_iwa.entrypoints.generate_tasks.generate_tasks_endpoint import GenerateTaskConfig
+
+    config = GenerateTaskConfig(projects=["autobooks"], prompts_per_use_case=2)
+    assert config.projects == ["autobooks"]
+    assert config.prompts_per_use_case == 2
+    assert config.selective_use_cases == []
+    assert config.runs == 1
+    assert config.dynamic is False
+
+    config2 = GenerateTaskConfig(
+        projects=["a", "b"],
+        prompts_per_use_case=1,
+        selective_use_cases=["UC1"],
+        runs=3,
+        dynamic=True,
+    )
+    assert config2.selective_use_cases == ["UC1"]
+    assert config2.runs == 3
+    assert config2.dynamic is True
+
+
+@pytest.mark.asyncio
+async def test_cli_main_project_not_found():
+    """cli_main returns when project not found."""
+    with patch("autoppia_iwa.entrypoints.generate_tasks.generate_tasks_endpoint.get_projects_by_ids") as mock_get:
+        mock_get.return_value = []
+        from autoppia_iwa.entrypoints.generate_tasks.generate_tasks_endpoint import cli_main
+
+        await cli_main()
+        mock_get.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_cli_main_no_tasks_generated():
+    """cli_main when generate_tasks_for_project returns empty."""
+    from autoppia_iwa.entrypoints.generate_tasks.generate_tasks_endpoint import (
+        cli_main,
+        demo_web_projects,
+        get_projects_by_ids,
+    )
+
+    projects = get_projects_by_ids(demo_web_projects, ["autobooks"])
+    assert projects
+
+    with patch("autoppia_iwa.entrypoints.generate_tasks.generate_tasks_endpoint.get_projects_by_ids", return_value=projects), patch(PATCH_TASK_GEN, new_callable=AsyncMock, return_value=[]):
+        await cli_main()
+
+
+@pytest.mark.asyncio
+async def test_cli_main_success_saves_tasks(tmp_path):
+    """cli_main with mocked generator and save saves to cache."""
+    from autoppia_iwa.entrypoints.generate_tasks.generate_tasks_endpoint import (
+        cli_main,
+        demo_web_projects,
+        get_projects_by_ids,
+    )
+
+    projects = get_projects_by_ids(demo_web_projects, ["autobooks"])
+    assert projects
+
+    with patch("autoppia_iwa.entrypoints.generate_tasks.generate_tasks_endpoint.get_projects_by_ids", return_value=projects), patch(PATCH_TASK_GEN, new_callable=AsyncMock) as mock_gen:
+        mock_gen.return_value = [
+            _make_fake_task("SEARCH_BOOK", "Find a book"),
+        ]
+        with (
+            patch("autoppia_iwa.entrypoints.generate_tasks.generate_tasks_endpoint.CACHE_DIR", str(tmp_path / "cache")),
+            patch("autoppia_iwa.entrypoints.generate_tasks.generate_tasks_endpoint.save_tasks_to_json", new_callable=AsyncMock) as mock_save,
+        ):
+            mock_save.return_value = True
+            await cli_main()
+        mock_gen.assert_called_once()
+        mock_save.assert_called_once()
+
+
+def test_main_cli_mode_calls_cli_main():
+    """main() with --cli runs cli_main."""
+    with (
+        patch("autoppia_iwa.entrypoints.generate_tasks.generate_tasks_endpoint.cli_main", new_callable=AsyncMock),
+        patch("autoppia_iwa.entrypoints.generate_tasks.generate_tasks_endpoint.asyncio.run") as mock_run,
+    ):
+        from autoppia_iwa.entrypoints.generate_tasks.generate_tasks_endpoint import main
+
+        with patch("sys.argv", ["prog", "--cli"]):
+            main()
+        mock_run.assert_called_once()

@@ -10,6 +10,7 @@ from autoppia_iwa.src.execution.actions.actions import (
     DragAndDropAction,
     GetDropDownOptionsAction,
     HoverAction,
+    IdleAction,
     NavigateAction,
     ScreenshotAction,
     SelectAction,
@@ -17,6 +18,7 @@ from autoppia_iwa.src.execution.actions.actions import (
     SendKeysIWAAction,
     SubmitAction,
     TypeAction,
+    UndefinedAction,
     WaitAction,
 )
 from autoppia_iwa.src.execution.actions.base import Selector, SelectorType
@@ -93,8 +95,18 @@ def test_form_and_misc_actions(tmp_path):
             await NavigateAction(url=data_url).execute(page, backend_service=None, web_agent_id="t")
             assert page.url.startswith("data:text/html")
 
+            # NavigateAction go_back and go_forward
+            second_url = _data_url("<html><body>second</body></html>")
+            await NavigateAction(url=second_url).execute(page, backend_service=None, web_agent_id="t")
+            await NavigateAction(go_back=True).execute(page, backend_service=None, web_agent_id="t")
+            assert page.url == data_url
+            await NavigateAction(go_forward=True).execute(page, backend_service=None, web_agent_id="t")
+            await NavigateAction(go_back=True).execute(page, backend_service=None, web_agent_id="t")
+
             input_selector = Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="text-input")
             await TypeAction(selector=input_selector, text="dynamic text").execute(page, backend_service=None, web_agent_id="t")
+            await page.focus("body")
+            await TypeAction(text=" no-selector", selector=None).execute(page, backend_service=None, web_agent_id="t")
 
             select_selector = Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="pet-select")
             await SelectAction(selector=select_selector, value="dog").execute(page, backend_service=None, web_agent_id="t")
@@ -103,6 +115,7 @@ def test_form_and_misc_actions(tmp_path):
 
             await WaitAction(selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="ready")).execute(page, backend_service=None, web_agent_id="t")
             await WaitAction(time_seconds=0.05).execute(page, backend_service=None, web_agent_id="t")
+            await WaitAction(selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="ready"), time_seconds=0.1).execute(page, backend_service=None, web_agent_id="t")
 
             await page.focus("#text-input")
             await SendKeysIWAAction(keys="ArrowRight").execute(page, backend_service=None, web_agent_id="t")
@@ -116,6 +129,7 @@ def test_form_and_misc_actions(tmp_path):
             await DragAndDropAction(sourceSelector="#drag-source", targetSelector="#drag-target").execute(page, backend_service=None, web_agent_id="t")
 
             await GetDropDownOptionsAction(selector=Selector(type=SelectorType.XPATH_SELECTOR, value="//select[@id='pet-select']")).execute(page, backend_service=None, web_agent_id="t")
+            await GetDropDownOptionsAction(selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="pet-select")).execute(page, backend_service=None, web_agent_id="t")
 
             selected = await SelectDropDownOptionAction(
                 selector=Selector(type=SelectorType.XPATH_SELECTOR, value="//select[@id='pet-select']"),
@@ -126,9 +140,13 @@ def test_form_and_misc_actions(tmp_path):
             screenshot_path = tmp_path / "snap.png"
             await ScreenshotAction(file_path=str(screenshot_path), full_page=False).execute(page, backend_service=None, web_agent_id="t")
             assert screenshot_path.exists()
+            await ScreenshotAction(file_path="", full_page=False).execute(page, backend_service=None, web_agent_id="t")
+
+            await IdleAction().execute(page, backend_service=None, web_agent_id="t")
+            await UndefinedAction().execute(page, backend_service=None, web_agent_id="t")
 
             state = await page.evaluate("window.state")
-            assert state["text"] == "dynamic text"
+            assert state["text"] == "dynamic text no-selector"
             assert state["select"] == "cat"
             assert state["hovered"] >= 1
             assert state["submitted"] >= 1

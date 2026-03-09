@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from unittest.mock import patch
 
 from autoppia_iwa.src.data_generation.tasks.classes import TaskGenerationConfig
 from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
@@ -124,3 +125,18 @@ def test_prompts_per_use_case_auto(monkeypatch):
 
     asyncio.run(run())
     assert recorded_counts == [2]
+
+
+def test_pipeline_generate_returns_empty_on_exception():
+    """When task_generator.generate raises, pipeline returns [] and logs."""
+    use_case = _build_use_case()
+    project = WebProject(id="dummy", name="Dummy", backend_url="", frontend_url="", use_cases=[use_case])
+    mock_llm = MockLLMService([])
+
+    async def raise_error(*args, **kwargs):
+        raise RuntimeError("simulated failure")
+
+    pipeline = TaskGenerationPipeline(web_project=project, config=TaskGenerationConfig(prompts_per_use_case=1), llm_service=mock_llm)
+    with patch.object(pipeline.task_generator, "generate", side_effect=raise_error):
+        result = asyncio.run(pipeline.generate())
+    assert result == []
