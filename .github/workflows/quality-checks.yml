@@ -94,7 +94,6 @@ jobs:
           --cov-branch \
           --cov-report=xml \
           --cov-report=term-missing
-        #continue-on-error: true
 
       - name: Ensure coverage report exists for SonarCloud
         run: |
@@ -102,6 +101,11 @@ jobs:
             echo "Creating minimal coverage.xml (tests may have failed)"
             printf '%s\n' '<?xml version="1.0" ?>' '<coverage line-rate="0" branch-rate="0" lines-covered="0" lines-valid="1" branches-covered="0" branches-valid="0" version="1.9" timestamp="0">' '<sources><source>.</source></sources>' '<packages/>' '</coverage>' > coverage.xml
           fi
+
+      - name: Check coverage file
+        run: |
+          ls -lh coverage.xml
+          grep filename coverage.xml | head -n 10
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
