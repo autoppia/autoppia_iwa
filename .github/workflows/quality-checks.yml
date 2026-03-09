@@ -107,6 +107,11 @@ jobs:
           ls -lh coverage.xml
           grep filename coverage.xml | head -n 10
 
+      - name: Align SonarCloud coverage (paths and exclusions)
+        run: chmod +x .github/scripts/sonar_coverage_fix.sh && .github/scripts/sonar_coverage_fix.sh
+        env:
+          REPO_ROOT: ${{ github.workspace }}
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         env:
