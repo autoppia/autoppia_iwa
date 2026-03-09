@@ -89,10 +89,10 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          pytest tests/ \
-          --cov=autoppia_iwa \
+          pytest tests \
+          --cov=. \
           --cov-branch \
-          --cov-report=xml:coverage.xml \
+          --cov-report=xml \
           --cov-report=term-missing
         #continue-on-error: true
 
