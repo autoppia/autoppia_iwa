@@ -89,8 +89,11 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          pytest tests/ --cov=autoppia_iwa --cov-report=xml --cov-report=term
-#        continue-on-error: true
+          pytest autoppia_iwa/tests \
+          --cov=autoppia_iwa \
+          --cov-report=xml:coverage.xml \
+          --cov-report=term-missing
+        #continue-on-error: true
 
       - name: Ensure coverage report exists for SonarCloud
         run: |
@@ -107,4 +110,7 @@ jobs:
         with:
           args: >
             -Dsonar.branch.name=${{ github.ref_name }}
+            -Dsonar.sources=autoppia_iwa
+            -Dsonar.tests=autoppia_iwa/tests
+            -Dsonar.python.version=3.11
             -Dsonar.python.coverage.reportPaths=coverage.xml
