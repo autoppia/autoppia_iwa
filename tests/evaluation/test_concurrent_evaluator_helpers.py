@@ -1,7 +1,14 @@
-"""Unit tests for concurrent_evaluator helper functions (_url_hostname, _is_navigation_url_allowed)."""
+"""Unit tests for concurrent_evaluator helper functions (_url_hostname, _is_navigation_url_allowed) and logging fallbacks."""
+
+from unittest.mock import patch
 
 from autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator import (
+    _ensure_evaluation_level,
     _is_navigation_url_allowed,
+    _log_action_execution,
+    _log_evaluation_event,
+    _log_evaluation_fallback,
+    _log_gif_creation,
     _url_hostname,
 )
 
@@ -56,3 +63,106 @@ class TestIsNavigationUrlAllowed:
         # Implementation may allow or disallow; at least no crash
         assert isinstance(allowed, bool)
         assert err is None or isinstance(err, str)
+
+    def test_demo_web_remote_same_allowed_host(self):
+        allowed, err = _is_navigation_url_allowed(
+            is_web_real=False,
+            task_url="http://demo.example.com:8000/start",
+            candidate_url="http://demo.example.com:8000/page",
+        )
+        assert allowed is True
+        assert err is None
+
+    def test_demo_web_different_host_not_allowed(self):
+        allowed, err = _is_navigation_url_allowed(
+            is_web_real=False,
+            task_url="http://localhost:8000",
+            candidate_url="http://evil.com/page",
+        )
+        assert allowed is False
+        assert err is not None
+        assert "not allowed" in err.lower()
+
+    def test_real_web_task_url_no_host(self):
+        allowed, err = _is_navigation_url_allowed(
+            is_web_real=True,
+            task_url="file:///local/path",
+            candidate_url="https://example.com/page",
+        )
+        assert allowed is False
+        assert "Task URL host" in err or "could not be determined" in err
+
+    @patch("autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator._is_testing_mode", return_value=True)
+    def test_demo_web_subnet_testing_allows_any_host(self, mock_testing):
+        allowed, err = _is_navigation_url_allowed(
+            is_web_real=False,
+            task_url="http://localhost:8000",
+            candidate_url="https://other.example.com/page",
+        )
+        assert allowed is True
+        assert err is None
+
+
+class TestLoggingHelpers:
+    def test_ensure_evaluation_level_idempotent(self):
+        _ensure_evaluation_level()
+        _ensure_evaluation_level()
+
+    def test_log_evaluation_fallback(self):
+        _log_evaluation_fallback("test message")
+
+    def test_log_action_execution_uses_fallback_when_import_error(self):
+        import sys
+
+        class FakeLoggingModule:
+            def __getattr__(self, name):
+                raise ImportError("benchmark not available")
+
+        key = "autoppia_iwa.entrypoints.benchmark.utils.logging"
+        saved = sys.modules.get(key)
+        sys.modules[key] = FakeLoggingModule()
+        try:
+            _log_action_execution("test action", web_agent_id="agent1")
+        finally:
+            if saved is not None:
+                sys.modules[key] = saved
+            else:
+                sys.modules.pop(key, None)
+        _log_action_execution("test action", web_agent_id=None)
+
+    def test_log_gif_creation_uses_fallback_when_import_error(self):
+        import sys
+
+        class FakeLoggingModule:
+            def __getattr__(self, name):
+                raise ImportError("benchmark not available")
+
+        key = "autoppia_iwa.entrypoints.benchmark.utils.logging"
+        saved = sys.modules.get(key)
+        sys.modules[key] = FakeLoggingModule()
+        try:
+            _log_gif_creation("test gif", web_agent_id="agent1")
+        finally:
+            if saved is not None:
+                sys.modules[key] = saved
+            else:
+                sys.modules.pop(key, None)
+
+    def test_log_evaluation_event_uses_fallback_with_context(self):
+        import sys
+
+        class FakeLoggingModule:
+            def __getattr__(self, name):
+                raise ImportError("benchmark not available")
+
+        key = "autoppia_iwa.entrypoints.benchmark.utils.logging"
+        saved = sys.modules.get(key)
+        sys.modules[key] = FakeLoggingModule()
+        try:
+            _log_evaluation_event("test event", context="CUSTOM")
+        finally:
+            if saved is not None:
+                sys.modules[key] = saved
+            else:
+                sys.modules.pop(key, None)
+        _log_evaluation_event("test event", context="GENERAL")

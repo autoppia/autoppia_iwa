@@ -10,6 +10,7 @@ import base64
 import textwrap
 import urllib.error
 import urllib.request
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -19,13 +20,14 @@ from autoppia_iwa.src.data_generation.tasks.classes import BrowserSpecification,
 from autoppia_iwa.src.data_generation.tests.classes import CheckEventTest
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
+from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStats, EvaluatorConfig
 from autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator import (
     ConcurrentEvaluator,
     _is_navigation_url_allowed as _orig_nav_allowed,
 )
 from autoppia_iwa.src.execution.actions.actions import ClickAction, NavigateAction, TypeAction
 from autoppia_iwa.src.execution.actions.base import Selector, SelectorType
+from autoppia_iwa.src.execution.classes import ActionExecutionResult, BrowserSnapshot
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 WEB_AGENT_ID = "test_agent"
@@ -266,6 +268,520 @@ async def test_concurrent_evaluator_wrong_solution():
     assert result.stats is not None
     assert result.stats.tests_passed == 0
     assert result.stats.total_tests >= 1
+
+
+@pytest.mark.asyncio
+async def test_concurrent_evaluator_init_verbose_logging_true():
+    """Init with verbose_logging=True does not remove logger (no logger.remove)."""
+    with patch(
+        "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.BackendDemoWebService",
+        return_value=AsyncMock(),
+    ):
+        evaluator = ConcurrentEvaluator(
+            web_project=PROJECT,
+            config=EvaluatorConfig(verbose_logging=True),
+        )
+    assert evaluator.config.verbose_logging is True
+    assert evaluator.web_project is PROJECT
+    assert evaluator.evaluation_stats == []
+    assert evaluator.errors == []
+
+
+@pytest.mark.asyncio
+async def test_concurrent_evaluator_empty_actions():
+    """Solution with no actions returns immediate error and score 0."""
+    html = _make_mock_html()
+    data_url = _data_url(html)
+    task = _make_task(data_url)
+    mock_backend = AsyncMock()
+    mock_backend.reset_database = AsyncMock()
+    mock_backend.close = AsyncMock()
+    mock_backend.get_backend_events = AsyncMock(return_value=[])
+
+    with (
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator._is_navigation_url_allowed",
+            side_effect=_allow_data_url,
+        ),
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.BackendDemoWebService",
+            return_value=mock_backend,
+        ),
+    ):
+        evaluator = ConcurrentEvaluator(web_project=PROJECT, config=EvaluatorConfig(verbose_logging=False))
+        solution = TaskSolution(task_id=task.id, actions=[], web_agent_id=WEB_AGENT_ID)
+        result = await evaluator.evaluate_single_task_solution(task, solution)
+
+    assert result.final_score == 0
+    assert result.stats is not None
+    assert result.stats.had_errors is True
+    assert result.stats.error_message == "No actions provided"
+    assert result.execution_history == []
+    assert result.raw_score == 0
+
+
+@pytest.mark.asyncio
+async def test_concurrent_evaluator_navigate_blocked():
+    """NavigateAction to disallowed host (no patch) returns 0 and blocks browser execution."""
+    task = _make_task("http://localhost:8000")
+    task.is_web_real = False
+    mock_backend = AsyncMock()
+    mock_backend.reset_database = AsyncMock()
+    mock_backend.close = AsyncMock()
+    mock_backend.get_backend_events = AsyncMock(return_value=[])
+
+    with patch(
+        "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.BackendDemoWebService",
+        return_value=mock_backend,
+    ):
+        evaluator = ConcurrentEvaluator(web_project=PROJECT, config=EvaluatorConfig(verbose_logging=False))
+        solution = TaskSolution(
+            task_id=task.id,
+            actions=[NavigateAction(url="https://evil.com/page")],
+            web_agent_id=WEB_AGENT_ID,
+        )
+        result = await evaluator.evaluate_single_task_solution(task, solution)
+
+    assert result.final_score == 0
+    assert result.stats is not None
+    assert "NavigateAction" in (result.stats.error_message or "")
+    assert result.execution_history == []
+    mock_backend.get_backend_events.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_concurrent_evaluator_seed_mismatch():
+    """Task URL with seed and NavigateAction without matching seed returns 0."""
+    task = _make_task("http://localhost:8000/?seed=42")
+    task.is_web_real = False
+    mock_backend = AsyncMock()
+    mock_backend.reset_database = AsyncMock()
+    mock_backend.close = AsyncMock()
+    mock_backend.get_backend_events = AsyncMock(return_value=[])
+
+    with (
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator._is_navigation_url_allowed",
+            return_value=(True, None),
+        ),
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.BackendDemoWebService",
+            return_value=mock_backend,
+        ),
+    ):
+        evaluator = ConcurrentEvaluator(web_project=PROJECT, config=EvaluatorConfig(verbose_logging=False))
+        solution = TaskSolution(
+            task_id=task.id,
+            actions=[NavigateAction(url="http://localhost:8000/")],
+            web_agent_id=WEB_AGENT_ID,
+        )
+        result = await evaluator.evaluate_single_task_solution(task, solution)
+
+    assert result.final_score == 0
+    assert result.stats is not None
+    assert "Seed" in (result.stats.error_message or "")
+    assert result.execution_history == []
+
+
+def _make_action_result(success: bool, screenshot_before: str = "b", screenshot_after: str = "a"):
+    snap = BrowserSnapshot(
+        iteration=0,
+        action=NavigateAction(url="data:,"),
+        prev_html="",
+        current_html="",
+        screenshot_before=screenshot_before,
+        screenshot_after=screenshot_after,
+        backend_events=[],
+        current_url="data:,",
+        timestamp=datetime.now(UTC),
+    )
+    return ActionExecutionResult(
+        action=NavigateAction(url="data:,"),
+        action_event="navigate",
+        successfully_executed=success,
+        error=None if success else "failed",
+        execution_time=0.1,
+        browser_snapshot=snap,
+    )
+
+
+@pytest.mark.asyncio
+async def test_concurrent_evaluator_early_stop():
+    """When _evaluate_in_browser returns early_stop_reason, final_score is 0."""
+    html = _make_mock_html()
+    data_url = _data_url(html)
+    task = _make_task(data_url)
+    mock_backend = AsyncMock()
+    mock_backend.reset_database = AsyncMock()
+    mock_backend.close = AsyncMock()
+    mock_backend.get_backend_events = AsyncMock(return_value=[])
+
+    early_reason = "Task marked as failed after 2 consecutive action failures (limit: 2)"
+    hist = [_make_action_result(True), _make_action_result(False), _make_action_result(False)]
+
+    with (
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator._is_navigation_url_allowed",
+            side_effect=_allow_data_url,
+        ),
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.BackendDemoWebService",
+            return_value=mock_backend,
+        ),
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.ConcurrentEvaluator._evaluate_in_browser",
+            new_callable=AsyncMock,
+            return_value=(hist, [0.1] * 3, early_reason),
+        ),
+    ):
+        evaluator = ConcurrentEvaluator(web_project=PROJECT, config=EvaluatorConfig(verbose_logging=False))
+        solution = TaskSolution(
+            task_id=task.id,
+            actions=[
+                NavigateAction(url=data_url),
+                ClickAction(selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="x")),
+            ],
+            web_agent_id=WEB_AGENT_ID,
+        )
+        result = await evaluator.evaluate_single_task_solution(task, solution)
+
+    assert result.final_score == 0.0
+    assert result.stats is not None
+    assert result.stats.raw_score == 0.0
+    assert result.stats.had_errors is True
+    assert early_reason in (result.stats.error_message or "")
+
+
+@pytest.mark.asyncio
+async def test_concurrent_evaluator_exception_in_try():
+    """Exception during get_backend_events or run_global_tests returns 0 and captures error."""
+    html = _make_mock_html()
+    data_url = _data_url(html)
+    task = _make_task(data_url)
+    mock_backend = AsyncMock()
+    mock_backend.reset_database = AsyncMock()
+    mock_backend.close = AsyncMock()
+    mock_backend.get_backend_events = AsyncMock(side_effect=RuntimeError("backend error"))
+
+    with (
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator._is_navigation_url_allowed",
+            side_effect=_allow_data_url,
+        ),
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.BackendDemoWebService",
+            return_value=mock_backend,
+        ),
+    ):
+        evaluator = ConcurrentEvaluator(web_project=PROJECT, config=EvaluatorConfig(verbose_logging=False))
+        solution = TaskSolution(
+            task_id=task.id,
+            actions=[NavigateAction(url=data_url)],
+            web_agent_id=WEB_AGENT_ID,
+        )
+        result = await evaluator.evaluate_single_task_solution(task, solution)
+
+    assert result.final_score == 0
+    assert result.stats is not None
+    assert result.stats.had_errors is True
+    assert "backend error" in (result.stats.error_message or "")
+    assert result.execution_history is not None
+
+
+@pytest.mark.asyncio
+async def test_concurrent_evaluator_gif_recording_success():
+    """With should_record_gif=True and make_gif returning data, gif_recording is set."""
+    html = _make_mock_html()
+    data_url = _data_url(html)
+    task = _make_task(data_url)
+    mock_backend = AsyncMock()
+    mock_backend.reset_database = AsyncMock()
+    mock_backend.close = AsyncMock()
+    mock_backend.get_backend_events = AsyncMock(
+        return_value=[
+            BackendEvent(event_name="LOGIN_BOOK", data={"username": "user123"}, web_agent_id=WEB_AGENT_ID),
+        ]
+    )
+    fake_gif = "base64gifdata"
+
+    with (
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator._is_navigation_url_allowed",
+            side_effect=_allow_data_url,
+        ),
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.BackendDemoWebService",
+            return_value=mock_backend,
+        ),
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.make_gif_from_screenshots",
+            return_value=fake_gif,
+        ),
+    ):
+        evaluator = ConcurrentEvaluator(
+            web_project=PROJECT,
+            config=EvaluatorConfig(verbose_logging=False, should_record_gif=True),
+        )
+        solution = TaskSolution(
+            task_id=task.id,
+            actions=[NavigateAction(url=data_url)],
+            web_agent_id=WEB_AGENT_ID,
+        )
+        result = await evaluator.evaluate_single_task_solution(task, solution)
+
+    assert result.gif_recording == fake_gif
+
+
+@pytest.mark.asyncio
+async def test_concurrent_evaluator_gif_recording_empty_screenshots():
+    """With should_record_gif=True but no execution_history, gif path still runs (no crash)."""
+    html = _make_mock_html()
+    data_url = _data_url(html)
+    task = _make_task(data_url)
+    mock_backend = AsyncMock()
+    mock_backend.reset_database = AsyncMock()
+    mock_backend.close = AsyncMock()
+    mock_backend.get_backend_events = AsyncMock(
+        return_value=[
+            BackendEvent(event_name="LOGIN_BOOK", data={"username": "user123"}, web_agent_id=WEB_AGENT_ID),
+        ]
+    )
+
+    with (
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator._is_navigation_url_allowed",
+            side_effect=_allow_data_url,
+        ),
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.BackendDemoWebService",
+            return_value=mock_backend,
+        ),
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.ConcurrentEvaluator._evaluate_in_browser",
+            new_callable=AsyncMock,
+            return_value=([], [], None),
+        ),
+    ):
+        evaluator = ConcurrentEvaluator(
+            web_project=PROJECT,
+            config=EvaluatorConfig(verbose_logging=False, should_record_gif=True),
+        )
+        solution = TaskSolution(
+            task_id=task.id,
+            actions=[NavigateAction(url=data_url)],
+            web_agent_id=WEB_AGENT_ID,
+        )
+        result = await evaluator.evaluate_single_task_solution(task, solution)
+
+    assert result.gif_recording is None or result.gif_recording == ""
+
+
+@pytest.mark.asyncio
+async def test_concurrent_evaluator_debug_mode():
+    """With debug_mode=True evaluation runs and debug branches are hit (no crash)."""
+    html = _make_mock_html()
+    data_url = _data_url(html)
+    task = _make_task(data_url)
+    mock_backend = AsyncMock()
+    mock_backend.reset_database = AsyncMock()
+    mock_backend.close = AsyncMock()
+    mock_backend.get_backend_events = AsyncMock(
+        return_value=[
+            BackendEvent(event_name="LOGIN_BOOK", data={"username": "user123"}, web_agent_id=WEB_AGENT_ID),
+        ]
+    )
+
+    with (
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator._is_navigation_url_allowed",
+            side_effect=_allow_data_url,
+        ),
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.BackendDemoWebService",
+            return_value=mock_backend,
+        ),
+    ):
+        evaluator = ConcurrentEvaluator(
+            web_project=PROJECT,
+            config=EvaluatorConfig(verbose_logging=False, debug_mode=True),
+        )
+        solution = TaskSolution(
+            task_id=task.id,
+            actions=[NavigateAction(url=data_url)],
+            web_agent_id=WEB_AGENT_ID,
+        )
+        result = await evaluator.evaluate_single_task_solution(task, solution)
+
+    assert result.stats is not None
+    assert result.final_score == 1.0
+
+
+@pytest.mark.asyncio
+async def test_concurrent_evaluator_browser_evaluation_error():
+    """When browser launch fails, _evaluate_in_browser returns ([], [], error message)."""
+    html = _make_mock_html()
+    data_url = _data_url(html)
+    task = _make_task(data_url)
+    mock_backend = AsyncMock()
+    mock_backend.reset_database = AsyncMock()
+    mock_backend.close = AsyncMock()
+    mock_backend.get_backend_events = AsyncMock(return_value=[])
+
+    with (
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator._is_navigation_url_allowed",
+            side_effect=_allow_data_url,
+        ),
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.BackendDemoWebService",
+            return_value=mock_backend,
+        ),
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.async_playwright",
+        ) as mock_pw,
+    ):
+        mock_playwright = AsyncMock()
+        mock_playwright.chromium.launch = AsyncMock(side_effect=RuntimeError("chromium not found"))
+        mock_pw.return_value.__aenter__.return_value = mock_playwright
+        evaluator = ConcurrentEvaluator(web_project=PROJECT, config=EvaluatorConfig(verbose_logging=False))
+        solution = TaskSolution(
+            task_id=task.id,
+            actions=[NavigateAction(url=data_url)],
+            web_agent_id=WEB_AGENT_ID,
+        )
+        result = await evaluator.evaluate_single_task_solution(task, solution)
+
+    assert result.final_score == 0
+    assert result.stats is not None
+    assert result.stats.had_errors is True
+    assert "Browser evaluation error" in (result.stats.error_message or "") or "chromium" in (result.stats.error_message or "").lower()
+
+
+@pytest.mark.asyncio
+async def test_concurrent_evaluator_evaluate_task_solutions():
+    """evaluate_task_solutions resets DB per agent, runs grouping, and returns one result per solution."""
+    html = _make_mock_html()
+    data_url = _data_url(html)
+    task = _make_task(data_url)
+    passing_events = [
+        BackendEvent(event_name="LOGIN_BOOK", data={"username": "user123"}, web_agent_id=WEB_AGENT_ID),
+    ]
+    mock_backend = AsyncMock()
+    mock_backend.reset_database = AsyncMock()
+    mock_backend.close = AsyncMock()
+    mock_backend.get_backend_events = AsyncMock(return_value=passing_events)
+
+    with (
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator._is_navigation_url_allowed",
+            side_effect=_allow_data_url,
+        ),
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.BackendDemoWebService",
+            return_value=mock_backend,
+        ),
+    ):
+        evaluator = ConcurrentEvaluator(web_project=PROJECT, config=EvaluatorConfig(verbose_logging=False))
+        sol1 = TaskSolution(task_id=task.id, actions=[NavigateAction(url=data_url)], web_agent_id="agent1")
+        sol2 = TaskSolution(task_id=task.id, actions=[NavigateAction(url=data_url)], web_agent_id="agent2")
+        results = await evaluator.evaluate_task_solutions(task, [sol1, sol2])
+
+    assert len(results) == 2
+    assert all(r is not None for r in results)
+    assert results[0].web_agent_id == "agent1"
+    assert results[1].web_agent_id == "agent2"
+    assert len(evaluator.evaluation_stats) == 2
+    mock_backend.reset_database.assert_any_call(web_agent_id="agent1")
+    mock_backend.reset_database.assert_any_call(web_agent_id="agent2")
+    mock_backend.close.assert_called()
+
+
+@pytest.mark.asyncio
+async def test_concurrent_evaluator_grouping_disabled():
+    """With enable_grouping_tasks=False, each solution is evaluated separately (no cloning)."""
+    html = _make_mock_html()
+    data_url = _data_url(html)
+    task = _make_task(data_url)
+    mock_backend = AsyncMock()
+    mock_backend.reset_database = AsyncMock()
+    mock_backend.close = AsyncMock()
+    mock_backend.get_backend_events = AsyncMock(
+        return_value=[
+            BackendEvent(event_name="LOGIN_BOOK", data={"username": "user123"}, web_agent_id=WEB_AGENT_ID),
+        ]
+    )
+
+    with (
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator._is_navigation_url_allowed",
+            side_effect=_allow_data_url,
+        ),
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.BackendDemoWebService",
+            return_value=mock_backend,
+        ),
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.ConcurrentEvaluator._evaluate_single_task_solution",
+            new_callable=AsyncMock,
+        ) as mock_eval,
+    ):
+        mock_eval.return_value = EvaluationResult(
+            web_agent_id=WEB_AGENT_ID,
+            final_score=1.0,
+            raw_score=1.0,
+            test_results=[],
+            execution_history=[],
+            stats=EvaluationStats(web_agent_id=WEB_AGENT_ID, task_id=task.id, action_count=1, start_time=0),
+        )
+        evaluator = ConcurrentEvaluator(
+            web_project=PROJECT,
+            config=EvaluatorConfig(verbose_logging=False, enable_grouping_tasks=False),
+        )
+        sol1 = TaskSolution(task_id=task.id, actions=[NavigateAction(url=data_url)], web_agent_id="a1")
+        sol2 = TaskSolution(task_id=task.id, actions=[NavigateAction(url=data_url)], web_agent_id="a2")
+        results = await evaluator.evaluate_task_solutions(task, [sol1, sol2])
+
+    assert len(results) == 2
+    assert mock_eval.call_count == 2
+
+
+@pytest.mark.asyncio
+async def test_concurrent_evaluator_group_exception_fills_errors():
+    """When _evaluate_single_task_solution raises in a group, errors are recorded and error results returned."""
+    html = _make_mock_html()
+    data_url = _data_url(html)
+    task = _make_task(data_url)
+    mock_backend = AsyncMock()
+    mock_backend.reset_database = AsyncMock()
+    mock_backend.close = AsyncMock()
+    mock_backend.get_backend_events = AsyncMock(return_value=[])
+
+    with (
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator._is_navigation_url_allowed",
+            side_effect=_allow_data_url,
+        ),
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.BackendDemoWebService",
+            return_value=mock_backend,
+        ),
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.ConcurrentEvaluator._evaluate_single_task_solution",
+            new_callable=AsyncMock,
+            side_effect=RuntimeError("group eval failed"),
+        ),
+    ):
+        evaluator = ConcurrentEvaluator(web_project=PROJECT, config=EvaluatorConfig(verbose_logging=False))
+        sol = TaskSolution(task_id=task.id, actions=[NavigateAction(url=data_url)], web_agent_id=WEB_AGENT_ID)
+        results = await evaluator.evaluate_task_solutions(task, [sol])
+
+    assert len(results) == 1
+    assert results[0] is not None
+    assert results[0].final_score == 0
+    assert results[0].stats is not None
+    assert results[0].stats.had_errors is True
+    assert "group eval failed" in results[0].stats.error_message
+    assert "group eval failed" in evaluator.errors
 
 
 @pytest.mark.integration
