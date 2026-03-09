@@ -7,6 +7,13 @@
 [run]
 relative_files = True
 branch = True
+
+[paths]
+source =
+    autoppia_iwa
+    */autoppia_iwa
+
+[report]
 omit =
     */tests/*
     */test_*.py
