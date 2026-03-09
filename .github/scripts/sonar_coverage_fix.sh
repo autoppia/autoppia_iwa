@@ -117,25 +117,18 @@ check_exclusions() {
   log "Exclusions check done (review sonar-project.properties if overall % is low)"
 }
 
-# Fix: rewrite coverage.xml so paths are relative to project dir (strip autoppia_iwa/)
+# Fix: rewrite coverage.xml so paths are relative to source root (strip autoppia_iwa/)
+# SonarCloud Python analyzer expects paths relative to sonar.sources root, not project base.
 normalize_coverage_xml_paths() {
-  local project_base out_xml proj_real
-  project_base=$(get_sonar_project_base)
-  project_base=$(cd "$project_base" && pwd)
-  proj_real=$(cd "$PROJECT_DIR" && pwd)
+  local out_xml
   out_xml="${OUTPUT_COVERAGE_XML:-$COVERAGE_XML}"
 
   if [[ "$(detect_coverage_path_style)" != "prefix_autoppia_iwa" ]]; then
-    log "Coverage paths already relative to project; no rewrite needed"
+    log "Coverage paths already relative to source root; no rewrite needed"
     return 0
   fi
 
-  if [[ "$project_base" != "$proj_real" ]]; then
-    log "Project base ($project_base) is not project dir ($proj_real); not rewriting (Sonar expects autoppia_iwa/...)"
-    return 0
-  fi
-
-  log "Rewriting coverage.xml: strip 'autoppia_iwa/' so paths match Sonar project base"
+  log "Rewriting coverage.xml: strip 'autoppia_iwa/' so paths match Sonar source root (sonar.sources)"
   sed 's|filename="autoppia_iwa/|filename="|g' "$COVERAGE_XML" > "${out_xml}.tmp"
   mv "${out_xml}.tmp" "$out_xml"
   log "Written: $out_xml"
@@ -157,8 +150,13 @@ main() {
   fi
 
   alignment=$(check_path_alignment)
-  if [[ "$alignment" == "mismatch" ]]; then
-    log "Fixing path mismatch by normalizing coverage.xml paths for project base"
+  # Always strip autoppia_iwa/ prefix when present: SonarCloud Python analyzer expects
+  # paths relative to sonar.sources root (e.g. config/config.py), not project base.
+  if [[ "$(detect_coverage_path_style)" == "prefix_autoppia_iwa" ]]; then
+    log "Normalizing coverage paths for Sonar source root (fixes 0%% new code coverage)"
+    normalize_coverage_xml_paths
+  elif [[ "$alignment" == "mismatch" ]]; then
+    log "Fixing path mismatch by normalizing coverage.xml paths"
     normalize_coverage_xml_paths
   fi
 
