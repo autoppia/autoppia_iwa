@@ -35,7 +35,3 @@ omit =
     autoppia_iwa/entrypoints/test_your_agent/**
     autoppia_iwa/entrypoints/web_verification/*
     autoppia_iwa/entrypoints/web_verification/**
-    autoppia_iwa/src/demo_webs/projects/*/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/*/*/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/*/replace_functions.py
-    autoppia_iwa/src/demo_webs/projects/*/*/replace_functions.py
