@@ -17,7 +17,7 @@ def login_replace_func(text: str, constraints: list[dict] | None = None, **kwarg
     if not isinstance(text, str):
         return text
 
-    replacements = {"<username>": "user<web_agent_id>", "<password>": "password123"}
+    replacements = {"<username>": "user<web_agent_id>", "<password>": "Passw0rd!"}
 
     # Basic replacements
     for placeholder, value in replacements.items():
@@ -40,7 +40,7 @@ def register_replace_func(text: str, **kwargs) -> str:
     if not isinstance(text, str):
         return text
 
-    replacements = {"<username>": "newuser<web_agent_id>", "<email>": "newuser<web_agent_id>@gmail.com", "<password>": "password123"}
+    replacements = {"<username>": "newuser<web_agent_id>", "<email>": "newuser<web_agent_id>@gmail.com", "<password>": "Passw0rd!"}
 
     for placeholder, value in replacements.items():
         text = text.replace(placeholder, value)
