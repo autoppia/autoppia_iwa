@@ -91,6 +91,7 @@ jobs:
         run: |
           pytest tests/ \
           --cov=autoppia_iwa \
+          --cov-branch \
           --cov-report=xml:coverage.xml \
           --cov-report=term-missing
         #continue-on-error: true
@@ -110,7 +111,3 @@ jobs:
         with:
           args: >
             -Dsonar.branch.name=${{ github.ref_name }}
-            -Dsonar.sources=autoppia_iwa
-            -Dsonar.tests=tests
-            -Dsonar.python.version=3.11
-            -Dsonar.python.coverage.reportPaths=${{ github.workspace }}/coverage.xml
