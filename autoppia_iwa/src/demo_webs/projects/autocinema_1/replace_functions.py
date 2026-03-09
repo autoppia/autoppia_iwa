@@ -1,6 +1,5 @@
 from autoppia_iwa.src.demo_webs.projects.autocinema_1.data_utils import fetch_data
-
-DEFAULT_PASSWORD = "Passw0rd!"
+from autoppia_iwa.src.web_agents.classes import DEFAULT_PASSWORD
 
 
 async def login_and_film_replace_func(
@@ -42,7 +41,7 @@ def register_replace_func(text: str, **kwargs) -> str:
     if not isinstance(text, str):
         return text
 
-    replacements = {"<username>": "newuser<web_agent_id>", "<email>": "newuser<web_agent_id>@gmail.com", "<password>": "Passw0rd!"}
+    replacements = {"<username>": "newuser<web_agent_id>", "<email>": "newuser<web_agent_id>@gmail.com", "<password>": DEFAULT_PASSWORD}
 
     for placeholder, value in replacements.items():
         text = text.replace(placeholder, value)

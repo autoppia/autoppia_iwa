@@ -2,6 +2,8 @@ import random
 from random import choice, sample
 from typing import Any
 
+from autoppia_iwa.src.web_agents.classes import DEFAULT_PASSWORD
+
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 from ..data_provider import get_seed_from_url
 from ..shared_utils import create_constraint_dict
@@ -43,9 +45,6 @@ async def _get_films_data(task_url: str | None = None, dataset: dict[str, list[d
     if data and "movies" in data:
         return data["movies"]
     return []
-
-
-DEFAULT_PASSWORD = "Passw0rd!"
 
 
 def _login_constraints() -> list[dict]:
