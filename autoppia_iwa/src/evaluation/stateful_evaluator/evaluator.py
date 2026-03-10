@@ -19,7 +19,7 @@ from urllib.parse import urlparse
 
 try:
     from autoppia_web_agents_subnet.validator.config import TESTING as SUBNET_TESTING
-except BaseException:
+except ImportError:
     SUBNET_TESTING = False
 
 from loguru import logger
