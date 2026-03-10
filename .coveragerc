@@ -1,6 +1,7 @@
 # Coverage configuration for pytest-cov and SonarCloud
+
 [run]
-# Make paths relative for Sonar
+# Use relative paths so coverage.xml paths match Sonar
 relative_files = True
 branch = True
 
@@ -10,10 +11,12 @@ source =
     */autoppia_iwa
 
 [report]
-# Exclude only files you don't want in coverage
+# Exclude test files and untestable/demo files from coverage
 omit =
     */__init__.py
     */conftest.py
+    */tests/*
+    */test_*.py
     autoppia_iwa/entrypoints/benchmark/benchmark.py
     autoppia_iwa/entrypoints/benchmark/run.py
     autoppia_iwa/entrypoints/benchmark/config.py
