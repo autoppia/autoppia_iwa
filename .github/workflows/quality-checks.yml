@@ -115,4 +115,3 @@ jobs:
         with:
           args: >
             -Dsonar.branch.name=${{ github.ref_name }}
-            -Dsonar.newCode.referenceBranch=empty-branch
