@@ -11,7 +11,7 @@ from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.execution.actions.actions import BaseAction, NavigateAction
 from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
 from autoppia_iwa.src.web_agents.act_protocol import ActRequest, ActResponse, ActToolCall
-from autoppia_iwa.src.web_agents.classes import IWebAgent
+from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution
 
 
 class ApifiedWebAgent(IWebAgent):
@@ -125,6 +125,9 @@ class ApifiedWebAgent(IWebAgent):
                 state=state,
             )
         )
+
+    async def solve_task(self, task: Task) -> TaskSolution:
+        raise NotImplementedError("ApifiedWebAgent is iterative and only supports act(); use act() for step-by-step execution.")
 
     # ------------------------------------------------------------------ #
     # Helpers
