@@ -11,7 +11,7 @@ async def test_seed_guard():
     print("🛡️ TESTING SEED GUARD (Validación de NavigateActions)")
     print("=" * 80)
 
-    from autoppia_iwa.src.evaluation.evaluator.utils import extract_seed_from_url
+    from autoppia_iwa.src.evaluation.shared.utils import extract_seed_from_url
     from autoppia_iwa.src.execution.actions.actions import ClickAction, NavigateAction
     from autoppia_iwa.src.execution.actions.base import Selector, SelectorType
 
