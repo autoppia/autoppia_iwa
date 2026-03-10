@@ -350,4 +350,3 @@ def generate_event_reminder_constraints() -> list[dict[str, Any]]:
 def generate_event_attendee_constraints() -> list[dict[str, Any]]:
     """Generate constraints for adding an event attendee."""
     return _generate_constraints_from_single_field("email", ATTENDEE_EMAILS, FIELD_OPERATORS_EVENT_ATTENDEE_MAP)
-

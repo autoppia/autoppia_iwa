@@ -141,4 +141,3 @@ if __name__ == "__main__":
     from autoppia_iwa.src.di_container import DIContainer
 
     asyncio.run(main())
-

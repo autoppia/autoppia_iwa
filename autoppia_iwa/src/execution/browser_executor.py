@@ -225,4 +225,3 @@ class PlaywrightBrowserExecutor:
         Hook executed when an action fails. Subclasses may perform cleanup or reporting.
         """
         # Intentionally empty - subclasses can override
-

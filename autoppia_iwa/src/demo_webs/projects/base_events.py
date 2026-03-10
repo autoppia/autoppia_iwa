@@ -152,4 +152,3 @@ class BaseEventValidator:
         if criterion is None:
             return True
         return validate_criterion(value, criterion)
-

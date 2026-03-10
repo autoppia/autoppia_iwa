@@ -612,4 +612,3 @@ class IWAPClient:
             "reason": (f"Found {tasks_with_solutions_count} tasks with solutions out of {total_tasks} total tasks" if is_doable else f"No tasks with solutions found (total tasks: {total_tasks})"),
             "api_response": result,
         }
-

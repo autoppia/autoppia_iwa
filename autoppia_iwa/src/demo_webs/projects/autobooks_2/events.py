@@ -793,4 +793,3 @@ BACKEND_EVENT_TYPES = {
     "ADD_TO_CART_BOOK": AddToCartBookEvent,
     "REMOVE_FROM_CART_BOOK": RemoveFromCartBookEvent,
 }
-

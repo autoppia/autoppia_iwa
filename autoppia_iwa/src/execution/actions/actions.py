@@ -926,4 +926,3 @@ class IdleAction(BaseAction):
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
         # Intentionally empty - this action represents an intentional pause/idle state
         pass
-

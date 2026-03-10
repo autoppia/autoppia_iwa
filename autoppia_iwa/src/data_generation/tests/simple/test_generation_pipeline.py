@@ -101,4 +101,3 @@ class GlobalTestGenerationPipeline:
                 task.id,
                 exc,
             )
-

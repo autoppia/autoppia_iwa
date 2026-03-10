@@ -26,4 +26,3 @@ class UIParserService:
 
 #         result = self.ui_parser(image)
 #         return result, None
-

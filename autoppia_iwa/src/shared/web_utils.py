@@ -116,4 +116,3 @@ def generate_html_differences(html_list: list[str]) -> list[str]:
         prev_html = current_html
 
     return diffs
-

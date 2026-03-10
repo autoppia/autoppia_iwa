@@ -899,4 +899,3 @@ BACKEND_EVENT_TYPES = {
     "DOCTOR_CONTACTED_SUCCESSFULLY": DoctorContactedSuccessfullyEvent,
     "FILTER_DOCTOR_REVIEWS": FilterDoctorReviewsEvent,
 }
-

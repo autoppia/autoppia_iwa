@@ -11,4 +11,3 @@ class AppBootstrap:
 
     def configure_dependency_injection(self):
         self.container = DIContainer()
-

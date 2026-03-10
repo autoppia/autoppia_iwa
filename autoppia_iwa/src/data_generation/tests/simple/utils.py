@@ -48,4 +48,3 @@ def enum_to_raw_recursive(obj: Any) -> Any:
         return tuple(enum_to_raw_recursive(v) for v in obj)
 
     return obj
-

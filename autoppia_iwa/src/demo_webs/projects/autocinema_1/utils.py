@@ -139,4 +139,3 @@ def build_constraints_info(data: list[dict], max_attempts: int = 10) -> str | No
 
     # Si no se pudo crear constraints válidos, intentar de nuevo
     return build_constraints_info(data, max_attempts - 1) if max_attempts > 1 else None
-

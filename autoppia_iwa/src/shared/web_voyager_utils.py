@@ -83,4 +83,3 @@ def load_real_tasks(num_of_urls: int = 0, task: dict | None = None, by_indices: 
 def generate_hash(input_string: str) -> str:
     """Generate a SHA-256 hash of the input string."""
     return hashlib.sha256(input_string.encode("utf-8")).hexdigest()
-

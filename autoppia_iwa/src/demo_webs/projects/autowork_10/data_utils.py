@@ -49,4 +49,3 @@ async def fetch_data(
 
     # Return skills as-is (list of dicts with "name" field, or list of strings)
     return items
-

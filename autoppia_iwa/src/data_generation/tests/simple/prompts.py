@@ -144,4 +144,3 @@ CHECK_EVENT_TEST_GENERATION_USER_PROMPT = """
 
 **Generate the JSON test list now based on these instructions and inputs.**
 """
-

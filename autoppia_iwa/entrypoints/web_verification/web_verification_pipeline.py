@@ -1491,4 +1491,3 @@ class WebVerificationPipeline:
                 categories["dynamic_untested"].append(use_case_name)
 
         return categories
-

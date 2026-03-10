@@ -44,4 +44,3 @@ async def replace_products_placeholders(
             modified_text = modified_text.replace(placeholder, replacement)
 
     return modified_text
-

@@ -479,4 +479,3 @@ class LLMReviewer:
 
         # Default
         return STRING_OPERATORS
-

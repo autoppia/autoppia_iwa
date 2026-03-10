@@ -9,4 +9,3 @@ class OpenAIUtilsMixin:
         num_tokens = len(encoding.encode(string, disallowed_special=())) if disallowed_special else len(encoding.encode(string))
 
         return num_tokens
-

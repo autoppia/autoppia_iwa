@@ -1002,4 +1002,3 @@ BACKEND_EVENT_TYPES = {
     "HELP_FAQ_TOGGLED": HelpFaqToggledEvent,
     "CONTACT_FORM_SUBMIT": ContactEvent,
 }
-

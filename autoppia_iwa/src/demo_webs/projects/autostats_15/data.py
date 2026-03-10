@@ -140,4 +140,3 @@ SELECTED_FIELDS_FAVORITE_SUBNET = ["subnet_name", "subnet_id"]
 
 INTEGER_FIELDS_TRANSFER_COMPLETE = {"block_number"}
 INTEGER_FIELDS_FAVORITE_SUBNET = {"subnet_id"}
-

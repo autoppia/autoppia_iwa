@@ -230,4 +230,3 @@ if __name__ == "__main__":
     config = WebVoyagerConfig()
     benchmark = WebVoyagerBenchmark(config)
     asyncio.run(benchmark.run())
-

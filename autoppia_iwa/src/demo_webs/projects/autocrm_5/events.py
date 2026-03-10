@@ -1081,4 +1081,3 @@ BACKEND_EVENT_TYPES = {
     "FILTER_CLIENTS": FilterClientsEvent,
     "HELP_VIEWED": HelpViewedEvent,
 }
-

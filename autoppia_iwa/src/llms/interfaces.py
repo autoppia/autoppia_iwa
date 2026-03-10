@@ -33,4 +33,3 @@ class ILLM(ABC):
         Args:
             temperature: Optional temperature override. If None, uses config temperature.
         """
-

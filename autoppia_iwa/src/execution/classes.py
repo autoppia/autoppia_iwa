@@ -52,4 +52,3 @@ class ActionExecutionResult(BaseModel):
         base_dump["browser_snapshot"] = self.browser_snapshot.model_dump()
         base_dump["action"] = self.action.model_dump()
         return base_dump
-

@@ -744,4 +744,3 @@ BACKEND_EVENT_TYPES = {
     "TEMPLATE_SAVED_DRAFT": TemplateSavedDraftEvent,
     "TEMPLATE_CANCELED": TemplateCanceledEvent,
 }
-

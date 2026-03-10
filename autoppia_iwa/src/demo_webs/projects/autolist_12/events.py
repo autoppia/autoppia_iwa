@@ -357,4 +357,3 @@ BACKEND_EVENT_TYPES = {
     "AUTOLIST_TEAM_ROLE_ASSIGNED": TeamRoleAssignedEvent,
     "AUTOLIST_TEAM_CREATED": TeamCreatedEvent,
 }
-

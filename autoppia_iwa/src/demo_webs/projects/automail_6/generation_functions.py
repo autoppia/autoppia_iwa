@@ -578,4 +578,3 @@ def generate_sent_template_constraints() -> list[dict[str, Any]]:
             constraints_list.append(constraint)
 
     return constraints_list
-

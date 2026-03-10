@@ -38,4 +38,3 @@ __all__ = [
     "run_global_tests",
     "run_partial_tests",
 ]
-

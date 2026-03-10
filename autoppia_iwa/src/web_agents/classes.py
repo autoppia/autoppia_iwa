@@ -232,4 +232,3 @@ class TaskSolution(BaseModel):
         for action in self.actions:
             replace_credentials_in_action(action, web_agent_id)
         return self.actions
-

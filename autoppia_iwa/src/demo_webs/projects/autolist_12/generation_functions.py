@@ -241,4 +241,3 @@ def generate_team_created_constraints() -> list[dict[str, Any]]:
         "role": {"source_key": "label", "dataset": ROLES},
     }
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_TEAM_CREATED_MAP)
-

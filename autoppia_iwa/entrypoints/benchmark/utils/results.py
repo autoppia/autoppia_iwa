@@ -96,4 +96,3 @@ def _has_zero_score(results: dict) -> bool:
             if task_data.get("score") == 0.0:
                 return True
     return False
-

@@ -79,4 +79,3 @@ DO NOT ADD TWO CONSTRAINTS ABOUT THE SAME FIELD, LIKE DIRECTION (EXAMPLE: "Scrol
 - Generate 1 prompts that are 100% constraint-compliant,
   using varied but precise language that captures the EXACT constraints.
 """
-

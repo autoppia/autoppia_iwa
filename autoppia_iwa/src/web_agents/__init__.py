@@ -13,4 +13,3 @@ __all__ = [
 
 # New public name for the HTTP iterative web-agent interface.
 WebAgent = ApifiedWebAgent
-

@@ -185,4 +185,3 @@ class MultiStepTaskGenerator:
             specifications=BrowserSpecification(),
             use_case=None,  # Typically no single use_case for a composite
         )
-

@@ -197,4 +197,3 @@ class GlobalTestGenerationPipeline:
                 logger.debug(f"Added CheckEventTest to Task {task.id}: {check_event_test.event_name}")
             except Exception as e:
                 logger.error(f"Failed to instantiate CheckEventTest for Task {task.id}: {e!s}")
-

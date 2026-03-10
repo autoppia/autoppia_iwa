@@ -248,4 +248,3 @@ class LLMFactory:
             return ChutesLLMService(config, base_url=kwargs.get("base_url"), api_key=kwargs.get("api_key"), use_bearer=kwargs.get("use_bearer", False))
         else:
             raise ValueError(f"Unsupported LLM type: {llm_type}")
-

@@ -8,4 +8,3 @@ GREATER_EQUAL = "greater_equal"
 LESS_EQUAL = "less_equal"
 IN_LIST = "in_list"
 NOT_IN_LIST = "not_in_list"
-

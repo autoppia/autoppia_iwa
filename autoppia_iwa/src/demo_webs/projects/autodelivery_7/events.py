@@ -834,4 +834,3 @@ BACKEND_EVENT_TYPES = {
     "REVIEW_SUBMITTED": ReviewSubmittedEvent,
     "DELIVERY_PRIORITY_SELECTED": DeliveryPrioritySelectedEvent,
 }
-

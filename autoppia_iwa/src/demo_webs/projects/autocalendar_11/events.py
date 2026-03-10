@@ -436,4 +436,3 @@ BACKEND_EVENT_TYPES = {
     "EVENT_REMOVE_ATTENDEE": EventRemoveAttendeeEvent,
     "EVENT_WIZARD_OPEN": EventWizardOpenEvent,
 }
-

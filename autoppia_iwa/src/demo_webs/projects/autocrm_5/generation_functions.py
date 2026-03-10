@@ -698,4 +698,3 @@ def generate_change_user_name_constraints() -> list[dict[str, Any]]:
     constraints_list.append(constraint)
 
     return constraints_list
-

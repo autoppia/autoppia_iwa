@@ -504,4 +504,3 @@ BACKEND_EVENT_TYPES = {
     "TRIP_DETAILS": TripDetailsEvent,
     "CANCEL_RESERVATION": CancelReservationEvent,
 }
-

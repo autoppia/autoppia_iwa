@@ -587,4 +587,3 @@ def generate_restaurant_constraints(
 
         constraints.append({"field": field, "operator": ComparisonOperator(op), "value": value})
     return constraints
-

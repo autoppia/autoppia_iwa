@@ -793,4 +793,3 @@ def generate_to_and_from_constraints(from_ops: list[int], to_ops: list[int]) -> 
     all_constraints.append(create_constraint_dict(rate_from, rate_from_op, rate_from_value))
     all_constraints.append(create_constraint_dict(rate_to, rate_to_op, rate_to_value))
     return all_constraints
-

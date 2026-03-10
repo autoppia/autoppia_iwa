@@ -33,4 +33,3 @@ async def fetch_data(seed_value: int | None = None, count: int = 50) -> list[dic
         method="shuffle",
     )
     return items if items else []
-

@@ -43,4 +43,3 @@ async def fetch_data(
         filter_key=filter_key if filter_key else None,
     )
     return items or []
-

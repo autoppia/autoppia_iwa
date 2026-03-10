@@ -100,4 +100,3 @@ if __name__ == "__main__":
     # Allow port override from command line
     port_arg: int | None = int(sys.argv[1]) if len(sys.argv) > 1 else None
     main(port=port_arg or DEFAULT_PORT)
-

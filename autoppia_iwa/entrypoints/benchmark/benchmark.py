@@ -684,4 +684,3 @@ class Benchmark:
         logger.success(f"Benchmark finished ✔ - {successful_projects}/{total_projects} projects completed successfully")
 
         return self.per_project_results
-

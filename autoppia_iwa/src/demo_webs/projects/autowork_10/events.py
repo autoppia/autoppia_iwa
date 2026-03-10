@@ -835,4 +835,3 @@ BACKEND_EVENT_TYPES = {
     "SET_RATE_RANGE": SetRateRangeEvent,
     "WRITE_JOB_DESCRIPTION": WriteJobDescriptionEvent,
 }
-
