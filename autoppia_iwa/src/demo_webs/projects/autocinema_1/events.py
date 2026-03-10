@@ -781,3 +781,4 @@ BACKEND_EVENT_TYPES = {
     "SHARE_MOVIE": ShareFilmEvent,
     "WATCH_TRAILER": WatchTrailer,
 }
+

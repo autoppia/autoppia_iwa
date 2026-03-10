@@ -646,3 +646,4 @@ BACKEND_EVENT_TYPES = {
     "CHECKOUT_STARTED": CheckoutStartedEvent,
     "ORDER_COMPLETED": OrderCompletedEvent,
 }
+

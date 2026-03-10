@@ -71,3 +71,4 @@ async def fetch_data(seed_value: int | None = None, count: int = 50) -> list[dic
     except Exception as exc:  # pragma: no cover - best effort
         logger.error(f"Failed to fetch restaurant data from API: {exc}")
     return []
+

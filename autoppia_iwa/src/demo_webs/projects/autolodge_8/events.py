@@ -832,3 +832,4 @@ BACKEND_EVENT_TYPES = {
     "HELP_VIEWED": HelpViewedEvent,
     "FAQ_OPENED": FaqOpenedEvent,
 }
+

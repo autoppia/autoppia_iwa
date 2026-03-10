@@ -118,3 +118,4 @@ def log_gif_creation(message: str):
 def log_backend_test(message: str):
     """Log backend test with INFO level"""
     logger.info(f"[EVALUATION] [GET BACKEND TEST] {message}")
+

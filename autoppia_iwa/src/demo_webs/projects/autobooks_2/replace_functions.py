@@ -181,3 +181,4 @@ async def replace_book_placeholders(
     # Do NOT call login_replace_func here - credentials should remain as placeholders
     # They will be replaced during evaluation via TaskSolution.replace_credentials()
     return text
+

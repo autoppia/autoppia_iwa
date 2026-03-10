@@ -253,3 +253,4 @@ class BaseActionWithSelector(BaseAction):
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
         """Execute method placeholder for actions with selectors."""
         raise NotImplementedError("Execute method must be implemented by subclasses of BaseActionWithSelector.")
+

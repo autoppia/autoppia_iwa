@@ -52,3 +52,4 @@ async def fetch_data(seed_value: int | None = None, count: int = 50) -> list[dic
         return []
     modified_emails = transform_emails_list(items)
     return _transform_all(modified_emails, field_mapping)
+

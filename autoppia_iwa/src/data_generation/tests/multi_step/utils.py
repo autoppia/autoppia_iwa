@@ -27,3 +27,4 @@ def normalize_test_config(test_config: dict[str, Any]) -> dict[str, Any]:
         # Optionally set a name for specific test types
         if raw_test_type in ["JudgeBaseOnHTML", "OpinionBaseOnScreenshot"]:
             test_config["name"] = raw_test_type
+

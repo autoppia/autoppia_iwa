@@ -6,3 +6,4 @@ if os.getenv("SKIP_APP_BOOTSTRAP", "").lower() not in {"1", "true", "yes"}:
     app = AppBootstrap()
 else:  # pragma: no cover
     app = None
+

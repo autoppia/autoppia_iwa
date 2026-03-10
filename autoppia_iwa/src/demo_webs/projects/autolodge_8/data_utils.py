@@ -38,3 +38,4 @@ async def fetch_data(seed_value: int | None = None, count: int = 50) -> list[dic
     if not items:
         return []
     return get_modify_data(items)
+

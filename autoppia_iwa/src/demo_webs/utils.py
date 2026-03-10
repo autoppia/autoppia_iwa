@@ -121,3 +121,4 @@ def log_event(event):
     print("=" * 50)
     print(event)
     print("=" * 50)
+

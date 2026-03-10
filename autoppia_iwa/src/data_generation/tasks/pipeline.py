@@ -77,3 +77,4 @@ class TaskGenerationPipeline:
         except Exception as e:
             logger.exception(f"Task generation failed: {e}")
             return []
+

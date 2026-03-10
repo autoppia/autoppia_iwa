@@ -788,3 +788,4 @@ def generate_faq_opened_constraints() -> list[dict[str, Any]]:
     allowed_ops = FIELD_OPERATORS_FAQ_OPENED_MAP.get("question", [ComparisonOperator.CONTAINS.value])
     op = ComparisonOperator(random.choice(allowed_ops))
     return [create_constraint_dict("question", op, question[:6])]
+

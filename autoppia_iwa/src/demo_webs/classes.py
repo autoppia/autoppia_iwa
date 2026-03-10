@@ -279,3 +279,4 @@ class BackendEvent(BaseModel):
     user_id: int | None = None
     web_agent_id: str | None = None
     timestamp: Any | None = None
+

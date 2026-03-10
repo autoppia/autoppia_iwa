@@ -622,3 +622,4 @@ class SimpleTaskGenerator:
 
         # Fallback: return empty array
         return "[]"
+

@@ -199,3 +199,4 @@ def transform_medical_records_to_modified(medical_records: list[dict]) -> list[d
             new_data["doctor_name"] = new_data.pop("doctorName")
         modified.append(new_data)
     return modified
+

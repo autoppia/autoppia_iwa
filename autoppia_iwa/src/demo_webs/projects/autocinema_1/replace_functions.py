@@ -139,3 +139,4 @@ async def replace_film_placeholders(
         text = text.replace("<duration>", str(movie.get("duration", "120")))
 
     return text
+

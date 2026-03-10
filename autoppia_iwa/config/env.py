@@ -19,3 +19,4 @@ def init_env(override: bool = False) -> None:
     - override=True: force .env values (standalone entrypoints).
     """
     load_dotenv(_PROJECT_ROOT / ".env", override=override)
+

@@ -531,3 +531,4 @@ BACKEND_EVENT_TYPES = {
     "TRANSFER_COMPLETE": TransferCompleteEvent,
     "FAVORITE_SUBNET": FavoriteSubnetEvent,
 }
+

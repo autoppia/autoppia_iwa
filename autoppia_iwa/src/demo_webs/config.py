@@ -38,3 +38,4 @@ demo_web_projects: list[WebProject] = [
     health_project,
     autostats_project,
 ]
+

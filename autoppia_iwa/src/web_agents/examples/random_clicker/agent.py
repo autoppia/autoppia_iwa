@@ -63,3 +63,4 @@ class RandomClickerWebAgent(BaseAgent):
             actions.append(ClickAction(selector=None, x=x, y=y))
 
         return TaskSolution(task_id=task.id, actions=actions, web_agent_id=self.id or self.name)
+

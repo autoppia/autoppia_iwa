@@ -109,3 +109,4 @@ class EvaluatorConfig(BaseModel):
     should_record_gif: bool = Field(default=False, description="Record evaluation on browser executions.")
     max_consecutive_action_failures: int = Field(default=2, gt=0, description="Maximum consecutive action failures before marking task as failed. Default: 2")
     headless: bool | None = Field(default=None, description="Override browser headless. None = use EVALUATOR_HEADLESS env.")
+

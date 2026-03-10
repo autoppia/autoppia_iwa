@@ -677,3 +677,4 @@ class ConcurrentEvaluator(IEvaluator):
                     await context.close()
                 if browser:
                     await browser.close()
+

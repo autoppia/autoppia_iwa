@@ -15,3 +15,4 @@ autocalendar_project = WebProject(
     events=EVENTS,
     use_cases=ALL_USE_CASES,
 )
+

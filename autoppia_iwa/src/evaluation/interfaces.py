@@ -41,3 +41,4 @@ class IEvaluator(ABC):
         Returns:
             List[EvaluationResult]: A list of evaluation results.
         """
+

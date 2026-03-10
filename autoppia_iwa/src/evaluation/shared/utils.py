@@ -421,3 +421,4 @@ def extract_seed_from_url(url: str) -> int | None:
     except Exception:
         return None
     return None
+

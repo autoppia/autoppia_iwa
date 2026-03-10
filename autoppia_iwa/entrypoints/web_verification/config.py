@@ -42,3 +42,4 @@ class WebVerificationConfig:
             import os
 
             self.iwap_base_url = os.getenv("IWAP_BASE_URL", "https://api-leaderboard.autoppia.com")
+

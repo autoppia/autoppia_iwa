@@ -143,3 +143,4 @@ def get_projects_by_ids(all_projects: list[WebProject], ids_to_run: list[str]) -
 
     # Return only the requested projects (caller should log after setup_logging for uniform format)
     return [projects_by_id[pid] for pid in ids_to_run]
+

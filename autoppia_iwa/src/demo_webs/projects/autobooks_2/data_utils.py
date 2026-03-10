@@ -55,3 +55,4 @@ async def fetch_data(seed_value: int | None = None, count: int = 50) -> list[dic
         field_mapping = {"director": "author", "duration": "page_count", "img": "img_file"}
         return _transform_all(items, field_mapping)
     return []
+

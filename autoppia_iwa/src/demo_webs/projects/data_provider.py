@@ -135,3 +135,4 @@ async def close_async_session() -> None:
             pass
         finally:
             _ASYNC_SESSION = None
+

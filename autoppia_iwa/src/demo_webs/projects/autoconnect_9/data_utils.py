@@ -41,3 +41,4 @@ async def fetch_data(
         method=method if method else "select",
     )
     return items or []
+

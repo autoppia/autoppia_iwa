@@ -84,3 +84,4 @@ def compute_statistics(values: list[float]) -> dict:
         "max": max(values),
         "stdev": statistics.stdev(values) if len(values) > 1 else 0.0,
     }
+

@@ -380,3 +380,4 @@ async def generate_category_filter_constraints(task_url: str | None = None, data
     constraints.append(create_constraint_dict("category", ComparisonOperator.EQUALS, selected_category))
 
     return constraints
+

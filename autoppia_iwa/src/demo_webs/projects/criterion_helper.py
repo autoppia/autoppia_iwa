@@ -111,3 +111,4 @@ def validate_criterion(actual_value: Any, criterion: Any | CriterionValue) -> bo
         return actual_value not in val
 
     return False
+

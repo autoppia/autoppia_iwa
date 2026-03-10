@@ -301,3 +301,4 @@ def validate_time_field(field_value, criterion):
         return comp_table[ComparisonOperator.EQUALS](field_value, criterion.time())
     else:
         return criterion is None or field_value == criterion
+

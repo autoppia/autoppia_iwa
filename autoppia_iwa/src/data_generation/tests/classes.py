@@ -427,3 +427,4 @@ class HTMLBasedTestResponse(BaseModel):
 
     evaluation_result: bool = Field(..., description="Indicates whether the task execution was successful.")
     justification: str | None = Field(None, description="Optional explanation supporting the evaluation decision.")
+

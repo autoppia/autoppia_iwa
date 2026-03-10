@@ -89,3 +89,4 @@ class BenchmarkConfig:
             except Exception as e:
                 logger.error(f"Failed to create directory {d}: {e}")
                 raise
+

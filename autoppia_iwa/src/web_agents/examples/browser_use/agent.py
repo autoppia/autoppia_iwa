@@ -139,3 +139,4 @@ class BrowserUseWebAgent(BaseAgent):
             from browser_use import ChatOpenAI
 
             return ChatOpenAI(model=model)
+

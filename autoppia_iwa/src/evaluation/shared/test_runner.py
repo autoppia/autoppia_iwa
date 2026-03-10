@@ -125,3 +125,4 @@ class TestRunner:
 
         _log_backend_test(f"   - Total results: {len(snapshot_results)}", web_agent_id=web_agent_id)
         return snapshot_results
+
