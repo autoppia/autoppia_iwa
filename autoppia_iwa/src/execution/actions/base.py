@@ -1,7 +1,8 @@
+import builtins
 import json
 import re
 from enum import Enum
-from typing import Any, ClassVar, Optional, Type
+from typing import Any, ClassVar, Optional
 
 from loguru import logger
 from playwright.async_api import Page
@@ -312,7 +313,7 @@ class BaseAction(BaseModel):
         return re.sub(r"(?<!^)(?=[A-Z])", "_", base).lower()
 
     @staticmethod
-    def _canonical_action_type(action_class: Type["BaseAction"]) -> str | None:
+    def _canonical_action_type(action_class: builtins.type["BaseAction"]) -> str | None:
         canonical_type = None
         type_field = getattr(action_class, "model_fields", {}).get("type")
         if type_field is not None:
@@ -322,7 +323,7 @@ class BaseAction(BaseModel):
         return canonical_type if isinstance(canonical_type, str) else None
 
     @classmethod
-    def _inject_canonical_action_type(cls, payload: dict[str, Any], action_class: Type["BaseAction"]) -> None:
+    def _inject_canonical_action_type(cls, payload: dict[str, Any], action_class: builtins.type["BaseAction"]) -> None:
         canonical_type = cls._canonical_action_type(action_class)
         if canonical_type is not None:
             payload["type"] = canonical_type
@@ -338,7 +339,7 @@ class BaseAction(BaseModel):
     @classmethod
     def tool_aliases(cls) -> list[str]:
         aliases = getattr(cls, "tool_alias_names", None)
-        if isinstance(aliases, (list, tuple, set)):
+        if isinstance(aliases, list | tuple | set):
             out: list[str] = []
             for alias in aliases:
                 if isinstance(alias, str) and alias.strip():

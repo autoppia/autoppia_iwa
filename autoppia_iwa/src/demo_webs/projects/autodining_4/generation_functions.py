@@ -40,6 +40,9 @@ from .data import (
 )
 from .data_utils import fetch_data
 
+# Shared field list for restaurant constraints (avoids duplication across generators)
+RESTAURANT_CONSTRAINT_FIELDS = ["name", "desc", "rating", "reviews", "cuisine", "bookings"]
+
 MOCK_DATES = generate_mock_dates()
 MOCK_DATE_STRINGS = generate_mock_date_strings(MOCK_DATES)
 # MOCK_PEOPLE_COUNT_STRINGS = ["1 person", "2 people", "4 guests"]
@@ -61,6 +64,26 @@ async def _get_restaurant_queries() -> list[str]:
         return _BASE_RESTAURANT_QUERIES
 
 
+async def _get_restaurants_dataset(task_url: str | None, dataset: list[dict] | None) -> list[dict[str, Any]]:
+    """Return restaurants list: fetch by seed if dataset is None, else use dataset. Reduces repeated fetch pattern."""
+    if not dataset:
+        seed = get_seed_from_url(task_url)
+        return await fetch_data(seed_value=seed)
+    return dataset
+
+
+def _pick_different_from_list(field_value: Any, options: list, key: str | None = None) -> Any:
+    """Return a random option different from field_value. If key is set, options are dicts and we use options[i][key]."""
+    values = [o[key] for o in options if key in o] if key else list(options)
+    valid = [v for v in values if v != field_value]
+    return random.choice(valid) if valid else None
+
+
+def _collect_field_values_from_dataset(dataset: list, field: str) -> list[Any]:
+    """Collect all unique values for field from dataset. Used by IN_LIST and NOT_IN_LIST."""
+    return list({v.get(field) for v in dataset if field in v})
+
+
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | list[str]) -> Any:
     # Extract restaurant list if dataset is a dict, otherwise use dataset as-is
     dataset = dataset["restaurants"] if isinstance(dataset, dict) and "restaurants" in dataset else dataset
@@ -73,49 +96,35 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         return random.choice([2, 3])
     elif operator == ComparisonOperator.NOT_EQUALS:
         if field == "direction":
-            valid = [v for v in SCROLL_DIRECTIONS if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "section":
-            valid = [v for v in SCROLL_SECTIONS_TITLES if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "time":
-            valid = [v for v in RESTAURANT_TIMES if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "people":
-            valid = [v for v in RESTAURANT_PEOPLE_COUNTS if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "occasion":
-            valid = [v for v in RESTAURANT_OCCASIONS if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "country":
-            valid = [v["name"] for v in RESTAURANT_COUNTRIES if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "code":
-            valid = [v["code"] for v in RESTAURANT_COUNTRIES if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "username":
-            valid = [v for v in NAMES if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "message":
-            valid = [v for v in CONTACT_MESSAGES if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "subject":
-            valid = [v for v in CONTACT_SUBJECTS if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "email":
-            valid = [v for v in SAMPLE_EMAILS if v != field_value]
-            return random.choice(valid) if valid else None
-
+            return _pick_different_from_list(field_value, SCROLL_DIRECTIONS)
+        if field == "section":
+            return _pick_different_from_list(field_value, SCROLL_SECTIONS_TITLES)
+        if field == "time":
+            return _pick_different_from_list(field_value, RESTAURANT_TIMES)
+        if field == "people":
+            return _pick_different_from_list(field_value, RESTAURANT_PEOPLE_COUNTS)
+        if field == "occasion":
+            return _pick_different_from_list(field_value, RESTAURANT_OCCASIONS)
+        if field == "country":
+            return _pick_different_from_list(field_value, RESTAURANT_COUNTRIES, "name")
+        if field == "code":
+            return _pick_different_from_list(field_value, RESTAURANT_COUNTRIES, "code")
+        if field == "username":
+            return _pick_different_from_list(field_value, NAMES)
+        if field == "message":
+            return _pick_different_from_list(field_value, CONTACT_MESSAGES)
+        if field == "subject":
+            return _pick_different_from_list(field_value, CONTACT_SUBJECTS)
+        if field == "email":
+            return _pick_different_from_list(field_value, SAMPLE_EMAILS)
         valid = [v[field] for v in dataset if v.get(field) != field_value]
         return random.choice(valid) if valid else None
 
     elif operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
         if field == "direction":
-            valid = [v for v in SCROLL_DIRECTIONS if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "section":
-            valid = [v for v in SCROLL_SECTIONS_TITLES if v != field_value]
-            return random.choice(valid) if valid else None
+            return _pick_different_from_list(field_value, SCROLL_DIRECTIONS)
+        if field == "section":
+            return _pick_different_from_list(field_value, SCROLL_SECTIONS_TITLES)
         if len(field_value) > 2:
             start = random.randint(0, max(0, len(field_value) - 2))
             end = random.randint(start + 1, len(field_value))
@@ -124,28 +133,22 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
 
     elif operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
         if field == "direction":
-            valid = [v for v in SCROLL_DIRECTIONS if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "section":
-            valid = [v for v in SCROLL_SECTIONS_TITLES if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "username":
-            valid = [v for v in NAMES if v != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "message":
-            valid = [m for m in CONTACT_MESSAGES if m != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "subject":
-            valid = [c for c in CONTACT_SUBJECTS if c != field_value]
-            return random.choice(valid) if valid else None
-        elif field == "email":
-            valid = [e for e in SAMPLE_EMAILS if e != field_value]
-            return random.choice(valid) if valid else None
+            return _pick_different_from_list(field_value, SCROLL_DIRECTIONS)
+        if field == "section":
+            return _pick_different_from_list(field_value, SCROLL_SECTIONS_TITLES)
+        if field == "username":
+            return _pick_different_from_list(field_value, NAMES)
+        if field == "message":
+            return _pick_different_from_list(field_value, CONTACT_MESSAGES)
+        if field == "subject":
+            return _pick_different_from_list(field_value, CONTACT_SUBJECTS)
+        if field == "email":
+            return _pick_different_from_list(field_value, SAMPLE_EMAILS)
         valid = [v[field] for v in dataset if isinstance(v.get(field), str) and field_value not in v.get(field, "")]
         return random.choice(valid) if valid else None
 
     elif operator == ComparisonOperator.IN_LIST:
-        all_values = list({v.get(field) for v in dataset if field in v})
+        all_values = _collect_field_values_from_dataset(dataset, field)
         if not all_values:
             return [field_value]
         subset = random.sample(all_values, min(2, len(all_values)))
@@ -154,7 +157,7 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         return list(set(subset))
 
     elif operator == ComparisonOperator.NOT_IN_LIST:
-        all_values = list({v.get(field) for v in dataset if field in v})
+        all_values = _collect_field_values_from_dataset(dataset, field)
         if field_value in all_values:
             all_values.remove(field_value)
         return random.sample(all_values, min(2, len(all_values))) if all_values else []
@@ -250,13 +253,9 @@ async def _generate_value_for_field(field_name: str) -> Any:
 
 # --- Constraint Generators ---
 async def generate_view_restaurant_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if not dataset:
-        seed = get_seed_from_url(task_url)
-        restaurants = await fetch_data(seed_value=seed)
-    else:
-        restaurants = dataset
+    restaurants = await _get_restaurants_dataset(task_url, dataset)
     return generate_restaurant_constraints(
-        fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"],
+        fields=RESTAURANT_CONSTRAINT_FIELDS,
         allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT,
         max_constraints=4,
         dataset=restaurants,
@@ -264,13 +263,9 @@ async def generate_view_restaurant_constraints(task_url: str | None = None, data
 
 
 async def generate_view_full_menu_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if not dataset:
-        seed = get_seed_from_url(task_url)
-        restaurants = await fetch_data(seed_value=seed)
-    else:
-        restaurants = dataset
+    restaurants = await _get_restaurants_dataset(task_url, dataset)
     return generate_restaurant_constraints(
-        fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"],
+        fields=RESTAURANT_CONSTRAINT_FIELDS,
         allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT,
         max_constraints=4,
         dataset=restaurants,
@@ -278,13 +273,9 @@ async def generate_view_full_menu_constraints(task_url: str | None = None, datas
 
 
 async def generate_collapse_menu_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if not dataset:
-        seed = get_seed_from_url(task_url)
-        restaurants = await fetch_data(seed_value=seed)
-    else:
-        restaurants = dataset
+    restaurants = await _get_restaurants_dataset(task_url, dataset)
     return generate_restaurant_constraints(
-        fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"],
+        fields=RESTAURANT_CONSTRAINT_FIELDS,
         allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT,
         max_constraints=4,
         dataset=restaurants,
@@ -318,13 +309,9 @@ async def generate_constraints_for_single_field(field: str, allowed_operators: d
 
 
 async def generate_book_restaurant_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if not dataset:
-        seed = get_seed_from_url(task_url)
-        restaurants = await fetch_data(seed_value=seed)
-    else:
-        restaurants = dataset
+    restaurants = await _get_restaurants_dataset(task_url, dataset)
     restaurant_constraints = generate_restaurant_constraints(
-        fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"],
+        fields=RESTAURANT_CONSTRAINT_FIELDS,
         allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT,
         max_constraints=3,
         dataset=restaurants,
@@ -341,13 +328,9 @@ async def generate_book_restaurant_constraints(task_url: str | None = None, data
 
 
 async def generate_country_selected_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if not dataset:
-        seed = get_seed_from_url(task_url)
-        restaurants = await fetch_data(seed_value=seed)
-    else:
-        restaurants = dataset
+    restaurants = await _get_restaurants_dataset(task_url, dataset)
     restaurant_constraints = generate_restaurant_constraints(
-        fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"],
+        fields=RESTAURANT_CONSTRAINT_FIELDS,
         allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT,
         max_constraints=3,
         dataset=restaurants,
@@ -366,13 +349,9 @@ async def generate_country_selected_constraints(task_url: str | None = None, dat
 
 
 async def generate_occasion_selected_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if not dataset:
-        seed = get_seed_from_url(task_url)
-        restaurants = await fetch_data(seed_value=seed)
-    else:
-        restaurants = dataset
+    restaurants = await _get_restaurants_dataset(task_url, dataset)
     restaurant_constraints = generate_restaurant_constraints(
-        fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"],
+        fields=RESTAURANT_CONSTRAINT_FIELDS,
         allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT,
         max_constraints=3,
         dataset=restaurants,
@@ -390,13 +369,9 @@ async def generate_occasion_selected_constraints(task_url: str | None = None, da
 
 
 async def generate_reservation_complete_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
-    if not dataset:
-        seed = get_seed_from_url(task_url)
-        restaurants = await fetch_data(seed_value=seed)
-    else:
-        restaurants = dataset
+    restaurants = await _get_restaurants_dataset(task_url, dataset)
     restaurant_constraints = generate_restaurant_constraints(
-        fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"],
+        fields=RESTAURANT_CONSTRAINT_FIELDS,
         allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT,
         max_constraints=3,
         dataset=restaurants,
@@ -453,51 +428,19 @@ async def generate_contact_constraints():
 
 
 async def generate_about_feature_click_constraints() -> list[dict[str, Any]]:
-    constraints_list: list[dict[str, Any]] = []
-    field = "feature"
-    operators = OPERATORS_ALLOWED_ABOUT_FEATURE_CLICK.get(field, [])
-    if not operators:
-        return constraints_list
-    op = ComparisonOperator(random.choice(operators))
-    value = await _generate_value_for_field(field)
-    constraints_list.append(create_constraint_dict(field, op, value))
-    return constraints_list
+    return await generate_constraints_for_single_field("feature", OPERATORS_ALLOWED_ABOUT_FEATURE_CLICK)
 
 
 async def generate_help_category_selected_constraints() -> list[dict[str, Any]]:
-    constraints_list: list[dict[str, Any]] = []
-    field = "category"
-    operators = OPERATORS_ALLOWED_HELP_CATEGORY_SELECTED.get(field, [])
-    if not operators:
-        return constraints_list
-    op = ComparisonOperator(random.choice(operators))
-    value = await _generate_value_for_field(field)
-    constraints_list.append(create_constraint_dict(field, op, value))
-    return constraints_list
+    return await generate_constraints_for_single_field("category", OPERATORS_ALLOWED_HELP_CATEGORY_SELECTED)
 
 
 async def generate_help_faq_toggled_constraints() -> list[dict[str, Any]]:
-    constraints_list: list[dict[str, Any]] = []
-    field = "question"
-    operators = OPERATORS_ALLOWED_HELP_FAQ_TOGGLED.get(field, [])
-    if not operators:
-        return constraints_list
-    op = ComparisonOperator(random.choice(operators))
-    value = await _generate_value_for_field(field)
-    constraints_list.append(create_constraint_dict(field, op, value))
-    return constraints_list
+    return await generate_constraints_for_single_field("question", OPERATORS_ALLOWED_HELP_FAQ_TOGGLED)
 
 
 async def generate_contact_card_click_constraints() -> list[dict[str, Any]]:
-    constraints_list: list[dict[str, Any]] = []
-    field = "card_type"
-    operators = OPERATORS_ALLOWED_CONTACT_CARD_CLICK.get(field, [])
-    if not operators:
-        return constraints_list
-    op = ComparisonOperator(random.choice(operators))
-    value = await _generate_value_for_field(field)
-    constraints_list.append(create_constraint_dict(field, op, value))
-    return constraints_list
+    return await generate_constraints_for_single_field("card_type", OPERATORS_ALLOWED_CONTACT_CARD_CLICK)
 
 
 # --- Internal Helper ---

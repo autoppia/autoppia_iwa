@@ -235,10 +235,7 @@ class ApifiedWebAgent(IWebAgent):
         # Keep content/done outside tool_calls.
         if tool_name in {"done"}:
             return None
-        if tool_name == "request_user_input":
-            namespaced = "user.request_input"
-        else:
-            namespaced = f"browser.{tool_name}"
+        namespaced = "user.request_input" if tool_name == "request_user_input" else f"browser.{tool_name}"
         return {
             "name": namespaced,
             "description": str(fn.get("description") or ""),
@@ -283,4 +280,4 @@ class ApifiedWebAgent(IWebAgent):
 
 ApifiedIterativeWebAgent = ApifiedWebAgent
 
-__all__ = ["ApifiedWebAgent", "ApifiedIterativeWebAgent"]
+__all__ = ["ApifiedIterativeWebAgent", "ApifiedWebAgent"]

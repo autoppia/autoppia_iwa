@@ -1,10 +1,8 @@
 """
-Single entrypoint for the IWA benchmark. Configure mode, projects, and agents here.
+Code-first entrypoint: configure projects, agents, runs, and options here.
 
-Run:
+Run with:
   python -m autoppia_iwa.entrypoints.benchmark.run
-
-See README.md for evaluator modes (concurrent vs stateful) and agent requirements.
 """
 
 import asyncio
@@ -13,49 +11,111 @@ from loguru import logger
 
 from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
+from autoppia_iwa.entrypoints.benchmark.utils.logging import setup_logging
 from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.web_agents.cua import ApifiedWebAgent
+
+# from autoppia_iwa.src.web_agents.cua import ApifiedWebAgent
+from autoppia_iwa.src.web_agents import ApifiedOneShotWebAgent
 
 # =============================================================================
 # 1) AGENTS
 # =============================================================================
 # Standard: all agents expose POST /act. Use ApifiedWebAgent for both modes.
-# - Concurrent: benchmark calls /act once (step_index=0); agent returns full tool_calls plan.
+# - Concurrent: benchmark calls /act once (step_index=0); agent returns full action list.
 # - Stateful:   benchmark calls /act repeatedly with browser snapshot each step.
 # Legacy: if your agent only exposes POST /solve_task, use ApifiedOneShotWebAgent instead.
 
+# =========================
+# 💡 Code configuration
+# =========================
+
+# Define external HTTP SOTA agents (examples). Uncomment to enable.
+# Ensure unique `id` per agent.
+
+# BROWSER_USE_AGENT = ApifiedWebAgent(
+#     id="browser_use",
+#     name="BrowserUse",
+#     host="browser-use-agent-sota.autoppia.com",
+#     port=80,
+#     timeout=120,
+# )
+
+# OPENAI_CUA_AGENT = ApifiedWebAgent(
+#     id="openai_cua",
+#     name="OpenAI CUA",
+#     host="openai-cua-agent-sota.autoppia.com",
+#     port=80,
+#     timeout=120,
+# )
+
+# CLAUDE_CUA_AGENT = ApifiedWebAgent(
+#     id="claude_cua",
+#     name="Claude CUA",
+#     host="anthropic-cua-agent-sota.autoppia.com",
+#     port=80,
+#     timeout=120,
+# )
+
+# Group SOTA agent examples (commented). Uncomment to use, or set
+# `AGENTS = SOTA_AGENTS` below after uncommenting individual agents.
+SOTA_AGENTS = [
+    # BROWSER_USE_AGENT,
+    # OPENAI_CUA_AGENT,
+    # CLAUDE_CUA_AGENT,
+]
+# Active agents to run.
 AGENTS = [
-    ApifiedWebAgent(base_url="http://localhost:5000", id="1", name="LocalAgent", timeout=120),
+    # ApifiedWebAgent(host="127.0.0.1", id="1", name="BrowserUse-Cloud", timeout=248, port=7000),
+    ApifiedOneShotWebAgent(host="127.0.0.1", id="1", name="BrowserUse-Cloud", timeout=248, port=7000),
+    # ApifiedOneShotWebAgent(base_url="http://84.247.180.192:5000/", id="1", name="BrowseUse-OpenAI", timeout=48)
 ]
 
-# =============================================================================
-# 2) PROJECTS & USE CASES
-# =============================================================================
-
-PROJECT_IDS = ["autocinema"]
+# 2) Projects to evaluate (by id from demo_web_projects)
+PROJECT_IDS = [
+    # "autocinema",
+    # "autobooks",
+    # "autozone",
+    # "autodining",
+    # "autocrm",
+    # "automail",
+    # "autolodge",
+    # "autodelivery",
+    # "autowork",
+    # "autoconnect",
+    # "autocalendar",
+    "autolist",
+    "autodrive",
+    "autohealth",
+    "autostats",
+]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
-USE_CASES = ["FILM_DETAIL"]  # or None for all use cases
+USE_CASES = None  # None = all use cases
 
-# =============================================================================
-# 3) EVALUATOR MODE: choose one block (concurrent or stateful)
-# =============================================================================
-# Both use POST /act. Concurrent: call /act once (step_index=0), agent returns all tool_calls.
-# Stateful: call /act repeatedly with snapshot_html each step.
+# =====================================================
+# CONFIGURATION: Choose the evaluation mode here
+# =====================================================
 
-# --- CONCURRENT (default): agent generates full action sequence in one go ---
+# OPTION 1: CONCURRENT mode (traditional)
+# Agent generates ALL actions at once and they are evaluated
 CFG = BenchmarkConfig(
     projects=PROJECTS,
     agents=AGENTS,
-    evaluator_mode="concurrent",
-    use_cases=USE_CASES,
+    # Evaluator mode
+    evaluator_mode="concurrent",  # ← Agent generates full action list
+    # Tasks
     prompts_per_use_case=1,
-    use_cached_tasks=False,
-    runs=1,
-    max_parallel_agent_calls=1,
-    record_gif=False,
+    # use_cases=None means all use-cases
+    use_cases=USE_CASES,
+    # Execution
+    runs=1,  # single run is enough for this fixed agent
+    max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
+    record_gif=False,  # if your evaluator returns GIFs
+    # Dynamic mode: disabled for this simple fixed-task test to avoid seed constraints.
     dynamic=True,
+    # Persistence
     save_results_json=True,
+    headless=True,  # Show Chromium window (set True or omit to use EVALUATOR_HEADLESS env)
 )
 
 # --- STATEFUL: agent decides step-by-step (must use ApifiedWebAgent in AGENTS) ---
@@ -63,16 +123,24 @@ CFG = BenchmarkConfig(
 # CFG = BenchmarkConfig(
 #     projects=PROJECTS,
 #     agents=AGENTS,
-#     evaluator_mode="stateful",
-#     max_steps_per_task=50,
-#     use_cases=USE_CASES,
-#     prompts_per_use_case=1,
+#     # Evaluator mode
+#     evaluator_mode="stateful",  # ← Iterative mode: agent decides step by step
+#     max_steps_per_task=50,  # ← Step limit per task
+#     # Tasks
 #     use_cached_tasks=True,
+#     prompts_per_use_case=1,
+#     num_use_cases=0,
+#     use_cases=USE_CASES,
+#     # Execution
 #     runs=1,
 #     max_parallel_agent_calls=1,
-#     record_gif=True,
+#     use_cached_solutions=False,  # ⚠️ Not compatible with stateful mode
+#     record_gif=True,  # Recommended to see adaptive navigation
+#     # Dynamic mode
 #     dynamic=False,
+#     # Persistence
 #     save_results_json=True,
+#     plot_results=False,
 # )
 
 
@@ -81,6 +149,8 @@ def main():
     Main entrypoint for the benchmark.
     """
     try:
+        setup_logging(str(CFG.benchmark_log_file))
+        logger.info(f"Selected {len(CFG.projects)} projects: {[p.name for p in CFG.projects]}")
         logger.info("Initializing benchmark...")
 
         # Validate configuration early
@@ -97,7 +167,6 @@ def main():
         if CFG.evaluator_mode == "stateful":
             logger.info(f"Stateful mode enabled: max {CFG.max_steps_per_task} steps per task")
 
-        # Create and run benchmark
         benchmark = Benchmark(CFG)
         asyncio.run(benchmark.run())
 

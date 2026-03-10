@@ -5,12 +5,49 @@ import json
 from datetime import UTC, datetime
 from typing import Any
 
-from playwright.async_api import Page
+from playwright.async_api import Error as PlaywrightError, Page, TimeoutError as PWTimeout
 
 from autoppia_iwa.src.data_generation.tasks.classes import BrowserSpecification
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.execution.classes import ActionExecutionResult, BrowserSnapshot
+
+
+def _parse_event_timestamp(event: Any) -> datetime | None:
+    """
+    Parse timestamp from a backend event dict.
+    Supports top-level "timestamp" or legacy "data.timestamp".
+    Returns datetime in UTC or None if missing/invalid.
+    """
+    if not isinstance(event, dict):
+        return None
+    ts = event.get("timestamp")
+    if not ts and isinstance(event.get("data"), dict):
+        ts = event["data"].get("timestamp")
+    if not isinstance(ts, str) or not ts:
+        return None
+    try:
+        if ts.endswith("Z"):
+            ts = ts[:-1] + "+00:00"
+        dt = datetime.fromisoformat(ts)
+        if dt.tzinfo is None:
+            return dt.replace(tzinfo=UTC)
+        return dt.astimezone(UTC)
+    except (ValueError, TypeError):
+        return None
+
+
+def _minimal_snapshot(html: str = "", url: str = "", error: str = "") -> dict[str, str]:
+    """Build a minimal snapshot dict (no screenshot) for lightweight recording paths."""
+    return {"html": html, "screenshot": "", "url": url, "error": error}
+
+
+def _action_execution_exception_types():
+    """Exception types caught during action execution (Sonar duplication fix)."""
+    return (PlaywrightError, PWTimeout, RuntimeError, ValueError, TypeError)
+
+
+_SUPPRESS_PLAYWRIGHT = (PlaywrightError, PWTimeout, RuntimeError)
 
 
 class PlaywrightBrowserExecutor:
@@ -29,7 +66,7 @@ class PlaywrightBrowserExecutor:
 
     @staticmethod
     def _normalize_action_output(value: Any) -> Any:
-        if value is None or isinstance(value, (str, int, float, bool)):
+        if value is None or isinstance(value, str | int | float | bool):
             return value
         if isinstance(value, list):
             return [PlaywrightBrowserExecutor._normalize_action_output(item) for item in value]
@@ -56,28 +93,6 @@ class PlaywrightBrowserExecutor:
         if not self.page:
             raise RuntimeError("Playwright page is not initialized.")
 
-        def _parse_event_ts(e: Any) -> datetime | None:
-            # Expected shapes:
-            # - {"timestamp":"...Z", ...}
-            # - {"data":{"timestamp":"...Z"}, ...} (legacy)
-            if not isinstance(e, dict):
-                return None
-            ts = e.get("timestamp")
-            if not ts and isinstance(e.get("data"), dict):
-                ts = e["data"].get("timestamp")
-            if not isinstance(ts, str) or not ts:
-                return None
-            try:
-                # Accept "...Z" and "+00:00"
-                if ts.endswith("Z"):
-                    ts = ts[:-1] + "+00:00"
-                dt = datetime.fromisoformat(ts)
-                if dt.tzinfo is None:
-                    return dt.replace(tzinfo=UTC)
-                return dt.astimezone(UTC)
-            except Exception:
-                return None
-
         try:
             await self._before_action(action, iteration)
 
@@ -85,7 +100,7 @@ class PlaywrightBrowserExecutor:
             if should_record:
                 snapshot_before = await self._capture_snapshot()
             else:
-                snapshot_before = {"html": "", "screenshot": "", "url": "", "error": ""}
+                snapshot_before = _minimal_snapshot()
             start_time = datetime.now(UTC)
 
             # Execute the action
@@ -97,45 +112,16 @@ class PlaywrightBrowserExecutor:
             await self._after_action(action, iteration)
 
             # backend_events = await self._get_backend_events(web_agent_id, is_web_real)
-            # Capture an initial snapshot after action execution.
             if should_record:
                 snapshot_after = await self._capture_snapshot()
             else:
-                html = await self.page.content()
-                snapshot_after = {"html": html, "screenshot": "", "url": self.page.url, "error": ""}
+                snapshot_after = await self._get_minimal_snapshot_from_page()
 
-            # Fetch backend events (for demo webs) if available, with a short retry
-            # loop to allow the backend service to flush events.
-            backend_events = []
-            if self.backend_demo_webs_service and not is_web_real:
-                for _ in range(3):
-                    try:
-                        backend_events = await self.backend_demo_webs_service.get_backend_events(web_agent_id)
-                    except Exception:
-                        backend_events = []
-                    if backend_events:
-                        break
-                    await asyncio.sleep(0.2)
-                # Filter out stale events that happened before this action started.
-                # This prevents previous tasks (same web_agent_id) from incorrectly satisfying checks.
-                if backend_events:
-                    filtered: list[Any] = []
-                    for ev in backend_events:
-                        ev_ts = _parse_event_ts(ev)
-                        if ev_ts is None or ev_ts >= start_time:
-                            filtered.append(ev)
-                    backend_events = filtered
+            backend_events = await self._get_backend_events_for_action(web_agent_id, start_time, is_web_real)
 
-            # Re-snapshot URL/HTML after backend events polling. Some apps can trigger
-            # client-side navigations after domcontentloaded; this keeps the snapshot
-            # aligned with the events we just fetched.
             if not should_record:
-                with contextlib.suppress(Exception):
-                    snapshot_after["html"] = await self.page.content()
-                with contextlib.suppress(Exception):
-                    snapshot_after["url"] = self.page.url
+                snapshot_after = await self._get_minimal_snapshot_from_page()
 
-            # Create a detailed browser snapshot
             browser_snapshot = BrowserSnapshot(
                 iteration=iteration,
                 action=action,
@@ -158,42 +144,14 @@ class PlaywrightBrowserExecutor:
                 error=None,
             )
 
-        except Exception as e:
+        except _action_execution_exception_types() as e:
             await self._on_action_error(action, iteration, e)
-            # backend_events = await self._get_backend_events(web_agent_id, is_web_real)
             if should_record:
                 snapshot_error = await self._capture_snapshot()
             else:
-                # Capture minimal state for debugging/tests
-                try:
-                    html = await self.page.content()
-                except Exception:
-                    html = ""
-                url = ""
-                try:
-                    url = self.page.url
-                except Exception:
-                    url = ""
-                snapshot_error = {"html": html, "screenshot": "", "url": url, "error": str(e)}
+                snapshot_error = await self._get_minimal_snapshot_from_page(error=str(e))
 
-            # Fetch backend events (best-effort) on error as well, with retries.
-            backend_events = []
-            if self.backend_demo_webs_service and not is_web_real:
-                for _ in range(3):
-                    try:
-                        backend_events = await self.backend_demo_webs_service.get_backend_events(web_agent_id)
-                    except Exception:
-                        backend_events = []
-                    if backend_events:
-                        break
-                    await asyncio.sleep(0.2)
-                if backend_events:
-                    filtered: list[Any] = []
-                    for ev in backend_events:
-                        ev_ts = _parse_event_ts(ev)
-                        if ev_ts is None or ev_ts >= start_time:
-                            filtered.append(ev)
-                    backend_events = filtered
+            backend_events = await self._get_backend_events_for_action(web_agent_id, start_time, is_web_real)
 
             # Create error snapshot
             browser_snapshot = BrowserSnapshot(
@@ -218,6 +176,44 @@ class PlaywrightBrowserExecutor:
                 browser_snapshot=browser_snapshot,
             )
 
+    async def _fetch_backend_events_filtered(self, web_agent_id: str, start_time: datetime) -> list[Any]:
+        """
+        Fetch backend events with retries and filter to those at or after start_time.
+        Used after action execution (success or error) to avoid stale events from prior tasks.
+        """
+        backend_events: list[Any] = []
+        for _ in range(3):
+            try:
+                backend_events = await self.backend_demo_webs_service.get_backend_events(web_agent_id)
+            except (RuntimeError, ConnectionError, TimeoutError):
+                backend_events = []
+            if backend_events:
+                break
+            await asyncio.sleep(0.2)
+        if not backend_events:
+            return []
+        filtered: list[Any] = []
+        for ev in backend_events:
+            ev_ts = _parse_event_timestamp(ev)
+            if ev_ts is None or ev_ts >= start_time:
+                filtered.append(ev)
+        return filtered
+
+    async def _get_backend_events_for_action(self, web_agent_id: str, start_time: datetime, is_web_real: bool) -> list[Any]:
+        """Fetch backend events for this action or return empty list (centralizes duplicate condition)."""
+        if self.backend_demo_webs_service and not is_web_real:
+            return await self._fetch_backend_events_filtered(web_agent_id, start_time)
+        return []
+
+    async def _get_minimal_snapshot_from_page(self, error: str = "") -> dict[str, str]:
+        """Build minimal snapshot from current page state (html/url) with suppressed exceptions."""
+        html, url = "", ""
+        with contextlib.suppress(*_SUPPRESS_PLAYWRIGHT):
+            html = await self.page.content()
+        with contextlib.suppress(*_SUPPRESS_PLAYWRIGHT):
+            url = self.page.url
+        return _minimal_snapshot(html=html, url=url, error=error)
+
     async def _capture_snapshot(self) -> dict:
         """Helper function to capture browser state."""
         try:
@@ -226,24 +222,23 @@ class PlaywrightBrowserExecutor:
             encoded_screenshot = base64.b64encode(screenshot).decode("utf-8")
             current_url = self.page.url
             return {"html": html, "screenshot": encoded_screenshot, "url": current_url}
-        except Exception as e:
-            # Gracefully handle any errors during snapshot
-            return {"html": "", "screenshot": "", "url": "", "error": str(e)}
+        except (PlaywrightError, PWTimeout, RuntimeError, ValueError) as e:
+            return _minimal_snapshot(error=str(e))
 
     async def _before_action(self, action: BaseAction, iteration: int) -> None:
         """
         Hook executed right before each action. Subclasses can override to inject dynamic behavior.
         """
-        return None
+        # Intentionally empty - subclasses can override
 
     async def _after_action(self, action: BaseAction, iteration: int) -> None:
         """
         Hook executed after action execution (and after DOMContentLoaded) but before snapshots.
         """
-        return None
+        # Intentionally empty - subclasses can override
 
     async def _on_action_error(self, action: BaseAction, iteration: int, error: Exception) -> None:
         """
         Hook executed when an action fails. Subclasses may perform cleanup or reporting.
         """
-        return None
+        # Intentionally empty - subclasses can override

@@ -7,25 +7,25 @@ from autoppia_iwa.src.web_agents.apified_iterative_agent import (
 from autoppia_iwa.src.web_agents.cua.webcua import (
     AsyncWebAgentSession,
     AsyncWebCUASession,
-    WebAgentSession,
-    WebAgentSyncSession,
     BrowserSnapshot,
     ScoreDetails,
     StepResult,
     SyncWebAgentSession,
     SyncWebCUASession,
+    WebAgentSession,
+    WebAgentSyncSession,
 )
 
 __all__ = [
-    "ApifiedWebAgent",
     "ApifiedIterativeWebAgent",
+    "ApifiedWebAgent",
     "AsyncWebAgentSession",
-    "WebAgentSession",
-    "WebAgentSyncSession",
     "AsyncWebCUASession",
     "BrowserSnapshot",
     "ScoreDetails",
     "StepResult",
     "SyncWebAgentSession",
     "SyncWebCUASession",
+    "WebAgentSession",
+    "WebAgentSyncSession",
 ]

@@ -6,10 +6,16 @@ import uuid
 from abc import ABC, abstractmethod
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
 
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.execution.actions.base import BaseAction
+
+# ============================================================================
+# CONSTANTS
+# ============================================================================
+
+DEFAULT_PASSWORD = "Passw0rd!"  # NOSONAR - test password for placeholder replacement, not a real credential
 
 
 def replace_credential_placeholders_in_string(s: str, web_agent_id: str) -> str:
@@ -19,11 +25,11 @@ def replace_credential_placeholders_in_string(s: str, web_agent_id: str) -> str:
     Replaces: <username>, <password>, <signup_username>, <signup_email>, <signup_password>, <web_agent_id>.
     """
     s = s.replace("<username>", f"user{web_agent_id}")
-    s = s.replace("<password>", "Passw0rd!")
+    s = s.replace("<password>", DEFAULT_PASSWORD)
     s = s.replace("<signup_username>", f"newuser{web_agent_id}")
     s = s.replace("<signup_email>", f"newuser{web_agent_id}@gmail.com")
-    s = s.replace("<signup_password>", "Passw0rd!")
-    s = s.replace("<web_agent_id>", web_agent_id)
+    s = s.replace("<signup_password>", DEFAULT_PASSWORD)
+    s = s.replace("<web_agent_id>", web_agent_id)  # NOSONAR - literal placeholder is part of the protocol, keeping as-is for clarity
     return s
 
 
@@ -77,7 +83,7 @@ def sanitize_snapshot_html(snapshot_html: str, web_agent_id: str) -> str:
     sanitized = sanitized.replace(f"newuser{web_agent_id}@gmail.com", "<signup_email>")
     sanitized = sanitized.replace(f"newuser{web_agent_id}", "<signup_username>")
     sanitized = sanitized.replace(f"user{web_agent_id}", "<username>")
-    sanitized = sanitized.replace("Passw0rd!", "<password>")
+    sanitized = sanitized.replace(DEFAULT_PASSWORD, "<password>")
     return sanitized
 
 
@@ -85,19 +91,19 @@ class IWebAgent(ABC):
     """
     Interface for all web agents in IWA.
 
-    ✅ IMPORTANTE: Todos los agentes usan el mismo endpoint /act
+    ✅ IMPORTANT: All agents use the same endpoint /act.
 
-    Los agentes son servicios HTTP que exponen el endpoint /act.
-    Reciben el estado del browser y devuelven acciones a ejecutar.
+    Agents are HTTP services that expose the /act endpoint.
+    They receive the browser state and return actions to execute.
 
-    Esta interfaz se usa tanto en:
-    - Modo concurrent: Se llama una vez y el agente devuelve todas las acciones
-    - Modo stateful: Se llama iterativamente, el agente ve el estado en cada paso
+    This interface is used in both:
+    - Concurrent mode: Called once and the agent returns all actions
+    - Stateful mode: Called iteratively, the agent sees the state at each step
 
     Example implementations:
-    - ApifiedWebAgent: HTTP API-based iterative agent (para benchmark y subnet)
+    - ApifiedWebAgent: HTTP API-based iterative agent (for benchmark and subnet)
     - ApifiedOneShotWebAgent: one-shot /solve_task agent
-    - Miners: Repositorios GitHub deployados como contenedores HTTP
+    - Miners: GitHub repositories deployed as HTTP containers
     """
 
     id: str
@@ -116,23 +122,32 @@ class IWebAgent(ABC):
         state: dict[str, Any] | None = None,
     ) -> list[BaseAction]:
         """
-        Decide acciones basándose en el estado actual del browser.
+        Decide actions based on the current browser state.
 
-        Este método se usa tanto en modo concurrent como stateful:
-        - Concurrent: Se llama UNA vez con snapshot inicial, devuelve TODAS las acciones
-        - Stateful: Se llama ITERATIVAMENTE, devuelve acciones para el siguiente paso
+        This method is used in both concurrent and stateful mode:
+        - Concurrent: Called ONCE with initial snapshot, returns ALL actions
+        - Stateful: Called ITERATIVELY, returns actions for the next step
 
         Args:
-            task: La tarea a resolver
-            snapshot_html: HTML actual de la página
-            screenshot: Snapshot visual del estado actual (bytes o base64 str). Optional.
-            url: URL actual
-            step_index: Número de iteración (0 en concurrent, incrementa en stateful)
-            history: Historial opcional de acciones previas
+            task: The task to solve
+            snapshot_html: Current page HTML
+            screenshot: Visual snapshot of the current state (bytes or base64 str). Optional.
+            url: Current URL
+            step_index: Iteration number (0 in concurrent, increments in stateful)
+            history: Optional history of previous actions
             state: Estado opcional serializable del agente para continuidad entre pasos
 
+
         Returns:
-            Lista de acciones a ejecutar (puede ser múltiples para batch execution)
+            List of actions to execute (may be multiple for batch execution)
+        """
+        pass
+
+    @abstractmethod
+    async def solve_task(self, task: Task) -> "TaskSolution":
+        """
+        Optional: return a full task solution (sequence of actions) in one shot.
+        Used by one-shot agents (e.g. POST /solve_task_at_once). Agents that only support
         """
         pass
 
@@ -161,6 +176,17 @@ class TaskSolution(BaseModel):
     actions: list[BaseAction] = Field(default_factory=list, description="List of actions to execute")
     web_agent_id: str | None = None
     recording: Any | None = Field(default=None, description="Optional recording data associated with the task solution")
+    # Optional cost/token tracking (agents can set these; API may compute cost when missing)
+    cost_usd: float = Field(default=0.0, description="Estimated cost in USD for this solution")
+    input_tokens: int = Field(default=0, description="Number of input tokens used")
+    output_tokens: int = Field(default=0, description="Number of output tokens used")
+    model_used: str | None = Field(default=None, description="Model identifier used for cost calculation")
+
+    @computed_field
+    @property
+    def total_tokens(self) -> int:
+        """Total tokens (input + output)."""
+        return self.input_tokens + self.output_tokens
 
     def nested_model_dump(self, *args, **kwargs) -> dict[str, Any]:
         """Serialize with nested action dumps."""
@@ -177,7 +203,7 @@ class TaskSolution(BaseModel):
             for field in ("text", "url", "value"):
                 if hasattr(action, field):
                     value = getattr(action, field)
-                    if isinstance(value, str) and ("<web_agent_id>" in value or "your_book_id" in value):
+                    if isinstance(value, str) and ("<web_agent_id>" in value or "your_book_id" in value):  # NOSONAR - literal placeholder is part of the protocol
                         new_val = value.replace("<web_agent_id>", str(self.web_agent_id)).replace("<your_book_id>", str(self.web_agent_id))
                         setattr(action, field, new_val)
         return self.actions

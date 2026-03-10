@@ -285,7 +285,7 @@ async def health_check(request: Request):
     }
 
 
-@app.post("/evaluate", response_model=EvaluationResponse, response_model_exclude_none=True)
+@app.post("/evaluate", response_model_exclude_none=True)
 async def evaluate_task_solution(
     request_model: EvaluationRequest,
     request: Request,

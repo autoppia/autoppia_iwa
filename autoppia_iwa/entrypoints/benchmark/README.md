@@ -168,7 +168,6 @@ CFG = BenchmarkConfig(
 | `save_results_json`        | bool      | `True`  | Save results to JSON                        |
 | **Features**               |           |         |                                             |
 | `dynamic`                  | bool      | `False` | Enable seed-based web variations            |
-| `dynamic_phase_config`     | object    | `None`  | Dynamic HTML mutation config                |
 
 | **Evaluator mode**        |           |         |                                             |
 | `evaluator_mode`          | str       | `"concurrent"` | `"concurrent"` or `"stateful"` (see below) |
@@ -221,7 +220,7 @@ Response:
 }
 ```
 
-Use `tool_calls` as canonical output. `actions` is accepted only as an alias for `tool_calls` (same shape: `[{name, arguments}]`).  
+Use `tool_calls` as canonical output. `actions` is accepted only as an alias for `tool_calls` (same shape: `[{name, arguments}]`).
 When the task is done, return `done: true` and optionally include final user-facing text in `content`.
 
 ### **Paths (Auto-configured)**
