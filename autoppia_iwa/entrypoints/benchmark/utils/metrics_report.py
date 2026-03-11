@@ -2,13 +2,19 @@
 Metrics report: load consolidated benchmark JSON and print/write summary.
 
 Can be run standalone (path to JSON or default latest) or called from Benchmark.run().
+Uses Rich for aligned tables and panels when available; falls back to plain text.
 Uses defensive .get() and try/except so malformed data does not crash the script.
 """
 
+import io
 import json
 import sys
 from pathlib import Path
 from typing import Any
+
+from rich.console import Console, Group
+from rich.panel import Panel
+from rich.table import Table
 
 
 def _safe_float(v: Any, default: float = 0.0) -> float:
@@ -59,42 +65,57 @@ def _fmt_cost(v: Any) -> str:
     return f"${_safe_float(v):.6f}"
 
 
-def print_and_collect_report(data: dict[str, Any]) -> list[str]:
-    """
-    Print full benchmark report: executive summary, per-project/per-agent/per-use-case, per-task details.
-    Uses .get() throughout; one bad section does not crash the rest.
-    """
-    lines: list[str] = []
+def _render_report(data: dict[str, Any], console: Console) -> None:
+    """Render full benchmark report to the given Rich console."""
     total_time = data.get("total_execution_time") or 0
     config_summary = data.get("config_summary") or {}
     projects = data.get("projects")
+
     if projects is None:
-        lines.append("Warning: missing 'projects' key in results.")
-        print(lines[-1])
-        return lines
+        console.print("[yellow]Warning: missing 'projects' key in results.[/yellow]")
+        return
     if not isinstance(projects, dict):
-        lines.append("Warning: 'projects' is not an object.")
-        print(lines[-1])
-        return lines
+        console.print("[yellow]Warning: 'projects' is not an object.[/yellow]")
+        return
 
-    def out(s: str = "") -> None:
-        lines.append(s)
-        print(s)
+    # Header
+    ts = data.get("timestamp", "")
+    tasks_src = config_summary.get("tasks_source", "")
+    tasks_path = config_summary.get("tasks_json_path")
+    header_lines = [
+        f"Timestamp:        [bold]{ts}[/bold]",
+        f"Total execution:  [bold]{_safe_float(total_time):.2f}s[/bold]",
+        f"Tasks source:     [bold]{tasks_src}[/bold]",
+    ]
+    if tasks_path:
+        header_lines.append(f"Tasks JSON path:  {tasks_path}")
+    console.print(
+        Panel(
+            "\n".join(header_lines),
+            title="[bold]BENCHMARK METRICS REPORT[/bold]",
+            border_style="blue",
+            padding=(0, 1),
+        )
+    )
+    console.print()
 
-    out("=" * 72)
-    out("  BENCHMARK METRICS REPORT")
-    out("=" * 72)
-    out(f"  Timestamp:           {data.get('timestamp', '')}")
-    out(f"  Total execution:     {_safe_float(total_time):.2f}s")
-    out(f"  Tasks source:        {config_summary.get('tasks_source', '')}")
-    if config_summary.get("tasks_json_path"):
-        out(f"  Tasks JSON path:     {config_summary.get('tasks_json_path')}")
-    out("")
+    # Executive summary table
+    summary_table = Table(
+        title="Executive summary (all agents)",
+        show_header=True,
+        header_style="bold cyan",
+        border_style="dim",
+        padding=(0, 1),
+    )
+    summary_table.add_column("Agent", style="bold", min_width=24, max_width=40)
+    summary_table.add_column("Tasks", justify="right", style="dim")
+    summary_table.add_column("Success", justify="right", style="dim")
+    summary_table.add_column("Rate", justify="right")
+    summary_table.add_column("Avg time", justify="right", style="dim")
+    summary_table.add_column("Avg cost", justify="right")
+    summary_table.add_column("Total cost", justify="right")
+    summary_table.add_column("Tokens (in / out)", justify="right", style="dim")
 
-    # --- Executive summary: all agents across all projects ---
-    out("--- EXECUTIVE SUMMARY (all agents) ---")
-    out(f"  {'Agent':<28} {'Tasks':>6} {'Success':>8} {'Rate':>8} {'AvgTime':>8} {'AvgCost':>10} {'TotalCost':>10} {'Tokens (in/out)':>18}")
-    out("  " + "-" * 110)
     for _project_name, project_data in projects.items():
         if not isinstance(project_data, dict):
             continue
@@ -114,16 +135,28 @@ def print_and_collect_report(data: dict[str, Any]) -> list[str]:
             tout = overall.get("total_output_tokens")
             avg_c = _fmt_cost(avg_cost) if avg_cost is not None else "—"
             tot_c = _fmt_cost(total_cost) if total_cost is not None else "—"
-            tok_s = f"{_safe_int(tin)}/{_safe_int(tout)}" if (tin is not None or tout is not None) else "—"
-            out(f"  {agent_name:<28} {total:>6} {succ:>8} {rate:>7.1%} {avg_time:>7.2f}s {avg_c:>10} {tot_c:>10} {tok_s:>18}")
-    out("")
+            tok_s = f"{_safe_int(tin)} / {_safe_int(tout)}" if (tin is not None or tout is not None) else "—"
+            rate_style = "green" if rate >= 0.5 else ("yellow" if rate > 0 else "red")
+            summary_table.add_row(
+                agent_name,
+                str(total),
+                str(succ),
+                f"[{rate_style}]{rate:.1%}[/{rate_style}]",
+                f"{avg_time:.2f}s",
+                avg_c,
+                tot_c,
+                tok_s,
+            )
 
-    # --- Per project: agents + per-use-case breakdown ---
+    console.print(summary_table)
+    console.print()
+
+    # Per-project panels
     for project_name, project_data in projects.items():
         if not isinstance(project_data, dict):
             continue
         try:
-            out("--- PROJECT: " + str(project_name) + " ---")
+            inner: list[Table | str] = []
             for agent_name, agent_data in project_data.items():
                 if not isinstance(agent_data, dict):
                     continue
@@ -138,13 +171,37 @@ def print_and_collect_report(data: dict[str, Any]) -> list[str]:
                 total_cost = overall.get("total_cost_usd")
                 total_in = overall.get("total_input_tokens")
                 total_out = overall.get("total_output_tokens")
-                out(f"  Agent: {agent_name}")
-                out(
-                    f"    Success: {success_count}/{total} ({rate:.1%})  |  Avg time: {avg_sol:.2f}s  |  Avg cost/task: {_fmt_cost(avg_cost)}  |  Total cost: {_fmt_cost(total_cost)}  |  Tokens: {_safe_int(total_in)}/{_safe_int(total_out)}"
+
+                agent_table = Table(show_header=False, box=None, padding=(0, 0, 0, 2))
+                agent_table.add_column("key", style="dim")
+                agent_table.add_column("value")
+                agent_table.add_row(
+                    "Agent",
+                    f"[bold]{agent_name}[/bold]",
                 )
+                agent_table.add_row(
+                    "Success",
+                    f"{success_count}/{total} ([bold]{rate:.1%}[/bold])",
+                )
+                agent_table.add_row("Avg time", f"{avg_sol:.2f}s")
+                agent_table.add_row("Avg cost/task", _fmt_cost(avg_cost))
+                agent_table.add_row("Total cost", _fmt_cost(total_cost))
+                agent_table.add_row("Tokens", f"{_safe_int(total_in)} / {_safe_int(total_out)}")
+                inner.append(agent_table)
+
                 use_cases = agent_data.get("use_cases") or {}
                 if use_cases:
-                    out("    Per use case:")
+                    uc_table = Table(
+                        title="Per use case",
+                        show_header=True,
+                        header_style="dim",
+                        box=None,
+                        padding=(0, 0, 0, 2),
+                    )
+                    uc_table.add_column("Use case", style="dim")
+                    uc_table.add_column("Success", justify="right")
+                    uc_table.add_column("Avg time", justify="right")
+                    uc_table.add_column("Avg cost", justify="right")
                     for uc_name, uc_data in use_cases.items():
                         if not isinstance(uc_data, dict):
                             continue
@@ -157,14 +214,41 @@ def print_and_collect_report(data: dict[str, Any]) -> list[str]:
                         avg_t = (sum(times) / len(times)) if times else 0
                         avg_c_uc = (sum(costs) / len(costs)) if costs else None
                         c_str = _fmt_cost(avg_c_uc) if avg_c_uc is not None else "—"
-                        out(f"      {uc_name}: {succ_uc}/{n} success  |  avg time {avg_t:.2f}s  |  avg cost {c_str}")
-            out("")
-        except Exception as e:
-            out(f"  Error: {e}")
-            out("")
+                        uc_table.add_row(uc_name, f"{succ_uc}/{n}", f"{avg_t:.2f}s", c_str)
+                    inner.append(uc_table)
+                    inner.append("")
 
-    # --- Per-task detail (all projects, all agents) ---
-    out("--- PER-TASK DETAIL ---")
+            console.print(
+                Panel(
+                    Group(*inner),
+                    title=f"[bold]Project: {project_name}[/bold]",
+                    border_style="green",
+                    padding=(0, 1),
+                )
+            )
+            console.print()
+        except Exception as e:
+            console.print(f"[red]Error: {e}[/red]")
+            console.print()
+
+    # Per-task detail table
+    detail_table = Table(
+        title="Per-task detail",
+        show_header=True,
+        header_style="bold cyan",
+        border_style="dim",
+        padding=(0, 1),
+    )
+    detail_table.add_column("Project / Agent", style="dim", max_width=36)
+    detail_table.add_column("Task id", style="dim")
+    detail_table.add_column("Use case", style="dim")
+    detail_table.add_column("Score", justify="right")
+    detail_table.add_column("Time", justify="right", style="dim")
+    detail_table.add_column("Eval time", justify="right", style="dim")
+    detail_table.add_column("Cost", justify="right")
+    detail_table.add_column("Tokens", justify="right", style="dim")
+    detail_table.add_column("Steps", justify="right", style="dim")
+
     for project_name, project_data in projects.items():
         if not isinstance(project_data, dict):
             continue
@@ -174,7 +258,8 @@ def print_and_collect_report(data: dict[str, Any]) -> list[str]:
             use_cases = agent_data.get("use_cases") or {}
             if not use_cases:
                 continue
-            out(f"  [{project_name}] {agent_name}:")
+            section = f"[{project_name}] {agent_name}"
+            first = True
             for uc_name, uc_data in use_cases.items():
                 if not isinstance(uc_data, dict):
                     continue
@@ -190,11 +275,44 @@ def print_and_collect_report(data: dict[str, Any]) -> list[str]:
                     steps = task_data.get("steps_count")
                     eval_s = _safe_float(eval_t) if eval_t is not None else None
                     cost_s = _fmt_cost(cost) if cost is not None else "—"
-                    tok_s = f"{_safe_int(in_tok)}/{_safe_int(out_tok)}" if (in_tok is not None or out_tok is not None) else "—"
+                    tok_s = f"{_safe_int(in_tok)} / {_safe_int(out_tok)}" if (in_tok is not None or out_tok is not None) else "—"
                     steps_s = str(steps) if steps is not None else "—"
-                    out(f"    task_id={task_id[:8]}... use_case={uc_name} score={score} time={time_s:.2f}s eval_time={eval_s} cost={cost_s} tokens={tok_s} steps={steps_s}")
-            out("")
-    out("=" * 72)
+                    eval_str = f"{eval_s:.2f}s" if eval_s is not None else "—"
+                    score_style = "green" if score >= 1.0 else ("yellow" if score > 0 else "red")
+                    proj_agent = section if first else ""
+                    first = False
+                    detail_table.add_row(
+                        proj_agent,
+                        f"{task_id[:8]}…",
+                        uc_name,
+                        f"[{score_style}]{score}[/{score_style}]",
+                        f"{time_s:.2f}s",
+                        eval_str,
+                        cost_s,
+                        tok_s,
+                        steps_s,
+                    )
+            detail_table.add_row("", "", "", "", "", "", "", "", "")
+
+    console.print(detail_table)
+    console.print()
+
+
+def print_and_collect_report(data: dict[str, Any]) -> list[str]:
+    """
+    Print full benchmark report to terminal (with Rich) and return plain-text lines
+    for writing to the summary file. Uses .get() throughout; one bad section does not crash the rest.
+    """
+    # Terminal: Rich with color
+    console = Console()
+    _render_report(data, console)
+
+    # Capture same layout without ANSI for summary file
+    buf = io.StringIO()
+    file_console = Console(file=buf, force_terminal=False, no_color=True, width=120)
+    _render_report(data, file_console)
+    text = buf.getvalue()
+    lines = text.splitlines()
     return lines
 
 
