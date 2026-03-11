@@ -71,6 +71,11 @@ class ActResponse(BaseModel):
     done: bool
     error: str | None = None
 
+    # Optional usage tracking (included in response by agent; benchmark accumulates per task)
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+    cost_usd: float | None = None
+
     @model_validator(mode="before")
     @classmethod
     def normalize_tool_calls_alias(cls, value: Any) -> Any:

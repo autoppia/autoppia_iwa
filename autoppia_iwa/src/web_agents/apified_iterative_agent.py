@@ -57,6 +57,9 @@ class ApifiedWebAgent(IWebAgent):
         self.last_content: str | None = None
         self.last_done: bool = False
         self.last_act_response: dict[str, Any] | None = None
+        self.last_input_tokens: int | None = None
+        self.last_output_tokens: int | None = None
+        self.last_cost_usd: float | None = None
         self._task_state: dict[str, Any] = {}
         self._task_state_task_id: str | None = None
         self.allowed_tools: list[dict[str, Any]] | None = self._build_allowed_tools() if self.send_allowed_tools else None
@@ -139,8 +142,19 @@ class ApifiedWebAgent(IWebAgent):
         self.last_reasoning = self._strip_optional_text(parsed.reasoning, allow_empty=True)
         self.last_content = self._strip_optional_text(parsed.content, allow_empty=False)
         self.last_done = bool(parsed.done)
+        self.last_input_tokens = getattr(parsed, "input_tokens", None)
+        self.last_output_tokens = getattr(parsed, "output_tokens", None)
+        self.last_cost_usd = getattr(parsed, "cost_usd", None)
         if isinstance(parsed.state_out, dict):
             self._task_state = dict(parsed.state_out)
+
+    def get_last_usage(self) -> dict[str, Any]:
+        """Return usage from the last act() response (input_tokens, output_tokens, cost_usd). Benchmark uses this to track usage per task."""
+        return {
+            "input_tokens": self.last_input_tokens,
+            "output_tokens": self.last_output_tokens,
+            "cost_usd": self.last_cost_usd,
+        }
 
     @staticmethod
     def _strip_optional_text(value: Any, *, allow_empty: bool) -> str | None:

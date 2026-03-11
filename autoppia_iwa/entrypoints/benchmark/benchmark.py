@@ -8,7 +8,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-import aiohttp
 from loguru import logger
 
 from autoppia_iwa.config.config import VALIDATOR_ID
@@ -131,27 +130,16 @@ class Benchmark:
         logger.debug(f"Creating ConcurrentEvaluator for project {project.id}")
         return ConcurrentEvaluator(web_project=project, config=evaluator_config)
 
-    async def _fetch_task_cost_from_agent(self, agent: IWebAgent, task_id: str) -> dict[str, Any] | None:
+    @staticmethod
+    def _get_usage_from_agent(agent: IWebAgent) -> dict[str, Any]:
         """
-        Fetch cumulative cost/tokens for a task from the agent API (GET /task_cost/<task_id>).
-        Returns dict with cost_usd, input_tokens, output_tokens or None if unavailable.
+        Get usage (input_tokens, output_tokens, cost_usd) from the agent's last act() response.
+        Agents that include usage in their /act response (e.g. ApifiedWebAgent) expose it via get_last_usage().
+        Returns dict with keys input_tokens, output_tokens, cost_usd (values may be None).
         """
-        base_url = getattr(agent, "base_url", None)
-        if not base_url or not task_id:
-            return None
-        url = f"{base_url.rstrip('/')}/task_cost/{task_id}"
-        timeout = aiohttp.ClientTimeout(total=10)
-        try:
-            async with aiohttp.ClientSession(timeout=timeout) as session, session.get(url) as resp:
-                if resp.status != 200:
-                    return None
-                data = await resp.json()
-                if isinstance(data, dict):
-                    return data
-                return None
-        except Exception as e:
-            logger.debug(f"Could not fetch task cost from {url}: {e}")
-            return None
+        if hasattr(agent, "get_last_usage") and callable(agent.get_last_usage):
+            return agent.get_last_usage()
+        return {"input_tokens": None, "output_tokens": None, "cost_usd": None}
 
     async def _evaluate_with_stateful_evaluator(
         self,
@@ -188,6 +176,11 @@ class Benchmark:
         tests_passed = 0
         total_tests = 0
         execution_history = []
+        # Track usage from each act() response (no separate API call)
+        cum_input_tokens: int = 0
+        cum_output_tokens: int = 0
+        cum_cost_usd: float = 0.0
+        had_any_usage: bool = False
 
         try:
             step_index = 0  # Number of CALLS to the agent
@@ -216,6 +209,18 @@ class Benchmark:
                 except Exception as exc:
                     logger.warning(f"[stateful_eval] agent {agent.name} /act failed: {exc}")
                     actions = []
+
+                # Accumulate usage from this act() response (benchmark-side tracking)
+                usage = self._get_usage_from_agent(agent)
+                if usage.get("input_tokens") is not None:
+                    had_any_usage = True
+                    cum_input_tokens += usage["input_tokens"]
+                if usage.get("output_tokens") is not None:
+                    had_any_usage = True
+                    cum_output_tokens += usage["output_tokens"]
+                if usage.get("cost_usd") is not None:
+                    had_any_usage = True
+                    cum_cost_usd += float(usage["cost_usd"])
 
                 if not actions:
                     # No actions = agent finished or error
@@ -261,15 +266,12 @@ class Benchmark:
 
         elapsed = time.time() - start_ts
 
-        # Fetch cost/tokens from agent API if available (e.g. GET /task_cost/<task_id>)
-        cost_usd, input_tokens, output_tokens = None, None, None
-        cost_data = await self._fetch_task_cost_from_agent(agent, task.id)
-        if cost_data:
-            cost_usd = cost_data.get("cost_usd")
-            input_tokens = cost_data.get("input_tokens")
-            output_tokens = cost_data.get("output_tokens")
-            if cost_usd is not None or input_tokens is not None or output_tokens is not None:
-                logger.debug(f"Task {task.id} cost: cost_usd={cost_usd} in={input_tokens} out={output_tokens}")
+        # Use benchmark-tracked usage (from act() responses); no separate API call
+        cost_usd = cum_cost_usd if had_any_usage else None
+        input_tokens = cum_input_tokens if had_any_usage else None
+        output_tokens = cum_output_tokens if had_any_usage else None
+        if cost_usd is not None or input_tokens is not None or output_tokens is not None:
+            logger.debug(f"Task {task.id} usage: cost_usd={cost_usd} in={input_tokens} out={output_tokens}")
 
         return EvaluationResult(
             final_score=max(0.0, min(final_score, 1.0)),
@@ -353,6 +355,14 @@ class Benchmark:
                     actions=actions,
                     web_agent_id=agent.id,
                 )
+                # Track usage from this single act() response (benchmark-side, no API call)
+                usage = self._get_usage_from_agent(agent)
+                if usage.get("input_tokens") is not None:
+                    task_solution.input_tokens = usage["input_tokens"]
+                if usage.get("output_tokens") is not None:
+                    task_solution.output_tokens = usage["output_tokens"]
+                if usage.get("cost_usd") is not None:
+                    task_solution.cost_usd = float(usage["cost_usd"])
                 # Replace credential placeholders in actions BEFORE evaluation
                 task_solution.replace_credentials(agent.id)
                 # Normalize any embedded agent IDs inside actions if needed
