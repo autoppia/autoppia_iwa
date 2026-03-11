@@ -32,6 +32,7 @@ class ApifiedWebAgent(IWebAgent):
         base_url: str | None = None,
         request_reasoning: bool = False,
         max_actions_per_step: int | None = None,
+        send_allowed_tools: bool = False,
     ):
         self.id = id or generate_random_web_agent_id()
         self.name = name or f"Agent {self.id}"
@@ -48,6 +49,7 @@ class ApifiedWebAgent(IWebAgent):
 
         self.timeout = float(timeout)
         self.request_reasoning = bool(request_reasoning)
+        self.send_allowed_tools = bool(send_allowed_tools)
         if max_actions_per_step is not None and int(max_actions_per_step) <= 0:
             raise ValueError("max_actions_per_step must be greater than 0 when provided.")
         self.max_actions_per_step = int(max_actions_per_step) if max_actions_per_step is not None else None
@@ -57,7 +59,7 @@ class ApifiedWebAgent(IWebAgent):
         self.last_act_response: dict[str, Any] | None = None
         self._task_state: dict[str, Any] = {}
         self._task_state_task_id: str | None = None
-        self.allowed_tools: list[dict[str, Any]] = self._build_allowed_tools()
+        self.allowed_tools: list[dict[str, Any]] | None = self._build_allowed_tools() if self.send_allowed_tools else None
 
     async def act(
         self,
@@ -236,7 +238,7 @@ class ApifiedWebAgent(IWebAgent):
         if not tool_name:
             return None
         # Keep content/done outside tool_calls.
-        if tool_name in {"done"}:
+        if tool_name in {"done", "evaluate"}:
             return None
         namespaced = "user.request_input" if tool_name == "request_user_input" else f"browser.{tool_name}"
         return {
