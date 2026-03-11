@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -44,6 +45,7 @@ class ActionExecutionResult(BaseModel):
     action_event: str = Field(..., description="Type of the action event (e.g., 'click', 'navigate', 'type')")
     successfully_executed: bool = Field(..., description="Indicates whether the action was executed successfully")
     error: str | None = Field(None, description="Details of the error if the action failed")
+    action_output: Any = Field(None, description="Optional structured output returned by the executed action.")
     execution_time: float | None = Field(None, description="Time taken to execute the action, in seconds")
     browser_snapshot: BrowserSnapshot = Field(..., description="Snapshot of the browser state after execution")
 

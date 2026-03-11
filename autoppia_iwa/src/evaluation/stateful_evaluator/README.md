@@ -27,6 +27,7 @@ from autoppia_iwa.src.evaluation import AsyncStatefulEvaluator
 evaluator = AsyncStatefulEvaluator(
     task=task,
     web_agent_id="rl_agent",
+    validator_id="validator_eval_1",
     should_record_gif=False,
     capture_screenshot=True
 )
@@ -66,6 +67,8 @@ with StatefulEvaluator(task=task) as evaluator:
 
         policy.update(reward, done)
 ```
+
+`validator_id` is optional in both async and sync evaluators. If omitted, the evaluator keeps the existing global/env-based default.
 
 ## Interfaz WebCUA
 

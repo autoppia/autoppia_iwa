@@ -8,6 +8,8 @@ from playwright.async_api import async_playwright
 from autoppia_iwa.src.execution.actions.actions import (
     AssertAction,
     DragAndDropAction,
+    EvaluateAction,
+    ExtractAction,
     GetDropDownOptionsAction,
     HoverAction,
     IdleAction,
@@ -136,6 +138,12 @@ def test_form_and_misc_actions(tmp_path):
                 text="Cat",
             ).execute(page, backend_service=None, web_agent_id="t")
             assert selected is True
+
+            eval_result = await EvaluateAction(script="() => window.state.text").execute(page, backend_service=None, web_agent_id="t")
+            assert eval_result == "dynamic text no-selector"
+
+            extract_result = await ExtractAction(query="Submitted", max_chars=500).execute(page, backend_service=None, web_agent_id="t")
+            assert "Submitted!" in extract_result
 
             screenshot_path = tmp_path / "snap.png"
             await ScreenshotAction(file_path=str(screenshot_path), full_page=False).execute(page, backend_service=None, web_agent_id="t")

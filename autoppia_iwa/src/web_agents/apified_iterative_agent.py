@@ -10,6 +10,7 @@ from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.execution.actions.actions import BaseAction, NavigateAction
 from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
+from autoppia_iwa.src.web_agents.act_protocol import ActRequest, ActResponse, ActToolCall
 from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution
 
 
@@ -29,6 +30,9 @@ class ApifiedWebAgent(IWebAgent):
         name: str | None = None,
         timeout: float = 180,
         base_url: str | None = None,
+        request_reasoning: bool = False,
+        max_actions_per_step: int | None = None,
+        send_allowed_tools: bool = False,
     ):
         self.id = id or generate_random_web_agent_id()
         self.name = name or f"Agent {self.id}"
@@ -44,6 +48,18 @@ class ApifiedWebAgent(IWebAgent):
                 self.base_url = f"http://{host}"
 
         self.timeout = float(timeout)
+        self.request_reasoning = bool(request_reasoning)
+        self.send_allowed_tools = bool(send_allowed_tools)
+        if max_actions_per_step is not None and int(max_actions_per_step) <= 0:
+            raise ValueError("max_actions_per_step must be greater than 0 when provided.")
+        self.max_actions_per_step = int(max_actions_per_step) if max_actions_per_step is not None else None
+        self.last_reasoning: str | None = None
+        self.last_content: str | None = None
+        self.last_done: bool = False
+        self.last_act_response: dict[str, Any] | None = None
+        self._task_state: dict[str, Any] = {}
+        self._task_state_task_id: str | None = None
+        self.allowed_tools: list[dict[str, Any]] = self._build_allowed_tools() if self.send_allowed_tools else []
 
     async def act(
         self,
@@ -54,33 +70,36 @@ class ApifiedWebAgent(IWebAgent):
         url: str,
         step_index: int,
         history: list[dict[str, Any]] | None = None,
+        state: dict[str, Any] | None = None,
     ) -> list[BaseAction]:
         """
         Call the remote /act endpoint and translate the response into BaseAction instances.
         """
-        payload: dict[str, Any] = {
-            "task_id": getattr(task, "id", None),
-            "prompt": getattr(task, "prompt", None),
-            "url": self._force_localhost(url),
-            "snapshot_html": snapshot_html,
-            "screenshot": screenshot,
-            "step_index": int(step_index),
-            "web_project_id": getattr(task, "web_project_id", None),
-        }
-        if history is not None:
-            payload["history"] = history
+        state_payload = self._resolve_state_for_step(task=task, step_index=step_index, state=state)
+        request = ActRequest(
+            task_id=getattr(task, "id", None),
+            prompt=getattr(task, "prompt", None),
+            url=self._force_localhost(url),
+            snapshot_html=snapshot_html,
+            screenshot=screenshot,
+            step_index=int(step_index),
+            web_project_id=getattr(task, "web_project_id", None),
+            history=history,
+            state_in=state_payload,
+            allowed_tools=self.allowed_tools,
+            include_reasoning=self.request_reasoning,
+        )
+        payload = request.model_dump(mode="json", exclude_none=True)
 
         timeout = aiohttp.ClientTimeout(total=self.timeout)
         async with aiohttp.ClientSession(timeout=timeout) as session:
-            # Prefer /act, fall back to /step if needed.
-            for path in ("/act", "/step"):
-                try:
-                    async with session.post(f"{self.base_url}{path}", json=payload) as response:
-                        response.raise_for_status()
-                        data = await response.json()
-                        return self._parse_actions_response(data)
-                except Exception:
-                    continue
+            try:
+                async with session.post(f"{self.base_url}/act", json=payload) as response:
+                    response.raise_for_status()
+                    data = await response.json()
+                    return self._parse_actions_response(data if isinstance(data, dict) else {})
+            except Exception:
+                pass
         # If all calls fail, return a NOOP (no actions) so the caller can decide.
         return []
 
@@ -93,6 +112,7 @@ class ApifiedWebAgent(IWebAgent):
         url: str,
         step_index: int,
         history: list[dict[str, Any]] | None = None,
+        state: dict[str, Any] | None = None,
     ) -> list[BaseAction]:
         return asyncio.run(
             self.act(
@@ -102,27 +122,83 @@ class ApifiedWebAgent(IWebAgent):
                 url=url,
                 step_index=step_index,
                 history=history,
+                state=state,
             )
         )
 
     async def solve_task(self, task: Task) -> TaskSolution:
-        """Not supported: this agent only supports act(). Use ApifiedOneShotWebAgent for one-shot solve_task."""
-        raise NotImplementedError("ApifiedWebAgent only supports act(). Use ApifiedOneShotWebAgent for one-shot solve_task.")
+        raise NotImplementedError("ApifiedWebAgent is iterative and only supports act(); use act() for step-by-step execution.")
 
     # ------------------------------------------------------------------ #
     # Helpers
     # ------------------------------------------------------------------ #
-    def _parse_actions_response(self, data: dict[str, Any]) -> list[BaseAction]:
-        """
-        Accepts a flexible response format:
-          - {"actions": [ {type: "...", ...}, ... ]}
-          - {"action": { ... }}
-          - {"navigate_url": "http://..." }  (converted to NavigateAction)
-        """
+    def _cache_parsed_response(self, parsed: ActResponse) -> None:
+        self.last_act_response = parsed.model_dump(mode="json", exclude_none=True)
+        self.last_reasoning = self._strip_optional_text(parsed.reasoning, allow_empty=True)
+        self.last_content = self._strip_optional_text(parsed.content, allow_empty=False)
+        self.last_done = bool(parsed.done)
+        if isinstance(parsed.state_out, dict):
+            self._task_state = dict(parsed.state_out)
+
+    @staticmethod
+    def _strip_optional_text(value: Any, *, allow_empty: bool) -> str | None:
+        if not isinstance(value, str):
+            return None
+        stripped = value.strip()
+        if stripped or allow_empty:
+            return stripped
+        return None
+
+    def _parse_actions_response(self, payload: ActResponse | dict[str, Any]) -> list[BaseAction]:
+        if isinstance(payload, dict):
+            parsed = self._parse_canonical_response(payload)
+            if parsed is None:
+                return self._parse_legacy_actions_response(payload)
+            self._cache_parsed_response(parsed)
+        else:
+            parsed = payload
+
+        actions: list[BaseAction] = []
+        for tool_call in parsed.tool_calls:
+            action = self._build_action_from_tool_call(tool_call)
+            if action is not None:
+                actions.append(action)
+
+        if self.max_actions_per_step is not None and actions:
+            actions = actions[: self.max_actions_per_step]
+
+        return actions
+
+    def _parse_canonical_response(self, payload: dict[str, Any]) -> ActResponse | None:
+        if not self._looks_like_canonical_response(payload):
+            return None
+        return ActResponse.from_raw(payload)
+
+    @staticmethod
+    def _looks_like_canonical_response(payload: dict[str, Any]) -> bool:
+        if "tool_calls" in payload:
+            return True
+        actions = payload.get("actions")
+        if not isinstance(actions, list):
+            return False
+        if not actions:
+            return any(key in payload for key in ("done", "state_out", "protocol_version", "content", "reasoning", "error"))
+        return all(
+            isinstance(item, dict)
+            and isinstance(item.get("name"), str)
+            and (
+                "arguments" not in item
+                or item.get("arguments") is None
+                or isinstance(item.get("arguments"), dict)
+            )
+            for item in actions
+        )
+
+    def _parse_legacy_actions_response(self, data: dict[str, Any]) -> list[BaseAction]:
         actions_payload: list[dict[str, Any]] = []
 
         if isinstance(data.get("actions"), list):
-            actions_payload = [a for a in data["actions"] if isinstance(a, dict)]
+            actions_payload = [item for item in data["actions"] if isinstance(item, dict)]
         elif isinstance(data.get("action"), dict):
             actions_payload = [data["action"]]
         elif isinstance(data.get("navigate_url"), str):
@@ -140,16 +216,101 @@ class ApifiedWebAgent(IWebAgent):
         for raw in actions_payload:
             try:
                 if isinstance(raw, dict) and raw.get("type") in {"NavigateAction", "navigate"}:
-                    url = raw.get("url")
-                    raw["url"] = self._rewrite_to_remote(url)
+                    raw = dict(raw)
+                    raw["url"] = self._rewrite_to_remote(raw.get("url"))
                 action = BaseAction.create_action(raw)
+                if action is None:
+                    continue
                 if isinstance(action, NavigateAction):
-                    # Ensure any navigate URLs are rewritten consistently.
                     action.url = self._rewrite_to_remote(getattr(action, "url", None))
                 actions.append(action)
             except Exception:
                 continue
         return actions
+
+    def _build_action_from_tool_call(self, tool_call: ActToolCall) -> BaseAction | None:
+        try:
+            action_payload = self._tool_call_to_action_payload(tool_call)
+            action = BaseAction.create_action(action_payload)
+            if action is None:
+                return None
+            if isinstance(action, NavigateAction):
+                # Ensure any navigate URLs are rewritten consistently.
+                action.url = self._rewrite_to_remote(getattr(action, "url", None))
+            return action
+        except Exception:
+            return None
+
+    def _tool_call_to_action_payload(self, tool_call: ActToolCall) -> dict[str, Any]:
+        name = str(tool_call.name or "").strip().lower()
+        args = dict(tool_call.arguments or {})
+        if name.startswith("browser."):
+            action_type = name.split(".", 1)[1].strip()
+            if not action_type:
+                raise ValueError("Invalid browser tool call name.")
+            args["type"] = str(args.get("type") or action_type)
+            return args
+        if name == "user.request_input":
+            args["type"] = str(args.get("type") or "request_user_input")
+            return args
+        raise ValueError(f"Unsupported tool call name: {name}")
+
+    def _resolve_state_for_step(
+        self,
+        *,
+        task: Task,
+        step_index: int,
+        state: dict[str, Any] | None,
+    ) -> dict[str, Any]:
+        task_id = str(getattr(task, "id", "") or "")
+        if int(step_index) <= 0 or task_id != self._task_state_task_id:
+            self._task_state_task_id = task_id
+            self._task_state = {}
+
+        if state is not None:
+            self._task_state = self._normalize_state_blob(state)
+
+        return dict(self._task_state)
+
+    @staticmethod
+    def _normalize_state_blob(raw_state: Any) -> dict[str, Any]:
+        if isinstance(raw_state, dict):
+            return dict(raw_state)
+        return {}
+
+    @staticmethod
+    def _build_allowed_tools() -> list[dict[str, Any]]:
+        out: list[dict[str, Any]] = []
+        defs_fn = getattr(BaseAction, "all_function_definitions", None)
+        if not callable(defs_fn):
+            return out
+        try:
+            defs = defs_fn()
+        except Exception:
+            return out
+        for item in defs if isinstance(defs, list) else []:
+            normalized = ApifiedWebAgent._normalize_allowed_tool(item)
+            if normalized is not None:
+                out.append(normalized)
+        return out
+
+    @staticmethod
+    def _normalize_allowed_tool(item: Any) -> dict[str, Any] | None:
+        if not isinstance(item, dict):
+            return None
+        fn = item.get("function") if isinstance(item.get("function"), dict) else {}
+        tool_name = str(fn.get("name") or "").strip()
+        if not tool_name:
+            return None
+        # Keep content/done outside tool_calls.
+        if tool_name in {"done", "evaluate"}:
+            return None
+        namespaced = "user.request_input" if tool_name == "request_user_input" else f"browser.{tool_name}"
+        return {
+            "name": namespaced,
+            "description": str(fn.get("description") or ""),
+            "parameters": fn.get("parameters") if isinstance(fn.get("parameters"), dict) else {},
+        }
 
     @staticmethod
     def _force_localhost(original_url: str | None) -> str | None:
@@ -171,7 +332,7 @@ class ApifiedWebAgent(IWebAgent):
         if not original_url:
             return original_url
 
-        remote = DEMO_WEBS_ENDPOINT if DEMO_WEBS_ENDPOINT.startswith("http") else f"https://{DEMO_WEBS_ENDPOINT}"
+        remote = DEMO_WEBS_ENDPOINT if DEMO_WEBS_ENDPOINT.startswith("http") else f"http://{DEMO_WEBS_ENDPOINT}"
         remote_parsed = urlparse(remote)
 
         # Relative paths from the agent should be anchored to the remote host
