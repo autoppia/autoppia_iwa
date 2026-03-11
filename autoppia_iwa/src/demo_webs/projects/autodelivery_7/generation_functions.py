@@ -43,7 +43,7 @@ async def _ensure_restaurant_dataset(
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url)
-        restaurants = await fetch_data(entity_type="restaurants", method="distribute", filter_key="cuisine", seed_value=seed)
+        restaurants = await fetch_data(seed_value=seed)
         dataset = {"restaurants": restaurants}
 
     if dataset and "restaurants" in dataset:

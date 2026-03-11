@@ -145,7 +145,6 @@ async def generate_book_details_constraints(task_url: str | None = None, dataset
     constraints_str = build_constraints_info(books)
     if constraints_str:
         constraints = parse_constraints_str(constraints_str)
-        constraints.extend(_default_auth_constraints())
         return constraints
     return None
 

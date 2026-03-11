@@ -20,35 +20,48 @@ logger.level("TASK_GENERATION", TASK_GENERATION_LEVEL_NUM, color="<magenta>")
 # ======= LOGGING SETUP ============
 # ==================================
 
+_logging_initialized = False
 
-def setup_logging(log_file: str):
-    """Configure loguru logger with enhanced formatting"""
+
+def setup_logging(log_file: str, console_level: str = "INFO"):
+    """Configure loguru logger with enhanced formatting.
+
+    Args:
+        log_file: Path to the log file.
+        console_level: Console handler level (e.g. "INFO" or "DEBUG" for verbose).
+    """
+    global _logging_initialized
     logger.remove()
+
+    # Uniform timestamp format (with milliseconds) for all logs
+    time_fmt = "YYYY-MM-DD HH:mm:ss.SSS"
 
     # Console logging with colors and better formatting
     logger.add(
         sys.stderr,
-        level="INFO",
-        format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+        level=console_level,
+        format=f"<green>{{time:{time_fmt}}}</green> | <level>{{level: <8}}</level> | <cyan>{{name}}</cyan>:<cyan>{{function}}</cyan>:<cyan>{{line}}</cyan> - <level>{{message}}</level>",
         colorize=True,
         backtrace=True,
         diagnose=True,
         filter=lambda record: record["level"].name in ["INFO", "WARNING", "ERROR", "SUCCESS", "DEBUG", "EVALUATION"],
     )
 
-    # File logging with more detail
+    # File logging with more detail (same timestamp format)
     logger.add(
         log_file,
         level="DEBUG",
-        format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}",
+        format=f"{{time:{time_fmt}}} | {{level: <8}} | {{name}}:{{function}}:{{line}} - {{message}}",
         rotation="10 MB",
         retention="7 days",
         compression="zip",
         enqueue=True,  # Thread-safe logging
     )
 
-    # Log startup message
-    logger.info("Benchmark logging initialized")
+    # Log startup message only once per process (avoid duplicate when main + Benchmark both call setup_logging)
+    if not _logging_initialized:
+        _logging_initialized = True
+        logger.info("Benchmark logging initialized")
 
 
 # ==================================

@@ -803,8 +803,8 @@ EDIT_PROFILE_ADDITIONAL_PROMPT_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints — every field (username, password, first_name, last_name, bio, location, website, favorite_genres) that appears in the constraints MUST be explicitly mentioned in the prompt with its exact value and operator.
 2. Use clear operator indicators (e.g., "equals", "contains"). For ComparisonOperator.CONTAINS, use the word "contains" explicitly (e.g., "website contains 'filmcritics'"). DO NOT use ambiguous words like "include" or "contains the word".
-3. Use the EXACT constraint values in the prompt — do NOT replace them with placeholders like <username> or <password>. If the constraint says "username equals <web_agent_id>", the prompt must contain "<web_agent_id>". If it says "password equals password123", the prompt must contain "password123".
-4. Begin with a login instruction that states username and password using their exact constraint values (e.g. "Login with username equals <web_agent_id> and password equals password123").
+3. Use the EXACT constraint values in the prompt — do NOT replace them with placeholders like <username> or <password>. If the constraint says "username equals user<web_agent_id>", the prompt must contain "user<web_agent_id>". If it says "password equals Passw0rd!", the prompt must contain "Passw0rd!".
+4. Begin with a login instruction that states username and password using their exact constraint values (e.g. "Login with username equals user<web_agent_id> and password equals Passw0rd!").
 5. Then add an edit-profile instruction that explicitly mentions each remaining constraint field and its exact value and operator.
 6. {STRICT_COPY_INSTRUCTION}
 
@@ -849,8 +849,8 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login where username equals <username> and password equals <password>. Change your last name to <last_name>.",
         },
         {
-            "prompt": "Login where username equals user<web_agent_id> and password equals password123. Modify your profile to ensure that your location does NOT contain 'a' and that your website contains 'https://cinephileworld.example.org'",
-            "prompt_for_task_generation": "Login where username equals user<web_agent_id> and password equals password123. Modify your profile to ensure that your location does NOT contain 'a' and that your website contains <website>",
+            "prompt": "Login where username equals user<web_agent_id> and password equals Passw0rd!. Modify your profile to ensure that your location does NOT contain 'a' and that your website contains 'https://cinephileworld.example.org'",
+            "prompt_for_task_generation": "Login where username equals user<web_agent_id> and password equals Passw0rd!. Modify your profile to ensure that your location does NOT contain 'a' and that your website contains <website>",
         },
     ],
 )

@@ -25,7 +25,7 @@ def _write_tasks_to_file(filename: Path, cache_data: dict) -> None:
     """Synchronous helper to write tasks to JSON file."""
     filename.parent.mkdir(parents=True, exist_ok=True)
     with open(filename, "w", encoding="utf-8") as f:
-        json.dump(cache_data, f, indent=2)
+        json.dump(cache_data, f, indent=2, ensure_ascii=False, default=str)
 
 
 async def save_tasks_to_json(tasks: list[Task], project: WebProject, task_cache_dir: str) -> bool:
@@ -43,7 +43,7 @@ async def save_tasks_to_json(tasks: list[Task], project: WebProject, task_cache_
 
         logger.info(f"Tasks for project '{project.name}' saved to {filename}")
         return True
-    except (OSError, json.JSONEncodeError) as e:
+    except (OSError, TypeError) as e:
         logger.error(f"Error saving tasks to {filename}: {e!s}")
         return False
 
@@ -89,8 +89,6 @@ async def generate_tasks_for_project(
 ) -> list[Task]:
     """Generate tasks for the given project."""
     try:
-        logger.info(f"[tasks] Generating tasks for '{project.name}'...")
-
         config = TaskGenerationConfig(
             prompts_per_use_case=prompts_per_use_case,
             use_cases=use_cases,
@@ -100,10 +98,8 @@ async def generate_tasks_for_project(
         pipeline = TaskGenerationPipeline(web_project=project, config=config)
         tasks = await pipeline.generate()
 
-        if tasks:
-            logger.info(f"[tasks] Generated {len(tasks)} tasks for '{project.name}'")
-        else:
-            logger.warning(f"[tasks] No tasks generated for '{project.name}'")
+        if not tasks:
+            logger.warning(f"No tasks generated for '{project.name}'")
 
         return tasks
 
@@ -145,8 +141,5 @@ def get_projects_by_ids(all_projects: list[WebProject], ids_to_run: list[str]) -
         logger.error(f"Project IDs not found: {missing_ids}. Available projects: {available_ids}")
         raise ValueError(f"Project IDs not found: {missing_ids}")
 
-    # Return only the requested projects
-    selected_projects = [projects_by_id[pid] for pid in ids_to_run]
-    logger.info(f"Selected {len(selected_projects)} projects: {[p.name for p in selected_projects]}")
-
-    return selected_projects
+    # Return only the requested projects (caller should log after setup_logging for uniform format)
+    return [projects_by_id[pid] for pid in ids_to_run]

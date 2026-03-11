@@ -11,6 +11,7 @@ from loguru import logger
 
 from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
+from autoppia_iwa.entrypoints.benchmark.utils.logging import setup_logging
 from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 
@@ -66,12 +67,27 @@ SOTA_AGENTS = [
 # Active agents to run.
 AGENTS = [
     # ApifiedWebAgent(host="127.0.0.1", id="1", name="BrowserUse-Cloud", timeout=248, port=7000),
-    ApifiedOneShotWebAgent(host="127.0.0.1", id="1", name="BrowserUse-Cloud", timeout=248, port=7000)
+    ApifiedOneShotWebAgent(host="127.0.0.1", id="1", name="BrowserUse-Cloud", timeout=248, port=7000),
+    # ApifiedOneShotWebAgent(base_url="http://84.247.180.192:5000/", id="1", name="BrowseUse-OpenAI", timeout=48)
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
-    "autocinema",
+    # "autocinema",
+    # "autobooks",
+    # "autozone",
+    # "autodining",
+    # "autocrm",
+    # "automail",
+    # "autolodge",
+    # "autodelivery",
+    # "autowork",
+    # "autoconnect",
+    # "autocalendar",
+    "autolist",
+    "autodrive",
+    "autohealth",
+    "autostats",
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 USE_CASES = None  # None = all use cases
@@ -90,7 +106,7 @@ CFG = BenchmarkConfig(
     # Tasks
     prompts_per_use_case=1,
     # use_cases=None means all use-cases
-    use_cases=None,
+    use_cases=USE_CASES,
     # Execution
     runs=1,  # single run is enough for this fixed agent
     max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
@@ -133,6 +149,8 @@ def main():
     Main entrypoint for the benchmark.
     """
     try:
+        setup_logging(str(CFG.benchmark_log_file))
+        logger.info(f"Selected {len(CFG.projects)} projects: {[p.name for p in CFG.projects]}")
         logger.info("Initializing benchmark...")
 
         # Validate configuration early

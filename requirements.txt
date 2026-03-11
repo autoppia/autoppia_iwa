@@ -12,6 +12,7 @@ setuptools
 tiktoken==0.7.0
 openai>=2.7.2,<3.0.0
 pytest==8.3.4
+pytest-asyncio>=0.24.0
 dependency-injector==4.41.0
 flask>=3.1.1
 lxml==5.3.1
@@ -24,5 +25,5 @@ fastapi>=0.134.0
 uvicorn==0.34.0
 httpx==0.28.1
 aiohttp>=3.10.0,<4.0.0
-orjson>=3.11.5
+orjson==3.11.7
 starlette>=0.49.1

@@ -65,8 +65,6 @@ class TaskGenerationPipeline:
             # Generate tasks
             tasks = await self.task_generator.generate(prompts_per_use_case=self.task_config.prompts_per_use_case, use_cases=self.task_config.use_cases, dynamic=self.task_config.dynamic)
 
-            _log_task_generation(f"Generated {len(tasks)} tasks")
-
             # Add tests to tasks
             tasks_with_tests = self.global_test_pipeline.add_tests_to_tasks(tasks)
             all_tasks.extend(tasks_with_tests)

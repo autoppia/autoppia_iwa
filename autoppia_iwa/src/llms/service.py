@@ -6,12 +6,12 @@ except ModuleNotFoundError:  # pragma: no cover
 try:  # pragma: no cover - optional dependency guard
     from openai import APIConnectionError, APIError, APITimeoutError, AsyncOpenAI, OpenAI, RateLimitError
 except ModuleNotFoundError:  # pragma: no cover
-    APIError = None
-    APIConnectionError = None
-    APITimeoutError = None
+    APIError = Exception
+    APIConnectionError = Exception
+    APITimeoutError = Exception
     AsyncOpenAI = None
     OpenAI = None
-    RateLimitError = None
+    RateLimitError = Exception
 
 from autoppia_iwa.src.llms.interfaces import ILLM, LLMConfig
 

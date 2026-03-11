@@ -250,7 +250,7 @@ class IWAPClient:
             print("\n📡 IWAP API Request:")
             print(f"   URL: {endpoint}")
             print("   Parameters:")
-            print(f"     - key: {self.api_key}")
+            # print(f"     - key: {self.api_key}")
             print(f"     - website: {website}")
             print(f"     - useCase: {use_case_name}")
             if page is not None:
@@ -376,36 +376,6 @@ class IWAPClient:
         if not api_tests or not our_constraints:
             return False
 
-        # Convert our constraints to a comparable format
-
-        # for manual testing
-        # our_constraints_list = [
-        #     {
-        #         "field": "item",
-        #         "operator": "not_contains",
-        #         "value": "patatas bravas"
-        #     },
-        #     {
-        #         "field": "price",
-        #         "operator": "less_than",
-        #         "value": 17.91
-        #     },
-        #     {
-        #         "field": "quantity",
-        #         "operator": "equals",
-        #         "value": 4
-        #     },
-        #     {
-        #         "field": "restaurant",
-        #         "operator": "not_contains",
-        #         "value": "sakura sushi"
-        #     },
-        #     {
-        #         "field": "preferences",
-        #         "operator": "in_list",
-        #         "value": ["low-carb", "seafood-free", "siy-free"]
-        #     }
-        # ]
         our_constraints_list = []
         for constraint in our_constraints:
             field = constraint.get("field", "")
@@ -453,11 +423,6 @@ class IWAPClient:
                         }
                     )
 
-            # Compare all candidate tests against our constraints
-            # for normalized_test in candidates:
-            #     for our_constraint in our_constraints_list:
-            #         if normalized_test["field"] == our_constraint["field"] and normalized_test["operator"] == our_constraint["operator"] and normalized_test["value"] == our_constraint["value"]:
-            #             return True
             # Compare all our_constraints against candidates (AND logic)
             all_constraints_matched = True
 

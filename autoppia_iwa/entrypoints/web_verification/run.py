@@ -13,6 +13,7 @@ Usage from PyCharm:
 
 import argparse
 import asyncio
+import os
 import sys
 from pathlib import Path
 
@@ -27,12 +28,18 @@ if str(_project_root) not in sys.path:
 
 from loguru import logger
 
+from autoppia_iwa.entrypoints.benchmark.utils.logging import setup_logging
 from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 
 from .config import WebVerificationConfig
 from .web_verification_pipeline import WebVerificationPipeline
+
+
+def _is_development() -> bool:
+    """True when running in local development (DEMO_WEBS_DEPLOYMENT=local)."""
+    return os.environ.get("DEMO_WEBS_DEPLOYMENT", "").lower() in ("local")
 
 
 def validate_project_setup(web_project) -> tuple[bool, list[str]]:
@@ -65,16 +72,18 @@ def validate_project_setup(web_project) -> tuple[bool, list[str]]:
     if not web_project.name:
         errors.append("❌ Project name is missing")
 
-    # 2. Validate URLs (https only for security)
+    # 2. Validate URLs (https only when not local; http allowed when DEMO_WEBS_DEPLOYMENT=local)
+    is_development = _is_development()
+    allowed_schemes = ("http://") if is_development else ("https://",)
     if not web_project.frontend_url:
         errors.append("❌ Frontend URL is missing")
-    elif not web_project.frontend_url.startswith("https://"):
-        warnings.append("⚠️  Frontend URL should start with https://")
+    elif not web_project.frontend_url.startswith(allowed_schemes):
+        warnings.append("⚠️  Frontend URL should start with https://" if not is_development else "⚠️  Frontend URL should start with http:// or https://")
 
     if not web_project.backend_url:
         errors.append("❌ Backend URL is missing")
-    elif not web_project.backend_url.startswith("https://"):
-        warnings.append("⚠️  Backend URL should start with https://")
+    elif not web_project.backend_url.startswith(allowed_schemes):
+        warnings.append("⚠️  Backend URL should start with https://" if not is_development else "⚠️  Backend URL should start with http:// or https://")
 
     # 3. Validate events are defined
     if not web_project.events:
@@ -254,19 +263,11 @@ async def main():
     """Main entry point"""
     args = parse_args()
 
-    # Setup logging
-    if args.verbose:
-        logger.add(
-            sys.stderr,
-            format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan> - <level>{message}</level>",
-            level="DEBUG",
-        )
-    else:
-        logger.add(
-            sys.stderr,
-            format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <level>{message}</level>",
-            level="INFO",
-        )
+    # Standardized logging (same format as benchmark: YYYY-MM-DD HH:mm:ss.SSS, single handler, no duplicates)
+    log_dir = Path(args.output_dir) / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_file = log_dir / "web_verification.log"
+    setup_logging(str(log_file), console_level="DEBUG" if args.verbose else "INFO")
 
     # Bootstrap application
     AppBootstrap()

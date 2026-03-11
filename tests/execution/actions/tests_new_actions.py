@@ -91,6 +91,22 @@ async def test_mouse_actions_end_to_end():
         cy = int(area_box["y"] + area_box["height"] / 2)
         await MouseMoveAction(x=cx, y=cy, steps=3).execute(page, backend_service=None, web_agent_id="t")
 
+        # Coordinate-only paths for all click-family actions (no selector)
+        target_box = await page.locator("#target").bounding_box()
+        assert target_box is not None
+        tx = int(target_box["x"] + target_box["width"] / 2)
+        ty = int(target_box["y"] + target_box["height"] / 2)
+        await ClickAction(x=tx, y=ty).execute(page, backend_service=None, web_agent_id="t")
+        await DoubleClickAction(x=tx, y=ty).execute(page, backend_service=None, web_agent_id="t")
+        await RightClickAction(x=tx, y=ty).execute(page, backend_service=None, web_agent_id="t")
+        await MiddleClickAction(x=tx, y=ty).execute(page, backend_service=None, web_agent_id="t")
+        await TripleClickAction(x=tx, y=ty).execute(page, backend_service=None, web_agent_id="t")
+        await MouseDownAction(x=tx, y=ty).execute(page, backend_service=None, web_agent_id="t")
+        await MouseUpAction(x=tx, y=ty).execute(page, backend_service=None, web_agent_id="t")
+
+        # Both selector and coordinates provided: validator warns and selector is prioritized
+        await ClickAction(selector=sel_target, x=0, y=0).execute(page, backend_service=None, web_agent_id="t")
+
         # Validate effects
         state = await page.evaluate("window.state")
 

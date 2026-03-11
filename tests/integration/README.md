@@ -37,35 +37,39 @@ python3 tests/integration/test_seed_guard.py
 ---
 
 ### **test_constraint_generation.py**
-Tests constraint generation with the optimized dataset system:
-- Tests autocinema constraints
-- Tests autobooks constraints
-- Verifies constraints contain values from dataset
+Integration tests for constraint generation using **real data from the demo webs backend** (no mocks):
+- Tests autocinema constraints (real `fetch_data` from backend)
+- Tests autobooks constraints (real `fetch_data` from backend)
+- Verifies constraints contain values from the dataset
 - Tests dataset pre-loading optimization
 
 **Run:**
 ```bash
 python3 tests/integration/test_constraint_generation.py
+# or with pytest (skips when backend unavailable):
+pytest tests/integration/test_constraint_generation.py -v
 ```
 
-**Requirements:** webs_server must be running (port 8090)
+**Requirements:** Demo webs backend must be running (e.g. port 8090). If the backend is not reachable, tests are **skipped** so the suite still passes (e.g. in CI without services).
 
 ---
 
 ### **test_full_tasks.py**
-Tests complete task generation pipeline:
-- Generates tasks for autocinema
+Integration tests for the **full task generation pipeline with real LLM and real backend** (no mocks):
+- Generates tasks for autocinema using real OpenAI (or configured LLM)
 - Generates tasks for autobooks
-- Verifies tasks have seeds in URLs
-- Verifies tasks have tests attached
+- Verifies tasks have seeds in URLs and tests attached
 - Saves analysis to `generated_tasks_analysis.json`
 
 **Run:**
 ```bash
+export OPENAI_API_KEY=your-key   # required for real LLM
 python3 tests/integration/test_full_tasks.py
+# or with pytest (skipped when OPENAI_API_KEY not set or dummy):
+pytest tests/integration/test_full_tasks.py -v
 ```
 
-**Output:** `generated_tasks_analysis.json`
+**Requirements:** `OPENAI_API_KEY` set (and demo webs backend running for constraint data). If the key is missing or is the test placeholder (`dummy-for-tests`), tests are **skipped** so the suite passes in CI without secrets.
 
 ---
 
