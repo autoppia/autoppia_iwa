@@ -71,6 +71,7 @@ AGENTS = [
 # Single project + 5 use cases below => exactly 5 tasks (no separate tasks.json or scripts).
 PROJECT_IDS = ["autolist"]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
+# Use case names must match UseCase.name in the project (e.g. automail_6/use_cases.py), not the variable names.
 USE_CASES = [
     "AUTOLIST_ADD_TASK_CLICKED",
     "AUTOLIST_SELECT_DATE_FOR_TASK",
@@ -142,11 +143,6 @@ def main():
         if not CFG.agents:
             logger.error("No agents configured in AGENTS.")
             return
-
-        logger.info(f"Configuration: {len(CFG.projects)} projects, {len(CFG.agents)} agents, {CFG.runs} runs, evaluator_mode={CFG.evaluator_mode}")
-
-        if CFG.evaluator_mode == "stateful":
-            logger.info(f"Stateful mode enabled: max {CFG.max_steps_per_task} steps per task")
 
         benchmark = Benchmark(CFG)
         asyncio.run(benchmark.run())
