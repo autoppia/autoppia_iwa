@@ -1,0 +1,94 @@
+name: Quality checks
+
+on:
+  push:
+    branches: [main, master, 'fix/**']
+  pull_request:
+    branches: [main, master, 'fix/**']
+
+jobs:
+  lint-and-audit:
+    name: Lint & dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install "ruff==0.10.0" pip-audit radon
+
+      - name: Ruff check
+        run: ruff check .
+
+      - name: Ruff format check
+        run: ruff format --check .
+
+      - name: Ruff maintainability report
+        run: ruff check autoppia_iwa scripts --select C901,PLR0913,PLR0915 --output-format=concise
+        continue-on-error: true
+
+      - name: Radon cyclomatic complexity
+        run: |
+          echo "=== Cyclomatic complexity (autoppia_iwa, scripts) ==="
+          radon cc autoppia_iwa scripts -a -s --total-average
+
+      - name: Radon maintainability index
+        run: |
+          echo "=== Maintainability index (autoppia_iwa, scripts) ==="
+          radon mi autoppia_iwa scripts -s
+
+      - name: Radon complexity gate (autoppia_iwa only, fail on F)
+        continue-on-error: true
+        run: |
+          bad=$(radon cc autoppia_iwa -n F --no-assert 2>/dev/null | grep -c . || true)
+          if [ "${bad:-0}" -gt 0 ]; then
+            echo "::error::autoppia_iwa/ has cyclomatic complexity F (41+). Run 'radon cc autoppia_iwa -n F' locally to list."
+            radon cc autoppia_iwa -n F --no-assert
+            exit 1
+          fi
+
+      - name: Radon maintainability gate (autoppia_iwa only, fail on D/E)
+        run: |
+          bad=$(radon mi autoppia_iwa -n D 2>/dev/null | grep -c . || true)
+          if [ "${bad:-0}" -gt 0 ]; then
+            echo "::error::autoppia_iwa/ has maintainability index D or E (threshold: min C). Run 'radon mi autoppia_iwa -n D' locally to list."
+            radon mi autoppia_iwa -n D
+            exit 1
+          fi
+
+      - name: Dependency audit
+        run: pip-audit
+
+  pre-commit:
+    name: Pre-commit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install pre-commit
+        run: pip install pre-commit
+
+      - name: Run pre-commit
+        run: pre-commit run --all-files
