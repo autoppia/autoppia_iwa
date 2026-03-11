@@ -28,7 +28,7 @@ class ActRequest(BaseModel):
     web_project_id: str | int | None = None
     history: list[dict[str, Any]] | None = None
     state_in: dict[str, Any] = Field(default_factory=dict)
-    allowed_tools: list[dict[str, Any]] | None = None
+    allowed_tools: list[dict[str, Any]] = Field(default_factory=list)
     include_reasoning: bool = False
 
 

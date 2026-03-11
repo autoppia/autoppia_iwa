@@ -2,6 +2,8 @@ import random
 from random import choice, sample
 from typing import Any
 
+from autoppia_iwa.src.web_agents.classes import DEFAULT_PASSWORD
+
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 from ..data_provider import get_seed_from_url
 from ..shared_utils import create_constraint_dict
@@ -49,7 +51,7 @@ def _login_constraints() -> list[dict]:
     """Return fixed login constraints (username, password) for auth-required use cases. Aligned with login_replace_func."""
     return [
         create_constraint_dict("username", ComparisonOperator.EQUALS, "user<web_agent_id>"),
-        create_constraint_dict("password", ComparisonOperator.EQUALS, "Passw0rd!"),
+        create_constraint_dict("password", ComparisonOperator.EQUALS, DEFAULT_PASSWORD),
     ]
 
 

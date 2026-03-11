@@ -1,5 +1,10 @@
+# Set before any imports that load config (config validates API keys at import time)
+import os
 import sys
 from pathlib import Path
+
+os.environ.setdefault("OPENAI_API_KEY", "dummy-for-tests")
+os.environ.setdefault("LLM_PROVIDER", "openai")
 
 # Add project root to Python path
 project_root = Path(__file__).resolve().parent.parent

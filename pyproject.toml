@@ -63,6 +63,7 @@ addopts = "--import-mode=importlib"
 testpaths = ["tests"]
 markers = [
     "dynamic_audit: expensive Playwright crawl over demo webs (requires RUN_DYNAMIC_AUDIT=1)",
+    "integration: integration tests that require running demo webs backend and/or OPENAI_API_KEY",
 ]
 
 # Optional: A section for development dependencies

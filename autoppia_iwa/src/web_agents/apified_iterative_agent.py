@@ -59,7 +59,7 @@ class ApifiedWebAgent(IWebAgent):
         self.last_act_response: dict[str, Any] | None = None
         self._task_state: dict[str, Any] = {}
         self._task_state_task_id: str | None = None
-        self.allowed_tools: list[dict[str, Any]] | None = self._build_allowed_tools() if self.send_allowed_tools else None
+        self.allowed_tools: list[dict[str, Any]] = self._build_allowed_tools() if self.send_allowed_tools else []
 
     async def act(
         self,
@@ -97,9 +97,7 @@ class ApifiedWebAgent(IWebAgent):
                 async with session.post(f"{self.base_url}/act", json=payload) as response:
                     response.raise_for_status()
                     data = await response.json()
-                    parsed_response = ActResponse.from_raw(data if isinstance(data, dict) else {})
-                    self._cache_parsed_response(parsed_response)
-                    return self._parse_actions_response(parsed_response)
+                    return self._parse_actions_response(data if isinstance(data, dict) else {})
             except Exception:
                 pass
         # If all calls fail, return a NOOP (no actions) so the caller can decide.
@@ -151,7 +149,15 @@ class ApifiedWebAgent(IWebAgent):
             return stripped
         return None
 
-    def _parse_actions_response(self, parsed: ActResponse) -> list[BaseAction]:
+    def _parse_actions_response(self, payload: ActResponse | dict[str, Any]) -> list[BaseAction]:
+        if isinstance(payload, dict):
+            parsed = self._parse_canonical_response(payload)
+            if parsed is None:
+                return self._parse_legacy_actions_response(payload)
+            self._cache_parsed_response(parsed)
+        else:
+            parsed = payload
+
         actions: list[BaseAction] = []
         for tool_call in parsed.tool_calls:
             action = self._build_action_from_tool_call(tool_call)
@@ -161,6 +167,65 @@ class ApifiedWebAgent(IWebAgent):
         if self.max_actions_per_step is not None and actions:
             actions = actions[: self.max_actions_per_step]
 
+        return actions
+
+    def _parse_canonical_response(self, payload: dict[str, Any]) -> ActResponse | None:
+        if not self._looks_like_canonical_response(payload):
+            return None
+        return ActResponse.from_raw(payload)
+
+    @staticmethod
+    def _looks_like_canonical_response(payload: dict[str, Any]) -> bool:
+        if "tool_calls" in payload:
+            return True
+        actions = payload.get("actions")
+        if not isinstance(actions, list):
+            return False
+        if not actions:
+            return any(key in payload for key in ("done", "state_out", "protocol_version", "content", "reasoning", "error"))
+        return all(
+            isinstance(item, dict)
+            and isinstance(item.get("name"), str)
+            and (
+                "arguments" not in item
+                or item.get("arguments") is None
+                or isinstance(item.get("arguments"), dict)
+            )
+            for item in actions
+        )
+
+    def _parse_legacy_actions_response(self, data: dict[str, Any]) -> list[BaseAction]:
+        actions_payload: list[dict[str, Any]] = []
+
+        if isinstance(data.get("actions"), list):
+            actions_payload = [item for item in data["actions"] if isinstance(item, dict)]
+        elif isinstance(data.get("action"), dict):
+            actions_payload = [data["action"]]
+        elif isinstance(data.get("navigate_url"), str):
+            actions_payload = [
+                {
+                    "type": "NavigateAction",
+                    "url": self._rewrite_to_remote(data["navigate_url"]),
+                }
+            ]
+
+        if not actions_payload:
+            return []
+
+        actions: list[BaseAction] = []
+        for raw in actions_payload:
+            try:
+                if isinstance(raw, dict) and raw.get("type") in {"NavigateAction", "navigate"}:
+                    raw = dict(raw)
+                    raw["url"] = self._rewrite_to_remote(raw.get("url"))
+                action = BaseAction.create_action(raw)
+                if action is None:
+                    continue
+                if isinstance(action, NavigateAction):
+                    action.url = self._rewrite_to_remote(getattr(action, "url", None))
+                actions.append(action)
+            except Exception:
+                continue
         return actions
 
     def _build_action_from_tool_call(self, tool_call: ActToolCall) -> BaseAction | None:
