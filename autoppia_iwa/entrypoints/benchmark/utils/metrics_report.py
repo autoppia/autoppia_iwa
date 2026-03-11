@@ -53,22 +53,27 @@ def load_consolidated_results(path: Path | str) -> dict[str, Any]:
     return data
 
 
+def _fmt_cost(v: Any) -> str:
+    if v is None:
+        return "—"
+    return f"${_safe_float(v):.6f}"
+
+
 def print_and_collect_report(data: dict[str, Any]) -> list[str]:
     """
-    Print summary to stdout and return lines for optional file write.
-    Uses .get() throughout; one bad project/section does not crash the rest.
+    Print full benchmark report: executive summary, per-project/per-agent/per-use-case, per-task details.
+    Uses .get() throughout; one bad section does not crash the rest.
     """
     lines: list[str] = []
     total_time = data.get("total_execution_time") or 0
     config_summary = data.get("config_summary") or {}
     projects = data.get("projects")
     if projects is None:
-        lines.append("Warning: missing 'projects' key in results; no per-project summary.")
+        lines.append("Warning: missing 'projects' key in results.")
         print(lines[-1])
         return lines
-
     if not isinstance(projects, dict):
-        lines.append("Warning: 'projects' is not an object; skipping.")
+        lines.append("Warning: 'projects' is not an object.")
         print(lines[-1])
         return lines
 
@@ -76,22 +81,49 @@ def print_and_collect_report(data: dict[str, Any]) -> list[str]:
         lines.append(s)
         print(s)
 
-    out("===== BENCHMARK METRICS REPORT =====")
-    out(f"Timestamp: {data.get('timestamp', '')}")
-    out(f"Total execution time: {_safe_float(total_time):.2f}s")
-    out(f"Tasks source: {config_summary.get('tasks_source', '')}")
+    out("=" * 72)
+    out("  BENCHMARK METRICS REPORT")
+    out("=" * 72)
+    out(f"  Timestamp:           {data.get('timestamp', '')}")
+    out(f"  Total execution:     {_safe_float(total_time):.2f}s")
+    out(f"  Tasks source:        {config_summary.get('tasks_source', '')}")
+    if config_summary.get("tasks_json_path"):
+        out(f"  Tasks JSON path:     {config_summary.get('tasks_json_path')}")
     out("")
 
-    # Per project
+    # --- Executive summary: all agents across all projects ---
+    out("--- EXECUTIVE SUMMARY (all agents) ---")
+    out(f"  {'Agent':<28} {'Tasks':>6} {'Success':>8} {'Rate':>8} {'AvgTime':>8} {'AvgCost':>10} {'TotalCost':>10} {'Tokens (in/out)':>18}")
+    out("  " + "-" * 110)
+    for _project_name, project_data in projects.items():
+        if not isinstance(project_data, dict):
+            continue
+        for agent_name, agent_data in project_data.items():
+            if not isinstance(agent_data, dict):
+                continue
+            overall = agent_data.get("overall") or {}
+            total = _safe_int(overall.get("total"), 0)
+            if total == 0:
+                continue
+            succ = _safe_int(overall.get("success_count"), 0)
+            rate = _safe_float(overall.get("success_rate"), 0)
+            avg_time = _safe_float(overall.get("avg_solution_time"), 0)
+            avg_cost = overall.get("avg_cost_per_task_usd")
+            total_cost = overall.get("total_cost_usd")
+            tin = overall.get("total_input_tokens")
+            tout = overall.get("total_output_tokens")
+            avg_c = _fmt_cost(avg_cost) if avg_cost is not None else "—"
+            tot_c = _fmt_cost(total_cost) if total_cost is not None else "—"
+            tok_s = f"{_safe_int(tin)}/{_safe_int(tout)}" if (tin is not None or tout is not None) else "—"
+            out(f"  {agent_name:<28} {total:>6} {succ:>8} {rate:>7.1%} {avg_time:>7.2f}s {avg_c:>10} {tot_c:>10} {tok_s:>18}")
+    out("")
+
+    # --- Per project: agents + per-use-case breakdown ---
     for project_name, project_data in projects.items():
         if not isinstance(project_data, dict):
-            try:
-                out(f"Project {project_name}: invalid structure, skipping")
-            except Exception:
-                out("Project [parse error]: skipping")
             continue
         try:
-            out(f"--- Project: {project_name} ---")
+            out("--- PROJECT: " + str(project_name) + " ---")
             for agent_name, agent_data in project_data.items():
                 if not isinstance(agent_data, dict):
                     continue
@@ -102,34 +134,47 @@ def print_and_collect_report(data: dict[str, Any]) -> list[str]:
                 success_count = _safe_int(overall.get("success_count"), 0)
                 rate = _safe_float(overall.get("success_rate"), 0)
                 avg_sol = _safe_float(overall.get("avg_solution_time"), 0)
-                out(f"  Agent: {agent_name}  success_rate={rate:.2%} ({success_count}/{total})  avg_solution_time={avg_sol:.2f}s")
-
-            # Per use case (first agent's use_cases as sample)
-            first_agent_data = next(iter(project_data.values()), None)
-            if isinstance(first_agent_data, dict):
-                use_cases = first_agent_data.get("use_cases") or {}
+                avg_cost = overall.get("avg_cost_per_task_usd")
+                total_cost = overall.get("total_cost_usd")
+                total_in = overall.get("total_input_tokens")
+                total_out = overall.get("total_output_tokens")
+                out(f"  Agent: {agent_name}")
+                out(
+                    f"    Success: {success_count}/{total} ({rate:.1%})  |  Avg time: {avg_sol:.2f}s  |  Avg cost/task: {_fmt_cost(avg_cost)}  |  Total cost: {_fmt_cost(total_cost)}  |  Tokens: {_safe_int(total_in)}/{_safe_int(total_out)}"
+                )
+                use_cases = agent_data.get("use_cases") or {}
                 if use_cases:
-                    out("  Use cases:")
+                    out("    Per use case:")
                     for uc_name, uc_data in use_cases.items():
                         if not isinstance(uc_data, dict):
                             continue
-                        n_tasks = len(uc_data)
-                        scores = [_safe_float(t.get("success")) for t in uc_data.values() if isinstance(t, dict)]
-                        succ = sum(1 for s in scores if s == 1.0)
-                        out(f"    {uc_name}: {succ}/{n_tasks}")
-
+                        tasks_list = list(uc_data.values())
+                        n = len(tasks_list)
+                        scores = [_safe_float(t.get("success")) for t in tasks_list if isinstance(t, dict)]
+                        times = [_safe_float(t.get("time")) for t in tasks_list if isinstance(t, dict)]
+                        costs = [_safe_float(t.get("cost_usd")) for t in tasks_list if isinstance(t, dict) and t.get("cost_usd") is not None]
+                        succ_uc = sum(1 for s in scores if s == 1.0)
+                        avg_t = (sum(times) / len(times)) if times else 0
+                        avg_c_uc = (sum(costs) / len(costs)) if costs else None
+                        c_str = _fmt_cost(avg_c_uc) if avg_c_uc is not None else "—"
+                        out(f"      {uc_name}: {succ_uc}/{n} success  |  avg time {avg_t:.2f}s  |  avg cost {c_str}")
             out("")
         except Exception as e:
-            out(f"  Error processing project {project_name}: {e}")
+            out(f"  Error: {e}")
+            out("")
 
-    # Per-task table (sample: first project, first agent)
-    out("--- Per-task (first project, first agent) ---")
-    first_project_data = next(iter(projects.values()), None)
-    if isinstance(first_project_data, dict):
-        first_agent_name = next(iter(first_project_data.keys()), None)
-        first_agent_data = next(iter(first_project_data.values()), None) if first_agent_name else None
-        if isinstance(first_agent_data, dict):
-            use_cases = first_agent_data.get("use_cases") or {}
+    # --- Per-task detail (all projects, all agents) ---
+    out("--- PER-TASK DETAIL ---")
+    for project_name, project_data in projects.items():
+        if not isinstance(project_data, dict):
+            continue
+        for agent_name, agent_data in project_data.items():
+            if not isinstance(agent_data, dict):
+                continue
+            use_cases = agent_data.get("use_cases") or {}
+            if not use_cases:
+                continue
+            out(f"  [{project_name}] {agent_name}:")
             for uc_name, uc_data in use_cases.items():
                 if not isinstance(uc_data, dict):
                     continue
@@ -142,11 +187,14 @@ def print_and_collect_report(data: dict[str, Any]) -> list[str]:
                     cost = task_data.get("cost_usd")
                     in_tok = task_data.get("input_tokens")
                     out_tok = task_data.get("output_tokens")
+                    steps = task_data.get("steps_count")
                     eval_s = _safe_float(eval_t) if eval_t is not None else None
-                    cost_s = f"{_safe_float(cost):.6f}" if cost is not None else ""
-                    tokens_s = f"{_safe_int(in_tok)}/{_safe_int(out_tok)}" if (in_tok is not None or out_tok is not None) else ""
-                    out(f"  task_id={task_id} use_case={uc_name} score={score} time={time_s}s eval_time={eval_s}s cost={cost_s} tokens={tokens_s}")
-
+                    cost_s = _fmt_cost(cost) if cost is not None else "—"
+                    tok_s = f"{_safe_int(in_tok)}/{_safe_int(out_tok)}" if (in_tok is not None or out_tok is not None) else "—"
+                    steps_s = str(steps) if steps is not None else "—"
+                    out(f"    task_id={task_id[:8]}... use_case={uc_name} score={score} time={time_s:.2f}s eval_time={eval_s} cost={cost_s} tokens={tok_s} steps={steps_s}")
+            out("")
+    out("=" * 72)
     return lines
 
 

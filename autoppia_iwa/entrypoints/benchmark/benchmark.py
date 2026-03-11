@@ -8,6 +8,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+import aiohttp
 from loguru import logger
 
 from autoppia_iwa.config.config import VALIDATOR_ID
@@ -114,8 +115,8 @@ class Benchmark:
     # ---------------------------------------------------------------------
     def _create_evaluator(self, project: WebProject) -> ConcurrentEvaluator:
         """
-        Crea el evaluador ConcurrentEvaluator para evaluar soluciones completas.
-        Para modo stateful, se usa AsyncStatefulEvaluator directamente en _evaluate_task_with_agents.
+        Create the ConcurrentEvaluator to evaluate complete solutions.
+        For stateful mode, AsyncStatefulEvaluator is used directly in _evaluate_task_with_agents.
         """
         evaluator_config = EvaluatorConfig(
             should_record_gif=self.config.record_gif,
@@ -130,6 +131,28 @@ class Benchmark:
         logger.debug(f"Creating ConcurrentEvaluator for project {project.id}")
         return ConcurrentEvaluator(web_project=project, config=evaluator_config)
 
+    async def _fetch_task_cost_from_agent(self, agent: IWebAgent, task_id: str) -> dict[str, Any] | None:
+        """
+        Fetch cumulative cost/tokens for a task from the agent API (GET /task_cost/<task_id>).
+        Returns dict with cost_usd, input_tokens, output_tokens or None if unavailable.
+        """
+        base_url = getattr(agent, "base_url", None)
+        if not base_url or not task_id:
+            return None
+        url = f"{base_url.rstrip('/')}/task_cost/{task_id}"
+        timeout = aiohttp.ClientTimeout(total=10)
+        try:
+            async with aiohttp.ClientSession(timeout=timeout) as session, session.get(url) as resp:
+                if resp.status != 200:
+                    return None
+                data = await resp.json()
+                if isinstance(data, dict):
+                    return data
+                return None
+        except Exception as e:
+            logger.debug(f"Could not fetch task cost from {url}: {e}")
+            return None
+
     async def _evaluate_with_stateful_evaluator(
         self,
         task: Task,
@@ -137,21 +160,19 @@ class Benchmark:
         max_steps: int,
     ) -> EvaluationResult:
         """
-        Evalúa un agente usando AsyncStatefulEvaluator en modo iterativo.
+        Evaluate an agent using AsyncStatefulEvaluator in iterative mode.
 
-        ✅ El agente debe implementar IWebAgent con método act().
-        Típicamente es un ApifiedWebAgent (agente HTTP) corriendo en un servidor.
+        The agent must implement IWebAgent with an act() method.
+        Typically this is an ApifiedWebAgent (HTTP agent) running on a server.
 
-        El agente debe estar corriendo en un servidor HTTP y responder en:
-        POST /act con: {task, snapshot_html, url, step_index, history, state_in, allowed_tools}
-        Responde: {tool_calls: [...], content, done, state_out, reasoning}
+        The agent must be running on an HTTP server and respond at:
+        POST /act with: {task, snapshot_html, url, step_index, history, state_in, allowed_tools}
+        Response: {tool_calls: [...], content, done, state_out, reasoning}
         """
-        # Verificar que el agente tenga método act()
+        # Verify that the agent has an act() method
         if not hasattr(agent, "act") or not callable(getattr(agent, "act", None)):
             raise ValueError(
-                f"❌ El agente '{agent.name}' no implementa IWebAgent correctamente.\n"
-                f"Debe tener el método act() que recibe el estado del browser.\n"
-                f"Usa: ApifiedWebAgent(base_url='http://localhost:PORT')"
+                f"Agent '{agent.name}' does not implement IWebAgent correctly.\nIt must have an act() method that receives the browser state.\nUse: ApifiedWebAgent(base_url='http://localhost:PORT')"
             )
 
         evaluator = AsyncStatefulEvaluator(
@@ -169,22 +190,22 @@ class Benchmark:
         execution_history = []
 
         try:
-            step_index = 0  # Número de LLAMADAS al agente
-            total_actions_executed = 0  # Número de ACCIONES ejecutadas
+            step_index = 0  # Number of CALLS to the agent
+            total_actions_executed = 0  # Number of ACTIONS executed
 
             step_result = await evaluator.reset()
             final_score = step_result.score.raw_score
             tests_passed = step_result.score.tests_passed
             total_tests = step_result.score.total_tests
 
-            # Usar total_actions_executed como límite (igual que la subnet)
+            # Use total_actions_executed as the limit (same as the subnet)
             while total_actions_executed < max_steps and not bool(step_result.score.success):
                 snapshot = step_result.snapshot
                 html = sanitize_snapshot_html(snapshot.html or "", agent.id)
                 current_url = snapshot.url or task.url
 
                 try:
-                    # ✅ Llamar al endpoint /act del agente HTTP (IGUAL que la subnet con miners)
+                    # Call the agent's HTTP /act endpoint (same as the subnet with miners)
                     actions = await agent.act(
                         task=task,
                         snapshot_html=html,
@@ -197,18 +218,18 @@ class Benchmark:
                     actions = []
 
                 if not actions:
-                    # Sin acciones = agente terminó o error
+                    # No actions = agent finished or error
                     logger.debug(f"[stateful_eval] agent {agent.name} returned no actions, terminating")
                     break
 
                 log_step(agent.id or "", task.id or "", step_index, len(actions))
 
-                # Calcular límite con total_actions_executed (como en subnet)
+                # Compute limit with total_actions_executed (same as subnet)
                 actions_to_execute = actions[: min(len(actions), max_steps - total_actions_executed)]
 
                 logger.debug(f"[stateful_eval] agent {agent.name} returned {len(actions)} actions, executing {len(actions_to_execute)}")
 
-                # Ejecutar TODAS las acciones en batch (el evaluator reemplaza placeholders internamente)
+                # Execute ALL actions in batch (the evaluator replaces placeholders internally)
                 for action in actions_to_execute:
                     step_result = await evaluator.step(action)
                     final_score = step_result.score.raw_score
@@ -216,16 +237,16 @@ class Benchmark:
                     total_tests = step_result.score.total_tests
                     total_actions_executed += 1
 
-                    # Guardar el resultado de la acción
+                    # Store the action result
                     if step_result.action_result:
                         execution_history.append(step_result.action_result)
 
-                    # Si completó la tarea, terminar
+                    # If the task was completed, stop
                     if step_result.score.success:
                         logger.info(f"[stateful_eval] agent {agent.name} completed task!")
                         break
 
-                # Si completó, salir del loop principal
+                # If completed, exit the main loop
                 if step_result.score.success:
                     break
 
@@ -240,13 +261,25 @@ class Benchmark:
 
         elapsed = time.time() - start_ts
 
-        # Construir EvaluationResult compatible con el resto del benchmark
+        # Fetch cost/tokens from agent API if available (e.g. GET /task_cost/<task_id>)
+        cost_usd, input_tokens, output_tokens = None, None, None
+        cost_data = await self._fetch_task_cost_from_agent(agent, task.id)
+        if cost_data:
+            cost_usd = cost_data.get("cost_usd")
+            input_tokens = cost_data.get("input_tokens")
+            output_tokens = cost_data.get("output_tokens")
+            if cost_usd is not None or input_tokens is not None or output_tokens is not None:
+                logger.debug(f"Task {task.id} cost: cost_usd={cost_usd} in={input_tokens} out={output_tokens}")
+
         return EvaluationResult(
             final_score=max(0.0, min(final_score, 1.0)),
             raw_score=final_score,
             web_agent_id=agent.id,
             execution_history=execution_history,
             evaluation_time=elapsed,
+            cost_usd=cost_usd,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
             stats=EvaluationStats(
                 web_agent_id=agent.id,
                 task_id=task.id,
@@ -285,10 +318,10 @@ class Benchmark:
         run_index: int,
     ) -> TaskSolution | None:
         """
-        Resolve a single Task with a single Agent usando act().
+        Solve a single Task with a single Agent using act().
 
-        ✅ TODOS los agentes usan act() ahora (tanto concurrent como stateful).
-        En modo concurrent, llamamos act() UNA vez con el estado inicial.
+        All agents use act() now (both concurrent and stateful).
+        In concurrent mode, we call act() once with the initial state.
 
         Optionally uses a cached solution when configured.
         Resets the project backend DB for isolation per attempt.
@@ -301,14 +334,14 @@ class Benchmark:
 
                 start_ts = time.time()
 
-                # ✅ Usar act() en lugar de solve_task()
-                # En modo concurrent, llamamos UNA vez con snapshot inicial vacío
+                # Use act() instead of solve_task()
+                # In concurrent mode, we call once with an empty initial snapshot
                 # Send task WITH placeholders - agent should return actions with placeholders
                 actions = await agent.act(
                     task=task,  # Send task with placeholders, NOT replaced
-                    snapshot_html="",  # Vacío en modo concurrent (el agente no necesita ver el HTML)
+                    snapshot_html="",  # Empty in concurrent mode (agent does not need to see HTML)
                     url=task.url,
-                    step_index=0,  # Siempre 0 en modo concurrent
+                    step_index=0,  # Always 0 in concurrent mode
                 )
 
                 if not actions:
@@ -360,13 +393,13 @@ class Benchmark:
             if not valid_solutions:
                 logger.warning(f"No valid solutions to evaluate for task {task.id} (run {run_index})")
                 return []
-            # MODO CONCURRENT: evaluar todas las soluciones completas
+            # CONCURRENT mode: evaluate all complete solutions
             evaluator = self._create_evaluator(project)
             logger.debug(f"Evaluating task {task.id} with {len(valid_solutions)} solutions (CONCURRENT mode)")
             results = await evaluator.evaluate_task_solutions(task, valid_solutions)
 
         elif self.config.evaluator_mode == "stateful":
-            # MODO STATEFUL: evaluar cada agente iterativamente
+            # STATEFUL mode: evaluate each agent iteratively
             # In stateful mode, we don't use pre-generated solutions
             # Instead, we call agents directly and let the evaluator call them iteratively
             logger.info(f"Evaluating task {task.id} with {len(self.config.agents)} agents (STATEFUL mode)")
@@ -376,20 +409,24 @@ class Benchmark:
             for agent in self.config.agents:
                 logger.info(f"Evaluating task {task.id} with agent {agent.name} (stateful, max {self.config.max_steps_per_task} steps)")
 
-                # Usar AsyncStatefulEvaluator para evaluación iterativa
+                # Use AsyncStatefulEvaluator for iterative evaluation
                 # The evaluator will call agent.act() iteratively with step_index 0, 1, 2, ...
                 result = await self._evaluate_with_stateful_evaluator(task=task, agent=agent, max_steps=self.config.max_steps_per_task)
                 results.append(result)
         else:
             raise ValueError(f"Invalid evaluator_mode: {self.config.evaluator_mode}")
 
-        # Record evaluation time per (agent, task)
+        # Record evaluation time (and solution time in stateful mode) per (agent, task)
         for ev in results:
             agent_id = getattr(ev, "web_agent_id", None)
             task_id = getattr(task, "id", None)
             if agent_id and task_id:
                 eval_time = getattr(ev, "evaluation_time", None) or (getattr(ev, "stats", None) and getattr(ev.stats, "total_time", 0)) or 0
-                self._timing_metrics.record_evaluation_time(agent_id, task_id, float(eval_time))
+                eval_time_f = float(eval_time)
+                self._timing_metrics.record_evaluation_time(agent_id, task_id, eval_time_f)
+                if self.config.evaluator_mode == "stateful":
+                    # In stateful mode solution is generated during evaluation; use same time for both
+                    self._timing_metrics.record_solution_time(agent_id, task_id, eval_time_f)
             else:
                 if not agent_id or not task_id:
                     logger.warning(f"Skipping evaluation_time record: missing web_agent_id or task.id (agent_id={agent_id!r}, task_id={task_id!r})")
@@ -702,6 +739,9 @@ class Benchmark:
 
             all_scores: list[float] = []
             all_times: list[float] = []
+            all_costs: list[float] = []
+            all_input_tokens: list[int] = []
+            all_output_tokens: list[int] = []
             new_uc_block: dict[str, dict] = {}
 
             for uc, scores in per_agent_usecase_scores[a_name].items():
@@ -741,6 +781,13 @@ class Benchmark:
                         entry["steps_count"] = int(steps)
                     new_uc_block[uc][task_id] = entry
 
+                    if cost is not None and isinstance(cost, int | float):
+                        all_costs.append(float(cost))
+                    if in_tok is not None:
+                        all_input_tokens.append(int(in_tok))
+                    if out_tok is not None:
+                        all_output_tokens.append(int(out_tok))
+
                 all_scores.extend(scores)
                 all_times.extend(times)
 
@@ -748,15 +795,35 @@ class Benchmark:
             tot_all = len(all_scores)
             avg_all_time = (sum(all_times) / len(all_times)) if all_times else 0.0
             rate_all = (succ_all / tot_all) if tot_all else 0.0
+            total_cost = round(sum(all_costs), 6) if all_costs else None
+            total_in_tok = sum(all_input_tokens) if all_input_tokens else None
+            total_out_tok = sum(all_output_tokens) if all_output_tokens else None
+            avg_cost_per_task = round(total_cost / tot_all, 6) if (total_cost is not None and tot_all) else None
+            avg_input_tokens = round(sum(all_input_tokens) / len(all_input_tokens)) if all_input_tokens else None
+            avg_output_tokens = round(sum(all_output_tokens) / len(all_output_tokens)) if all_output_tokens else None
+
+            overall: dict[str, Any] = {
+                "success_count": succ_all,
+                "total": tot_all,
+                "success_rate": round(rate_all, 3),
+                "avg_solution_time": round(avg_all_time, 3),
+            }
+            if total_cost is not None:
+                overall["total_cost_usd"] = total_cost
+            if avg_cost_per_task is not None:
+                overall["avg_cost_per_task_usd"] = avg_cost_per_task
+            if total_in_tok is not None:
+                overall["total_input_tokens"] = total_in_tok
+            if total_out_tok is not None:
+                overall["total_output_tokens"] = total_out_tok
+            if avg_input_tokens is not None:
+                overall["avg_input_tokens"] = avg_input_tokens
+            if avg_output_tokens is not None:
+                overall["avg_output_tokens"] = avg_output_tokens
 
             project_stats[a_name] = {
                 "use_cases": new_uc_block,
-                "overall": {
-                    "success_count": succ_all,
-                    "total": tot_all,
-                    "success_rate": round(rate_all, 3),
-                    "avg_solution_time": round(avg_all_time, 3),
-                },
+                "overall": overall,
             }
 
             logger.info(f"{a_name:<20} | {rate_all * 100:6.2f}% ({succ_all}/{tot_all}) | avg {avg_all_time:.2f}s")
