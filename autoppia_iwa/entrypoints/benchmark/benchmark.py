@@ -12,7 +12,7 @@ from loguru import logger
 
 from autoppia_iwa.config.config import VALIDATOR_ID
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
-from autoppia_iwa.entrypoints.benchmark.utils.logging import setup_logging
+from autoppia_iwa.entrypoints.benchmark.utils.logging import log_step, log_task_end, log_task_start, setup_logging
 from autoppia_iwa.entrypoints.benchmark.utils.metrics import TimingMetrics
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
@@ -21,6 +21,7 @@ from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStat
 from autoppia_iwa.src.evaluation.concurrent_evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.evaluation.stateful_evaluator import AsyncStatefulEvaluator
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer
+from autoppia_iwa.src.web_agents.act_response_utils import actions_to_act_response
 from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution, sanitize_snapshot_html
 
 visualizer = SubnetVisualizer()
@@ -47,13 +48,15 @@ class Benchmark:
         resolved_log_path.parent.mkdir(parents=True, exist_ok=True)
         setup_logging(str(resolved_log_path))
         self.per_project_results = {}
+        # When using tasks_json_path, (project, tasks) loaded once at start of run()
+        self._custom_tasks_cache: tuple[WebProject, list[Task]] | None = None
 
     def _validate_config(self) -> None:
         """
         Validate the benchmark configuration before starting execution.
         """
-        if not self.config.projects:
-            raise ValueError("No projects configured. Please add at least one project to PROJECT_IDS.")
+        if not getattr(self.config, "tasks_json_path", None) and not self.config.projects:
+            raise ValueError("No projects configured. Please add at least one project to PROJECT_IDS or set tasks_json_path.")
 
         if not self.config.agents:
             raise ValueError("No agents configured. Please add at least one agent to AGENTS.")
@@ -197,6 +200,8 @@ class Benchmark:
                     # Sin acciones = agente terminó o error
                     logger.debug(f"[stateful_eval] agent {agent.name} returned no actions, terminating")
                     break
+
+                log_step(agent.id or "", task.id or "", step_index, len(actions))
 
                 # Calcular límite con total_actions_executed (como en subnet)
                 actions_to_execute = actions[: min(len(actions), max_steps - total_actions_executed)]
@@ -378,6 +383,17 @@ class Benchmark:
         else:
             raise ValueError(f"Invalid evaluator_mode: {self.config.evaluator_mode}")
 
+        # Record evaluation time per (agent, task)
+        for ev in results:
+            agent_id = getattr(ev, "web_agent_id", None)
+            task_id = getattr(task, "id", None)
+            if agent_id and task_id:
+                eval_time = getattr(ev, "evaluation_time", None) or (getattr(ev, "stats", None) and getattr(ev.stats, "total_time", 0)) or 0
+                self._timing_metrics.record_evaluation_time(agent_id, task_id, float(eval_time))
+            else:
+                if not agent_id or not task_id:
+                    logger.warning(f"Skipping evaluation_time record: missing web_agent_id or task.id (agent_id={agent_id!r}, task_id={task_id!r})")
+
         # Store GIF recordings if enabled
         if self.config.record_gif:
             for res in results:
@@ -423,15 +439,23 @@ class Benchmark:
     # ---------------------------------------------------------------------
     # Per-project execution
     # ---------------------------------------------------------------------
+    async def _get_tasks_for_project(self, project: WebProject, run_index: int) -> list[Task]:
+        """Return tasks for this project: from custom JSON cache if applicable, else generate or load from cache."""
+        if self._custom_tasks_cache is not None:
+            cached_project, cached_tasks = self._custom_tasks_cache
+            if cached_project.id == project.id:
+                return cached_tasks
+        return await self._generate_tasks_for_project(project)
+
     async def _generate_tasks_for_project(self, project: WebProject) -> list[Task]:
-        from autoppia_iwa.config.config import PROJECT_BASE_DIR
         from autoppia_iwa.entrypoints.benchmark.utils.task_generation import load_tasks_from_json, save_tasks_to_json
         from autoppia_iwa.src.data_generation.tasks.classes import TaskGenerationConfig
         from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
 
         # Check if we should use cached tasks
         use_cached = getattr(self.config, "use_cached_tasks", False)
-        cache_dir = str(PROJECT_BASE_DIR.parent / "benchmark-output" / "cache" / "tasks")
+        # Same path as config: benchmark-output/cache/tasks
+        cache_dir = str(self.config.base_dir / "benchmark-output" / "cache" / "tasks")
 
         if use_cached:
             cached_tasks = await load_tasks_from_json(project, cache_dir)
@@ -451,30 +475,16 @@ class Benchmark:
         tasks = await pipeline.generate()
 
         if tasks:
-            # Save tasks to cache (same path/format as before: data/outputs/benchmark/cache/tasks/)
-            try:
-                cache_dir = self.config.base_dir / "data" / "outputs" / "benchmark" / "cache" / "tasks"
-                cache_dir.mkdir(parents=True, exist_ok=True)
-                path = cache_dir / f"autoppia_{project.id}_tasks.json"
-                payload = {
-                    "project_id": project.id,
-                    "project_name": project.name,
-                    "timestamp": datetime.now().isoformat(),
-                    "tasks": [t.serialize() for t in tasks],
-                }
-                path.write_text(json.dumps(payload, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
-                logger.info(f"Tasks cache saved: {path}")
-            except Exception as e:
-                logger.warning(f"Failed to save tasks cache: {e}")
+            # Save generated tasks to cache so they can be reused (e.g. via use_cached_tasks or tasks_json_path)
+            saved = await save_tasks_to_json(tasks, project, cache_dir)
+            if saved:
+                logger.info(f"Saved {len(tasks)} generated tasks for '{project.name}' to cache")
 
             try:
                 for task in tasks:
                     visualizer.show_task_with_tests(task)
             except Exception as e:
                 logger.warning(f"Task visualization failed: {e}")
-
-            # Save to cache
-            await save_tasks_to_json(tasks, project, cache_dir)
 
         return tasks
 
@@ -494,7 +504,7 @@ class Benchmark:
               ...
             }
         """
-        tasks = await self._generate_tasks_for_project(project)
+        tasks = await self._get_tasks_for_project(project, run_index)
         if not tasks:
             logger.warning(f"No tasks for project '{project.name}' — skipping run {run_index}")
             return {}
@@ -515,20 +525,71 @@ class Benchmark:
                 # In concurrent mode, generate solutions first
                 task_solutions = await asyncio.gather(*[self._solve_task_with_agent(project, agent, task, run_index) for agent in self.config.agents])
 
+            # Structured log: task start per agent
+            for agent in self.config.agents:
+                log_task_start(
+                    getattr(project, "id", "") or "",
+                    getattr(task, "id", "") or "",
+                    getattr(agent, "id", "") or "",
+                    run_index,
+                )
+
             # Evaluate solutions with visualization
             evaluations = await self._evaluate_solutions_for_task_with_visualization(project, task, task_solutions, VALIDATOR_ID, run_index)
 
-            # Aggregate results by agent
-            for ev in evaluations:
+            # Aggregate results by agent (include metrics for report) and log task_end
+            for _idx, ev in enumerate(evaluations):
                 use_case_name = getattr(task.use_case, "name", "Unknown")
-                actions = [a.action.model_dump() for a in getattr(ev, "execution_history", [])]
+                execution_history = getattr(ev, "execution_history", [])
+                # Store actions in IWA format (tool_calls: list of {name, arguments})
+                if execution_history:
+                    base_actions = [e.action for e in execution_history if getattr(e, "action", None) is not None]
+                    act_resp = actions_to_act_response(base_actions, done=False)
+                    actions = [{"name": tc.name, "arguments": tc.arguments} for tc in act_resp.tool_calls]
+                else:
+                    actions = []
+                eval_time = getattr(ev, "evaluation_time", None) or (getattr(ev, "stats", None) and getattr(ev.stats, "total_time", None))
+                steps_count = len(execution_history) if execution_history else (getattr(ev, "stats", None) and getattr(ev.stats, "action_count", None))
+                cost_usd = getattr(ev, "cost_usd", None)
+                input_tokens = getattr(ev, "input_tokens", None)
+                output_tokens = getattr(ev, "output_tokens", None)
+                # Concurrent mode: attach cost/tokens from solution if available (match by web_agent_id)
+                if self.config.evaluator_mode == "concurrent":
+                    sol = next((s for s in task_solutions if s is not None and getattr(s, "web_agent_id", None) == ev.web_agent_id), None)
+                    if sol is not None:
+                        if cost_usd is None and hasattr(sol, "cost_usd"):
+                            cost_usd = getattr(sol, "cost_usd", None)
+                        if input_tokens is None and hasattr(sol, "input_tokens"):
+                            input_tokens = getattr(sol, "input_tokens", None)
+                        if output_tokens is None and hasattr(sol, "output_tokens"):
+                            output_tokens = getattr(sol, "output_tokens", None)
                 per_agent_results_for_run.setdefault(ev.web_agent_id, {})[task.id] = {
                     "prompt": task.prompt,
                     "score": ev.final_score,
                     "task_use_case": use_case_name,
                     "actions": actions,
                     "base64_gif": ev.gif_recording if self.config.record_gif else None,
+                    "evaluation_time": eval_time,
+                    "cost_usd": cost_usd,
+                    "input_tokens": input_tokens,
+                    "output_tokens": output_tokens,
+                    "steps_count": steps_count,
                 }
+
+                solution_time_s = self._timing_metrics.solution_times.get(ev.web_agent_id, {}).get(task.id, 0.0)
+                eval_time_s = float(eval_time) if eval_time is not None else 0.0
+                log_task_end(
+                    getattr(project, "id", "") or "",
+                    getattr(task, "id", "") or "",
+                    ev.web_agent_id or "",
+                    run_index,
+                    ev.final_score,
+                    solution_time_s,
+                    eval_time_s,
+                    cost_usd=cost_usd,
+                    input_tokens=input_tokens,
+                    output_tokens=output_tokens,
+                )
 
         return per_agent_results_for_run
 
@@ -536,21 +597,40 @@ class Benchmark:
     # Results aggregation and persistence
     # ---------------------------------------------------------------------
 
-    def _save_consolidated_results(self) -> None:
+    def _save_consolidated_results(self) -> Path | None:
         """
         Save all project results to a single consolidated JSON file.
+        Uses UTF-8 and default=str for serialization; creates output dir if needed.
         """
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = self.config.output_dir / f"benchmark_results_{timestamp}.json"
 
-        consolidated_data = {
+        tasks_source = "custom_json" if getattr(self.config, "tasks_json_path", None) else ("cached" if getattr(self.config, "use_cached_tasks", False) else "generated")
+        config_summary: dict[str, Any] = {
+            "evaluator_mode": self.config.evaluator_mode,
+            "tasks_source": tasks_source,
+        }
+        if getattr(self.config, "tasks_json_path", None):
+            config_summary["tasks_json_path"] = str(self.config.tasks_json_path)
+
+        consolidated_data: dict[str, Any] = {
             "timestamp": datetime.now().isoformat(),
             "total_execution_time": self._timing_metrics.get_total_time(),
+            "config_summary": config_summary,
             "projects": self.per_project_results,
         }
 
-        filename.write_text(json.dumps(consolidated_data, indent=2))
-        logger.info(f"Consolidated results saved to {filename}")
+        try:
+            filename.parent.mkdir(parents=True, exist_ok=True)
+            filename.write_text(
+                json.dumps(consolidated_data, indent=2, ensure_ascii=False, default=str),
+                encoding="utf-8",
+            )
+            logger.info(f"Consolidated results saved to {filename}")
+            return filename
+        except OSError as e:
+            logger.error(f"Failed to save consolidated results to {filename}: {e}")
+            raise
 
     def _accumulate_project_stats(self, project: WebProject, project_run_results: list[dict]) -> None:
         """
@@ -575,6 +655,11 @@ class Benchmark:
         per_agent_usecase_actions: dict[str, dict[str, list[list]]] = defaultdict(lambda: defaultdict(list))
         per_agent_usecase_task_ids: dict[str, dict[str, list[str]]] = defaultdict(lambda: defaultdict(list))
         per_agent_usecase_gifs: dict[str, dict[str, list[str | None]]] = defaultdict(lambda: defaultdict(list))
+        per_agent_usecase_eval_times: dict[str, dict[str, list[float | None]]] = defaultdict(lambda: defaultdict(list))
+        per_agent_usecase_cost: dict[str, dict[str, list[float | None]]] = defaultdict(lambda: defaultdict(list))
+        per_agent_usecase_input_tokens: dict[str, dict[str, list[int | None]]] = defaultdict(lambda: defaultdict(list))
+        per_agent_usecase_output_tokens: dict[str, dict[str, list[int | None]]] = defaultdict(lambda: defaultdict(list))
+        per_agent_usecase_steps_count: dict[str, dict[str, list[int | None]]] = defaultdict(lambda: defaultdict(list))
 
         # Collect data from all runs
         for run_result in project_run_results:
@@ -603,6 +688,11 @@ class Benchmark:
                     per_agent_usecase_actions[a_name][use_case].append(res.get("actions", []))
                     per_agent_usecase_task_ids[a_name][use_case].append(task_id)
                     per_agent_usecase_gifs[a_name][use_case].append(res.get("base64_gif", None))
+                    per_agent_usecase_eval_times[a_name][use_case].append(res.get("evaluation_time"))
+                    per_agent_usecase_cost[a_name][use_case].append(res.get("cost_usd"))
+                    per_agent_usecase_input_tokens[a_name][use_case].append(res.get("input_tokens"))
+                    per_agent_usecase_output_tokens[a_name][use_case].append(res.get("output_tokens"))
+                    per_agent_usecase_steps_count[a_name][use_case].append(res.get("steps_count"))
 
         # Build per-project stats
         project_stats: dict = {}
@@ -618,22 +708,38 @@ class Benchmark:
                 times = per_agent_usecase_times[a_name][uc]
 
                 new_uc_block[uc] = {}
-                for task_id, prompt, action, t, score, gif in zip(
+                for task_id, prompt, action, t, score, gif, eval_t, cost, in_tok, out_tok, steps in zip(
                     per_agent_usecase_task_ids[a_name][uc],
                     per_agent_usecase_prompt[a_name][uc],
                     per_agent_usecase_actions[a_name][uc],
                     per_agent_usecase_times[a_name][uc],
                     per_agent_usecase_scores[a_name][uc],
                     per_agent_usecase_gifs[a_name][uc],
+                    per_agent_usecase_eval_times[a_name][uc],
+                    per_agent_usecase_cost[a_name][uc],
+                    per_agent_usecase_input_tokens[a_name][uc],
+                    per_agent_usecase_output_tokens[a_name][uc],
+                    per_agent_usecase_steps_count[a_name][uc],
                     strict=False,
                 ):
-                    new_uc_block[uc][task_id] = {
+                    entry: dict[str, Any] = {
                         "success": score,
                         "time": round(t, 3),
                         "prompt": prompt,
                         "actions": action,
                         "base64_gif": gif,
                     }
+                    if eval_t is not None:
+                        entry["evaluation_time"] = round(float(eval_t), 3) if isinstance(eval_t, int | float) else eval_t
+                    if cost is not None:
+                        entry["cost_usd"] = round(float(cost), 6) if isinstance(cost, int | float) else cost
+                    if in_tok is not None:
+                        entry["input_tokens"] = int(in_tok)
+                    if out_tok is not None:
+                        entry["output_tokens"] = int(out_tok)
+                    if steps is not None:
+                        entry["steps_count"] = int(steps)
+                    new_uc_block[uc][task_id] = entry
 
                 all_scores.extend(scores)
                 all_times.extend(times)
@@ -670,11 +776,33 @@ class Benchmark:
         logger.info("Starting benchmark…")
         self._timing_metrics.start()
 
-        total_projects = len(self.config.projects)
+        tasks_source = "custom_json" if getattr(self.config, "tasks_json_path", None) else ("cached" if getattr(self.config, "use_cached_tasks", False) else "generated")
+        logger.info(f"Tasks source: {tasks_source}" + (f", tasks_json_path={self.config.tasks_json_path}" if getattr(self.config, "tasks_json_path", None) else ""))
+
+        projects_to_run: list[WebProject] = []
+        if getattr(self.config, "tasks_json_path", None):
+            from autoppia_iwa.entrypoints.benchmark.utils.task_generation import load_tasks_from_custom_json
+            from autoppia_iwa.src.demo_webs.config import demo_web_projects
+
+            projects_by_id = {p.id: p for p in self.config.projects} if self.config.projects else {p.id: p for p in demo_web_projects}
+            if not projects_by_id:
+                raise RuntimeError("No projects available to resolve project_id from tasks file. Configure PROJECT_IDS or add demo_web_projects.")
+            try:
+                custom_project, custom_tasks = load_tasks_from_custom_json(self.config.tasks_json_path, projects_by_id)
+                self._custom_tasks_cache = (custom_project, custom_tasks)
+                projects_to_run = [custom_project]
+            except (FileNotFoundError, ValueError, OSError) as e:
+                logger.exception("Failed to load tasks from custom JSON")
+                raise RuntimeError(f"Failed to load tasks from {self.config.tasks_json_path}: {e}") from e
+        else:
+            self._custom_tasks_cache = None
+            projects_to_run = list(self.config.projects)
+
+        total_projects = len(projects_to_run)
         successful_projects = 0
 
         try:
-            for project_index, project in enumerate(self.config.projects, 1):
+            for project_index, project in enumerate(projects_to_run, 1):
                 logger.info(f"\n=== Project {project_index}/{total_projects}: {project.name} ===")
                 project_run_results: list[dict] = []
 
@@ -709,11 +837,21 @@ class Benchmark:
             self._timing_metrics.end()
 
         # Save consolidated results to a single file
+        saved_path: Path | None = None
         if self.config.save_results_json and self.per_project_results:
             try:
-                self._save_consolidated_results()
+                saved_path = self._save_consolidated_results()
             except Exception as e:
                 logger.error(f"Failed to save consolidated results: {e}")
+
+        # Metrics report (default behaviour); do not fail run if report raises
+        if saved_path and saved_path.exists():
+            try:
+                from autoppia_iwa.entrypoints.benchmark.utils.metrics_report import run_report
+
+                run_report(results_path=saved_path, write_summary_file=True)
+            except Exception as e:
+                logger.warning(f"Metrics report failed (results already saved): {e}")
 
         logger.success(f"Benchmark finished ✔ - {successful_projects}/{total_projects} projects completed successfully")
 
