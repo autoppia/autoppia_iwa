@@ -57,7 +57,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest pytest-cov pip-audit
+          pip install pytest pytest-cov pytest-asyncio pip-audit
+
+      - name: Install Playwright browsers
+        run: playwright install chromium
+
+      - name: Install Playwright system dependencies
+        run: playwright install-deps chromium
 
       - name: Audit Python dependencies (pip-audit)
         id: pip_audit
@@ -81,11 +87,29 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          pytest tests/ --cov=autoppia_iwa --cov=modules --cov=scripts --cov-report=xml --cov-report=term
-        continue-on-error: true
+          pytest tests \
+          --cov \
+          --cov-config=.coveragerc \
+          --cov-report=xml \
+          --cov-report=term-missing
+
+      - name: Ensure coverage report exists for SonarCloud
+        run: |
+          if [ ! -f coverage.xml ]; then
+            echo "Creating minimal coverage.xml (tests may have failed)"
+            printf '%s\n' '<?xml version="1.0" ?>' '<coverage line-rate="0" branch-rate="0" lines-covered="0" lines-valid="1" branches-covered="0" branches-valid="0" version="1.9" timestamp="0">' '<sources><source>.</source></sources>' '<packages/>' '</coverage>' > coverage.xml
+          fi
+
+      - name: Check coverage file
+        run: |
+          ls -lh coverage.xml
+          grep filename coverage.xml | head -n 10
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.branch.name=${{ github.ref_name }}
