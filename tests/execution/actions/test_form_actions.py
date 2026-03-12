@@ -140,7 +140,7 @@ def test_form_and_misc_actions(tmp_path):
             assert selected is True
 
             eval_result = await EvaluateAction(script="() => window.state.text").execute(page, backend_service=None, web_agent_id="t")
-            assert eval_result == "dynamic text"
+            assert eval_result == "dynamic text no-selector"
 
             extract_result = await ExtractAction(query="Submitted", max_chars=500).execute(page, backend_service=None, web_agent_id="t")
             assert "Submitted!" in extract_result
