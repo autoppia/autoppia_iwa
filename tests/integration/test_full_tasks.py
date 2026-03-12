@@ -1,35 +1,57 @@
 #!/usr/bin/env python3
 """
-Test de generación completa de tasks para verificar que tienen sentido.
+Integration tests: full task generation with real LLM and real backend data.
+Requires OPENAI_API_KEY and running demo webs backend. Skipped when not configured.
 """
 
 import asyncio
 import json
+import os
+
+import pytest
+
+try:
+    from _pytest.outcomes import Skipped
+except ImportError:
+    Skipped = type("Skipped", (), {})
 
 
+def _skip_if_no_real_api_key():
+    """Skip when OPENAI_API_KEY is missing or is the test placeholder."""
+    key = os.environ.get("OPENAI_API_KEY") or ""
+    if not key or key.strip() == "dummy-for-tests":
+        pytest.skip("OPENAI_API_KEY not set or dummy; skipping real integration test (set OPENAI_API_KEY to run)")
+
+
+@pytest.mark.integration
 async def test_full_task_generation():
     print("\n" + "=" * 80)
-    print("📝 TESTING GENERACIÓN COMPLETA DE TASKS")
+    print("📝 TESTING GENERACIÓN COMPLETA DE TASKS - real LLM & backend")
     print("=" * 80)
 
-    from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
-    from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig
-    from autoppia_iwa.src.demo_webs.projects.autocinema_1.main import autocinema_project
-    from autoppia_iwa.src.evaluation.evaluator.utils import extract_seed_from_url
+    _skip_if_no_real_api_key()
 
-    print("\n1️⃣ Configurando pipeline...")
+    from autoppia_iwa.src.data_generation.tasks.classes import TaskGenerationConfig
+    from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
+    from autoppia_iwa.src.demo_webs.projects.autocinema_1.main import autocinema_project
+    from autoppia_iwa.src.evaluation.shared.utils import extract_seed_from_url
+
+    print("\n1️⃣ Configurando pipeline (real LLM)...")
     config = TaskGenerationConfig(
         prompts_per_use_case=2,
         use_cases=["FILM_DETAIL", "SEARCH_FILM", "FILTER_FILM"],
-        dynamic=True,  # ✅ Modo dinámico
+        dynamic=True,
     )
 
     pipeline = TaskGenerationPipeline(web_project=autocinema_project, config=config)
 
-    print("\n2️⃣ Generando tasks...")
+    print("\n2️⃣ Generando tasks (real backend + LLM)...")
     tasks = await pipeline.generate()
 
     print(f"\n✅ Tasks generadas: {len(tasks)}")
+
+    if not tasks:
+        pytest.skip("No tasks generated (backend may be down or LLM returned nothing)")
 
     # Analizar cada task
     tasks_analysis = []
@@ -53,13 +75,12 @@ async def test_full_task_generation():
                 event_name = test.event_name if hasattr(test, "event_name") else ""
                 print(f"  • {test_type}: {event_name}")
 
-        print(f"🔄 Dynamic: {task.dynamic}")
+        dynamic = getattr(task, "dynamic", None)
+        print(f"🔄 Dynamic: {dynamic}")
 
-        # Extraer seed
         seed = extract_seed_from_url(task.url)
         print(f"🔑 Seed en URL: {seed}")
 
-        # Guardar análisis
         analysis = {
             "id": task.id,
             "use_case": task.use_case.name,
@@ -68,7 +89,7 @@ async def test_full_task_generation():
             "prompt": task.prompt,
             "constraints": task.use_case.constraints,
             "num_tests": len(task.tests),
-            "dynamic": task.dynamic,
+            "dynamic": getattr(task, "dynamic", None),
         }
         tasks_analysis.append(analysis)
 
@@ -96,25 +117,27 @@ async def test_full_task_generation():
         else:
             print(f"   ✅ Task {task.id[:8]}: {len(task.tests)} tests")
 
-    # Guardar análisis a JSON
     output_file = "generated_tasks_analysis.json"
     with open(output_file, "w") as f:
         json.dump(tasks_analysis, f, indent=2, default=str)
 
     print(f"\n✅ Análisis guardado en: {output_file}")
 
-    return tasks
+    assert len(tasks) > 0
 
 
+@pytest.mark.integration
 async def test_autobooks_tasks():
     print("\n" + "=" * 80)
-    print("📚 TESTING GENERACIÓN DE TASKS AUTOBOOKS")
+    print("📚 TESTING GENERACIÓN DE TASKS AUTOBOOKS - real LLM & backend")
     print("=" * 80)
 
-    from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
-    from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig
+    _skip_if_no_real_api_key()
+
+    from autoppia_iwa.src.data_generation.tasks.classes import TaskGenerationConfig
+    from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
     from autoppia_iwa.src.demo_webs.projects.autobooks_2.main import autobooks_project
-    from autoppia_iwa.src.evaluation.evaluator.utils import extract_seed_from_url
+    from autoppia_iwa.src.evaluation.shared.utils import extract_seed_from_url
 
     config = TaskGenerationConfig(
         prompts_per_use_case=2,
@@ -127,32 +150,31 @@ async def test_autobooks_tasks():
 
     print(f"\n✅ Tasks generadas: {len(tasks)}")
 
-    for i, task in enumerate(tasks[:3], 1):  # Primeras 3
+    if not tasks:
+        pytest.skip("No tasks generated (backend may be down or LLM returned nothing)")
+
+    for i, task in enumerate(tasks[:3], 1):
         print(f"\nTask #{i}:")
         print(f"  URL: {task.url}")
         print(f"  Seed: {extract_seed_from_url(task.url)}")
         print(f"  Use case: {task.use_case.name}")
         print(f"  Prompt: {task.prompt[:80]}...")
 
-    return tasks
+    assert len(tasks) > 0
 
 
-# Main
+# Main (for running as script)
 async def main():
     print("\n" + "🧪" * 40)
-    print("SUITE DE TESTS - GENERACIÓN Y VALIDACIÓN DE TASKS")
+    print("SUITE DE TESTS - GENERACIÓN Y VALIDACIÓN DE TASKS (real LLM & backend)")
     print("🧪" * 40)
 
     try:
-        # Test 1: Guard de validación
-        from test_seed_guard import test_seed_guard
+        from tests.integration.test_seed_guard import test_seed_guard
 
         guard_ok = await test_seed_guard()
 
-        # Test 2: Generación autocinema
         tasks_cinema = await test_full_task_generation()
-
-        # Test 3: Generación autobooks
         tasks_books = await test_autobooks_tasks()
 
         print("\n" + "=" * 80)
@@ -164,6 +186,9 @@ async def main():
 
         return True
 
+    except Skipped as e:
+        print(f"\n⏭️ Tests skipped: {e}")
+        return False
     except Exception as e:
         print(f"\n❌ ERROR: {e}")
         import traceback

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test rápido para verificar que TODOS los 13 proyectos tienen get_seed_from_url.
+Test rápido para verificar que TODOS los 15 proyectos tienen get_seed_from_url.
 """
 
 import asyncio
@@ -9,7 +9,7 @@ import json
 
 async def test_all_projects_have_optimization():
     print("\n" + "=" * 80)
-    print("🔍 VERIFICANDO QUE TODOS LOS PROYECTOS ESTÁN ACTUALIZADOS")
+    print("🔍 VERIFICANDO QUE TODOS LOS 15 PROYECTOS ESTÁN ACTUALIZADOS")
     print("=" * 80)
 
     projects = [
@@ -26,7 +26,8 @@ async def test_all_projects_have_optimization():
         ("autocalendar_11", "events"),
         ("autolist_12", "tasks"),
         ("autodrive_13", "trips"),
-        ("autodiscord_16", "servers"),
+        ("autohealth_14", "health"),
+        ("autostats_15", "stats"),
     ]
 
     results = []
@@ -91,9 +92,9 @@ async def test_all_projects_have_optimization():
     needs_update = sum(1 for r in results if r["status"] == "NEEDS_UPDATE")
     error_count = sum(1 for r in results if r["status"] == "ERROR")
 
-    print(f"\n✅ Proyectos OK: {ok_count}/13")
-    print(f"⚠️ Proyectos que necesitan actualización: {needs_update}/13")
-    print(f"❌ Proyectos con error: {error_count}/13")
+    print(f"\n✅ Proyectos OK: {ok_count}/15")
+    print(f"⚠️ Proyectos que necesitan actualización: {needs_update}/15")
+    print(f"❌ Proyectos con error: {error_count}/15")
 
     if needs_update > 0:
         print("\n⚠️ Proyectos que necesitan actualización:")
@@ -118,13 +119,13 @@ async def test_all_projects_have_optimization():
 
     print(f"\n✅ Resultados guardados en: {output_file}")
 
-    return ok_count == 13
+    return ok_count == 15
 
 
 if __name__ == "__main__":
     success = asyncio.run(test_all_projects_have_optimization())
     if success:
-        print("\n🎉 TODOS LOS 13 PROYECTOS ESTÁN CORRECTAMENTE ACTUALIZADOS!")
+        print("\n🎉 TODOS LOS 15 PROYECTOS ESTÁN CORRECTAMENTE ACTUALIZADOS!")
     else:
         print("\n⚠️ Algunos proyectos necesitan actualización")
     exit(0 if success else 1)

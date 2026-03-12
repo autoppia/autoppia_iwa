@@ -5,6 +5,10 @@ import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
+# Allow tests to run without real API keys (config validates at import time)
+os.environ.setdefault("OPENAI_API_KEY", "dummy-for-tests")
+os.environ.setdefault("LLM_PROVIDER", "openai")
+
 os.environ.setdefault("AUTOPPIA_BOOTSTRAP_DISABLE", "1")
 
 import pytest
@@ -28,7 +32,7 @@ def stub_agent():
 
             class Handler(BaseHTTPRequestHandler):
                 def do_POST(self):
-                    if self.path != "/solve_task":
+                    if self.path not in ("/solve_task", "/solve_task_at_once"):
                         self.send_response(404)
                         self.end_headers()
                         return
