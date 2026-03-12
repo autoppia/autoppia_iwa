@@ -1,4 +1,4 @@
-"""Constraint generators for autostats_15. Data is synthetic (no DB); constraints built from static pools."""
+"""Constraint generators for autostats_15. Server data only (single source of truth); no local/synthetic fallback."""
 
 import random
 from typing import Any
@@ -7,7 +7,6 @@ from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOpera
 from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_dict
 
 from .data import (
-    ACCOUNT_TYPES,
     FIELD_OPERATORS_MAP_CONNECT_WALLET,
     FIELD_OPERATORS_MAP_DISCONNECT_WALLET,
     FIELD_OPERATORS_MAP_EXECUTE_BUY,
@@ -35,70 +34,104 @@ from .data import (
     SELECTED_FIELDS_VIEW_BLOCK,
     SELECTED_FIELDS_VIEW_SUBNET,
     SELECTED_FIELDS_VIEW_VALIDATOR,
-    SUBNET_NAMES,
     WALLET_NAMES,
 )
 
 
-def _build_subnet_dataset() -> list[dict[str, Any]]:
-    """Synthetic subnets for constraint generation (matches web_15 SUBNET_NAMES + plausible metrics)."""
-    return [
-        {
-            "subnet_name": name,
-            "emission": 100_000 * (i + 1) + random.randint(0, 50000),
-            "price": 1.0 if i == 0 else round(0.01 + random.random() * 1.99, 4),
-            "marketCap": (50_000_000 if i == 0 else 1_000_000 + random.randint(0, 10_000_000)),
-            "volume24h": (5_000_000 if i == 0 else 100_000 + random.randint(0, 1_000_000)),
-        }
-        for i, name in enumerate(SUBNET_NAMES)
-    ]
+async def _ensure_autostats_dataset(
+    task_url: str | None,
+    dataset: dict[str, list[dict[str, Any]]] | None,
+    *,
+    entity_type: str,
+) -> dict[str, list[dict[str, Any]]]:
+    """
+    Fetch entity data using seed from task_url (same flow as autocrm_5 _ensure_crm_dataset).
+    Returns a dictionary with entity_type as the key.
+    """
+    _ = dataset  # Unused parameter kept for backward compatibility
+    from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+
+    from .data_utils import fetch_data
+
+    seed = get_seed_from_url(task_url)
+    fetched = await fetch_data(
+        entity_type=entity_type,
+        seed_value=seed,
+        count=50,
+    )
+    return {entity_type: fetched or []}
 
 
-def _build_validator_dataset() -> list[dict[str, Any]]:
-    """Synthetic validators for constraint generation."""
-    return [
-        {
-            "hotkey": f"5JhG4H2f...zRxQJA{i}",
-            "rank": i + 1,
-            "dominance": round(0.5 + random.random() * 4.5, 2),
-            "nominatorCount": 20 + random.randint(0, 80),
-            "totalWeight": 100_000 + random.randint(0, 900_000),
-            "rootStake": 10_000 + random.randint(0, 150_000),
-            "alphaStake": 50_000 + random.randint(0, 850_000),
-            "commission": round(1.0 + random.random() * 15, 2),
-        }
-        for i in range(20)
-    ]
+async def _get_autostats_entity_list(
+    task_url: str | None,
+    dataset: dict[str, list[dict[str, Any]]] | None,
+    entity_type: str,
+) -> list[dict[str, Any]]:
+    """Fetch autostats dataset for entity_type and return the list. Same pattern as _get_crm_entity_list."""
+    data_dict = await _ensure_autostats_dataset(task_url, dataset, entity_type=entity_type)
+    return data_dict.get(entity_type, [])
 
 
-def _build_block_dataset() -> list[dict[str, Any]]:
-    """Synthetic blocks for constraint generation."""
-    return [
-        {
-            "number": 1_000_000 - i,
-            "hash": f"0x{'a' * 16}{i:04x}{'b' * 40}",
-            "validator": f"5Validator{i}...",
-            "epoch": (1_000_000 - i) // 360,
-            "extrinsicsCount": 4 + random.randint(0, 8),
-            "eventsCount": 8 + random.randint(0, 16),
-        }
-        for i in range(50)
-    ]
+def _build_wallet_dataset() -> list[dict[str, Any]]:
+    """Local data from WALLET_NAMES for CONNECT_WALLET / DISCONNECT_WALLET constraint generation (names only)."""
+    return [{"wallet_name": name} for name in WALLET_NAMES]
 
 
-def _build_account_dataset() -> list[dict[str, Any]]:
-    """Synthetic accounts for constraint generation."""
-    return [
-        {
-            "rank": i + 1,
-            "address": f"5BiteWLX...9y{i:02d}",
-            "balance": 20_000 + random.randint(0, 100_000),
-            "stakedAmount": 400_000 + random.randint(0, 100_000),
-            "stakingRatio": round(70 + random.random() * 25, 1),
-            "accountType": random.choice(ACCOUNT_TYPES),
-        }
-        for i in range(30)
-    ]
+def _to_float_safe(value: Any) -> float | None:
+    """Coerce value to float for numeric constraint generation (matches autocrm_5)."""
+    if isinstance(value, int | float):
+        return float(value)
+    if isinstance(value, str):
+        try:
+            return float(value.replace(",", "").strip())
+        except Exception:
+            return None
+    return None
+
+
+def _generate_constraint_value(
+    operator: ComparisonOperator,
+    field_value: Any,
+    field: str,
+    dataset: list[dict[str, Any]],
+) -> Any:
+    """Generate a constraint value for the given operator (same pattern as autocrm_5)."""
+    if operator == ComparisonOperator.EQUALS:
+        return field_value
+
+    if operator == ComparisonOperator.NOT_EQUALS:
+        valid = [v[field] for v in dataset if v.get(field) != field_value and v.get(field) is not None]
+        return random.choice(valid) if valid else None
+
+    if operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
+        if len(field_value) > 2:
+            start = random.randint(0, max(0, len(field_value) - 2))
+            end = random.randint(start + 1, len(field_value))
+            return field_value[start:end]
+        return field_value
+
+    if operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
+        valid = [v[field] for v in dataset if isinstance(v.get(field), str) and field_value not in v.get(field, "")]
+        return random.choice(valid) if valid else None
+
+    if operator in {
+        ComparisonOperator.GREATER_THAN,
+        ComparisonOperator.LESS_THAN,
+        ComparisonOperator.GREATER_EQUAL,
+        ComparisonOperator.LESS_EQUAL,
+    }:
+        base = _to_float_safe(field_value)
+        if base is None:
+            return None
+        delta = random.uniform(1, 3)
+        if operator == ComparisonOperator.GREATER_THAN:
+            return round(base - delta, 2)
+        if operator == ComparisonOperator.LESS_THAN:
+            return round(base + delta, 2)
+        if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+            return round(base, 2)
+
+    return None
 
 
 def _generate_constraints_static(
@@ -110,6 +143,7 @@ def _generate_constraints_static(
     integer_fields: set[str] | None = None,
 ) -> list[dict[str, Any]]:
     """Build constraints from a static dataset; pick one item and 1..num_constraints fields.
+    Uses _generate_constraint_value (same pattern as autocrm_5) for constraint values.
     integer_fields: field names that must have integer constraint values (e.g. rank, eventsCount).
     """
     if not dataset:
@@ -127,28 +161,28 @@ def _generate_constraints_static(
         allowed = field_operators[field]
         op_str = random.choice(allowed)
         op = ComparisonOperator(op_str)
-        constraint_value = value
-        if op in (ComparisonOperator.GREATER_THAN, ComparisonOperator.GREATER_EQUAL) and isinstance(value, int | float):
-            constraint_value = value - (random.random() * 0.1 * abs(value) if value else 0)
-        elif op in (ComparisonOperator.LESS_THAN, ComparisonOperator.LESS_EQUAL) and isinstance(value, int | float):
-            constraint_value = value + (random.random() * 0.1 * abs(value) if value else 0)
+        constraint_value = _generate_constraint_value(op, value, field, dataset)
+        if constraint_value is None:
+            continue
         if field in integer_fields and isinstance(constraint_value, int | float):
             constraint_value = round(constraint_value)
         constraints.append(create_constraint_dict(field, op, constraint_value))
     return constraints
 
 
-def generate_view_subnet_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    """Generate constraints for VIEW_SUBNET from static subnet names and metrics."""
-    _ = task_url, dataset  # Unused parameters kept for backward compatibility
-    data = _build_subnet_dataset()
+async def generate_view_subnet_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for VIEW_SUBNET from server data only."""
+    data = await _get_autostats_entity_list(task_url, dataset, "subnets")
+    if not data:
+        return []
     return _generate_constraints_static(data, FIELD_OPERATORS_MAP_VIEW_SUBNET, SELECTED_FIELDS_VIEW_SUBNET, num_constraints=2)
 
 
-def generate_view_validator_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    """Generate constraints for VIEW_VALIDATOR from synthetic validator data."""
-    _ = task_url, dataset  # Unused parameters kept for backward compatibility
-    data = _build_validator_dataset()
+async def generate_view_validator_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for VIEW_VALIDATOR from server data only."""
+    data = await _get_autostats_entity_list(task_url, dataset, "validators")
+    if not data:
+        return []
     return _generate_constraints_static(
         data,
         FIELD_OPERATORS_MAP_VIEW_VALIDATOR,
@@ -158,10 +192,11 @@ def generate_view_validator_constraints(task_url: str | None = None, dataset: di
     )
 
 
-def generate_view_block_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    """Generate constraints for VIEW_BLOCK from synthetic block data."""
-    _ = task_url, dataset  # Unused parameters kept for backward compatibility
-    data = _build_block_dataset()
+async def generate_view_block_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for VIEW_BLOCK from server data only."""
+    data = await _get_autostats_entity_list(task_url, dataset, "blocks")
+    if not data:
+        return []
     return _generate_constraints_static(
         data,
         FIELD_OPERATORS_MAP_VIEW_BLOCK,
@@ -171,10 +206,11 @@ def generate_view_block_constraints(task_url: str | None = None, dataset: dict[s
     )
 
 
-def generate_view_account_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    """Generate constraints for VIEW_ACCOUNT from synthetic account data."""
-    _ = task_url, dataset  # Unused parameters kept for backward compatibility
-    data = _build_account_dataset()
+async def generate_view_account_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for VIEW_ACCOUNT from server data only."""
+    data = await _get_autostats_entity_list(task_url, dataset, "accounts")
+    if not data:
+        return []
     return _generate_constraints_static(
         data,
         FIELD_OPERATORS_MAP_VIEW_ACCOUNT,
@@ -184,40 +220,19 @@ def generate_view_account_constraints(task_url: str | None = None, dataset: dict
     )
 
 
-def _build_execute_buy_dataset() -> list[dict[str, Any]]:
-    """Synthetic buy orders per subnet so prompts like 'compra 10 TAU en la subnet Text Prompting' are verifiable."""
-    return [
+async def generate_execute_buy_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for EXECUTE_BUY from server subnets only."""
+    subnets = await _get_autostats_entity_list(task_url, dataset, "subnets")
+    if not subnets:
+        return []
+    data = [
         {
-            "subnet_name": name,
-            "orderType": "market",
+            "subnet_name": s.get("subnet_name", s.get("name", "")),
             "amountTAU": 10 + random.randint(0, 90),
             "amountAlpha": 5 + random.randint(0, 45),
-            "priceImpact": round(random.random() * 0.2, 4),
-            "maxAvailableTAU": 500 + random.randint(0, 1500),
         }
-        for name in SUBNET_NAMES
+        for s in subnets
     ]
-
-
-def _build_execute_sell_dataset() -> list[dict[str, Any]]:
-    """Synthetic sell orders per subnet so prompts like 'vende 20 alpha en la subnet Text Prompting' are verifiable."""
-    return [
-        {
-            "subnet_name": name,
-            "orderType": "market",
-            "amountTAU": 0,
-            "amountAlpha": 10 + random.randint(0, 90),
-            "priceImpact": round(random.random() * 0.2, 4),
-            "maxDelegatedAlpha": 100 + random.randint(0, 400),
-        }
-        for name in SUBNET_NAMES
-    ]
-
-
-def generate_execute_buy_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    """Generate constraints for EXECUTE_BUY (subnet_name + amountTAU/amountAlpha) so prompts are verifiable."""
-    _ = task_url, dataset  # Unused parameters kept for backward compatibility
-    data = _build_execute_buy_dataset()
     return _generate_constraints_static(
         data,
         FIELD_OPERATORS_MAP_EXECUTE_BUY,
@@ -227,10 +242,19 @@ def generate_execute_buy_constraints(task_url: str | None = None, dataset: dict[
     )
 
 
-def generate_execute_sell_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    """Generate constraints for EXECUTE_SELL (subnet_name + amountAlpha/maxDelegatedAlpha) so prompts are verifiable."""
-    _ = task_url, dataset  # Unused parameters kept for backward compatibility
-    data = _build_execute_sell_dataset()
+async def generate_execute_sell_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for EXECUTE_SELL from server subnets only."""
+    subnets = await _get_autostats_entity_list(task_url, dataset, "subnets")
+    if not subnets:
+        return []
+    data = [
+        {
+            "subnet_name": s.get("subnet_name", s.get("name", "")),
+            "amountTAU": 1 + random.randint(0, 9),
+            "amountAlpha": 10 + random.randint(0, 90),
+        }
+        for s in subnets
+    ]
     return _generate_constraints_static(
         data,
         FIELD_OPERATORS_MAP_EXECUTE_SELL,
@@ -240,39 +264,10 @@ def generate_execute_sell_constraints(task_url: str | None = None, dataset: dict
     )
 
 
-def _build_connect_wallet_dataset() -> list[dict[str, Any]]:
-    """Synthetic wallet connections (wallet_name + deterministic address pattern)."""
-    return [{"wallet_name": name, "address": f"5Connect{i}...{name[:4].replace(' ', '')}"} for i, name in enumerate(WALLET_NAMES)]
-
-
-def _build_disconnect_wallet_dataset() -> list[dict[str, Any]]:
-    """Same as connect for constraint generation (wallet_name, address)."""
-    return _build_connect_wallet_dataset()
-
-
-def _build_transfer_complete_dataset() -> list[dict[str, Any]]:
-    """Synthetic completed transfers for constraint generation."""
-    return [
-        {
-            "hash": f"0x{'a' * 16}{i:06x}{'b' * 32}",
-            "from_": f"5Sender{i}...",
-            "to": f"5Recip{i}...",
-            "amount": 10 + random.randint(0, 990),
-            "block_number": 3_200_000 + random.randint(0, 50_000),
-        }
-        for i in range(30)
-    ]
-
-
-def _build_favorite_subnet_dataset() -> list[dict[str, Any]]:
-    """Subnets that can be favorited (subnet_id + subnet_name)."""
-    return [{"subnet_id": i, "subnet_name": name} for i, name in enumerate(SUBNET_NAMES)]
-
-
 def generate_connect_wallet_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    """Generate constraints for CONNECT_WALLET (wallet_name, address)."""
-    _ = task_url, dataset  # Unused parameters kept for backward compatibility
-    data = _build_connect_wallet_dataset()
+    """Generate constraints for CONNECT_WALLET from local WALLET_NAMES data."""
+    _ = task_url, dataset
+    data = _build_wallet_dataset()
     return _generate_constraints_static(
         data,
         FIELD_OPERATORS_MAP_CONNECT_WALLET,
@@ -282,9 +277,9 @@ def generate_connect_wallet_constraints(task_url: str | None = None, dataset: di
 
 
 def generate_disconnect_wallet_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    """Generate constraints for DISCONNECT_WALLET (wallet_name, address)."""
-    _ = task_url, dataset  # Unused parameters kept for backward compatibility
-    data = _build_disconnect_wallet_dataset()
+    """Generate constraints for DISCONNECT_WALLET from local WALLET_NAMES data."""
+    _ = task_url, dataset
+    data = _build_wallet_dataset()
     return _generate_constraints_static(
         data,
         FIELD_OPERATORS_MAP_DISCONNECT_WALLET,
@@ -293,10 +288,11 @@ def generate_disconnect_wallet_constraints(task_url: str | None = None, dataset:
     )
 
 
-def generate_transfer_complete_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    """Generate constraints for TRANSFER_COMPLETE (to, amount, block_number)."""
-    _ = task_url, dataset  # Unused parameters kept for backward compatibility
-    data = _build_transfer_complete_dataset()
+async def generate_transfer_complete_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for TRANSFER_COMPLETE from server data only."""
+    data = await _get_autostats_entity_list(task_url, dataset, "transfers")
+    if not data:
+        return []
     return _generate_constraints_static(
         data,
         FIELD_OPERATORS_MAP_TRANSFER_COMPLETE,
@@ -306,10 +302,12 @@ def generate_transfer_complete_constraints(task_url: str | None = None, dataset:
     )
 
 
-def generate_favorite_subnet_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    """Generate constraints for FAVORITE_SUBNET (subnet_name, subnet_id)."""
-    _ = task_url, dataset  # Unused parameters kept for backward compatibility
-    data = _build_favorite_subnet_dataset()
+async def generate_favorite_subnet_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Generate constraints for FAVORITE_SUBNET from server subnets (subnet_name only)."""
+    data = await _get_autostats_entity_list(task_url, dataset, "subnets")
+    if not data:
+        return []
+    data = [{"subnet_name": s.get("subnet_name", s.get("name", ""))} for s in data]
     return _generate_constraints_static(
         data,
         FIELD_OPERATORS_MAP_FAVORITE_SUBNET,
