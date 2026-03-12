@@ -47,11 +47,10 @@ class TestParseAutostatsEvents:
         assert e.price == 1.5
 
     def test_connect_wallet_parse(self):
-        payload = _wrap_data({"wallet_name": "Polkadot.js", "address": "0x123"})
+        payload = _wrap_data({"wallet_name": "Polkadot.js"})
         e = ConnectWalletEvent.parse(_be("CONNECT_WALLET", payload))
         assert e.event_name == "CONNECT_WALLET"
         assert e.wallet_name == "Polkadot.js"
-        assert e.address == "0x123"
 
 
 class TestValidateAutostatsEvents:
