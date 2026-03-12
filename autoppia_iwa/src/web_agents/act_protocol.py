@@ -30,6 +30,7 @@ class ActRequest(BaseModel):
     state_in: dict[str, Any] = Field(default_factory=dict)
     allowed_tools: list[dict[str, Any]] = Field(default_factory=list)
     include_reasoning: bool = False
+    timeout_seconds: float | None = Field(default=None, description="Max seconds to wait for agent response; server cancels and destroys agent for this task if exceeded.")
 
 
 class ActToolCall(BaseModel):

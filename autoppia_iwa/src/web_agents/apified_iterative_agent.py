@@ -91,6 +91,7 @@ class ApifiedWebAgent(IWebAgent):
             state_in=state_payload,
             allowed_tools=self.allowed_tools,
             include_reasoning=self.request_reasoning,
+            timeout_seconds=self.timeout,
         )
         payload = request.model_dump(mode="json", exclude_none=True)
 
@@ -198,14 +199,7 @@ class ApifiedWebAgent(IWebAgent):
         if not actions:
             return any(key in payload for key in ("done", "state_out", "protocol_version", "content", "reasoning", "error"))
         return all(
-            isinstance(item, dict)
-            and isinstance(item.get("name"), str)
-            and (
-                "arguments" not in item
-                or item.get("arguments") is None
-                or isinstance(item.get("arguments"), dict)
-            )
-            for item in actions
+            isinstance(item, dict) and isinstance(item.get("name"), str) and ("arguments" not in item or item.get("arguments") is None or isinstance(item.get("arguments"), dict)) for item in actions
         )
 
     def _parse_legacy_actions_response(self, data: dict[str, Any]) -> list[BaseAction]:
