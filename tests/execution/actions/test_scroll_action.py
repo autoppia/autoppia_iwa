@@ -1,5 +1,6 @@
 import asyncio
 
+import pytest
 from playwright.async_api import async_playwright
 
 from autoppia_iwa.src.execution.actions.actions import ScrollAction
@@ -120,6 +121,23 @@ def test_scroll_action_vertical_horizontal_and_text():
             assert rect["top"] < rect["ih"] and rect["left"] < rect["iw"]
             assert rect["bottom"] > 0 and rect["right"] > 0
 
+            await context.close()
+            await browser.close()
+
+    asyncio.run(run())
+
+
+def test_scroll_action_to_nonexistent_text_raises():
+    """ScrollAction(value=<text>) raises ValueError when text is not on the page."""
+
+    async def run():
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            context = await browser.new_context()
+            page = await context.new_page()
+            await page.set_content("<html><body><p>only this</p></body></html>")
+            with pytest.raises(ValueError, match="Could not find text"):
+                await ScrollAction(value="nonexistent_text_xyz").execute(page, backend_service=None, web_agent_id="t")
             await context.close()
             await browser.close()
 

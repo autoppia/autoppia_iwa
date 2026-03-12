@@ -1,21 +1,43 @@
 #!/usr/bin/env python3
 """
-Script para verificar que la generación de constraints funciona correctamente
-con el sistema de seeds optimizado.
+Integration tests: constraint generation with real data from the demo webs backend.
+Requires the demo webs backend to be running. Skipped when backend is unavailable.
 """
 
 import asyncio
 from pprint import pprint
 
+import pytest
 
-# Test para autocinema (web 1)
+try:
+    from _pytest.outcomes import Skipped
+except ImportError:
+    Skipped = type("Skipped", (), {})  # fallback if pytest structure changes
+
+
+def _skip_if_backend_unavailable(reason: str):
+    """Skip the test when backend is not reachable (e.g. in CI without services)."""
+    pytest.skip(reason)
+
+
+@pytest.fixture(autouse=True)
+async def reset_http_session_after_test():
+    """Close the global aiohttp session after each test so the next test creates a new one in its own event loop."""
+    yield
+    from autoppia_iwa.src.demo_webs.projects.data_provider import close_async_session
+
+    await close_async_session()
+
+
+# Test para autocinema (web 1) - real data from backend
+@pytest.mark.integration
 async def test_autocinema_constraints():
     print("\n" + "=" * 80)
-    print("🎬 TESTING AUTOCINEMA (Web 1)")
+    print("🎬 TESTING AUTOCINEMA (Web 1) - real backend data")
     print("=" * 80)
 
+    from autoppia_iwa.src.demo_webs.projects.autocinema_1.data_utils import fetch_data as fetch_movies
     from autoppia_iwa.src.demo_webs.projects.autocinema_1.generation_functions import (
-        _get_data,
         generate_film_constraints,
         generate_film_filter_constraints,
         generate_search_film_constraints,
@@ -31,15 +53,24 @@ async def test_autocinema_constraints():
     seed = get_seed_from_url(test_url)
     print(f"   ✅ seed=86 → seed={seed}")
 
-    # 2. Cargar dataset
-    print("\n2️⃣ Cargando dataset con seed...")
-    dataset = await _get_data(seed_value=seed)
-    print(f"   ✅ Dataset cargado: {len(dataset)} películas")
-    if dataset:
-        print(f"   📄 Muestra película 1: {dataset[0]['name']}")
-        print(f"   📄 Muestra película 2: {dataset[1]['name']}")
+    # 2. Cargar dataset desde backend (real flow)
+    print("\n2️⃣ Cargando dataset desde backend...")
+    try:
+        movies = await fetch_movies(seed_value=seed)
+    except Exception as e:
+        _skip_if_backend_unavailable(f"Demo webs backend not reachable: {e}")
 
-    # 3. Test SIN dataset (lazy loading)
+    if not movies:
+        _skip_if_backend_unavailable("Backend returned no movies (is demo webs running?)")
+
+    dataset = {"movies": movies}
+    print(f"   ✅ Dataset cargado: {len(dataset['movies'])} películas")
+    if movies:
+        print(f"   📄 Muestra película 1: {movies[0].get('name', 'N/A')}")
+        if len(movies) > 1:
+            print(f"   📄 Muestra película 2: {movies[1].get('name', 'N/A')}")
+
+    # 3. Test SIN dataset (lazy loading - backend is called internally)
     print("\n3️⃣ Test generación SIN dataset (lazy loading)...")
     constraints_1 = await generate_search_film_constraints(task_url=test_url)
     print(f"   ✅ Constraints generados: {len(constraints_1)}")
@@ -63,17 +94,18 @@ async def test_autocinema_constraints():
     print(f"   ✅ film_filter: {len(c3)} constraints")
     print("   🎉 TODO CON UN SOLO DATASET (optimización funcionando)")
 
-    return True
+    assert True
 
 
-# Test para autobooks (web 2)
+# Test para autobooks (web 2) - real data from backend
+@pytest.mark.integration
 async def test_autobooks_constraints():
     print("\n" + "=" * 80)
-    print("📚 TESTING AUTOBOOKS (Web 2)")
+    print("📚 TESTING AUTOBOOKS (Web 2) - real backend data")
     print("=" * 80)
 
+    from autoppia_iwa.src.demo_webs.projects.autobooks_2.data_utils import fetch_data as fetch_books
     from autoppia_iwa.src.demo_webs.projects.autobooks_2.generation_functions import (
-        _get_data,
         generate_book_constraints,
         generate_book_filter_constraints,
         generate_search_book_constraints,
@@ -89,13 +121,22 @@ async def test_autobooks_constraints():
     seed = get_seed_from_url(test_url)
     print(f"   ✅ seed=123 → seed={seed}")
 
-    # 2. Cargar dataset
-    print("\n2️⃣ Cargando dataset con seed...")
-    dataset = await _get_data(seed_value=seed)
-    print(f"   ✅ Dataset cargado: {len(dataset)} libros")
-    if dataset:
-        print(f"   📄 Muestra libro 1: {dataset[0]['name']}")
-        print(f"   📄 Muestra libro 2: {dataset[1]['name']}")
+    # 2. Cargar dataset desde backend (real flow)
+    print("\n2️⃣ Cargando dataset desde backend...")
+    try:
+        books = await fetch_books(seed_value=seed)
+    except Exception as e:
+        _skip_if_backend_unavailable(f"Demo webs backend not reachable: {e}")
+
+    if not books:
+        _skip_if_backend_unavailable("Backend returned no books (is demo webs running?)")
+
+    dataset = {"books": books}
+    print(f"   ✅ Dataset cargado: {len(dataset['books'])} libros")
+    if books:
+        print(f"   📄 Muestra libro 1: {books[0].get('name', 'N/A')}")
+        if len(books) > 1:
+            print(f"   📄 Muestra libro 2: {books[1].get('name', 'N/A')}")
 
     # 3. Test con dataset
     print("\n3️⃣ Test generación CON dataset...")
@@ -108,16 +149,18 @@ async def test_autobooks_constraints():
     print(f"   ✅ book_detail: {len(constraints_2) if constraints_2 else 0} constraints")
     print(f"   ✅ book_filter: {len(constraints_3)} constraints")
 
-    return True
+    assert True
 
 
-# Test de validez de constraints
+# Test de validez de constraints - real data from backend
+@pytest.mark.integration
 async def test_constraints_validity():
     print("\n" + "=" * 80)
-    print("✅ TESTING VALIDEZ DE CONSTRAINTS")
+    print("✅ TESTING VALIDEZ DE CONSTRAINTS - real backend data")
     print("=" * 80)
 
-    from autoppia_iwa.src.demo_webs.projects.autocinema_1.generation_functions import _get_data, generate_film_constraints
+    from autoppia_iwa.src.demo_webs.projects.autocinema_1.data_utils import fetch_data as fetch_movies
+    from autoppia_iwa.src.demo_webs.projects.autocinema_1.generation_functions import generate_film_constraints
     from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
     test_seeds = [42, 86, 150, 200, 300]
@@ -126,26 +169,32 @@ async def test_constraints_validity():
 
     for seed in test_seeds:
         test_url = f"http://localhost:8001/?seed={seed}"
-        seed = get_seed_from_url(test_url)
-        dataset = await _get_data(seed_value=seed)
+        seed_resolved = get_seed_from_url(test_url)
+
+        try:
+            dataset_list = await fetch_movies(seed_value=seed_resolved)
+        except Exception as e:
+            _skip_if_backend_unavailable(f"Demo webs backend not reachable: {e}")
+
+        if not dataset_list:
+            _skip_if_backend_unavailable("Backend returned no movies (is demo webs running?)")
+
+        dataset = {"movies": dataset_list}
         constraints = await generate_film_constraints(test_url, dataset)
 
-        print(f"\n  seed={seed} → seed={seed}")
-        print(f"    Dataset: {len(dataset)} películas")
+        print(f"\n  seed={seed} → seed={seed_resolved}")
+        print(f"    Dataset: {len(dataset['movies'])} películas")
         print(f"    Constraints: {len(constraints) if constraints else 0}")
 
         if constraints:
-            # Verificar que los valores están en el dataset
             constraint = constraints[0]
             field = constraint["field"]
             value = constraint["value"]
 
-            # Buscar si el valor existe en el dataset
             found = False
-            for item in dataset:
+            for item in dataset["movies"]:
                 if field in item:
                     item_value = item[field]
-                    # Para listas (genres), verificar si value está en la lista
                     if isinstance(item_value, list):
                         if value in item_value:
                             found = True
@@ -157,23 +206,18 @@ async def test_constraints_validity():
             status = "✅" if found else "⚠️"
             print(f"    {status} Constraint '{field}={value}' {'found' if found else 'NOT FOUND'} in dataset")
 
-    return True
+    assert True
 
 
-# Main
+# Main (for running as script)
 async def main():
     print("\n" + "🚀" * 40)
-    print("SUITE DE TESTS - SISTEMA DE SEEDS OPTIMIZADO")
+    print("SUITE DE TESTS - SISTEMA DE SEEDS OPTIMIZADO (real backend)")
     print("🚀" * 40)
 
     try:
-        # Test 1: Autocinema
         result1 = await test_autocinema_constraints()
-
-        # Test 2: Autobooks
         result2 = await test_autobooks_constraints()
-
-        # Test 3: Validez de constraints
         result3 = await test_constraints_validity()
 
         print("\n" + "=" * 80)
@@ -186,6 +230,9 @@ async def main():
 
         return True
 
+    except Skipped as e:
+        print(f"\n⏭️ Tests skipped (backend not available): {e}")
+        return False
     except Exception as e:
         print(f"\n❌ ERROR: {e}")
         import traceback
