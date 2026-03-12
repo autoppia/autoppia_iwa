@@ -1,4 +1,6 @@
-"""Unit tests for autostats_15 data_utils helpers (normalize + derive). Excludes fetch_data."""
+"""Unit tests for autostats_15 data_utils (helpers + fetch_data with mocked backend)."""
+
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -11,6 +13,7 @@ from autoppia_iwa.src.demo_webs.projects.autostats_15.data_utils import (
     _normalize_block,
     _normalize_transfer,
     _seed_random,
+    fetch_data,
 )
 
 
@@ -232,3 +235,78 @@ class TestAccountToAccountWithDetails:
         out = _account_to_account_with_details(account, 0)
         assert "balanceTrend" in out
         assert len(out["balanceTrend"]) == 30
+
+
+_MODULE = "autoppia_iwa.src.demo_webs.projects.autostats_15.data_utils"
+
+
+@pytest.mark.asyncio
+class TestFetchData:
+    """fetch_data with mocked get_backend_service_url and load_dataset_data."""
+
+    async def test_validators_returns_raw(self):
+        raw = [{"hotkey": "0xabc", "rank": 1}]
+        with patch(f"{_MODULE}.get_backend_service_url", return_value="http://test/"), patch(f"{_MODULE}.load_dataset_data", new_callable=AsyncMock, return_value=raw):
+            result = await fetch_data("validators", 1, count=10)
+        assert result == raw
+
+    async def test_subnets_returns_with_trends(self):
+        raw = [{"id": 1, "name": "Sub1"}]
+        with patch(f"{_MODULE}.get_backend_service_url", return_value="http://test/"), patch(f"{_MODULE}.load_dataset_data", new_callable=AsyncMock, return_value=raw):
+            result = await fetch_data("subnets", 42, count=10)
+        assert len(result) == 1
+        assert result[0]["subnet_name"] == "Sub1"
+        assert "price" in result[0]
+        assert "trendData" in result[0]
+
+    async def test_blocks_returns_normalized_with_details(self):
+        raw = [{"number": 720, "extrinsics": [1, 2]}]
+        with patch(f"{_MODULE}.get_backend_service_url", return_value="http://test/"), patch(f"{_MODULE}.load_dataset_data", new_callable=AsyncMock, return_value=raw):
+            result = await fetch_data("blocks", 1, count=10)
+        assert len(result) == 1
+        assert result[0]["epoch"] == 2
+        assert result[0]["extrinsicsCount"] == 2
+        assert result[0]["eventsCount"] == 4
+
+    async def test_accounts_returns_normalized_with_details(self):
+        raw = [{"balance": 100, "stakedAmount": 50}]
+        with patch(f"{_MODULE}.get_backend_service_url", return_value="http://test/"), patch(f"{_MODULE}.load_dataset_data", new_callable=AsyncMock, return_value=raw):
+            result = await fetch_data("accounts", 1, count=10)
+        assert len(result) == 1
+        assert result[0]["rank"] == 1
+        assert result[0]["accountType"] == "regular"
+        assert "balanceTrend" in result[0]
+
+    async def test_transfers_returns_normalized_only(self):
+        raw = [{"hash": "0x1", "blockNumber": 100}]
+        with patch(f"{_MODULE}.get_backend_service_url", return_value="http://test/"), patch(f"{_MODULE}.load_dataset_data", new_callable=AsyncMock, return_value=raw):
+            result = await fetch_data("transfers", 1, count=10)
+        assert len(result) == 1
+        assert result[0]["block_number"] == 100
+        assert "method" not in result[0]
+
+    async def test_unknown_entity_returns_raw(self):
+        raw = [{"foo": "bar"}]
+        with patch(f"{_MODULE}.get_backend_service_url", return_value="http://test/"), patch(f"{_MODULE}.load_dataset_data", new_callable=AsyncMock, return_value=raw):
+            result = await fetch_data("other", 1, count=10)
+        assert result == raw
+
+    async def test_empty_raw_returns_empty_list(self):
+        with patch(f"{_MODULE}.get_backend_service_url", return_value="http://test/"), patch(f"{_MODULE}.load_dataset_data", new_callable=AsyncMock, return_value=[]):
+            result = await fetch_data("validators", 1, count=10)
+        assert result == []
+
+    async def test_exception_returns_empty_list(self):
+        with patch(f"{_MODULE}.get_backend_service_url", return_value="http://test/"), patch(f"{_MODULE}.load_dataset_data", new_callable=AsyncMock, side_effect=RuntimeError("network")):
+            result = await fetch_data("validators", 1, count=10)
+        assert result == []
+
+    async def test_limit_capped_and_passed_to_load_dataset(self):
+        raw = [{"hotkey": "x"}]
+        with patch(f"{_MODULE}.get_backend_service_url", return_value="http://test/"), patch(f"{_MODULE}.load_dataset_data", new_callable=AsyncMock, return_value=raw) as mock_load:
+            await fetch_data("validators", 1, count=0)
+            mock_load.assert_awaited_once()
+            assert mock_load.call_args.kwargs["limit"] == 1
+            mock_load.reset_mock()
+            await fetch_data("validators", 1, count=100)
+            assert mock_load.call_args.kwargs["limit"] == 50
