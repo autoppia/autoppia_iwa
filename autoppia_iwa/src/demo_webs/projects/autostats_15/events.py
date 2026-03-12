@@ -359,11 +359,9 @@ class ConnectWalletEvent(Event, BaseEventValidator):
 
     event_name: str = "CONNECT_WALLET"
     wallet_name: str | None = None
-    address: str | None = None
 
     class ValidationCriteria(BaseModel):
         wallet_name: str | CriterionValue | None = None
-        address: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if criteria is None:
@@ -371,7 +369,6 @@ class ConnectWalletEvent(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.wallet_name, criteria.wallet_name),
-                self._validate_field(self.address, criteria.address),
             ]
         )
 
@@ -385,7 +382,6 @@ class ConnectWalletEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             wallet_name=d.get("wallet_name"),
-            address=d.get("address"),
         )
 
 
@@ -394,11 +390,9 @@ class DisconnectWalletEvent(Event, BaseEventValidator):
 
     event_name: str = "DISCONNECT_WALLET"
     wallet_name: str | None = None
-    address: str | None = None
 
     class ValidationCriteria(BaseModel):
         wallet_name: str | CriterionValue | None = None
-        address: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if criteria is None:
@@ -406,7 +400,6 @@ class DisconnectWalletEvent(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.wallet_name, criteria.wallet_name),
-                self._validate_field(self.address, criteria.address),
             ]
         )
 
@@ -420,7 +413,6 @@ class DisconnectWalletEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             wallet_name=d.get("wallet_name"),
-            address=d.get("address"),
         )
 
 
