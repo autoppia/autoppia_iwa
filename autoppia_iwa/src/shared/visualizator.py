@@ -76,6 +76,10 @@ class SubnetVisualizer:
                 else:
                     test_json = vars(test)
 
+                # Do not expose expected answer in the UI for DataExtractionTest
+                if test_type == "DataExtractionTest":
+                    test_json.pop("expected_answer", None)
+
                 # Convert any remaining datetime/date objects to strings
                 test_json = self._make_json_serializable(test_json)
 

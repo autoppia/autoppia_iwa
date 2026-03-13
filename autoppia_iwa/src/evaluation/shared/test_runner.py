@@ -32,6 +32,7 @@ class TestRunner:
         browser_snapshots: list[BrowserSnapshot],
         current_action_index: int | None = None,
         total_iterations: int | None = None,
+        extracted_data: object | None = None,
     ) -> list[TestResult]:
         """
         Run all tests for a single snapshot (after a single action).
@@ -62,6 +63,7 @@ class TestRunner:
                 snapshot=snapshot,
                 browser_snapshots=browser_snapshots,
                 total_iterations=total_iterations,
+                extracted_data=extracted_data,
             )
 
             # Log test result
@@ -83,6 +85,7 @@ class TestRunner:
         self,
         backend_events: list[BackendEvent] | None = None,
         web_agent_id: str | None = None,
+        extracted_data: object | None = None,
     ) -> list[TestResult]:
         """
         Run all tests after executing the
@@ -112,6 +115,7 @@ class TestRunner:
 
             success = await test.execute_global_test(
                 backend_events=backend_events,
+                extracted_data=extracted_data,
             )
 
             _log_backend_test(f"      - Result: {'✅ PASSED' if success else '❌ FAILED'}", web_agent_id=web_agent_id)

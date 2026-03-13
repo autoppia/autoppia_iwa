@@ -3,6 +3,8 @@
 import random
 from typing import Any
 
+from loguru import logger
+
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
 from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_dict
 
@@ -34,6 +36,11 @@ from .data import (
     SELECTED_FIELDS_VIEW_BLOCK,
     SELECTED_FIELDS_VIEW_SUBNET,
     SELECTED_FIELDS_VIEW_VALIDATOR,
+    VISIBLE_FIELD_OPERATORS_MAP_VIEW_VALIDATOR,
+    VISIBLE_FIELD_VIEW_ACCOUNT,
+    VISIBLE_FIELD_VIEW_BLOCK,
+    VISIBLE_FIELD_VIEW_SUBNET,
+    VISIBLE_FIELDS_TRANSFER_COMPLETE,
     WALLET_NAMES,
 )
 
@@ -170,19 +177,78 @@ def _generate_constraints_static(
     return constraints
 
 
-async def generate_view_subnet_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+def _build_data_extraction_result(
+    selected_item: dict[str, Any],
+    selected_fields: list[str],
+    integer_fields: set[str] | None,
+) -> dict[str, Any] | None:
+    """Build constraints + question_fields_and_values for data_extraction_only; returns None on validation failure."""
+    integer_fields = integer_fields or set()
+    available_fields = [f for f in selected_fields if selected_item.get(f) is not None]
+    if len(available_fields) < 2:
+        logger.warning("Available item fields are less than 2; task generation for Data extraction test needs >= 2.")
+        return None
+    verify_field = random.choice(available_fields)
+    verify_value = selected_item.get(verify_field)
+    if verify_value is None:
+        logger.warning("Verify field has no value; skipping Data extraction task for this item.")
+        return None
+    if verify_field in integer_fields and isinstance(verify_value, int | float):
+        verify_value = round(verify_value)
+    question_candidates = [f for f in available_fields if f != verify_field]
+    if not question_candidates:
+        logger.warning("There is no field for asking question (no question candidates after verify field).")
+        return None
+    num_question_fields = min(len(question_candidates), random.randint(1, len(question_candidates)))
+    question_fields = random.sample(question_candidates, num_question_fields)
+    question_fields_and_values = {}
+    for qf in question_fields:
+        val = selected_item.get(qf)
+        if val is not None:
+            if qf in integer_fields and isinstance(val, int | float):
+                val = round(val)
+            question_fields_and_values[qf] = val
+    if not question_fields_and_values:
+        logger.warning("There is no field for asking question.")
+        return None
+    constraints = [create_constraint_dict(verify_field, ComparisonOperator.EQUALS, verify_value)]
+    return {
+        "constraints": constraints,
+        "question_fields_and_values": question_fields_and_values,
+    }
+
+
+async def generate_view_subnet_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None, test_types: str | None = None) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for VIEW_SUBNET from server data only."""
     data = await _get_autostats_entity_list(task_url, dataset, "subnets")
     if not data:
         return []
+    if test_types == "data_extraction_only":
+        selected_item = random.choice(data)
+        result = _build_data_extraction_result(
+            selected_item,
+            VISIBLE_FIELD_VIEW_SUBNET,
+            None,
+        )
+        return result if result is not None else []
     return _generate_constraints_static(data, FIELD_OPERATORS_MAP_VIEW_SUBNET, SELECTED_FIELDS_VIEW_SUBNET, num_constraints=2)
 
 
-async def generate_view_validator_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_view_validator_constraints(
+    task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None, test_types: str | None = None
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for VIEW_VALIDATOR from server data only."""
     data = await _get_autostats_entity_list(task_url, dataset, "validators")
     if not data:
         return []
+    if test_types == "data_extraction_only":
+        selected_item = random.choice(data)
+        result = _build_data_extraction_result(
+            selected_item,
+            VISIBLE_FIELD_OPERATORS_MAP_VIEW_VALIDATOR,
+            INTEGER_FIELDS_VIEW_VALIDATOR,
+        )
+        return result if result is not None else []
     return _generate_constraints_static(
         data,
         FIELD_OPERATORS_MAP_VIEW_VALIDATOR,
@@ -192,11 +258,19 @@ async def generate_view_validator_constraints(task_url: str | None = None, datas
     )
 
 
-async def generate_view_block_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_view_block_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None, test_types: str | None = None) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for VIEW_BLOCK from server data only."""
     data = await _get_autostats_entity_list(task_url, dataset, "blocks")
     if not data:
         return []
+    if test_types == "data_extraction_only":
+        selected_item = random.choice(data)
+        result = _build_data_extraction_result(
+            selected_item,
+            VISIBLE_FIELD_VIEW_BLOCK,
+            INTEGER_FIELDS_VIEW_BLOCK,
+        )
+        return result if result is not None else []
     return _generate_constraints_static(
         data,
         FIELD_OPERATORS_MAP_VIEW_BLOCK,
@@ -206,11 +280,57 @@ async def generate_view_block_constraints(task_url: str | None = None, dataset: 
     )
 
 
-async def generate_view_account_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    """Generate constraints for VIEW_ACCOUNT from server data only."""
+async def generate_view_account_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    """Generate constraints for VIEW_ACCOUNT from server data only.
+    When test_types is 'data_extraction_only' (or 'both'), returns a dict with
+    constraints (verify field only, equals) and question_fields_and_values for LLM prompt.
+    """
     data = await _get_autostats_entity_list(task_url, dataset, "accounts")
     if not data:
         return []
+
+    if test_types in ("data_extraction_only", "both"):
+        # Randomly select one account
+        selected_item = random.choice(data)
+        available_fields = [f for f in VISIBLE_FIELD_VIEW_ACCOUNT if selected_item.get(f) is not None]
+        if len(available_fields) < 2:
+            logger.warning("Available item fields are less than 2; task generation for Data extraction test needs >= 2.")
+            return []
+        # One verify field (what we check in DataExtractionTest)
+        verify_field = random.choice(available_fields)  # will change to only visible field
+        verify_value = selected_item[verify_field]  # will change to only visible field
+        if verify_value is None:
+            logger.warning("Verify field has no value; skipping Data extraction task for this item.")
+            return []
+        if verify_field in INTEGER_FIELDS_VIEW_ACCOUNT and isinstance(verify_value, int | float):
+            verify_value = round(verify_value)
+        # Question fields (identify entity in the prompt; exclude verify field)
+        question_candidates = [f for f in available_fields if f != verify_field]
+        if not question_candidates:
+            logger.warning("There is no field for asking question (no question candidates after verify field).")
+            return []
+        num_question_fields = min(len(question_candidates), random.randint(1, len(question_candidates)))
+        question_fields = random.sample(question_candidates, num_question_fields)
+        question_fields_and_values = {}
+        for qf in question_fields:
+            val = selected_item.get(qf)
+            if val is not None:
+                if qf in INTEGER_FIELDS_VIEW_ACCOUNT and isinstance(val, int | float):
+                    val = round(val)
+                question_fields_and_values[qf] = val
+        if not question_fields_and_values:
+            logger.warning("There is no field for asking question.")
+            return []
+        constraints = [create_constraint_dict(verify_field, ComparisonOperator.EQUALS, verify_value)]
+        return {
+            "constraints": constraints,
+            "question_fields_and_values": question_fields_and_values,
+        }
+
     return _generate_constraints_static(
         data,
         FIELD_OPERATORS_MAP_VIEW_ACCOUNT,
@@ -288,11 +408,21 @@ def generate_disconnect_wallet_constraints(task_url: str | None = None, dataset:
     )
 
 
-async def generate_transfer_complete_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_transfer_complete_constraints(
+    task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None, test_types: str | None = None
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for TRANSFER_COMPLETE from server data only."""
     data = await _get_autostats_entity_list(task_url, dataset, "transfers")
     if not data:
         return []
+    if test_types == "data_extraction_only":
+        selected_item = random.choice(data)
+        result = _build_data_extraction_result(
+            selected_item,
+            VISIBLE_FIELDS_TRANSFER_COMPLETE,
+            INTEGER_FIELDS_TRANSFER_COMPLETE,
+        )
+        return result if result is not None else []
     return _generate_constraints_static(
         data,
         FIELD_OPERATORS_MAP_TRANSFER_COMPLETE,

@@ -84,9 +84,9 @@ PROJECT_IDS = [
     # "autowork",
     # "autoconnect",
     # "autocalendar",
-    "autolist",
-    "autodrive",
-    "autohealth",
+    # "autolist",
+    # "autodrive",
+    # "autohealth",
     "autostats",
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
@@ -106,6 +106,8 @@ CFG = BenchmarkConfig(
     # Tasks
     prompts_per_use_case=1,
     # use_cases=None means all use-cases
+    test_types="data_extraction_only",
+    data_extraction_use_cases=["VIEW_ACCOUNT", "TRANSFER_COMPLETE", "VIEW_SUBNET", "VIEW_VALIDATOR", "VIEW_BLOCK"],
     use_cases=USE_CASES,
     # Execution
     runs=1,  # single run is enough for this fixed agent

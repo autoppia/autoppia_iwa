@@ -114,3 +114,12 @@ SELECTED_FIELDS_FAVORITE_SUBNET = ["subnet_name"]
 
 INTEGER_FIELDS_TRANSFER_COMPLETE = {"block_number"}
 INTEGER_FIELDS_FAVORITE_SUBNET = set()
+
+
+VISIBLE_FIELD_VIEW_SUBNET = ["subnet_name", "emission", "price", "marketCap", "volume24h"]
+
+VISIBLE_FIELD_OPERATORS_MAP_VIEW_VALIDATOR = ["rank", "dominance", "nominatorCount", "totalWeight", "rootStake", "alphaStake", "commission"]
+
+VISIBLE_FIELD_VIEW_BLOCK = ["number", "epoch", "extrinsicsCount", "eventsCount"]
+VISIBLE_FIELD_VIEW_ACCOUNT = ["rank", "address", "balance", "stakedAmount", "accountType"]
+VISIBLE_FIELDS_TRANSFER_COMPLETE = ["hash", "from_", "to", "amount", "block_number"]

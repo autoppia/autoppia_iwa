@@ -265,12 +265,20 @@ class Benchmark:
                 # ✅ Usar act() en lugar de solve_task()
                 # En modo concurrent, llamamos UNA vez con snapshot inicial vacío
                 # Send task WITH placeholders - agent should return actions with placeholders
-                actions = await agent.act(
+                # Agent may return list[BaseAction] or dict with "actions" and optionally "extracted_data" (for DataExtractionTest)
+                act_result = await agent.act(
                     task=task,  # Send task with placeholders, NOT replaced
                     snapshot_html="",  # Vacío en modo concurrent (el agente no necesita ver el HTML)
                     url=task.url,
                     step_index=0,  # Siempre 0 en modo concurrent
                 )
+
+                if isinstance(act_result, dict):
+                    actions = act_result.get("actions", [])
+                    extracted_data = act_result.get("extracted_data")
+                else:
+                    actions = act_result
+                    extracted_data = None
 
                 if not actions:
                     logger.warning(f"{agent.name} returned empty actions for task {task.id}")
@@ -280,6 +288,7 @@ class Benchmark:
                     task_id=task.id,
                     actions=actions,
                     web_agent_id=agent.id,
+                    extracted_data=extracted_data,
                 )
                 # Replace credential placeholders in actions BEFORE evaluation
                 task_solution.replace_credentials(agent.id)
@@ -390,14 +399,13 @@ class Benchmark:
     # Per-project execution
     # ---------------------------------------------------------------------
     async def _generate_tasks_for_project(self, project: WebProject) -> list[Task]:
-        from autoppia_iwa.config.config import PROJECT_BASE_DIR
         from autoppia_iwa.entrypoints.benchmark.utils.task_generation import load_tasks_from_json, save_tasks_to_json
         from autoppia_iwa.src.data_generation.tasks.classes import TaskGenerationConfig
         from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
 
         # Check if we should use cached tasks
         use_cached = getattr(self.config, "use_cached_tasks", False)
-        cache_dir = str(PROJECT_BASE_DIR.parent / "benchmark-output" / "cache" / "tasks")
+        cache_dir = str(self.config.base_dir / "benchmark-output" / "cache" / "tasks")
 
         if use_cached:
             cached_tasks = await load_tasks_from_json(project, cache_dir)
@@ -412,6 +420,8 @@ class Benchmark:
             prompts_per_use_case=self.config.prompts_per_use_case,
             use_cases=self.config.use_cases,
             dynamic=self.config.dynamic,
+            test_types=self.config.test_types,
+            data_extraction_use_cases=self.config.data_extraction_use_cases,
         )
         pipeline = TaskGenerationPipeline(web_project=project, config=config)
         tasks = await pipeline.generate()
