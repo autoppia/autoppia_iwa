@@ -100,9 +100,14 @@ class SimpleTaskGenerator:
         # Get use cases to process (default: all use cases)
         web_use_cases = self.web_project.use_cases
 
-        if test_types == "data_extraction_only" and data_extraction_use_cases is not None:
+        if test_types == "data_extraction_only":
+            if data_extraction_use_cases is not None:
+                web_use_cases = [uc for uc in self.web_project.use_cases if uc.name in data_extraction_use_cases]
+            # Minimal extra filter: when running data_extraction_only without an explicit whitelist,
+            # keep only use cases that support data extraction.
+            if data_extraction_use_cases is None:
+                web_use_cases = [uc for uc in web_use_cases if getattr(uc, "supports_data_extraction", False)]
             # When data_extraction_only, ignore use_cases and select by data_extraction_use_cases
-            web_use_cases = [uc for uc in self.web_project.use_cases if uc.name in data_extraction_use_cases]
             if not web_use_cases:
                 logger.warning(f"No matching use cases found for data_extraction_use_cases: {data_extraction_use_cases}. Available: {[uc.name for uc in self.web_project.use_cases]}")
                 return all_tasks

@@ -107,8 +107,8 @@ CFG = BenchmarkConfig(
     prompts_per_use_case=1,
     # use_cases=None means all use-cases
     test_types="data_extraction_only",
-    data_extraction_use_cases=["VIEW_ACCOUNT", "TRANSFER_COMPLETE", "VIEW_SUBNET", "VIEW_VALIDATOR", "VIEW_BLOCK"],
-    use_cases=USE_CASES,
+    data_extraction_use_cases=None,
+    # use_cases=USE_CASES,
     # Execution
     runs=1,  # single run is enough for this fixed agent
     max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
