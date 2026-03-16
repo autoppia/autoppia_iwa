@@ -110,6 +110,50 @@ Example: In `src/demo_webs/projects/autostats_15/use_cases.py`, several use case
 
 ---
 
+### 3.9 Prompt generation (LLM side)
+
+For data‑extraction runs, the task prompt given to the LLM is specialized so that the **answer is exactly the field DataExtractionTest will validate**:
+
+- **Where it starts**
+  - Each `UseCase` can generate constraints and, in data‑extraction mode, a `question_fields_and_values` dict in `generate_constraints_async(...)` (`src/demo_webs/classes.py`).
+  - This dict typically encodes the entity/identifier (e.g. `{ "film_id": 42, "user_id": 5 }`) that the LLM should use when asking about the page.
+
+- **Prompt template**
+  - In `simple_task_generator.py`, when `generate_data_extraction` is `True`, the generator uses `DATA_EXTRACTION_TASK_GENERATION_PROMPT_WITH_QUESTION_FIELDS`.
+  - That template is filled with:
+    - `use_case_name` and `use_case_description`.
+    - `additional_prompt_info` (examples / style hints).
+    - A bullet list built from `question_fields_and_values`.
+    - The **verify field** name, derived from the single constraint’s `field` (e.g. `"subnet_name"`), which is what the LLM is ultimately asked about.
+
+- **Resulting behavior**
+  - The generated natural‑language task is “ask a question whose answer is the value of `<verify_field>` for this entity”.
+  - Later, the agent is expected to return that value as `extracted_data`, so DataExtractionTest can compare it to `expected_answer`.
+
+---
+
+### 3.10 Criteria & expected_answer generation
+
+Constraints produced by the use case drive both the **human‑readable criteria** and the **value actually checked** by DataExtractionTest:
+
+- **Constraints on the Task**
+  - Each `Task` has `task.use_case.constraints`, a list of dicts like `{ "field": "subnet_name", "operator": "equals", "value": "subnet-123" }`, generated per seed.
+
+- **From constraints to criteria**
+  - In `_generate_tests_for_task(...)` (`src/data_generation/tests/simple/test_generation_pipeline.py`), when `_should_attach_data_extraction_test(...)` is `True`:
+    - The constraints are normalized via `enum_to_raw_recursive` and merged into a `criteria_dict`:
+      - For `operator == "equals"`, `criteria_dict[field] = value`.
+      - Otherwise, `criteria_dict[field] = {"operator": operator, "value": value}`.
+    - This `criteria_dict` is passed into `DataExtractionTest` as `answer_criteria` so the verify field and its expected behavior remain visible in logs/UI.
+
+- **From criteria to expected_answer**
+  - When `criteria_dict` contains **exactly one** entry and its value is not a nested dict, that single value becomes `expected_answer`.
+    - Example: `{"subnet_name": "subnet-123"}` → `expected_answer = "subnet-123"`.
+  - At evaluation time, `extracted_data` from the agent is compared to `expected_answer` via `_check_expected_answer`, using scalar or canonical‑list normalization.
+  - `answer_criteria` is **not** used for the comparison itself; it is metadata that explains *what* is being checked, while `expected_answer` encodes *the value* to match.
+
+---
+
 ## 4. End-to-end flow (data_extraction_only)
 
 1. **Config:** Set `test_types="data_extraction_only"` and optionally `data_extraction_use_cases`.
