@@ -116,7 +116,7 @@ class UseCase(BaseModel):
             dataset: Dataset dictionary with all entities (e.g., {"films": [...], "users": [...]})
                     to pass to the generator. Each constraint generator receives the full dataset
                     and extracts the relevant entity list it needs.
-            test_types: Optional test type ("event_only", "data_extraction_only", "both") for
+            test_types: Optional test type ("event_only" or "data_extraction_only") for
                     generators that branch on data-extraction mode.
         """
         self.question_fields_and_values = None

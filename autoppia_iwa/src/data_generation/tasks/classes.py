@@ -157,7 +157,7 @@ class TaskGenerationConfig(BaseModel):
     dynamic: bool = False
     # Which test types to generate/attach for the tasks coming from this config.
     # Mirrors BenchmarkConfig.test_types but kept as a plain string to avoid import cycles.
-    test_types: Literal["event_only", "data_extraction_only", "both"] = "event_only"
+    test_types: Literal["event_only", "data_extraction_only"] = "event_only"
     # Optional list of use-case names that can receive DataExtractionTest; if None,
     # the pipeline relies solely on UseCase.supports_data_extraction.
     data_extraction_use_cases: list[str] | None = None

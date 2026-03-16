@@ -286,50 +286,21 @@ async def generate_view_account_constraints(
     test_types: str | None = None,
 ) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for VIEW_ACCOUNT from server data only.
-    When test_types is 'data_extraction_only' (or 'both'), returns a dict with
+    When test_types is 'data_extraction_only', returns a dict with
     constraints (verify field only, equals) and question_fields_and_values for LLM prompt.
     """
     data = await _get_autostats_entity_list(task_url, dataset, "accounts")
     if not data:
         return []
 
-    if test_types in ("data_extraction_only", "both"):
-        # Randomly select one account
+    if test_types == "data_extraction_only":
         selected_item = random.choice(data)
-        available_fields = [f for f in VISIBLE_FIELD_VIEW_ACCOUNT if selected_item.get(f) is not None]
-        if len(available_fields) < 2:
-            logger.warning("Available item fields are less than 2; task generation for Data extraction test needs >= 2.")
-            return []
-        # One verify field (what we check in DataExtractionTest)
-        verify_field = random.choice(available_fields)  # will change to only visible field
-        verify_value = selected_item[verify_field]  # will change to only visible field
-        if verify_value is None:
-            logger.warning("Verify field has no value; skipping Data extraction task for this item.")
-            return []
-        if verify_field in INTEGER_FIELDS_VIEW_ACCOUNT and isinstance(verify_value, int | float):
-            verify_value = round(verify_value)
-        # Question fields (identify entity in the prompt; exclude verify field)
-        question_candidates = [f for f in available_fields if f != verify_field]
-        if not question_candidates:
-            logger.warning("There is no field for asking question (no question candidates after verify field).")
-            return []
-        num_question_fields = min(len(question_candidates), random.randint(1, len(question_candidates)))
-        question_fields = random.sample(question_candidates, num_question_fields)
-        question_fields_and_values = {}
-        for qf in question_fields:
-            val = selected_item.get(qf)
-            if val is not None:
-                if qf in INTEGER_FIELDS_VIEW_ACCOUNT and isinstance(val, int | float):
-                    val = round(val)
-                question_fields_and_values[qf] = val
-        if not question_fields_and_values:
-            logger.warning("There is no field for asking question.")
-            return []
-        constraints = [create_constraint_dict(verify_field, ComparisonOperator.EQUALS, verify_value)]
-        return {
-            "constraints": constraints,
-            "question_fields_and_values": question_fields_and_values,
-        }
+        result = _build_data_extraction_result(
+            selected_item,
+            VISIBLE_FIELD_VIEW_ACCOUNT,
+            INTEGER_FIELDS_VIEW_ACCOUNT,
+        )
+        return result if result is not None else []
 
     return _generate_constraints_static(
         data,

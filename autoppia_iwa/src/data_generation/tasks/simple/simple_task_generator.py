@@ -176,7 +176,7 @@ class SimpleTaskGenerator:
         if data_extraction_allowed_names is not None and use_case.name not in data_extraction_allowed_names:
             use_case_allows_data_extraction = False
 
-        generate_data_extraction = test_types in ("data_extraction_only", "both") and use_case_allows_data_extraction
+        generate_data_extraction = (test_types == "data_extraction_only") and use_case_allows_data_extraction
 
         # Generate each prompt independently
         for _ in range(number_of_prompts):

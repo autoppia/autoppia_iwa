@@ -52,7 +52,7 @@ class GlobalTestGenerationPipeline:
     # --------------------------------------------------------------------- #
 
     def _should_attach_data_extraction_test(self, task: Task, test_types: str, data_extraction_use_cases: list[str] | None) -> bool:
-        if test_types not in ("data_extraction_only", "both"):
+        if test_types != "data_extraction_only":
             return False
         use_case = task.use_case
         if not use_case:
@@ -81,7 +81,7 @@ class GlobalTestGenerationPipeline:
         constraints: list[dict[str, Any]] = task.use_case.constraints or []
 
         # Optionally attach a CheckEventTest (event-based backend validation)
-        if test_types in ("event_only", "both"):
+        if test_types == "event_only":
             criteria: dict[str, Any] = {}
             if not constraints:
                 test_def = {

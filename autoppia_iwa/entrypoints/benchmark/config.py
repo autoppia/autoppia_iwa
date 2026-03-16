@@ -8,7 +8,7 @@ from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.web_agents.classes import IWebAgent
 
-TestTypes = Literal["event_only", "data_extraction_only", "both"]
+TestTypes = Literal["event_only", "data_extraction_only"]
 
 
 @dataclass(slots=True)
@@ -35,7 +35,6 @@ class BenchmarkConfig:
     # Which test types to generate/execute for tasks.
     # - "event_only": only CheckEventTest (current behaviour)
     # - "data_extraction_only": only DataExtractionTest
-    # - "both": generate/attach both where applicable
     test_types: TestTypes = "event_only"
     # Optional per-run whitelist of use-case names that support DataExtractionTest.
     # If None, only UseCase.supports_data_extraction is used.
@@ -82,8 +81,8 @@ class BenchmarkConfig:
         if self.evaluator_mode == "stateful" and self.max_steps_per_task <= 0:
             raise ValueError("max_steps_per_task must be > 0 when using stateful mode.")
 
-        if self.test_types not in ("event_only", "data_extraction_only", "both"):
-            raise ValueError(f"Invalid test_types: {self.test_types}. Must be 'event_only', 'data_extraction_only' or 'both'.")
+        if self.test_types not in ("event_only", "data_extraction_only"):
+            raise ValueError(f"Invalid test_types: {self.test_types}. Must be 'event_only' or 'data_extraction_only'.")
 
         # Use benchmark-output/ directory for all generated artifacts
         benchmark_dir = self.base_dir / "benchmark-output"
