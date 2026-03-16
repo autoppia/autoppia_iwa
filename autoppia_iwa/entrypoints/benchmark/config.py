@@ -1,4 +1,3 @@
-import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
@@ -10,21 +9,6 @@ from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.web_agents.classes import IWebAgent
 
 BenchmarkAgentTarget = Literal["local", "remote"]
-
-
-def get_benchmark_agent_target() -> BenchmarkAgentTarget:
-    """
-    Where agents run: local (e.g. 127.0.0.1) or remote (SOTA hosts).
-    Reads BENCHMARK_AGENT_TARGET from .env (local|remote). Fallback: TEST_AGENTS_ON_REMOTE.
-    """
-    from autoppia_iwa.config.env import init_env
-
-    init_env(override=True)
-    target = os.getenv("BENCHMARK_AGENT_TARGET", "").strip().lower()
-    if target in ("local", "remote"):
-        return target
-    on_remote = os.getenv("TEST_AGENTS_ON_REMOTE", "false").strip().lower() in ("true", "1", "yes")
-    return "remote" if on_remote else "local"
 
 
 @dataclass(slots=True)
