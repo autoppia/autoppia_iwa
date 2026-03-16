@@ -54,7 +54,14 @@ class TestRunner:
 
             logger.info(f"  🧪 Running Test {test_idx}/{len(self.tests)}: {test.type}")
             logger.info(f"     Description: {test.description}")
-            logger.info(f"     Criteria: {getattr(test, 'event_criteria', 'N/A')}")
+            # DataExtractionTest uses expected_answer/answer_criteria; CheckEventTest uses event_criteria
+            if getattr(test, "type", None) == "DataExtractionTest":
+                criteria_info = {
+                    "answer_criteria": getattr(test, "answer_criteria", None),
+                }
+            else:
+                criteria_info = getattr(test, "event_criteria", "N/A")
+            logger.info(f"     Criteria: {criteria_info}")
 
             success = await test.execute_test(
                 web_project=web_project,
@@ -98,7 +105,13 @@ class TestRunner:
         snapshot_results = []  # Store results for this snapshot
         for test_idx, test in enumerate(self.tests, 1):
             test_name = getattr(test, "event_name", "Unknown")
-            test_criteria = getattr(test, "event_criteria", {})
+            # DataExtractionTest uses expected_answer/answer_criteria; CheckEventTest uses event_criteria
+            if getattr(test, "type", None) == "DataExtractionTest":
+                test_criteria = {
+                    "answer_criteria": getattr(test, "answer_criteria", None),
+                }
+            else:
+                test_criteria = getattr(test, "event_criteria", {})
 
             _log_backend_test(f"   🧪 Test {test_idx}/{len(self.tests)}: {test_name}", web_agent_id=web_agent_id)
             _log_backend_test(f"      - Criteria: {test_criteria}", web_agent_id=web_agent_id)
