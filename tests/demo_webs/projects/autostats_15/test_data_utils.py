@@ -263,13 +263,13 @@ class TestAccountToAccountWithDetails:
     def test_staking_ratio(self):
         account = {"balance": 100, "stakedAmount": 100}
         out = _account_to_account_with_details(account, 0)
-        assert out["stakingRatio"] == 50.0
+        assert out["stakingRatio"] == "50.0%"
         assert out["totalValue"] == 200
 
     def test_staking_ratio_zero_when_no_value(self):
         account = {"balance": 0, "stakedAmount": 0}
         out = _account_to_account_with_details(account, 0)
-        assert out["stakingRatio"] == 0.0
+        assert out["stakingRatio"] == "0.0%"
 
     def test_first_seen_last_active_from_transactions(self):
         account = {
@@ -284,13 +284,20 @@ class TestAccountToAccountWithDetails:
     def test_balance_change_24h_zero(self):
         account = {"balance": 0, "stakedAmount": 0}
         out = _account_to_account_with_details(account, 0)
-        assert out["balanceChange24h"] == 0
+        assert out["balanceChange24h"] == "0.00%"
 
     def test_balance_trend_present(self):
         account = {"balance": 0, "stakedAmount": 0}
         out = _account_to_account_with_details(account, 0)
         assert "balanceTrend" in out
         assert len(out["balanceTrend"]) == 30
+
+    def test_balance_staked_formatted_like_ui(self):
+        account = {"address": "5PDQkfbnQa6ffdoziyeHsfd9ZLavP28Yq3QLSdWGsou8YE6v", "balance": 65952.5175, "stakedAmount": 22817.6268}
+        out = _account_to_account_with_details(account, 0)
+        assert out["balance"] == "τ65.95K"
+        assert out["stakedAmount"] == "τ22.82K"
+        assert out["address"] == "5PDQkfbnQa6ffdoziyeHsfd9ZLavP28Yq3QLSdWGsou8YE6v"
 
 
 _MODULE = "autoppia_iwa.src.demo_webs.projects.autostats_15.data_utils"

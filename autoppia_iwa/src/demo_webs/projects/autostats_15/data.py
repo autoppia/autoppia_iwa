@@ -120,6 +120,6 @@ VISIBLE_FIELD_VIEW_SUBNET = ["subnet_name", "emission", "price", "marketCap", "v
 
 VISIBLE_FIELD_OPERATORS_MAP_VIEW_VALIDATOR = ["rank", "dominance", "nominatorCount", "totalWeight", "rootStake", "alphaStake", "commission"]
 
-VISIBLE_FIELD_VIEW_BLOCK = ["number", "epoch", "extrinsicsCount", "eventsCount"]
+VISIBLE_FIELD_VIEW_BLOCK = ["hash", "number", "extrinsicsCount", "eventsCount"]
 VISIBLE_FIELD_VIEW_ACCOUNT = ["rank", "address", "balance", "stakedAmount", "accountType"]
 VISIBLE_FIELDS_TRANSFER_COMPLETE = ["hash", "from_", "to", "amount", "block_number"]

@@ -143,7 +143,7 @@ def _block_to_block_with_details(block: dict[str, Any]) -> dict[str, Any]:
 
 
 def _account_to_account_with_details(account: dict[str, Any], index: int) -> dict[str, Any]:
-    """Add rank, stakingRatio, accountType, balanceTrend, etc. (matches UI accountToAccountWithDetails)."""
+    """Add rank, stakingRatio, accountType, balanceTrend, etc.; format balance/staked like UI; address as-is."""
     balance = account.get("balance") or 0
     staked = account.get("stakedAmount") or 0
     total_value = balance + staked
@@ -160,10 +160,13 @@ def _account_to_account_with_details(account: dict[str, Any], index: int) -> dic
     out = copy.deepcopy(account)
     out["rank"] = index + 1
     out["totalValue"] = total_value
-    out["stakingRatio"] = staking_ratio
+    # UI display format: τ + B/M/K for balance and stakedAmount; % for ratio and 24h; address unchanged
+    out["balance"] = f"τ{_scale_large_number(float(balance))}"
+    out["stakedAmount"] = f"τ{_scale_large_number(float(staked))}"
+    out["stakingRatio"] = f"{round(staking_ratio, 1)}%"
     out["delegationCount"] = len(delegations)
     out["transactionCount"] = len(transactions)
-    out["balanceChange24h"] = 0
+    out["balanceChange24h"] = "0.00%"
     out["firstSeen"] = first_ts
     out["lastActive"] = first_ts
     out["accountType"] = account_type
