@@ -19,6 +19,10 @@ from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.interfaces import ILLM
 
+from .data_extraction_prompts import (
+    DATA_EXTRACTION_TASK_GENERATION_PROMPT,
+    DATA_EXTRACTION_TASK_GENERATION_PROMPT_WITH_QUESTION_FIELDS,
+)
 from .prompts import GLOBAL_TASK_GENERATION_PROMPT
 
 TASK_GENERATION_LEVEL_NAME = "TASK_GENERATION"
@@ -74,7 +78,15 @@ class SimpleTaskGenerator:
     # PUBLIC METHODS - TASK GENERATION
     # ============================================================================
 
-    async def generate(self, prompts_per_use_case: int = 1, use_cases: list[str] | None = None, dynamic: bool = True) -> list[Task]:
+    async def generate(
+        self,
+        prompts_per_use_case: int = 1,
+        use_cases: list[str] | None = None,
+        dynamic: bool = True,
+        *,
+        test_types: str = "event_only",
+        data_extraction_use_cases: list[str] | None = None,
+    ) -> list[Task]:
         """
         Generate tasks for use cases in the web project.
 
@@ -88,18 +100,41 @@ class SimpleTaskGenerator:
         # Get use cases to process (default: all use cases)
         web_use_cases = self.web_project.use_cases
 
-        # Filter to specific use cases if requested
-        if use_cases:
+        if test_types == "data_extraction_only":
+            if data_extraction_use_cases is not None:
+                web_use_cases = [uc for uc in self.web_project.use_cases if uc.name in data_extraction_use_cases]
+            # Minimal extra filter: when running data_extraction_only without an explicit whitelist,
+            # keep only use cases that support data extraction.
+            if data_extraction_use_cases is None:
+                web_use_cases = [uc for uc in web_use_cases if getattr(uc, "supports_data_extraction", False)]
+            # When data_extraction_only, ignore use_cases and select by data_extraction_use_cases
+            if not web_use_cases:
+                logger.warning(f"No matching use cases found for data_extraction_use_cases: {data_extraction_use_cases}. Available: {[uc.name for uc in self.web_project.use_cases]}")
+                return all_tasks
+            _log_task_generation(f"Using {len(web_use_cases)} use cases (data_extraction_only): {[uc.name for uc in web_use_cases]}")
+        elif use_cases:
+            # Filter to specific use cases if requested
             web_use_cases = [uc for uc in self.web_project.use_cases if uc.name in use_cases]
             if not web_use_cases:
                 logger.warning(f"No matching use cases found for: {use_cases}. Available: {[uc.name for uc in self.web_project.use_cases]}")
                 return all_tasks
             _log_task_generation(f"Using {len(web_use_cases)} specified use cases: {[uc.name for uc in web_use_cases]}")
 
+        # Optional additional filter for data-extraction-specific runs
+        data_extraction_allowed_names: set[str] | None = None
+        if data_extraction_use_cases:
+            data_extraction_allowed_names = set(data_extraction_use_cases)
+
         for use_case in web_use_cases:
             _log_task_generation(f"Generating tasks for use case: {use_case.name}", context="USE_CASE")
             try:
-                tasks_for_use_case = await self.generate_tasks_for_use_case(use_case, prompts_per_use_case, dynamic=dynamic)
+                tasks_for_use_case = await self.generate_tasks_for_use_case(
+                    use_case,
+                    number_of_prompts=prompts_per_use_case,
+                    dynamic=dynamic,
+                    test_types=test_types,
+                    data_extraction_allowed_names=data_extraction_allowed_names,
+                )
                 all_tasks.extend(tasks_for_use_case)
                 _log_task_generation(
                     f"Generated {len(tasks_for_use_case)} tasks for use case '{use_case.name}' (requested {prompts_per_use_case})",
@@ -114,7 +149,15 @@ class SimpleTaskGenerator:
 
         return all_tasks
 
-    async def generate_tasks_for_use_case(self, use_case: UseCase, number_of_prompts: int = 1, dynamic: bool = True) -> list[Task]:
+    async def generate_tasks_for_use_case(
+        self,
+        use_case: UseCase,
+        number_of_prompts: int = 1,
+        dynamic: bool = True,
+        *,
+        test_types: str = "event_only",
+        data_extraction_allowed_names: set[str] | None = None,
+    ) -> list[Task]:
         """
         Generate tasks for a specific use case by calling the LLM with relevant context.
 
@@ -127,6 +170,13 @@ class SimpleTaskGenerator:
             dynamic: If True, tasks will include random seeds for dynamic content
         """
         tasks: list[Task] = []
+
+        # Decide whether this use case can generate data-extraction style tasks
+        use_case_allows_data_extraction = bool(getattr(use_case, "supports_data_extraction", False))
+        if data_extraction_allowed_names is not None and use_case.name not in data_extraction_allowed_names:
+            use_case_allows_data_extraction = False
+
+        generate_data_extraction = (test_types == "data_extraction_only") and use_case_allows_data_extraction
 
         # Generate each prompt independently
         for _ in range(number_of_prompts):
@@ -145,7 +195,11 @@ class SimpleTaskGenerator:
                 dataset = await self._load_dataset(seed) or {}
 
                 try:
-                    constraints_info = await use_case_copy.generate_constraints_async(task_url=task_url, dataset=dataset)
+                    constraints_info = await use_case_copy.generate_constraints_async(
+                        task_url=task_url,
+                        dataset=dataset,
+                        test_types=test_types,
+                    )
                 except Exception as e:
                     logger.error(f"Constraint generation failed for '{use_case_copy.name}': {e}")
                     continue  # Skip this iteration
@@ -156,14 +210,39 @@ class SimpleTaskGenerator:
             if not use_case_copy.additional_prompt_info:
                 use_case_copy.additional_prompt_info = f"GENERATE PROMPT LIKE: {use_case_copy.get_example_prompts_str()}"
 
-            llm_prompt = GLOBAL_TASK_GENERATION_PROMPT.format(
-                use_case_name=use_case_copy.name,
-                use_case_description=use_case_copy.description,
-                additional_prompt_info=use_case_copy.additional_prompt_info,
-                constraints_info=constraints_info,
-            )
+            if generate_data_extraction:
+                qfav = getattr(use_case_copy, "question_fields_and_values", None)
+                if qfav and isinstance(qfav, dict):
+                    question_fields_info = "\n".join(f"- {k} = {v}" for k, v in qfav.items())
+                    # Verify field is the single constraint's field (what we ask for in the question).
+                    constraints_list = use_case_copy.constraints or []
+                    verify_field = constraints_list[0].get("field") if len(constraints_list) == 1 else None
+                    if verify_field is not None and not isinstance(verify_field, str):
+                        verify_field = getattr(verify_field, "value", str(verify_field))
+                    verify_field = verify_field or "the requested field"
+                    llm_prompt = DATA_EXTRACTION_TASK_GENERATION_PROMPT_WITH_QUESTION_FIELDS.format(
+                        use_case_name=use_case_copy.name,
+                        use_case_description=use_case_copy.description,
+                        additional_prompt_info=use_case_copy.additional_prompt_info or "",
+                        question_fields_info=question_fields_info,
+                        verify_field=verify_field,
+                    )
+                else:
+                    llm_prompt = DATA_EXTRACTION_TASK_GENERATION_PROMPT.format(
+                        use_case_name=use_case_copy.name,
+                        use_case_description=use_case_copy.description,
+                        additional_prompt_info=use_case_copy.additional_prompt_info,
+                        constraints_info=constraints_info,
+                    )
+            else:
+                llm_prompt = GLOBAL_TASK_GENERATION_PROMPT.format(
+                    use_case_name=use_case_copy.name,
+                    use_case_description=use_case_copy.description,
+                    additional_prompt_info=use_case_copy.additional_prompt_info,
+                    constraints_info=constraints_info,
+                )
 
-            # Call the LLM and get a single prompt
+            # Call the LLM and get a single prompt/question
             prompt_list = await self._call_llm_with_retry(llm_prompt)
 
             # Process only the first prompt from the LLM response for this iteration
@@ -172,7 +251,7 @@ class SimpleTaskGenerator:
                 logger.warning(f"No prompts returned from LLM for use case '{use_case_copy.name}'")
                 continue
 
-            # Take only the first prompt for this iteration
+            # Take only the first prompt/question for this iteration
             prompt_text = prompt_list[0]
 
             try:
