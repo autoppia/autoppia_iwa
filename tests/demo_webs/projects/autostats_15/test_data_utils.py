@@ -12,6 +12,7 @@ from autoppia_iwa.src.demo_webs.projects.autostats_15.data_utils import (
     _normalize_account,
     _normalize_block,
     _normalize_transfer,
+    _scale_large_number,
     _seed_random,
     fetch_data,
 )
@@ -139,8 +140,9 @@ class TestAddTrendsToSubnets:
     def test_root_has_large_market_cap_and_volume(self):
         subnets = [{"id": 0, "name": "Root"}]
         out = _add_trends_to_subnets(subnets, 99)
-        assert out[0]["marketCap"] >= 50_000_000
-        assert out[0]["volume24h"] >= 5_000_000
+        # M-scaled, 2 decimals: 50M to 100M → 50.0 to 100.0, 5M to 10M → 5.0 to 10.0
+        assert out[0]["marketCap"] >= 50.0
+        assert out[0]["volume24h"] >= 5.0
 
     def test_non_root_has_derived_price_and_caps(self):
         subnets = [{"id": 5, "name": "Other"}]
@@ -150,6 +152,34 @@ class TestAddTrendsToSubnets:
         assert "volume24h" in out[0]
         assert "trendData" in out[0]
         assert len(out[0]["trendData"]) == 7
+
+    def test_scale_large_number_b_m_k(self):
+        """_scale_large_number matches UI: >=1e9→B, >=1e6→M, >=1e3→K, else as-is; 2 decimals."""
+        assert _scale_large_number(2_500_000_000) == 2.5
+        assert _scale_large_number(1_000_000_000) == 1.0
+        assert _scale_large_number(50_000_000) == 50.0
+        assert _scale_large_number(1_500_000) == 1.5
+        assert _scale_large_number(5_000) == 5.0
+        assert _scale_large_number(999) == 999.0
+        assert _scale_large_number(100.5) == 100.5
+
+    def test_m_normalized_fields_match_ui_two_decimals(self):
+        """emission always M; marketCap/volume24h use B/M/K by magnitude; all 2 decimals."""
+        subnets = [
+            {"id": 0, "name": "Root", "emission": 38_551.84},
+            {"id": 3, "name": "Compute", "emission": 950_725.02},
+        ]
+        out = _add_trends_to_subnets(subnets, 99)
+        assert len(out) == 2
+        assert out[0]["emission"] == 0.04
+        assert out[1]["emission"] == 0.95
+        assert out[0]["marketCap"] == round(out[0]["marketCap"], 2)
+        assert out[0]["volume24h"] == round(out[0]["volume24h"], 2)
+
+    def test_emission_zero_when_missing(self):
+        subnets = [{"id": 1, "name": "NoEmission"}]
+        out = _add_trends_to_subnets(subnets, 0)
+        assert out[0]["emission"] == 0.0
 
     def test_deterministic_for_same_seed(self):
         subnets = [{"id": 3, "name": "X"}]

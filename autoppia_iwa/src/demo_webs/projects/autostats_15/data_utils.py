@@ -72,8 +72,23 @@ def _normalize_transfer(raw: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
+# UI display: emission always in M; marketCap/volume24h use formatLargeNumber (B/M/K by magnitude).
+_EMISSION_DIVISOR_M = 1_000_000
+
+
+def _scale_large_number(value: float) -> str:
+    """Scale value like UI formatLargeNumber; return string with suffix B/M/K or 2 decimals."""
+    if value >= 1_000_000_000:
+        return f"{round(value / 1_000_000_000, 2)}B"
+    if value >= 1_000_000:
+        return f"{round(value / 1_000_000, 2)}M"
+    if value >= 1_000:
+        return f"{round(value / 1_000, 2)}K"
+    return f"{round(value, 2)}"
+
+
 def _add_trends_to_subnets(subnets: list[dict[str, Any]], seed: int) -> list[dict[str, Any]]:
-    """Add price, marketCap, volume24h, trendData and subnet_name (from name) for constraints."""
+    """Add price, marketCap, volume24h, trendData, subnet_name; emission/cap/vol scaled like UI, 2 decimals."""
     result: list[dict[str, Any]] = []
     for subnet in subnets:
         trend_seed = seed + subnet.get("id", 0)
@@ -87,9 +102,11 @@ def _add_trends_to_subnets(subnets: list[dict[str, Any]], seed: int) -> list[dic
         row = copy.deepcopy(subnet)
         row["subnet_name"] = subnet.get("name", "")
         row["subnet_id"] = subnet.get("id", 0)
-        row["price"] = price
-        row["marketCap"] = market_cap
-        row["volume24h"] = volume24h
+        row["price"] = f"{round(price, 4)}τ"
+        # Emission: always M (UI); marketCap/volume24h: B/M/K by magnitude (formatLargeNumber), 2 decimals
+        row["emission"] = f"{round((row.get('emission') or 0) / _EMISSION_DIVISOR_M, 2)}M"
+        row["marketCap"] = _scale_large_number(market_cap)
+        row["volume24h"] = _scale_large_number(volume24h)
         row["priceChange1h"] = (rng() - 0.5) * 5
         row["priceChange24h"] = price_change_24h
         row["priceChange1w"] = (rng() - 0.5) * 30
