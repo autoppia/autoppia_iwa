@@ -121,6 +121,15 @@ class TestNormalizeTransfer:
         out = _normalize_transfer(raw)
         assert "block_number" not in out
 
+    def test_amount_formatted_like_ui(self):
+        raw = {"hash": "0x1", "from": "5B2svMMjjH48G2jPYFNhsqWqJdHtP3m9rqs4J33Sb3gN9dSM", "to": "5xaNYwAgxf7oXBhsjx9zsMYqkWCWvsF3RcwuZHnZ6TcRanuZ", "amount": 1399.4479, "blockNumber": 1000000}
+        out = _normalize_transfer(raw)
+        assert out["amount"] == "τ1.40K"
+        assert out["hash"] == "0x1"
+        assert out["from"] == "5B2svMMjjH48G2jPYFNhsqWqJdHtP3m9rqs4J33Sb3gN9dSM"
+        assert out["to"] == "5xaNYwAgxf7oXBhsjx9zsMYqkWCWvsF3RcwuZHnZ6TcRanuZ"
+        assert out["block_number"] == 1000000
+
 
 class TestAddTrendsToSubnets:
     def test_empty_list(self):
@@ -155,14 +164,14 @@ class TestAddTrendsToSubnets:
         assert len(out[0]["trendData"]) == 7
 
     def test_scale_large_number_b_m_k(self):
-        """_scale_large_number matches UI: >=1e9→B, >=1e6→M, >=1e3→K, else as-is; 2 decimals."""
-        assert _scale_large_number(2_500_000_000) == 2.5
-        assert _scale_large_number(1_000_000_000) == 1.0
-        assert _scale_large_number(50_000_000) == 50.0
-        assert _scale_large_number(1_500_000) == 1.5
-        assert _scale_large_number(5_000) == 5.0
-        assert _scale_large_number(999) == 999.0
-        assert _scale_large_number(100.5) == 100.5
+        """_scale_large_number matches UI: >=1e9→B, >=1e6→M, >=1e3→K, else as-is; always 2 decimals."""
+        assert _scale_large_number(2_500_000_000) == "2.50B"
+        assert _scale_large_number(1_000_000_000) == "1.00B"
+        assert _scale_large_number(50_000_000) == "50.00M"
+        assert _scale_large_number(1_500_000) == "1.50M"
+        assert _scale_large_number(5_000) == "5.00K"
+        assert _scale_large_number(999) == "999.00"
+        assert _scale_large_number(100.5) == "100.50"
 
     def test_m_normalized_fields_match_ui_two_decimals(self):
         """emission always M; marketCap/volume24h use B/M/K by magnitude; all 2 decimals."""
@@ -195,8 +204,8 @@ class TestNormalizeValidator:
         raw = {"hotkey": "0x1", "rank": 1, "totalWeight": 859221, "rootStake": 500_000, "alphaStake": 2_500_000_000, "dominance": 3.4567, "commission": 5.123}
         out = _normalize_validator(raw)
         assert out["totalWeight"] == "τ859.22K"
-        assert out["rootStake"] == "τ500.0K"
-        assert out["alphaStake"] == "τ2.5B"
+        assert out["rootStake"] == "τ500.00K"
+        assert out["alphaStake"] == "τ2.50B"
         assert out["dominance"] == "3.46%"
         assert out["commission"] == "5.12%"
         assert out["rank"] == 1
@@ -331,8 +340,8 @@ class TestFetchData:
             result = await fetch_data("validators", 1, count=10)
         assert len(result) == 1
         assert result[0]["totalWeight"] == "τ859.22K"
-        assert result[0]["rootStake"] == "τ500.0K"
-        assert result[0]["alphaStake"] == "τ2.5B"
+        assert result[0]["rootStake"] == "τ500.00K"
+        assert result[0]["alphaStake"] == "τ2.50B"
         assert result[0]["dominance"] == "3.46%"
         assert result[0]["commission"] == "5.12%"
 

@@ -122,4 +122,4 @@ VISIBLE_FIELD_OPERATORS_MAP_VIEW_VALIDATOR = ["rank", "dominance", "nominatorCou
 
 VISIBLE_FIELD_VIEW_BLOCK = ["hash", "number", "extrinsicsCount", "eventsCount"]
 VISIBLE_FIELD_VIEW_ACCOUNT = ["rank", "address", "balance", "stakedAmount", "accountType"]
-VISIBLE_FIELDS_TRANSFER_COMPLETE = ["hash", "from_", "to", "amount", "block_number"]
+VISIBLE_FIELDS_TRANSFER_COMPLETE = ["from", "to", "amount", "block_number"]

@@ -65,10 +65,11 @@ def _normalize_account(raw: dict[str, Any]) -> dict[str, Any]:
 
 
 def _normalize_transfer(raw: dict[str, Any]) -> dict[str, Any]:
-    """Normalize transfer: add block_number from blockNumber for constraint fields."""
+    """Normalize transfer: block_number from blockNumber; amount as τ + B/M/K like UI. hash, from, to as-is."""
     out = copy.deepcopy(raw)
     if "blockNumber" in raw and "block_number" not in out:
         out["block_number"] = raw["blockNumber"]
+    out["amount"] = _scale_large_number(float(out.get("amount") or 0))
     return out
 
 
@@ -77,14 +78,14 @@ _EMISSION_DIVISOR_M = 1_000_000
 
 
 def _scale_large_number(value: float) -> str:
-    """Scale value like UI formatLargeNumber; return string with suffix B/M/K or 2 decimals."""
+    """Scale value like UI formatLargeNumber; always 2 decimals (e.g. 6.70K) to match formatNumber(value, 2)."""
     if value >= 1_000_000_000:
-        return f"{round(value / 1_000_000_000, 2)}B"
+        return f"{value / 1_000_000_000:.2f}B"
     if value >= 1_000_000:
-        return f"{round(value / 1_000_000, 2)}M"
+        return f"{value / 1_000_000:.2f}M"
     if value >= 1_000:
-        return f"{round(value / 1_000, 2)}K"
-    return f"{round(value, 2)}"
+        return f"{value / 1_000:.2f}K"
+    return f"{value:.2f}"
 
 
 def _normalize_validator(raw: dict[str, Any]) -> dict[str, Any]:
