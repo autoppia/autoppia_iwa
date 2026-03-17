@@ -87,6 +87,22 @@ def _scale_large_number(value: float) -> str:
     return f"{round(value, 2)}"
 
 
+def _normalize_validator(raw: dict[str, Any]) -> dict[str, Any]:
+    """Convert validator fields to match UI display (formatLargeNumber for weight/stake, 2 decimals for %)."""
+    out = copy.deepcopy(raw)
+    if out.get("totalWeight") is not None:
+        out["totalWeight"] = f"τ{_scale_large_number(float(out['totalWeight']))}"
+    if out.get("rootStake") is not None:
+        out["rootStake"] = f"τ{_scale_large_number(float(out['rootStake']))}"
+    if out.get("alphaStake") is not None:
+        out["alphaStake"] = f"τ{_scale_large_number(float(out['alphaStake']))}"
+    if out.get("dominance") is not None:
+        out["dominance"] = f"{round(float(out['dominance']), 2)}%"
+    if out.get("commission") is not None:
+        out["commission"] = f"{round(float(out['commission']), 2)}%"
+    return out
+
+
 def _add_trends_to_subnets(subnets: list[dict[str, Any]], seed: int) -> list[dict[str, Any]]:
     """Add price, marketCap, volume24h, trendData, subnet_name; emission/cap/vol scaled like UI, 2 decimals."""
     result: list[dict[str, Any]] = []
@@ -199,8 +215,7 @@ async def fetch_data(
         return []
 
     if entity_type == "validators":
-        # Return server data as-is; VIEW_VALIDATOR event uses only server fields (no performanceTrend/subnetPerformance).
-        return raw
+        return [_normalize_validator(v) for v in raw]
     if entity_type == "subnets":
         return _add_trends_to_subnets(raw, seed_value)
     if entity_type == "blocks":

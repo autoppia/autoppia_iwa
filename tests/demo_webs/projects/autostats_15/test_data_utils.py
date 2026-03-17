@@ -12,6 +12,7 @@ from autoppia_iwa.src.demo_webs.projects.autostats_15.data_utils import (
     _normalize_account,
     _normalize_block,
     _normalize_transfer,
+    _normalize_validator,
     _scale_large_number,
     _seed_random,
     fetch_data,
@@ -189,6 +190,31 @@ class TestAddTrendsToSubnets:
         assert a[0]["trendData"] == b[0]["trendData"]
 
 
+class TestNormalizeValidator:
+    def test_scales_weight_stake_rounds_dominance_commission(self):
+        raw = {"hotkey": "0x1", "rank": 1, "totalWeight": 859221, "rootStake": 500_000, "alphaStake": 2_500_000_000, "dominance": 3.4567, "commission": 5.123}
+        out = _normalize_validator(raw)
+        assert out["totalWeight"] == "τ859.22K"
+        assert out["rootStake"] == "τ500.0K"
+        assert out["alphaStake"] == "τ2.5B"
+        assert out["dominance"] == "3.46%"
+        assert out["commission"] == "5.12%"
+        assert out["rank"] == 1
+        assert out["hotkey"] == "0x1"
+
+    def test_leaves_rank_nominator_count_unchanged(self):
+        raw = {"hotkey": "0x2", "rank": 5, "nominatorCount": 100}
+        out = _normalize_validator(raw)
+        assert out["rank"] == 5
+        assert out["nominatorCount"] == 100
+
+    def test_handles_missing_fields(self):
+        raw = {"hotkey": "0x3"}
+        out = _normalize_validator(raw)
+        assert out["hotkey"] == "0x3"
+        assert "totalWeight" not in out or out.get("totalWeight") is None
+
+
 class TestBlockToBlockWithDetails:
     def test_epoch_from_number(self):
         block = {"number": 720, "extrinsics": []}
@@ -274,11 +300,34 @@ _MODULE = "autoppia_iwa.src.demo_webs.projects.autostats_15.data_utils"
 class TestFetchData:
     """fetch_data with mocked get_backend_service_url and load_dataset_data."""
 
-    async def test_validators_returns_raw(self):
+    async def test_validators_returns_normalized(self):
         raw = [{"hotkey": "0xabc", "rank": 1}]
         with patch(f"{_MODULE}.get_backend_service_url", return_value="http://test/"), patch(f"{_MODULE}.load_dataset_data", new_callable=AsyncMock, return_value=raw):
             result = await fetch_data("validators", 1, count=10)
-        assert result == raw
+        assert len(result) == 1
+        assert result[0]["hotkey"] == "0xabc"
+        assert result[0]["rank"] == 1
+
+    async def test_validators_normalize_weight_stake_dominance_commission(self):
+        raw = [
+            {
+                "hotkey": "0xdef",
+                "rank": 2,
+                "totalWeight": 859_221,
+                "rootStake": 500_000,
+                "alphaStake": 2_500_000_000,
+                "dominance": 3.4567,
+                "commission": 5.123,
+            }
+        ]
+        with patch(f"{_MODULE}.get_backend_service_url", return_value="http://test/"), patch(f"{_MODULE}.load_dataset_data", new_callable=AsyncMock, return_value=raw):
+            result = await fetch_data("validators", 1, count=10)
+        assert len(result) == 1
+        assert result[0]["totalWeight"] == "τ859.22K"
+        assert result[0]["rootStake"] == "τ500.0K"
+        assert result[0]["alphaStake"] == "τ2.5B"
+        assert result[0]["dominance"] == "3.46%"
+        assert result[0]["commission"] == "5.12%"
 
     async def test_subnets_returns_with_trends(self):
         raw = [{"id": 1, "name": "Sub1"}]
