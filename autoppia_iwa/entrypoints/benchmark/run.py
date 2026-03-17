@@ -28,8 +28,6 @@ LOCAL_AGENTS = [
     ApifiedWebAgent(host="127.0.0.1", port=5002, id="browser_use_native", name="Browser Use Native", timeout=120),
     ApifiedWebAgent(host="127.0.0.1", port=5003, id="openai_cua", name="OpenAI CUA", timeout=120),
     ApifiedWebAgent(host="127.0.0.1", port=5004, id="anthropic_cua", name="Anthropic CUA", timeout=120),
-    ApifiedWebAgent(host="127.0.0.1", port=5005, id="claude_cua", name="Claude CUA", timeout=120),
-    ApifiedWebAgent(host="127.0.0.1", port=5006, id="codex_cua", name="Codex CUA", timeout=120),
     ApifiedWebAgent(host="127.0.0.1", port=5007, id="openclaw_cua", name="OpenClaw CUA", timeout=120),
 ]
 REMOTE_AGENTS = [
@@ -40,7 +38,7 @@ REMOTE_AGENTS = [
     ApifiedWebAgent(id="browser_use_anthropic", name="Browser Use Anthropic", host="browser-use-anthropic-agent-sota.autoppia.com", port=80, timeout=120),
 ]
 
-AGENTS = REMOTE_AGENTS if AGENT_TARGET == "remote" else [LOCAL_AGENTS[6]]
+AGENTS = REMOTE_AGENTS if AGENT_TARGET == "remote" else [LOCAL_AGENTS[5]]
 
 # Projects and use cases (must exist in demo_web_projects / project use_cases)
 PROJECT_IDS = ["automail"]
