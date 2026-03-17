@@ -223,7 +223,7 @@ class SimpleTaskGenerator:
                     llm_prompt = DATA_EXTRACTION_TASK_GENERATION_PROMPT_WITH_QUESTION_FIELDS.format(
                         use_case_name=use_case_copy.name,
                         use_case_description=use_case_copy.description,
-                        additional_prompt_info=use_case_copy.additional_prompt_info or "",
+                        additional_prompt_info=use_case_copy.additional_prompt_info_for_data_extraction_task or "",
                         question_fields_info=question_fields_info,
                         verify_field=verify_field,
                     )
@@ -231,7 +231,7 @@ class SimpleTaskGenerator:
                     llm_prompt = DATA_EXTRACTION_TASK_GENERATION_PROMPT.format(
                         use_case_name=use_case_copy.name,
                         use_case_description=use_case_copy.description,
-                        additional_prompt_info=use_case_copy.additional_prompt_info,
+                        additional_prompt_info=use_case_copy.additional_prompt_info_for_data_extraction_task or "",
                         constraints_info=constraints_info,
                     )
             else:

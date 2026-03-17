@@ -63,13 +63,40 @@ def _generate_constraint_value(
     return field_value
 
 
-async def generate_select_server_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    constraints = []
+async def generate_select_server_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        channels_dict, servers_dict = await asyncio.gather(
+            _ensure_discord_dataset(task_url, dataset, entity_type="channels"),
+            _ensure_discord_dataset(task_url, dataset, entity_type="servers"),
+        )
+        channels = channels_dict.get("channels", [])
+        servers = servers_dict.get("servers", [])
+        if not channels or not servers:
+            return []
+        sample_channel = random.choice(channels)
+        resolved_server = next(
+            (s for s in servers if s.get("id") == sample_channel.get("serverId")),
+            None,
+        )
+        channel_name = sample_channel.get("name", "")
+        server_name = resolved_server.get("name", "") if resolved_server else ""
+        if not server_name or not channel_name:
+            return []
+        return {
+            "constraints": [create_constraint_dict("server_name", ComparisonOperator.EQUALS, server_name)],
+            "question_fields_and_values": {"channel_name": channel_name},
+        }
+
     data_dict = await _ensure_discord_dataset(task_url, dataset, entity_type="servers")
     servers = data_dict.get("servers", [])
     if not servers:
-        return constraints
+        return []
     sample = random.choice(servers)
+    constraints = []
     for field, data_key in [("server_name", "name")]:
         allowed = FIELD_OPERATORS_MAP_SERVER.get(field, [])
         if not allowed:
@@ -82,8 +109,11 @@ async def generate_select_server_constraints(task_url: str | None = None, datase
     return constraints
 
 
-async def generate_select_channel_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    constraints: list[dict[str, Any]] = []
+async def generate_select_channel_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     channels_dict, servers_dict = await asyncio.gather(
         _ensure_discord_dataset(task_url, dataset, entity_type="channels"),
         _ensure_discord_dataset(task_url, dataset, entity_type="servers"),
@@ -91,12 +121,32 @@ async def generate_select_channel_constraints(task_url: str | None = None, datas
     channels = channels_dict.get("channels", [])
     servers = servers_dict.get("servers", [])
     if not channels:
-        return constraints
+        return []
+
     sample_channel = random.choice(channels)
     resolved_server = next(
         (s for s in servers if s.get("id") == sample_channel.get("serverId")),
         None,
     )
+    channel_name = sample_channel.get("name", "")
+    server_name = resolved_server.get("name", "") if resolved_server else ""
+
+    if test_types == "data_extraction_only":
+        verify_field = random.choice(["channel_name", "server_name"])
+        verify_value = channel_name if verify_field == "channel_name" else server_name
+        if not verify_value:
+            return []
+        # Only the non-verify field goes into question_fields_and_values (entity identifier).
+        other_field = "server_name" if verify_field == "channel_name" else "channel_name"
+        other_value = server_name if verify_field == "channel_name" else channel_name
+        if not other_value:
+            return []
+        return {
+            "constraints": [create_constraint_dict(verify_field, ComparisonOperator.EQUALS, verify_value)],
+            "question_fields_and_values": {other_field: other_value},
+        }
+
+    constraints: list[dict[str, Any]] = []
     for field, data_key, sample, entity_list in [
         ("channel_name", "name", sample_channel, channels),
         ("server_name", "name", resolved_server, servers),
@@ -155,7 +205,11 @@ async def generate_send_message_constraints(task_url: str | None = None, dataset
     return constraints
 
 
-async def generate_add_reaction_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_add_reaction_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     constraints: list[dict[str, Any]] = []
     messages_dict, channels_dict, servers_dict = await asyncio.gather(
         _ensure_discord_dataset(task_url, dataset, entity_type="messages"),
@@ -166,7 +220,8 @@ async def generate_add_reaction_constraints(task_url: str | None = None, dataset
     channels = channels_dict.get("channels", [])
     servers = servers_dict.get("servers", [])
     if not messages:
-        return constraints
+        return [] if test_types == "data_extraction_only" else constraints
+
     sample = random.choice(messages)
     chan_id = sample.get("channelId")
     resolved_channel = next((c for c in channels if c.get("id") == chan_id), None) if chan_id and channels else (random.choice(channels) if channels else None)
@@ -180,7 +235,37 @@ async def generate_add_reaction_constraints(task_url: str | None = None, dataset
         if resolved_channel and servers
         else None
     )
+
     sample_content = sample.get("content", "")
+    channel_name = resolved_channel.get("name", "") if resolved_channel else ""
+    server_name = resolved_server.get("name", "") if resolved_server else ""
+
+    if test_types == "data_extraction_only":
+        # Pick verify field from content and authorUsername; unpicked field goes in question
+        verify_field = random.choice(["content", "authorUsername"])
+        verify_value = sample.get(verify_field, "")
+        if not verify_value:
+            return []
+
+        # Question fields: server_name, channel_name, and the unpicked field
+        question_fields_and_values: dict[str, Any] = {}
+        if server_name:
+            question_fields_and_values["server_name"] = server_name
+        if channel_name:
+            question_fields_and_values["channel_name"] = channel_name
+        unpicked = "authorUsername" if verify_field == "content" else "content"
+        unpicked_value = sample.get(unpicked, "")
+        if unpicked_value:
+            question_fields_and_values[unpicked] = unpicked_value
+
+        if not question_fields_and_values:
+            return []
+
+        return {
+            "constraints": [create_constraint_dict(verify_field, ComparisonOperator.EQUALS, verify_value)],
+            "question_fields_and_values": question_fields_and_values,
+        }
+
     content_list = [{"content": m.get("content", "")} for m in messages]
     for field, data_key, sample_entity, entity_list in [
         ("message_id", "id", sample, messages),
@@ -389,7 +474,11 @@ async def generate_create_channel_constraints(task_url: str | None = None, datas
     return constraints
 
 
-async def generate_join_voice_channel_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_join_voice_channel_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     constraints: list[dict[str, Any]] = []
     channels_dict, servers_dict = await asyncio.gather(
         _ensure_discord_dataset(task_url, dataset, entity_type="channels"),
@@ -401,12 +490,30 @@ async def generate_join_voice_channel_constraints(task_url: str | None = None, d
     if not voice:
         voice = channels
     if not voice:
-        return constraints
+        return [] if test_types == "data_extraction_only" else constraints
+
     sample_channel = random.choice(voice)
     resolved_server = next(
         (s for s in servers if s.get("id") == sample_channel.get("serverId")),
         None,
     )
+    channel_name = sample_channel.get("name", "")
+    server_name = resolved_server.get("name", "") if resolved_server else ""
+
+    if test_types == "data_extraction_only":
+        verify_field = random.choice(["channel_name", "server_name"])
+        verify_value = channel_name if verify_field == "channel_name" else server_name
+        if not verify_value:
+            return []
+        other_field = "server_name" if verify_field == "channel_name" else "channel_name"
+        other_value = server_name if verify_field == "channel_name" else channel_name
+        if not other_value:
+            return []
+        return {
+            "constraints": [create_constraint_dict(verify_field, ComparisonOperator.EQUALS, verify_value)],
+            "question_fields_and_values": {other_field: other_value},
+        }
+
     for field, data_key, sample, entity_list in [
         ("channel_name", "name", sample_channel, voice),
         ("server_name", "name", resolved_server, servers),
