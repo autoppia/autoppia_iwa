@@ -27,6 +27,8 @@ from .data import (
     PROFILE_LOCATIONS,
     PROFILE_NAMES,
     PROFILE_WEBSITES,
+    VISIBLE_FIELDS_FILM_DETAIL,
+    VISIBLE_FIELDS_SEARCH_FILM,
 )
 from .data_utils import fetch_data
 
@@ -260,7 +262,11 @@ def generate_logout_constraints(dataset: list[dict] | None = None):
     return parse_constraints_str(constraints_str)
 
 
-async def generate_search_film_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
+async def generate_search_film_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for SEARCH_FILM: query equals/not_equals film name from DB."""
     from .utils import parse_constraints_str
 
@@ -271,6 +277,11 @@ async def generate_search_film_constraints(task_url: str | None = None, dataset:
             films = data.get("movies", []) if data else []
             if not films:
                 return parse_constraints_str("query equals The Matrix")
+        if test_types == "data_extraction_only":
+            selected_item = choice(films)
+            # item_with_query = {**selected_item, "name": selected_item.get("name", "")}
+            result = _build_data_extraction_result(selected_item, VISIBLE_FIELDS_SEARCH_FILM, verify_field="name")
+            return result if result is not None else []
         search_dataset = [{"query": m["name"]} for m in films]
         constraints_list = _generate_constraints(search_dataset, FIELD_OPERATORS_MAP_SEARCH_FILM, num_constraints=1, selected_fields=["query"])
         return constraints_list if constraints_list else parse_constraints_str("query equals The Matrix")
@@ -280,6 +291,51 @@ async def generate_search_film_constraints(task_url: str | None = None, dataset:
 
 # Core film fields for view/share/trailer/watchlist/delete use cases (DB first, semantic constraints)
 FILM_CORE_FIELDS = ["name", "director", "year", "rating", "duration", "genres"]
+
+# For SEARCH_FILM data extraction: verify = query (movie name); question = random subset of other film fields
+
+
+def _build_data_extraction_result(
+    selected_item: dict[str, Any],
+    visible_fields: list[str],
+    verify_field: str | None = None,
+) -> dict[str, Any] | None:
+    """Build constraints + question_fields_and_values for data_extraction_only; returns None on validation failure.
+    When verify_field is set, use it as the verify field (fixed); otherwise pick randomly from available_fields."""
+    available_fields = [f for f in visible_fields if selected_item.get(f) is not None]
+    if len(available_fields) < 2:
+        return None
+
+    if verify_field is not None:
+        if verify_field not in available_fields:
+            return None
+        chosen_verify_field = verify_field
+    else:
+        chosen_verify_field = random.choice(available_fields)
+    verify_value = selected_item.get(chosen_verify_field)
+    if verify_value is None:
+        return None
+
+    question_candidates = [f for f in available_fields if f != chosen_verify_field]
+    if not question_candidates:
+        return None
+    num_question_fields = min(len(question_candidates), random.randint(1, len(question_candidates)))
+    question_fields = random.sample(question_candidates, num_question_fields)
+
+    question_fields_and_values: dict[str, Any] = {}
+    for qf in question_fields:
+        val = selected_item.get(qf)
+        if val is not None:
+            question_fields_and_values[qf] = val
+
+    if not question_fields_and_values:
+        return None
+
+    constraints = [create_constraint_dict(chosen_verify_field, ComparisonOperator.EQUALS, verify_value)]
+    return {
+        "constraints": constraints,
+        "question_fields_and_values": question_fields_and_values,
+    }
 
 
 async def generate_film_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
@@ -294,20 +350,36 @@ async def generate_film_constraints(task_url: str | None = None, dataset: dict[s
     return _generate_constraints(films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints)
 
 
-async def generate_film_detail_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
+async def generate_film_detail_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for FILM_DETAIL: film fields from DB (name, director, year, rating, duration, genres)."""
     films = await _get_films_data(task_url, dataset)
     if not films:
         return []
+    if test_types == "data_extraction_only":
+        selected_item = choice(films)
+        result = _build_data_extraction_result(selected_item, VISIBLE_FIELDS_FILM_DETAIL)
+        return result if result is not None else []
     num_constraints = random.randint(1, 3)
     return _generate_constraints(films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS)
 
 
-async def generate_add_to_watchlist_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
+async def generate_add_to_watchlist_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for ADD_TO_WATCHLIST: login + film fields from DB (auth required)."""
     films = await _get_films_data(task_url, dataset)
     if not films:
         return []
+    if test_types == "data_extraction_only":
+        selected_item = choice(films)
+        result = _build_data_extraction_result(selected_item, VISIBLE_FIELDS_FILM_DETAIL)
+        return result if result is not None else []
     num_constraints = random.randint(1, 3)
     film_constraints = _generate_constraints(films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS)
     return [*_login_constraints(), *film_constraints]
@@ -323,29 +395,53 @@ async def generate_remove_from_watchlist_constraints(task_url: str | None = None
     return [*_login_constraints(), *film_constraints]
 
 
-async def generate_share_film_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
+async def generate_share_film_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for SHARE_MOVIE: film fields from DB (name, director, year, rating, duration, genres)."""
     films = await _get_films_data(task_url, dataset)
     if not films:
         return []
+    if test_types == "data_extraction_only":
+        selected_item = choice(films)
+        result = _build_data_extraction_result(selected_item, VISIBLE_FIELDS_FILM_DETAIL)
+        return result if result is not None else []
     num_constraints = random.randint(1, 3)
     return _generate_constraints(films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS)
 
 
-async def generate_watch_trailer_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
+async def generate_watch_trailer_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for WATCH_TRAILER: film fields from DB (name, director, year, rating, duration, genres)."""
     films = await _get_films_data(task_url, dataset)
     if not films:
         return []
+    if test_types == "data_extraction_only":
+        selected_item = choice(films)
+        result = _build_data_extraction_result(selected_item, VISIBLE_FIELDS_FILM_DETAIL)
+        return result if result is not None else []
     num_constraints = random.randint(1, 3)
     return _generate_constraints(films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS)
 
 
-async def generate_delete_film_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
+async def generate_delete_film_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for DELETE_FILM: film fields from DB (name, director, year, rating, duration, genres)."""
     films = await _get_films_data(task_url, dataset)
     if not films:
         return []
+    if test_types == "data_extraction_only":
+        selected_item = choice(films)
+        result = _build_data_extraction_result(selected_item, VISIBLE_FIELDS_FILM_DETAIL)
+        return result if result is not None else []
     num_constraints = random.randint(1, 3)
     return _generate_constraints(films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS)
 
@@ -384,12 +480,29 @@ def _build_filter_film_dataset(films: list[dict]) -> list[dict]:
     return rows if rows else [{"genre_name": "Drama", "year": 2020}]
 
 
-async def generate_film_filter_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
+async def generate_film_filter_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for FILTER_FILM: genre_name and/or year (aligned with FilterFilmEvent)."""
     films = await _get_films_data(task_url, dataset)
     if not films:
         return []
     filter_dataset = _build_filter_film_dataset(films)
+    if test_types == "data_extraction_only":
+        # Data extraction: use full genres list (as-is) and year from a film.
+        for _ in range(50):
+            film = choice(films)
+            year = film.get("year")
+            genres = film.get("genres")
+            if year is None or not genres:
+                continue
+            selected_item = {"genres": genres, "year": year}
+            result = _build_data_extraction_result(selected_item, ["genres", "year"])
+            if result is not None:
+                return result
+        return []
     generation_type = choice(["single_genre", "single_year", "genre_and_year"])
     if generation_type == "single_genre":
         return _generate_constraints(filter_dataset, FIELD_OPERATORS_MAP_FILTER_FILM, num_constraints=1, selected_fields=["genre_name"])

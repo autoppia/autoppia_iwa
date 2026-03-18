@@ -4,7 +4,18 @@ Provides a single place to fetch and transform the movies dataset so other modul
 don't need to duplicate the logic.
 """
 
+from typing import Any
+
 from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+
+
+def _normalize_rating(value: Any) -> Any:
+    """If rating is a whole float (8.0, 7.0), return int (8, 7); otherwise return as-is (e.g. 8.1, 5.7)."""
+    if value is None:
+        return None
+    if isinstance(value, float) and value == int(value):
+        return int(value)
+    return value
 
 
 def apply_mapping(record: dict, mapping: dict) -> dict:
@@ -30,6 +41,10 @@ def apply_mapping(record: dict, mapping: dict) -> dict:
             directors_list = [d.strip() for d in director_value.split(",") if d.strip()]
             new_record["director"] = directors_list
         # If single director, keep as string (no change needed)
+
+    # Normalize rating: 8.0 -> 8, 7.0 -> 7; leave 8.1, 5.7 etc. as-is
+    if "rating" in new_record:
+        new_record["rating"] = _normalize_rating(new_record["rating"])
 
     return new_record
 

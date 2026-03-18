@@ -294,3 +294,7 @@ COMMENT_KEYWORDS = [
     "emotionally powerful",
     "couldn't look away",
 ]
+
+# Visible fields for data-extraction tasks on FILM_DETAIL.
+VISIBLE_FIELDS_FILM_DETAIL = ["name", "director", "year", "rating", "duration", "genres", "cast", "description"]
+VISIBLE_FIELDS_SEARCH_FILM = ["name", "director", "year", "rating", "duration", "genres", "description"]
