@@ -29,6 +29,7 @@ projects_status.json
 
 # Generated outputs (benchmark, training, verification)
 data/outputs/**
+benchmark-output/**
 
 # Legacy paths (kept for backwards compatibility during transition)
 data/benchmark/**
