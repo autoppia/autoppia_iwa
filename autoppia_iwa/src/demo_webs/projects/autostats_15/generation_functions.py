@@ -143,7 +143,6 @@ def _generate_constraints_static(
     integer_fields: set[str] | None = None,
 ) -> list[dict[str, Any]]:
     """Build constraints from a static dataset; pick one item and 1..num_constraints fields.
-    Uses _generate_constraint_value (same pattern as autocrm_5) for constraint values.
     integer_fields: field names that must have integer constraint values (e.g. rank, eventsCount).
     """
     if not dataset:
