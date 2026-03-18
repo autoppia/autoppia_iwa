@@ -2,7 +2,7 @@ beautifulsoup4==4.12.3
 markdownify
 matplotlib==3.9.3
 networkx==3.3
-numpy==2.0.2
+numpy==2.4.3
 gymnasium==0.29.1
 playwright==1.49.0
 pydantic==2.11.5
