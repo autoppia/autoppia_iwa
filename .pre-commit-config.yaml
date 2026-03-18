@@ -2,16 +2,16 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
-      - id: check-added-large-files # Prevent large files from being committed
-      - id: trailing-whitespace # Remove trailing whitespace
-      - id: end-of-file-fixer # Ensure files end with a newline
-      - id: mixed-line-ending # Ensure consistent line endings (LF or CRLF)
+      - id: check-added-large-files
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+        exclude: ^\.vscode/
+      - id: mixed-line-ending
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.10.0
     hooks:
       - id: ruff
-        args: [ "--fix", "--config", "pyproject.toml" ]
-
+        args: [ "--fix", "--line-length", "200" ]
       - id: ruff-format
-        args: [ "--config", "pyproject.toml" ]
+        args: [ "--line-length", "200" ]
