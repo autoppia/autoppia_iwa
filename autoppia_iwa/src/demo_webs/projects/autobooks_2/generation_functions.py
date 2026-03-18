@@ -416,6 +416,23 @@ async def generate_add_to_reading_list_constraints(
     return await generate_book_constraints(task_url, dataset)
 
 
+async def generate_add_to_cart_book_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any] | None:
+    """Generate constraints for ADD_TO_CART_BOOK. In data_extraction_only, return constraints+question_fields_and_values from book visible fields."""
+    if test_types == "data_extraction_only":
+        _, books = await _get_books_from_task_or_dataset(task_url, dataset)
+        if not books:
+            return []
+        selected_item = choice(books)
+        result = _build_data_extraction_result(selected_item, VISIBLE_FIELDS_BOOK_DETAIL)
+        return result if result is not None else []
+    # Keep existing behavior for event-only tasks (includes auth constraints)
+    return await generate_book_constraints(task_url, dataset)
+
+
 def _generate_string_field_constraint(book: dict, field: str, operator: ComparisonOperator, books_data: list[dict]) -> str | None:
     """Generate constraint value for string fields (name, author, desc)."""
     if operator == ComparisonOperator.EQUALS:

@@ -26,6 +26,7 @@ from .events import (
 from .generation_functions import (
     generate_add_book_constraints,
     generate_add_comment_constraints,
+    generate_add_to_cart_book_constraints,
     generate_add_to_reading_list_constraints,
     generate_book_constraints,
     generate_book_details_constraints,
@@ -1393,13 +1394,35 @@ For example, if the constraints are "book_name equals 'Inception' AND quantity e
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
 
+ADD_TO_CART_BOOK_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the book.
+
+Use natural language only. Do NOT use schema-style field names such as "author", "rating", "page_count", or any names with underscores (_).
+
+Identify the book using the provided visible field values (e.g. name, year, genres), then ask for the verify field value naturally.
+
+Every generated question MUST end with a confirmation phrase like "Confirm the value before adding to cart" or "Please confirm before adding to cart". This must appear at the end of the question.
+
+Do NOT start questions with imperative phrasing (e.g., Add..., Login..., Share..., Open..., Delete...).
+
+Examples:
+- "Who wrote the book 'Fourth Wing'? Please confirm before adding to cart."
+- "What is the rating of the book published in 2022 that is in the Science genre? Confirm the value before adding to cart."
+- "How many pages does the book 'The Housemaid Is Watching' have? Please confirm before adding to cart."
+- "What genres are the book 'Art of Computer Programming, Volumes 1-4B'? Confirm before adding to cart."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
+
 ADD_TO_CART_BOOK_USE_CASE = UseCase(
     name="ADD_TO_CART_BOOK",
     description="The user adds a book to the shopping cart.",
     event=AddToCartBookEvent,
     event_source_code=AddToCartBookEvent.get_source_code_of_class(),
-    constraints_generator=generate_book_constraints,
+    constraints_generator=generate_add_to_cart_book_constraints,
     additional_prompt_info=ADD_TO_CART_BOOK_ADDITIONAL_PROMPT_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=ADD_TO_CART_BOOK_DATA_EXTRACTION_PROMPT_INFO,
     replace_func=replace_book_placeholders,
     examples=[
         {
