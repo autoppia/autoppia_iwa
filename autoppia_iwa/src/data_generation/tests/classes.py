@@ -455,7 +455,8 @@ class DataExtractionTest(BaseTaskTest):
         if isinstance(value, list):
             return [str(x).strip().lower() for x in value if x is not None]
         if isinstance(value, str):
-            return [p.strip().lower() for p in value.split(",") if p.strip()]
+            parts = re.split(r"[,\s]+", value)  # split by comma OR spaces
+            return [p.strip().lower() for p in parts if p.strip()]
         return [str(value).strip().lower()]
 
     def _check_expected_answer(self, extracted_data: Any | None) -> bool:

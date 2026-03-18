@@ -33,3 +33,7 @@ FIELD_OPERATORS_MAP_BOOK = {
     "price": [EQUALS, NOT_EQUALS, LESS_THAN, GREATER_THAN, GREATER_EQUAL, LESS_EQUAL],
     "desc": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
 }
+
+VISIBLE_FIELDS_BOOK_DETAIL = ["name", "author", "year", "rating", "page_count", "genres", "desc"]
+VISIBLE_FIELDS_SEARCH_BOOK = ["name", "author", "year", "rating", "page_count", "genres", "desc"]
+VISIBLE_FIELDS_FILTER_BOOK = ["genres", "year"]

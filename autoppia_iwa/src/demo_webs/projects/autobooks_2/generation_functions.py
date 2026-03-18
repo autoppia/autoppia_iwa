@@ -5,7 +5,7 @@ from typing import Any
 from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
-from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
+from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER, VISIBLE_FIELDS_BOOK_DETAIL, VISIBLE_FIELDS_FILTER_BOOK, VISIBLE_FIELDS_SEARCH_BOOK
 from .data_utils import fetch_data
 
 # Constants for constraint placeholders
@@ -61,6 +61,49 @@ async def _get_books_from_task_or_dataset(
         dataset = {"books": books}
     books = dataset.get("books", []) if dataset else []
     return dataset, books
+
+
+def _build_data_extraction_result(
+    selected_item: dict[str, Any],
+    visible_fields: list[str],
+    *,
+    verify_field: str | None = None,
+) -> dict[str, Any] | None:
+    """Build constraints + question_fields_and_values for data_extraction_only; returns None on validation failure.
+
+    When verify_field is provided, it is used as the verify field (fixed). Otherwise, verify field is chosen randomly
+    from the available visible fields.
+    """
+    available_fields = [f for f in visible_fields if selected_item.get(f) is not None]
+    if len(available_fields) < 2:
+        return None
+
+    chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+    if chosen_verify_field not in available_fields:
+        return None
+    verify_value = selected_item.get(chosen_verify_field)
+    if verify_value is None:
+        return None
+
+    question_candidates = [f for f in available_fields if f != chosen_verify_field]
+    if not question_candidates:
+        return None
+    num_question_fields = min(len(question_candidates), random.randint(1, len(question_candidates)))
+    question_fields = random.sample(question_candidates, num_question_fields)
+
+    question_fields_and_values: dict[str, Any] = {}
+    for qf in question_fields:
+        val = selected_item.get(qf)
+        if val is not None:
+            question_fields_and_values[qf] = val
+    if not question_fields_and_values:
+        return None
+
+    constraints = [{"field": chosen_verify_field, "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": verify_value}]
+    return {
+        "constraints": constraints,
+        "question_fields_and_values": question_fields_and_values,
+    }
 
 
 def _default_auth_constraints() -> list[dict]:
@@ -132,7 +175,11 @@ async def generate_book_constraints(task_url: str | None = None, dataset: dict[s
     return None
 
 
-async def generate_book_details_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
+async def generate_book_details_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any] | None:
     """
     Generates constraints specifically for book-related use cases.
     Returns the constraints as structured data.
@@ -142,6 +189,10 @@ async def generate_book_details_constraints(task_url: str | None = None, dataset
     dataset, books = await _get_books_from_task_or_dataset(task_url, dataset)
     if not books:
         return None
+    if test_types == "data_extraction_only":
+        selected_item = choice(books)
+        result = _build_data_extraction_result(selected_item, VISIBLE_FIELDS_BOOK_DETAIL)
+        return result if result is not None else []
     constraints_str = build_constraints_info(books)
     if constraints_str:
         constraints = parse_constraints_str(constraints_str)
@@ -149,21 +200,35 @@ async def generate_book_details_constraints(task_url: str | None = None, dataset
     return None
 
 
-def generate_delete_book_constraints():
-    """
-    Generates constraints specifically for book-related use cases.
-    Returns the constraints as structured data.
-    """
+def _generate_delete_book_constraints_static() -> list[dict[str, Any]]:
+    """Static constraints for DELETE_BOOK (event-only tasks)."""
     from .utils import parse_constraints_str
 
-    # Generar restricciones frescas basadas en los datos de películas
     constraints_str = f"username equals {USERNAME_PLACEHOLDER} AND password equals {PASSWORD_PLACEHOLDER} AND id equals <web_agent_id>"
-
-    # Convertir el string a la estructura de datos
     return parse_constraints_str(constraints_str)
 
 
-async def generate_search_book_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
+async def generate_delete_book_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any] | None:
+    """Generate constraints for DELETE_BOOK. In data_extraction_only, return constraints+question_fields_and_values from book visible fields."""
+    if test_types == "data_extraction_only":
+        _, books = await _get_books_from_task_or_dataset(task_url, dataset)
+        if not books:
+            return []
+        selected_item = choice(books)
+        result = _build_data_extraction_result(selected_item, VISIBLE_FIELDS_BOOK_DETAIL)
+        return result if result is not None else []
+    return _generate_delete_book_constraints_static()
+
+
+async def generate_search_book_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any] | None:
     """
     Generates constraints specifically for book-related use cases.
     Returns the constraints as structured data.
@@ -173,6 +238,11 @@ async def generate_search_book_constraints(task_url: str | None = None, dataset:
     _, books = await _get_books_from_task_or_dataset(task_url, dataset)
     if not books:
         return None
+    if test_types == "data_extraction_only":
+        selected_item = choice(books)
+        # item_with_query = {**selected_item, "query": selected_item.get("name", "")}
+        result = _build_data_extraction_result(selected_item, VISIBLE_FIELDS_SEARCH_BOOK, verify_field="name")
+        return result if result is not None else []
 
     books_names = [book["name"] for book in books]
     operators = ["equals", "not_equals"]
@@ -263,13 +333,30 @@ def generate_contact_constraints() -> list:
     return constraints_list
 
 
-async def generate_book_filter_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
+async def generate_book_filter_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """
     Genera una combinación de constraints para filtrado de libros
     usando los años y géneros reales de los libros.
     """
     _, books = await _get_books_from_task_or_dataset(task_url, dataset)
     if not books:
+        return []
+    if test_types == "data_extraction_only":
+        # Data extraction: use full genres list (as-is) and year from a book.
+        for _ in range(50):
+            book = choice(books)
+            year = book.get("year")
+            genres = book.get("genres")
+            if year is None or not genres:
+                continue
+            selected_item = {"genres": genres, "year": year}
+            result = _build_data_extraction_result(selected_item, VISIBLE_FIELDS_FILTER_BOOK)
+            if result is not None:
+                return result
         return []
 
     existing_years = list({book["year"] for book in books})
@@ -310,6 +397,23 @@ async def generate_book_filter_constraints(task_url: str | None = None, dataset:
         )
 
     return constraints
+
+
+async def generate_add_to_reading_list_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any] | None:
+    """Generate constraints for ADD_TO_READING_LIST. In data_extraction_only, return constraints+question_fields_and_values from book visible fields."""
+    if test_types == "data_extraction_only":
+        _, books = await _get_books_from_task_or_dataset(task_url, dataset)
+        if not books:
+            return []
+        selected_item = choice(books)
+        result = _build_data_extraction_result(selected_item, VISIBLE_FIELDS_BOOK_DETAIL)
+        return result if result is not None else []
+    # Keep existing behavior for event-only tasks (includes auth constraints)
+    return await generate_book_constraints(task_url, dataset)
 
 
 def _generate_string_field_constraint(book: dict, field: str, operator: ComparisonOperator, books_data: list[dict]) -> str | None:

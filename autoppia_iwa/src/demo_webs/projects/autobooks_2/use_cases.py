@@ -26,6 +26,7 @@ from .events import (
 from .generation_functions import (
     generate_add_book_constraints,
     generate_add_comment_constraints,
+    generate_add_to_reading_list_constraints,
     generate_book_constraints,
     generate_book_details_constraints,
     generate_book_filter_constraints,
@@ -181,6 +182,27 @@ LOGOUT_USE_CASE = UseCase(
 # BOOK_DETAIL_USE_CASE
 ###############################################################################
 
+BOOK_DETAIL_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field.
+
+Use natural language only. Do NOT use schema-style field names such as
+"author", "rating", "page_count", or any names with underscores (_).
+
+Always refer to fields using natural phrasing.
+
+Identify the book using the provided visible field values (e.g. name, year, genre),
+then ask for the verify field value.
+
+Examples:
+- "Who wrote the book Fourth Wing?"
+- "What is the rating of the book published in 2022 that is in the Science genre?"
+- "How many pages does the book The Housemaid Is Watching have?"
+- "What genre is the book Art of Computer Programming, the, Volumes 1-4B, Boxed Set?"
+
+Do NOT start with imperative phrasing like "Navigate..." or "Go to...".
+The output must be a single question.
+""".strip()
+
 
 def _get_book_detail_info(books_data: list[dict]) -> str:
     """Generate book detail info dynamically from API data."""
@@ -230,6 +252,8 @@ BOOK_DETAIL_USE_CASE = UseCase(
     event_source_code=BookDetailEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
     constraints_generator=generate_book_details_constraints,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=BOOK_DETAIL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Navigate to 'The Housemaid Is Watching' book page",
@@ -311,6 +335,26 @@ For example, if the constraints are "author not_equals Diana Gabaldon AND year g
 ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
 """
 
+SHARE_BOOK_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the book.
+
+Use natural language only. Do NOT use schema-style field names such as "author", "rating", "page_count", or any names with underscores (_).
+
+Identify the book using the provided visible field values (e.g. name, year, genres), then ask for the verify field value naturally.
+
+Every generated question MUST end with a confirmation phrase like "Confirm the value before sharing" or "Please confirm before sharing". This must appear at the end of the question.
+
+Do NOT start questions with imperative phrasing (e.g. Share..., Add..., Delete..., Remove..., Read...).
+
+Examples:
+- "Who wrote the book 'Fourth Wing'? Please confirm before sharing."
+- "What is the rating of the book published in 2022 that is in the Science genre? Confirm the value before sharing."
+- "How many pages does the book 'The Housemaid Is Watching' have? Please confirm before sharing."
+- "What genres are the book 'The Art of Computer Programming, Volumes 1-4B'? Confirm before sharing."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
+
 SHARE_BOOK_USE_CASE = UseCase(
     name="SHARE_BOOK",
     description="The user explicitly requests to share a specific book that meets certain criteria, "
@@ -319,6 +363,8 @@ SHARE_BOOK_USE_CASE = UseCase(
     event_source_code=BookDetailEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
     constraints_generator=generate_book_details_constraints,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=SHARE_BOOK_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Share 'The Housemaid Is Watching' book",
@@ -400,6 +446,26 @@ For example, if the constraints are "author not_equals Diana Gabaldon AND year g
 ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
 """
 
+OPEN_PREVIEW_BOOK_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the book.
+
+Use natural language only. Do NOT use schema-style field names such as "author", "rating", "page_count", or any names with underscores (_).
+
+Identify the book using the provided visible field values (e.g. name, year, genre), then ask for the verify field value naturally.
+
+Every generated question MUST end with a confirmation phrase like "Confirm the value before opening the preview" or "Please confirm before opening the preview". This must appear at the end of the question.
+
+Do NOT start questions with imperative phrasing (e.g., Open..., Read..., Share..., Add..., Delete...).
+
+Examples:
+- "Who wrote the book 'Fourth Wing'? Please confirm before opening the preview."
+- "What is the rating of the book published in 2022 that is in the Science genre? Confirm the value before opening the preview."
+- "How many pages does the book 'The Housemaid Is Watching' have? Please confirm before opening the preview."
+- "What genres are the book 'Art of Computer Programming, Volumes 1-4B'? Confirm before opening the preview."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
+
 OPEN_PREVIEW_USE_CASE = UseCase(
     name="OPEN_PREVIEW",
     description="The user explicitly requests to open preview of a specific book that meets certain criteria, "
@@ -408,6 +474,8 @@ OPEN_PREVIEW_USE_CASE = UseCase(
     event_source_code=OpenPreviewEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
     constraints_generator=generate_book_details_constraints,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=OPEN_PREVIEW_BOOK_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Open preview of 'The Housemaid Is Watching' book",
@@ -489,6 +557,26 @@ For example, if the constraints are "author not_equals Diana Gabaldon AND year g
 ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
 """
 
+ADD_TO_READING_LIST_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the book.
+
+Use natural language only. Do NOT use schema-style field names such as "author", "rating", "page_count", or any names with underscores (_).
+
+Identify the book using the provided visible field values (e.g. name, year, genres), then ask for the verify field value naturally.
+
+Every generated question MUST end with a confirmation phrase like "Confirm the value before adding to the reading list" or "Please confirm before adding to the reading list". This must appear at the end of the question.
+
+Do NOT start questions with imperative phrasing (e.g., Add..., Read..., Share..., Open..., Delete...).
+
+Examples:
+- "Who wrote the book 'Fourth Wing'? Please confirm before adding to the reading list."
+- "What is the rating of the book published in 2022 that is in the Science genre? Confirm the value before adding to the reading list."
+- "How many pages does the book 'The Housemaid Is Watching' have? Please confirm before adding to the reading list."
+- "What genres are the book 'Art of Computer Programming, Volumes 1-4B'? Confirm before adding to the reading list."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
+
 ADD_TO_READING_LIST_USE_CASE = UseCase(
     name="ADD_TO_READING_LIST",
     description="The user explicitly requests to add a specific book to list book that meets certain criteria, "
@@ -496,7 +584,9 @@ ADD_TO_READING_LIST_USE_CASE = UseCase(
     event=AddToReadingListEvent,
     event_source_code=AddToReadingListEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
-    constraints_generator=generate_book_constraints,
+    constraints_generator=generate_add_to_reading_list_constraints,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=ADD_TO_READING_LIST_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "First, login for the following username:<username> and password:<password> and then add to reading list 'The Housemaid Is Watching' book",
@@ -612,6 +702,21 @@ For example:
 ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL clearly indicating that it is a simple SEARCH with NO additional constraints.
 """
 
+SEARCH_BOOK_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the name of the book.
+
+Use the provided visible fields (e.g. author, year, genre, rating) to identify the book.
+Use natural language only. Do NOT use schema-style field names like "author", "year", "genre", "rating" in the question.
+Do NOT start the question with phrases like "Search for...".
+
+Examples:
+- "What is the name of the book written by J.K. Rowling released in 1997?"
+- "Which book released in 2005 belongs to the Fantasy genre?"
+- "What is the title of the book that has a rating of 4.5 and was published in 2010?"
+
+The output must be a single question whose answer is the book name.
+""".strip()
+
 SEARCH_BOOK_USE_CASE = UseCase(
     name="SEARCH_BOOK",
     description="The user searches for a book using a query.",
@@ -620,6 +725,8 @@ SEARCH_BOOK_USE_CASE = UseCase(
     replace_func=replace_book_placeholders,
     constraints_generator=generate_search_book_constraints,
     additional_prompt_info=SEARCH_BOOK_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=SEARCH_BOOK_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Look for the book 'Lidia's Italian-American Kitchen'",
@@ -845,6 +952,25 @@ INCORRECT:
 ALL prompts must follow this structure exactly, with varied phrasing but identical constraint logic and EXACT field values.
 """
 
+DELETE_BOOK_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the book.
+
+Use natural language only. Do NOT use schema-style field names such as "author", "rating", "page_count", "genres", or any names with underscores (_).
+
+Identify the book using the provided visible field values (e.g. name, year, genres, rating), then ask for the verify field value naturally.
+
+Every generated question MUST end with a confirmation phrase like "Confirm the value before deletion" or "Please confirm before deletion". This must appear at the end of the question.
+
+Do NOT start questions with imperative phrasing (e.g., Delete..., Remove..., Share..., Add..., Read...).
+
+Examples:
+- "Who wrote the book 'Fourth Wing'? Please confirm before deletion."
+- "What is the rating of the book published in 2022 that is in the Science genre? Confirm the value before deletion."
+- "How many pages does the book 'The Housemaid Is Watching' have? Please confirm before deletion."
+- "What genres are the book 'Art of Computer Programming, Volumes 1-4B'? Confirm before deletion."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
 
 DELETE_BOOK_USE_CASE = UseCase(
     name="DELETE_BOOK",
@@ -853,6 +979,8 @@ DELETE_BOOK_USE_CASE = UseCase(
     event_source_code=DeleteBookEvent.get_source_code_of_class(),
     additional_prompt_info=DELETE_BOOK_ADDITIONAL_PROMPT_INFO,
     constraints_generator=generate_delete_book_constraints,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=DELETE_BOOK_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Log in with username: <username>, password: <password> and remove '<your_book>'.",
@@ -1064,6 +1192,26 @@ For example, if the constraints are "genre_name equals 'Culture' AND year equals
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
 
+FILTER_BOOK_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be the genre or publication year of the book.
+
+Use natural language only. Do NOT use schema-style field names such as "genres", "year", or any names with underscores (_).
+
+Identify the book using the provided visible field values (e.g. author, rating, publication year), then ask for the verify field value naturally.
+
+Every generated question MUST end with a confirmation phrase like "Confirm the value before applying the filter" or "Please confirm before filtering". This must appear at the end of the question.
+
+Do NOT start questions with imperative phrasing (e.g. Filter..., Browse..., Search..., Show...).
+
+Examples:
+- "What are the genres of the book written by George Orwell published in 1949? Please confirm before applying the filter."
+- "Which book published in 2005 has a rating above 4.0? Confirm the value before filtering."
+- "Please provide the publication year of the book 'Harry Potter and the Philosopher's Stone' to confirm before applying the filter."
+- "What are the genres of the book with a publication year of 2010 and rating 4.5? Confirm before applying the filter."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
+
 FILTER_BOOK_USE_CASE = UseCase(
     name="FILTER_BOOK",
     description="The user applies filters to search for books by genre and/or year. Includes Filter in the prompt",
@@ -1071,6 +1219,8 @@ FILTER_BOOK_USE_CASE = UseCase(
     event_source_code=FilterBookEvent.get_source_code_of_class(),
     constraints_generator=generate_book_filter_constraints,
     additional_prompt_info=None,  # Will be populated dynamically from API
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=FILTER_BOOK_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Filter books released in the year 2005",
