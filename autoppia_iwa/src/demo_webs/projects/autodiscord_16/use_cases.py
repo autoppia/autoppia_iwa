@@ -40,6 +40,7 @@ from .generation_functions import (
     generate_settings_account_constraints,
     generate_settings_appearance_constraints,
     generate_settings_notifications_constraints,
+    generate_view_dms_constraints,
     generate_voice_mute_toggle_constraints,
 )
 
@@ -55,12 +56,33 @@ VIEW_SERVERS_USE_CASE = UseCase(
     ],
 )
 
+VIEW_DMS_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field.
+
+The question MUST clearly mention that the context is "in the DMs".
+
+Use natural language only. Do NOT use schema-style field names such as
+"username", "content", or any names with underscores (_).
+
+Always refer to fields using simple words like "name" or "message".
+
+Examples:
+- "In the DMs, what is the name of the user who sent the message 'Hey, are you coming today?'?"
+- "In the DMs, who sent the message 'Let's meet at 5 PM'?"
+- "In the DMs, what message did Alex send?"
+
+Do NOT start the question with "Open DMs..." or "View messages...".
+The output must be a single question whose answer is the verify field value.
+""".strip()
+
 VIEW_DMS_USE_CASE = UseCase(
     name="VIEW_DMS",
     description="The user clicks the Direct Messages icon.",
     event=ViewDmsEvent,
     event_source_code=ViewDmsEvent.get_source_code_of_class(),
-    constraints_generator=False,
+    constraints_generator=generate_view_dms_constraints,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=VIEW_DMS_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Open Direct Messages.", "prompt_for_task_generation": "Open Direct Messages."},
     ],

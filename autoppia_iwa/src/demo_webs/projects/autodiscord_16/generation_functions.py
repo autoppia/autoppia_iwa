@@ -63,6 +63,72 @@ def _generate_constraint_value(
     return field_value
 
 
+# Normalize username for display: "alex.coder" -> "Alex"
+def _normalize_dm_username(raw: str) -> str:
+    part = raw.split(".", 1)[0].strip() if raw else ""
+    return part.title() if part else raw
+
+
+async def generate_view_dms_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        members_dict, messages_dict = await asyncio.gather(
+            _ensure_discord_dataset(task_url, dataset, entity_type="members"),
+            _ensure_discord_dataset(task_url, dataset, entity_type="messages"),
+        )
+
+        members = members_dict.get("members", [])
+        messages = messages_dict.get("messages", [])
+
+        if not members:
+            return []
+
+        # Step 1: pick member
+        sample_member = random.choice(members)
+        username = sample_member.get("username", "")
+
+        if not username:
+            return []
+
+        # Step 2: match messages
+        matched_messages = [m for m in messages if m.get("authorUsername", "") == username]
+
+        # Step 3: resolve content (verify field)
+        if matched_messages:
+            sample_message = random.choice(matched_messages)
+            content = sample_message.get("content", "")
+        else:
+            content = "Empty conversation"
+
+        if not content:
+            return []
+
+        # Normalize username for display: "alex.coder" -> "Alex"
+        username = _normalize_dm_username(username)
+
+        # Step 4: return structured response
+        verify_field = random.choice(["content", "username"])
+
+        if verify_field == "content":
+            verify_value = content
+            question_field = "username"
+            question_value = username
+        else:
+            verify_value = username
+            question_field = "content"
+            question_value = content
+
+        return {
+            "constraints": [create_constraint_dict(verify_field, ComparisonOperator.EQUALS, verify_value)],
+            "question_fields_and_values": {question_field: question_value},
+        }
+
+    return []
+
+
 async def generate_select_server_constraints(
     task_url: str | None = None,
     dataset: dict[str, list[dict[str, Any]]] | None = None,
@@ -132,18 +198,11 @@ async def generate_select_channel_constraints(
     server_name = resolved_server.get("name", "") if resolved_server else ""
 
     if test_types == "data_extraction_only":
-        verify_field = random.choice(["channel_name", "server_name"])
-        verify_value = channel_name if verify_field == "channel_name" else server_name
-        if not verify_value:
-            return []
-        # Only the non-verify field goes into question_fields_and_values (entity identifier).
-        other_field = "server_name" if verify_field == "channel_name" else "channel_name"
-        other_value = server_name if verify_field == "channel_name" else channel_name
-        if not other_value:
+        if not channel_name or not server_name:
             return []
         return {
-            "constraints": [create_constraint_dict(verify_field, ComparisonOperator.EQUALS, verify_value)],
-            "question_fields_and_values": {other_field: other_value},
+            "constraints": [create_constraint_dict("channel_name", ComparisonOperator.EQUALS, channel_name)],
+            "question_fields_and_values": {"server_name": server_name},
         }
 
     constraints: list[dict[str, Any]] = []
