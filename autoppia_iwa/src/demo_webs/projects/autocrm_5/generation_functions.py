@@ -577,9 +577,26 @@ async def generate_document_renamed_constraints(
     return constraints
 
 
-async def generate_billing_search_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    constraints: list[dict[str, Any]] = []
+async def generate_billing_search_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     logs = await _get_crm_entity_list(task_url, dataset, "logs")
+    if test_types == "data_extraction_only":
+        if not logs:
+            return []
+        log = random.choice(logs)
+        h = log.get("hours")
+        if h is not None:
+            if isinstance(h, str) and h.endswith("h"):
+                log["hours"] = h
+            else:
+                log["hours"] = f"{h}h"
+        result = _build_data_extraction_result(log, VISIBLE_FIELDS_LOG, question_fields_override=["matter"])
+        return result if result is not None else []
+
+    constraints: list[dict[str, Any]] = []
     sample = random.choice(logs) if logs else {"matter": "Review", "description": "Review"}
     fields = ["query", "date_filter"]
     for field in fields:
@@ -796,9 +813,19 @@ async def generate_delete_log_constraints(
     return _generate_constraints_from_sample(data, ["matter", "hours", "client", "status"], FIELD_OPERATORS_MAP_LOG)
 
 
-async def generate_filter_matter_status_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    constraints: list[dict[str, Any]] = []
+async def generate_filter_matter_status_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]]:
     matter_data = await _get_crm_entity_list(task_url, dataset, "matters", method="distribute", filter_key="status")
+    if test_types == "data_extraction_only":
+        if not matter_data:
+            return []
+        matter = random.choice(matter_data)
+        result = _build_data_extraction_result(matter, VISIBLE_FIELDS_MATTER_DETAIL, question_fields_override=["name"], verify_field="status")
+        return result if result is not None else []
+    constraints: list[dict[str, Any]] = []
     if not matter_data:
         print(ERROR_NO_DATASET_MSG)
         return constraints

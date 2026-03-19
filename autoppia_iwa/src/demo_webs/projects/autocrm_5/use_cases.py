@@ -338,12 +338,39 @@ DELETE_MATTER_USE_CASE = UseCase(
 ###############################################################################
 # FILTER_MATTER_STATUS_USE_CASE
 ###############################################################################
+FILTER_MATTER_STATUS_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for matters based on their status or other visible attributes (e.g. name, client, status, updated).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "client", "status", "updated", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. matter name, client name, status, updated).
+
+Identify the matter using the provided visible field values (e.g. matter name, client, status, updated), then ask for matters filtered by the status naturally.
+
+Do NOT start questions with imperative phrasing like "Delete...", "Archive...", or "Open...".
+
+For the updated field specifically, format the question in a conditional style:
+- "When was the matter named 'Estate Planning' with status 'Archived' updated"
+
+Every generated question MUST include a subtle confirmation context at the end, such as "Please confirm the value before filtration" or "Confirm the value before filtration". This must appear at the end of the question.
+
+Examples:
+- "What is the client name of the matter 'Estate Planning'? Please confirm the value before filtration."
+- "What is the status of the matter whose client is 'Jones Legal'? Confirm the value before filtration."
+- "When was the matter named 'Estate Planning' with status 'Archived' updated? Please confirm the value before filtration."
+- "What is the name of the matter assigned to client 'Smith & Co'? Confirm the value before filtration."
+
+The output must be a single question asking only for matters filtered by status and must include the confirmation phrase at the end.
+""".strip()
+
 FILTER_MATTER_STATUS_USE_CASE = UseCase(
     name="FILTER_MATTER_STATUS",
     description="The user filters matters by status.",
     event=FilterMatterStatus,
     event_source_code=FilterMatterStatus.get_source_code_of_class(),
     constraints_generator=generate_filter_matter_status_constraints,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=FILTER_MATTER_STATUS_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Filter matters to only show those with status 'Active' or as similar.",
@@ -899,12 +926,37 @@ LOG_DELETE_USE_CASE = UseCase(
     ],
 )
 
+BILLING_SEARCH_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for billing or time log entries based on their attributes or other visible values (e.g. matter, client, hours, status, description, date).
+
+Use natural language only. Do NOT use schema-style field names such as "matter", "client", "hours", "status", "description", "date", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. matter name, client name, hours, status, description, date).
+
+Identify the log entry using the provided visible field values (e.g. matter name, client, hours, status, date), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Search...", "Filter...", or "Open...".
+
+For the hours field, ask naturally as a value (e.g. "How many hours are recorded for the log with matter 'X'?").
+For the date field, format in a conditional style (e.g. "What is the date when the log for matter 'X' was recorded?").
+
+Examples:
+- "What is the client name for the billing entry of matter 'Estate Planning'?"
+- "How many hours are recorded for the log with matter 'Jones Legal'?"
+- "What is the status of the billing entry for matter 'Estate Planning'?"
+- "What is the date when the log for matter 'Smith & Co' was recorded?"
+
+The output must be a single question asking only for the verify field value and must include the confirmation phrase at the end.
+""".strip()
+
 BILLING_SEARCH_USE_CASE = UseCase(
     name="BILLING_SEARCH",
     description="Search or filter billing entries by text or date range.",
     event=BillingSearchEvent,
     event_source_code=BillingSearchEvent.get_source_code_of_class(),
     constraints_generator=generate_billing_search_constraints,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=BILLING_SEARCH_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Search billing entries for 'contract' from this week.",
@@ -1109,12 +1161,12 @@ ALL_USE_CASES = [
     ADD_CLIENT_USE_CASE,
     DELETE_CLIENT_USE_CASE,
     FILTER_CLIENTS_USE_CASE,
-    FILTER_MATTER_STATUS_USE_CASE,  # will add support to it
+    FILTER_MATTER_STATUS_USE_CASE,
     SORT_MATTER_BY_CREATED_AT_USE_CASE,
     UPDATE_MATTER_USE_CASE,
     VIEW_PENDING_EVENTS_USE_CASE,
     DOCUMENT_RENAMED_USE_CASE,
     LOG_EDITED_USE_CASE,
-    BILLING_SEARCH_USE_CASE,  # will add support
+    BILLING_SEARCH_USE_CASE,
     HELP_VIEWED_USE_CASE,
 ]
