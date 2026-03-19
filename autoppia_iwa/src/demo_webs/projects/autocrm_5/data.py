@@ -84,3 +84,11 @@ FIELD_OPERATORS_MAP_CLIENT_FILTERS = {
     "query": STRING_OPERATORS,
     "results": LOGICAL_OPERATORS,
 }
+
+# Visible fields for data-extraction tasks (detail and search)
+VISIBLE_FIELDS_MATTER_DETAIL = ["name", "client", "status", "updated"]
+VISIBLE_FIELDS_CLIENT_DETAIL = ["name", "email", "status", "matters"]
+VISIBLE_FIELDS_SEARCH_MATTER = ["name", "client", "status", "updated"]
+VISIBLE_FIELDS_SEARCH_CLIENT = ["name", "email", "status", "matters"]
+VISIBLE_FIELDS_DOCUMENT = ["name", "size", "version", "status", "updated"]
+VISIBLE_FIELDS_LOG = ["matter", "client", "hours", "status", "description", "date"]
