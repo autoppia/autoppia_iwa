@@ -2,8 +2,8 @@
 
 from unittest.mock import patch
 
-from autoppia_iwa.src.demo_webs.projects.autocinema_1 import utils as autocinema_utils
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
+from autoppia_iwa.src.demo_webs.projects.p01_autocinema import utils as autocinema_utils
+from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator
 
 
 class TestParseConstraintsStr:
@@ -57,9 +57,9 @@ class TestParseConstraintsStr:
 class TestBuildConstraintsInfo:
     def test_returns_none_when_max_attempts_exhausted(self):
         with (
-            patch("autoppia_iwa.src.demo_webs.projects.autocinema_1.utils.constraints_exist_in_db", return_value=False),
+            patch("autoppia_iwa.src.demo_webs.projects.p01_autocinema.utils.constraints_exist_in_db", return_value=False),
             patch(
-                "autoppia_iwa.src.demo_webs.projects.autocinema_1.generation_functions.generate_constraint_from_solution",
+                "autoppia_iwa.src.demo_webs.projects.p01_autocinema.generation_functions.generate_constraint_from_solution",
                 return_value={"field": "year", "operator": ComparisonOperator.EQUALS, "value": 2014},
             ),
             patch("random.choice", side_effect=[{"year": 2014}, "equals"]),
@@ -72,8 +72,8 @@ class TestBuildConstraintsInfo:
     def test_returns_string_when_constraints_valid(self):
         data = [{"year": 2014, "name": "A"}, {"year": 2015, "name": "B"}]
         with (
-            patch("autoppia_iwa.src.demo_webs.projects.autocinema_1.utils.constraints_exist_in_db", return_value=True),
-            patch("autoppia_iwa.src.demo_webs.projects.autocinema_1.generation_functions.generate_constraint_from_solution") as gen,
+            patch("autoppia_iwa.src.demo_webs.projects.p01_autocinema.utils.constraints_exist_in_db", return_value=True),
+            patch("autoppia_iwa.src.demo_webs.projects.p01_autocinema.generation_functions.generate_constraint_from_solution") as gen,
             patch("random.choice", side_effect=[data[0], "equals"]),
             patch("random.randint", return_value=1),
             patch("random.sample", return_value=["year"]),

@@ -3,7 +3,7 @@
 import pytest
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.projects.autocrm_5.events import (
+from autoppia_iwa.src.demo_webs.projects.p05_autocrm.events import (
     BACKEND_EVENT_TYPES,
     AddClientEvent,
     AddNewMatter,

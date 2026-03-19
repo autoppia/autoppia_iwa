@@ -9,9 +9,9 @@ from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeli
 from autoppia_iwa.src.data_generation.tasks.simple.simple_task_generator import SimpleTaskGenerator
 from autoppia_iwa.src.data_generation.tests.classes import CheckEventTest
 from autoppia_iwa.src.data_generation.tests.simple.test_generation_pipeline import GlobalTestGenerationPipeline
+from autoppia_iwa.src.demo_webs.base_events import Event
 from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
-from autoppia_iwa.src.demo_webs.projects.base_events import Event
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
+from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator
 
 
 class DummyEvent(Event):
@@ -146,14 +146,12 @@ def test_log_task_generation_import_error_fallback():
     """Covers pipeline _log_task_generation ImportError branch (lines 31-34) and _ensure_task_generation_level ValueError branch (19-22)."""
     from autoppia_iwa.src.data_generation.tasks import pipeline as pipeline_module
 
-    def fake_import(name, *args, **kwargs):
-        if "entrypoints.benchmark.utils.logging" in (name or ""):
-            raise ImportError("no benchmark logging")
-        return __import__(name, *args, **kwargs)
-
     with patch.object(pipeline_module.logger, "level", side_effect=[ValueError("level missing"), None]):
         mock_log = MagicMock()
-        with patch.object(pipeline_module.logger, "log", mock_log), patch("builtins.__import__", fake_import):
+        with (
+            patch.object(pipeline_module.logger, "log", mock_log),
+            patch.dict("sys.modules", {"autoppia_iwa.src.evaluation.benchmark.utils.logging": None}),
+        ):
             pipeline_module._log_task_generation("fallback message", context="CUSTOM_CTX")
         mock_log.assert_called_once()
         call_args = mock_log.call_args[0]

@@ -1,8 +1,8 @@
-"""Unit tests for demo_webs.projects.data_provider."""
+"""Unit tests for demo_webs.data_provider."""
 
 import pytest
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import (
+from autoppia_iwa.src.demo_webs.data_provider import (
     close_async_session,
     get_seed_from_url,
     load_dataset_data,
@@ -35,7 +35,7 @@ class TestGetSeedFromUrl:
 @pytest.mark.asyncio
 async def test_load_dataset_data_uses_cache():
     """When cache has the key, load_dataset_data returns cached data without HTTP."""
-    from autoppia_iwa.src.demo_webs.projects import data_provider
+    from autoppia_iwa.src.demo_webs import data_provider
 
     cache_key = (
         "http://example.com/datasets/load",
@@ -63,7 +63,7 @@ async def test_load_dataset_data_uses_cache():
 @pytest.mark.asyncio
 async def test_close_async_session_no_op_when_none():
     """close_async_session does nothing when session is None."""
-    from autoppia_iwa.src.demo_webs.projects import data_provider
+    from autoppia_iwa.src.demo_webs import data_provider
 
     orig = data_provider._ASYNC_SESSION
     data_provider._ASYNC_SESSION = None

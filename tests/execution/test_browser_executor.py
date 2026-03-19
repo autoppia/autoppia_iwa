@@ -1,9 +1,11 @@
-"""Tests for execution.browser_executor."""
+"""Tests for the Playwright browser executor."""
 
 import pytest
+from datetime import UTC, datetime, timedelta
+from unittest.mock import AsyncMock, Mock
 
 from autoppia_iwa.src.data_generation.tasks.classes import BrowserSpecification
-from autoppia_iwa.src.execution import browser_executor
+from autoppia_iwa.src.execution import playwright_browser_executor as browser_executor
 
 
 def test_parse_event_timestamp_not_dict():
@@ -50,3 +52,87 @@ async def test_executor_execute_single_action_raises_without_page():
     action = NavigateAction(url="http://example.com")
     with pytest.raises(RuntimeError, match="Playwright page is not initialized"):
         await executor.execute_single_action(action, "agent1", 0, False, False)
+
+
+@pytest.mark.asyncio
+async def test_executor_returns_failed_result_for_assertion_error():
+    from autoppia_iwa.src.execution.actions.actions import AssertAction
+
+    page = AsyncMock()
+    page.content = AsyncMock(return_value="<html><body>missing</body></html>")
+    page.url = "http://example.com"
+    config = BrowserSpecification()
+    executor = browser_executor.PlaywrightBrowserExecutor(config, page=page)
+
+    result = await executor.execute_single_action(
+        AssertAction(text_to_assert="expected"),
+        "agent1",
+        0,
+        is_web_real=True,
+        should_record=False,
+    )
+
+    assert result.successfully_executed is False
+    assert "expected" in (result.error or "")
+
+
+@pytest.mark.asyncio
+async def test_executor_before_action_failure_does_not_crash_on_unbound_start_time():
+    from autoppia_iwa.src.execution.actions.actions import NavigateAction
+
+    class FailingExecutor(browser_executor.PlaywrightBrowserExecutor):
+        async def _before_action(self, action, iteration):
+            raise ValueError("before hook failed")
+
+    page = AsyncMock()
+    page.content = AsyncMock(return_value="<html></html>")
+    page.url = "http://example.com"
+    config = BrowserSpecification()
+    executor = FailingExecutor(config, page=page)
+
+    result = await executor.execute_single_action(
+        NavigateAction(url="http://example.com"),
+        "agent1",
+        0,
+        is_web_real=True,
+        should_record=False,
+    )
+
+    assert result.successfully_executed is False
+    assert result.error == "before hook failed"
+
+
+@pytest.mark.asyncio
+async def test_fetch_backend_events_filtered_discards_stale_events():
+    config = BrowserSpecification()
+    backend = Mock()
+    page = AsyncMock()
+    page.content = AsyncMock(return_value="<html></html>")
+    page.url = "http://example.com"
+    executor = browser_executor.PlaywrightBrowserExecutor(config, page=page, backend_demo_webs_service=backend)
+
+    start = datetime.now(UTC)
+    backend.get_backend_events = AsyncMock(
+        return_value=[
+            {"event_name": "OLD", "timestamp": (start - timedelta(seconds=5)).isoformat()},
+            {"event_name": "NEW", "timestamp": (start + timedelta(seconds=1)).isoformat()},
+            {"event_name": "NO_TS"},
+        ]
+    )
+
+    filtered = await executor._fetch_backend_events_filtered("agent1", start)
+
+    assert [event["event_name"] for event in filtered] == ["NEW", "NO_TS"]
+
+
+@pytest.mark.asyncio
+async def test_get_backend_events_for_action_returns_empty_for_real_web():
+    config = BrowserSpecification()
+    backend = Mock()
+    page = AsyncMock()
+    executor = browser_executor.PlaywrightBrowserExecutor(config, page=page, backend_demo_webs_service=backend)
+
+    result = await executor._get_backend_events_for_action("agent1", datetime.now(UTC), is_web_real=True)
+
+    assert result == []
+    backend.get_backend_events.assert_not_called()

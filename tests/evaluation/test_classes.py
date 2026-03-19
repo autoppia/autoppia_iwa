@@ -5,14 +5,14 @@ from autoppia_iwa.src.evaluation.classes import (
     EvaluationStats,
     EvaluatorConfig,
     Feedback,
-    TestResult,
+    TestResult as EvalTestResult,
 )
 from autoppia_iwa.src.execution.actions.actions import NavigateAction
 from autoppia_iwa.src.execution.classes import ActionExecutionResult, BrowserSnapshot
 
 
 def test_test_result():
-    r = TestResult(success=True, extra_data={"key": "value"})
+    r = EvalTestResult(success=True, extra_data={"key": "value"})
     out = r.model_dump()
     assert out["success"] is True
     assert out["extra_data"] == {"key": "value"}
@@ -28,9 +28,9 @@ def test_feedback():
         failed_tests=0,
         total_execution_time=10.0,
         time_penalty=0.0,
-        critical_test_penalty=0,
-        test_results=[TestResult(success=True)],
-        execution_history=[],
+            critical_test_penalty=0,
+            test_results=[EvalTestResult(success=True)],
+            execution_history=[],
     )
     out = feedback.model_dump()
     assert out["task_prompt"] == "Do X"
@@ -93,7 +93,7 @@ def test_evaluation_result_model_dump():
     )
     result = EvaluationResult(
         final_score=8.0,
-        test_results=[TestResult(success=True)],
+        test_results=[EvalTestResult(success=True)],
         execution_history=[exec_result],
         raw_score=8.0,
     )

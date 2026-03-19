@@ -11,21 +11,25 @@ import base64
 import textwrap
 import urllib.error
 import urllib.request
-from unittest.mock import AsyncMock, patch
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from playwright.async_api import Error as PlaywrightError
 
 from autoppia_iwa.config.config import DEMO_WEB_SERVICE_PORT, DEMO_WEBS_ENDPOINT
 from autoppia_iwa.src.data_generation.tasks.classes import BrowserSpecification, Task
 from autoppia_iwa.src.data_generation.tests.classes import CheckEventTest
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
+from autoppia_iwa.src.evaluation.scoring import ScoreDetails
 from autoppia_iwa.src.evaluation.stateful_evaluator import AsyncStatefulEvaluator
-from autoppia_iwa.src.evaluation.stateful_evaluator.evaluator import (
+from autoppia_iwa.src.evaluation.stateful_evaluator import (
     _is_navigation_url_allowed as _orig_nav_allowed,
 )
 from autoppia_iwa.src.execution.actions.actions import ClickAction, TypeAction, WaitAction
 from autoppia_iwa.src.execution.actions.base import Selector, SelectorType
+from autoppia_iwa.src.execution.classes import ActionExecutionResult, BrowserSnapshot as ExecutionBrowserSnapshot
 
 WEB_AGENT_ID = "test_agent"
 PROJECT = next(p for p in demo_web_projects if getattr(p, "id", None) == "autobooks")
@@ -74,6 +78,94 @@ def _make_task(url: str):
                 description="User must log in",
             )
         ],
+    )
+
+
+def _make_action_result(action, *, url: str, html: str, success: bool = True) -> ActionExecutionResult:
+    return ActionExecutionResult(
+        action=action,
+        action_event=action.type,
+        successfully_executed=success,
+        error=None if success else "failed",
+        execution_time=0.1,
+        browser_snapshot=ExecutionBrowserSnapshot(
+            iteration=0,
+            action=action,
+            prev_html="",
+            current_html=html,
+            screenshot_before="",
+            screenshot_after="",
+            backend_events=[],
+            current_url=url,
+        ),
+    )
+
+
+class _DummyPage:
+    def __init__(self, *, html: str, url: str):
+        self._html = html
+        self.url = url
+
+    async def content(self):
+        return self._html
+
+    async def screenshot(self, full_page=True):
+        return b"fake-screenshot"
+
+
+class _DummyContext:
+    def __init__(self, page):
+        self._page = page
+        self.headers = None
+
+    async def new_page(self):
+        return self._page
+
+    async def add_init_script(self, script):
+        return None
+
+    def set_default_timeout(self, value):
+        return None
+
+    async def close(self):
+        return None
+
+
+class _DummyBrowser:
+    def __init__(self, context):
+        self._context = context
+
+    async def new_context(self, **kwargs):
+        self._context.headers = kwargs.get("extra_http_headers")
+        return self._context
+
+    async def close(self):
+        return None
+
+
+class _DummyPlaywright:
+    def __init__(self, browser):
+        self.chromium = SimpleNamespace(launch=AsyncMock(return_value=browser))
+
+    async def stop(self):
+        return None
+
+
+def _build_runtime_patches(*, html: str, url: str, action_result: ActionExecutionResult, scores: list[ScoreDetails]):
+    page = _DummyPage(html=html, url=url)
+    context = _DummyContext(page)
+    browser = _DummyBrowser(context)
+    playwright = _DummyPlaywright(browser)
+    async_playwright_factory = MagicMock(return_value=SimpleNamespace(start=AsyncMock(return_value=playwright)))
+    executor_mock = MagicMock()
+    executor_mock.execute_single_action = AsyncMock(return_value=action_result)
+    score_mock = AsyncMock(side_effect=scores)
+    return (
+        patch("autoppia_iwa.src.evaluation.stateful_evaluator.async_playwright", async_playwright_factory),
+        patch("autoppia_iwa.src.evaluation.stateful_evaluator.PlaywrightBrowserExecutor", return_value=executor_mock),
+        patch("autoppia_iwa.src.evaluation.stateful_evaluator.TaskExecutionScorer.score", new=score_mock),
+        executor_mock,
+        context,
     )
 
 
@@ -177,32 +269,44 @@ def _real_server_step2_actions():
 
 @pytest.mark.asyncio
 async def test_stateful_evaluator_correct_solution():
-    """Reset loads mock HTML; step runs real action; mock backend returns passing events."""
+    """Reset and step should work with a mocked runtime and real session logic."""
     html = _make_mock_html()
     data_url = _data_url(html)
     task = _make_task(data_url)
-    passing_events = [
-        BackendEvent(
-            event_name="LOGIN_BOOK",
-            data={"username": "user123"},
-            web_agent_id=WEB_AGENT_ID,
-        )
-    ]
-
     mock_backend = AsyncMock()
     mock_backend.reset_database = AsyncMock()
     mock_backend.close = AsyncMock()
-    mock_backend.get_backend_events = AsyncMock(return_value=passing_events)
+    mock_backend.get_backend_events = AsyncMock(
+        return_value=[BackendEvent(event_name="LOGIN_BOOK", data={"username": "user123"}, web_agent_id=WEB_AGENT_ID)]
+    )
+    step_action = TypeAction(
+        selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="input"),
+        text="hello",
+    )
+    action_result = _make_action_result(step_action, url=data_url, html=html)
+    async_playwright_patch, executor_patch, scorer_patch, executor_mock, context = _build_runtime_patches(
+        html=html,
+        url=data_url,
+        action_result=action_result,
+        scores=[
+            ScoreDetails(raw_score=0.0, tests_passed=0, total_tests=1, success=False),
+            ScoreDetails(raw_score=1.0, tests_passed=1, total_tests=1, success=True),
+            ScoreDetails(raw_score=1.0, tests_passed=1, total_tests=1, success=True),
+        ],
+    )
 
     with (
         patch(
-            "autoppia_iwa.src.evaluation.stateful_evaluator.evaluator._is_navigation_url_allowed",
+            "autoppia_iwa.src.evaluation.stateful_evaluator._is_navigation_url_allowed",
             side_effect=_allow_data_url,
         ),
         patch(
-            "autoppia_iwa.src.evaluation.stateful_evaluator.evaluator.BackendDemoWebService",
+            "autoppia_iwa.src.evaluation.stateful_evaluator.BackendDemoWebService",
             return_value=mock_backend,
         ),
+        async_playwright_patch,
+        executor_patch,
+        scorer_patch,
     ):
         evaluator = AsyncStatefulEvaluator(
             task=task,
@@ -213,40 +317,58 @@ async def test_stateful_evaluator_correct_solution():
         try:
             step_result = await evaluator.reset()
             assert step_result.score.total_tests >= 1
-            # After one step (e.g. type), backend events from mock -> score can pass
-            sel = Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="input")
-            step_result = await evaluator.step(TypeAction(selector=sel, text="hello"))
+            step_result = await evaluator.step(step_action)
             details = await evaluator.get_score_details()
             assert details.total_tests >= 1
             assert details.tests_passed >= 1
             assert details.raw_score > 0
             assert details.success is True
+            assert step_result.action_result is action_result
+            assert step_result.snapshot.html == html
+            assert executor_mock.execute_single_action.await_count == 2
+            assert context.headers == {"X-WebAgent-Id": WEB_AGENT_ID, "X-Validator-Id": evaluator.validator_id}
         finally:
             await evaluator.close()
 
 
 @pytest.mark.asyncio
 async def test_stateful_evaluator_wrong_solution():
-    """Mock backend returns no events; score should be 0."""
+    """A noop step should still rescore and preserve existing execution history."""
     html = _make_mock_html()
     data_url = _data_url(html)
     task = _make_task(data_url)
-    wrong_events = []
-
     mock_backend = AsyncMock()
     mock_backend.reset_database = AsyncMock()
     mock_backend.close = AsyncMock()
-    mock_backend.get_backend_events = AsyncMock(return_value=wrong_events)
+    mock_backend.get_backend_events = AsyncMock(return_value=[])
+    first_action = TypeAction(
+        selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="input"),
+        text="hello",
+    )
+    action_result = _make_action_result(first_action, url=data_url, html=html)
+    async_playwright_patch, executor_patch, scorer_patch, executor_mock, _context = _build_runtime_patches(
+        html=html,
+        url=data_url,
+        action_result=action_result,
+        scores=[
+            ScoreDetails(raw_score=0.0, tests_passed=0, total_tests=1, success=False),
+            ScoreDetails(raw_score=0.0, tests_passed=0, total_tests=1, success=False),
+            ScoreDetails(raw_score=0.0, tests_passed=0, total_tests=1, success=False),
+        ],
+    )
 
     with (
         patch(
-            "autoppia_iwa.src.evaluation.stateful_evaluator.evaluator._is_navigation_url_allowed",
+            "autoppia_iwa.src.evaluation.stateful_evaluator._is_navigation_url_allowed",
             side_effect=_allow_data_url,
         ),
         patch(
-            "autoppia_iwa.src.evaluation.stateful_evaluator.evaluator.BackendDemoWebService",
+            "autoppia_iwa.src.evaluation.stateful_evaluator.BackendDemoWebService",
             return_value=mock_backend,
         ),
+        async_playwright_patch,
+        executor_patch,
+        scorer_patch,
     ):
         evaluator = AsyncStatefulEvaluator(
             task=task,
@@ -262,6 +384,8 @@ async def test_stateful_evaluator_wrong_solution():
             assert details.tests_passed == 0
             assert details.raw_score == 0.0
             assert details.success is False
+            assert len(evaluator.history) == 1
+            executor_mock.execute_single_action.assert_awaited_once()
         finally:
             await evaluator.close()
 
@@ -285,7 +409,10 @@ async def test_stateful_evaluator_real_server_film_detail():
         capture_screenshot=False,
     )
     try:
-        await evaluator.reset()
+        try:
+            await evaluator.reset()
+        except PlaywrightError as exc:
+            pytest.skip(f"Playwright browser unavailable in this environment: {exc}")
         # Step 1: two actions — type search query and submit
         for action in _real_server_step1_actions():
             await evaluator.step(action)
@@ -320,7 +447,10 @@ async def test_stateful_evaluator_real_server_film_detail_fails_wrong_criteria()
         capture_screenshot=False,
     )
     try:
-        await evaluator.reset()
+        try:
+            await evaluator.reset()
+        except PlaywrightError as exc:
+            pytest.skip(f"Playwright browser unavailable in this environment: {exc}")
         # Step 1: two actions — type search query and submit
         for action in _real_server_step1_actions():
             await evaluator.step(action)

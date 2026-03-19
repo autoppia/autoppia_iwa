@@ -6,8 +6,8 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from autoppia_iwa.src.demo_webs.projects.autocinema_1 import generation_functions as gen
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
+from autoppia_iwa.src.demo_webs.projects.p01_autocinema import generation_functions as gen
+from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator
 
 
 class TestSyncGenerationFunctions:

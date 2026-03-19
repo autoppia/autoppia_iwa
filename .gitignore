@@ -27,16 +27,12 @@ prompt_test.log
 real_web_evaluation.log
 projects_status.json
 
-# Generated outputs (benchmark, training, verification)
-data/outputs/**
+# Data folder - all generated/cached content is gitignored
+data/*
+!data/README.md
 
-# Legacy paths (kept for backwards compatibility during transition)
-data/benchmark/**
-data/cache/**
-data/rl/**
-data/rm/**
-data/score_model_pipeline/**
-data/web_verification/**
+# Benchmark output (sibling directory)
+benchmark-output/
 
 stress_test.log
 
@@ -44,4 +40,8 @@ prompt_test_output/*
 
 *.webm
 .pytest_cache
+.flake8
+.flake8.*
+.flake8_cache/
+flake8.log
 *.jsonl

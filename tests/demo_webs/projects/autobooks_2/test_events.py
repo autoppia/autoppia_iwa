@@ -3,7 +3,7 @@
 import pytest
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.projects.autobooks_2.events import (
+from autoppia_iwa.src.demo_webs.projects.p02_autobooks.events import (
     BACKEND_EVENT_TYPES,
     AddBookEvent,
     AddCommentEvent,
@@ -26,7 +26,7 @@ from autoppia_iwa.src.demo_webs.projects.autobooks_2.events import (
     ShareBookEvent,
     ViewCartBookEvent,
 )
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import (
+from autoppia_iwa.src.demo_webs.criterion_helper import (
     ComparisonOperator,
     CriterionValue,
 )

@@ -1,12 +1,6 @@
 from pathlib import Path
 
-try:
-    from dotenv import load_dotenv
-except ImportError:
-    # dotenv is optional - environment variables can be set directly
-    def load_dotenv(*_args, **_kwargs):
-        return None
-
+from dotenv import load_dotenv
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 

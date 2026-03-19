@@ -5,7 +5,7 @@ from unittest.mock import patch
 import pytest
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.projects.autodrive_13.events import (
+from autoppia_iwa.src.demo_webs.projects.p13_autodrive.events import (
     BACKEND_EVENT_TYPES,
     CancelReservationEvent,
     EnterDestinationEvent,
@@ -35,7 +35,7 @@ ISO_DATETIME = "2025-03-15T14:30:00"
 TIME_ONLY = "14:30"
 
 
-@patch("autoppia_iwa.src.demo_webs.projects.autodrive_13.events.log_event")
+@patch("autoppia_iwa.src.demo_webs.projects.p13_autodrive.events.log_event")
 class TestParseLocationAndDestination:
     def test_search_location_parse(self, mock_log):
         e = SearchLocationEvent.parse(_be("SEARCH_LOCATION", {"value": "Paris"}))
@@ -57,7 +57,7 @@ class TestParseLocationAndDestination:
         assert e.destination == "Nice"
 
 
-@patch("autoppia_iwa.src.demo_webs.projects.autodrive_13.events.log_event")
+@patch("autoppia_iwa.src.demo_webs.projects.p13_autodrive.events.log_event")
 class TestParseSeePrices:
     def test_see_prices_parse(self, mock_log):
         e = SeePricesEvent.parse(_be("SEE_PRICES", {"location": "Paris", "destination": "Lyon"}))
@@ -65,7 +65,7 @@ class TestParseSeePrices:
         assert e.destination == "Lyon"
 
 
-@patch("autoppia_iwa.src.demo_webs.projects.autodrive_13.events.log_event")
+@patch("autoppia_iwa.src.demo_webs.projects.p13_autodrive.events.log_event")
 class TestParseDateAndTime:
     def test_select_date_parse_valid_iso(self, mock_log):
         e = SelectDateEvent.parse(_be("SELECT_DATE", {"date": ISO_DATE}))
@@ -90,7 +90,7 @@ class TestParseDateAndTime:
         assert e.time is not None
 
 
-@patch("autoppia_iwa.src.demo_webs.projects.autodrive_13.events.log_event")
+@patch("autoppia_iwa.src.demo_webs.projects.p13_autodrive.events.log_event")
 class TestParseSearchRide:
     def test_search_ride_parse(self, mock_log):
         e = SearchRideEvent.parse(
@@ -104,7 +104,7 @@ class TestParseSearchRide:
         assert e.scheduled is not None
 
 
-@patch("autoppia_iwa.src.demo_webs.projects.autodrive_13.events.log_event")
+@patch("autoppia_iwa.src.demo_webs.projects.p13_autodrive.events.log_event")
 class TestParseSelectCarAndReserve:
     def test_select_car_parse(self, mock_log):
         e = SelectCarEvent.parse(
@@ -177,7 +177,7 @@ class TestParseSelectCarAndReserve:
 
 
 # Validation tests
-@patch("autoppia_iwa.src.demo_webs.projects.autodrive_13.events.log_event")
+@patch("autoppia_iwa.src.demo_webs.projects.p13_autodrive.events.log_event")
 class TestValidateEvents:
     def test_search_location_validate_none(self, mock_log):
         e = SearchLocationEvent.parse(_be("SEARCH_LOCATION", {"value": "Paris"}))
@@ -294,7 +294,7 @@ class TestValidateEvents:
         ),
     ],
 )
-@patch("autoppia_iwa.src.demo_webs.projects.autodrive_13.events.log_event")
+@patch("autoppia_iwa.src.demo_webs.projects.p13_autodrive.events.log_event")
 def test_backend_event_types_parse(mock_log, event_name, data):
     event_class = BACKEND_EVENT_TYPES[event_name]
     e = event_class.parse(_be(event_name, data))

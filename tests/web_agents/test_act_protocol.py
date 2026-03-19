@@ -11,7 +11,6 @@ def test_act_response_accepts_canonical_tool_calls() -> None:
             "tool_calls": [{"name": "browser.navigate", "arguments": {"url": "https://example.com"}}],
             "content": "navigating now",
             "done": False,
-            "state_out": {"phase": "browse"},
         }
     )
 
@@ -20,12 +19,11 @@ def test_act_response_accepts_canonical_tool_calls() -> None:
     assert parsed.tool_calls[0].arguments == {"url": "https://example.com"}
     assert parsed.content == "navigating now"
     assert parsed.done is False
-    assert parsed.state_out == {"phase": "browse"}
 
 
 def test_act_response_requires_tool_calls() -> None:
     with pytest.raises(ValidationError):
-        ActResponse.from_raw({"done": False, "state_out": {}})
+        ActResponse.from_raw({"done": False})
 
 
 def test_act_response_accepts_actions_alias_for_tool_calls() -> None:
@@ -33,7 +31,6 @@ def test_act_response_accepts_actions_alias_for_tool_calls() -> None:
         {
             "actions": [{"name": "browser.click", "arguments": {"x": 10, "y": 20}}],
             "done": False,
-            "state_out": {},
         }
     )
     assert len(parsed.tool_calls) == 1
@@ -46,22 +43,21 @@ def test_act_response_prefers_tool_calls_when_both_fields_are_present() -> None:
             "tool_calls": [{"name": "browser.navigate", "arguments": {"url": "https://autoppia.com"}}],
             "actions": [{"name": "browser.click", "arguments": {"x": 10, "y": 20}}],
             "done": False,
-            "state_out": {},
         }
     )
     assert len(parsed.tool_calls) == 1
     assert parsed.tool_calls[0].name == "browser.navigate"
 
 
-def test_act_request_default_state_is_empty_dict() -> None:
-    request = ActRequest(task_id="task_1", snapshot_html="<html/>", step_index=0)
-    assert request.state_in == {}
-    assert request.allowed_tools == []
+def test_act_request_normalizes_legacy_fields() -> None:
+    request = ActRequest(task_id="task_1", snapshot_html="<html/>", allowed_tools=[{"name": "browser.click"}], step_index=0)
+    assert request.html == "<html/>"
+    assert request.tools == [{"name": "browser.click"}]
 
 
-def test_act_response_normalizes_state_out_none_to_empty_dict() -> None:
+def test_act_response_ignores_legacy_state_out() -> None:
     parsed = ActResponse.from_raw({"tool_calls": [], "done": True, "state_out": None})
-    assert parsed.state_out == {}
+    assert parsed.done is True
 
 
 def test_act_response_rejects_legacy_actions_shape_with_type_payload() -> None:
@@ -70,6 +66,5 @@ def test_act_response_rejects_legacy_actions_shape_with_type_payload() -> None:
             {
                 "actions": [{"type": "ClickAction", "selector": {"type": "attributeValueSelector", "attribute": "id", "value": "go"}}],
                 "done": False,
-                "state_out": {},
             }
         )

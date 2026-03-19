@@ -228,7 +228,7 @@ class UseCase(BaseModel):
     @classmethod
     def deserialize(cls, data: dict) -> "UseCase":
         """Deserialize a dictionary to a UseCase object."""
-        from autoppia_iwa.src.demo_webs.projects.base_events import EventRegistry
+        from autoppia_iwa.src.demo_webs.base_events import EventRegistry
 
         event_class_name = data.get("event")
 

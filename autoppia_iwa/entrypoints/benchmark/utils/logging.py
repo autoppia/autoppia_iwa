@@ -1,67 +1,15 @@
-import sys
-
 from loguru import logger
-
-# Add custom EVALUATION level
-EVALUATION_LEVEL_NUM = 25  # Between INFO (20) and WARNING (30)
-TASK_GENERATION_LEVEL_NUM = 23  # Between INFO and EVALUATION
+from autoppia_iwa.src.shared.logging import log_event, setup_iwa_logging
 
 
 def evaluation_level(record):
-    """Custom level for evaluation logs"""
-    return record["level"].no >= EVALUATION_LEVEL_NUM
-
-
-# Add the custom level to loguru
-logger.level("EVALUATION", EVALUATION_LEVEL_NUM, color="<blue>")
-logger.level("TASK_GENERATION", TASK_GENERATION_LEVEL_NUM, color="<magenta>")
-
-# ==================================
-# ======= LOGGING SETUP ============
-# ==================================
-
-_logging_initialized = False
+    """Custom level for evaluation logs."""
+    return record["level"].name == "EVALUATION"
 
 
 def setup_logging(log_file: str, console_level: str = "INFO"):
-    """Configure loguru logger with enhanced formatting.
-
-    Args:
-        log_file: Path to the log file.
-        console_level: Console handler level (e.g. "INFO" or "DEBUG" for verbose).
-    """
-    global _logging_initialized
-    logger.remove()
-
-    # Uniform timestamp format (with milliseconds) for all logs
-    time_fmt = "YYYY-MM-DD HH:mm:ss.SSS"
-
-    # Console logging with colors and better formatting
-    logger.add(
-        sys.stderr,
-        level=console_level,
-        format=f"<green>{{time:{time_fmt}}}</green> | <level>{{level: <8}}</level> | <cyan>{{name}}</cyan>:<cyan>{{function}}</cyan>:<cyan>{{line}}</cyan> - <level>{{message}}</level>",
-        colorize=True,
-        backtrace=True,
-        diagnose=True,
-        filter=lambda record: record["level"].name in ["INFO", "WARNING", "ERROR", "SUCCESS", "DEBUG", "EVALUATION"],
-    )
-
-    # File logging with more detail (same timestamp format)
-    logger.add(
-        log_file,
-        level="DEBUG",
-        format=f"{{time:{time_fmt}}} | {{level: <8}} | {{name}}:{{function}}:{{line}} - {{message}}",
-        rotation="10 MB",
-        retention="7 days",
-        compression="zip",
-        enqueue=True,  # Thread-safe logging
-    )
-
-    # Log startup message only once per process (avoid duplicate when main + Benchmark both call setup_logging)
-    if not _logging_initialized:
-        _logging_initialized = True
-        logger.info("Benchmark logging initialized")
+    """Benchmark wrapper around the shared IWA logger configuration."""
+    setup_iwa_logging(log_file, console_level=console_level)
 
 
 # ==================================
@@ -84,15 +32,12 @@ def get_evaluation_logger(context: str):
 
 def log_action_execution(message: str):
     """Log action execution with INFO level"""
-    logger.info(f"[EVALUATION] [ACTION EXECUTION] {message}")
+    log_event("EVALUATION", message, context="ACTION EXECUTION")
 
 
 def log_evaluation_event(message: str, context: str = "GENERAL"):
     """Log generic evaluation events with INFO level"""
-    if context == "GENERAL":
-        logger.info(f"[EVALUATION] {message}")
-    else:
-        logger.info(f"[EVALUATION] [{context}] {message}")
+    log_event("EVALUATION", message, context=None if context == "GENERAL" else context)
 
 
 def get_task_generation_logger(context: str):
@@ -104,17 +49,14 @@ def get_task_generation_logger(context: str):
 
 def log_task_generation_event(message: str, context: str = "TASK_GENERATION"):
     """Log task generation events with INFO level"""
-    if context == "TASK_GENERATION":
-        logger.info(f"[TASK_GENERATION] {message}")
-    else:
-        logger.info(f"[TASK_GENERATION] [{context}] {message}")
+    log_event("TASK_GENERATION", message, context=None if context == "TASK_GENERATION" else context)
 
 
 def log_gif_creation(message: str):
     """Log GIF creation with INFO level"""
-    logger.info(f"[EVALUATION] [GIF CREATION] {message}")
+    log_event("EVALUATION", message, context="GIF CREATION")
 
 
 def log_backend_test(message: str):
     """Log backend test with INFO level"""
-    logger.info(f"[EVALUATION] [GET BACKEND TEST] {message}")
+    log_event("EVALUATION", message, context="GET BACKEND TEST")

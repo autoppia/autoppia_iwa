@@ -6,7 +6,7 @@ Autostats_15 events expect payload under data.data (inner payload from frontend)
 import pytest
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.projects.autostats_15.events import (
+from autoppia_iwa.src.demo_webs.projects.p15_autostats.events import (
     BACKEND_EVENT_TYPES,
     ConnectWalletEvent,
     ViewSubnetEvent,

@@ -1,180 +1,144 @@
 """
-Code-first entrypoint: configure projects, agents, runs, and options here.
+Run benchmark against a web agent.
 
-Run with:
-  python -m autoppia_iwa.entrypoints.benchmark.run
+Usage:
+    python -m autoppia_iwa.entrypoints.benchmark.run http://localhost:8000
+    python -m autoppia_iwa.entrypoints.benchmark.run random-clicker
+    python -m autoppia_iwa.entrypoints.benchmark.run http://localhost:8000 -p autocinema -u login
+    iwa benchmark http://localhost:8000
 """
 
+import argparse
 import asyncio
+import json
+from pathlib import Path
 
-from loguru import logger
 
-from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
-from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
-from autoppia_iwa.entrypoints.benchmark.utils.logging import setup_logging
-from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
-from autoppia_iwa.src.demo_webs.config import demo_web_projects
+def _parse_args():
+    parser = argparse.ArgumentParser(prog="iwa benchmark", description="Run benchmark against a web agent")
+    parser.add_argument("agent", type=str, help="Agent base URL or local preset (e.g. http://localhost:8000, random-clicker)")
+    parser.add_argument("--project", "-p", type=str, action="append", help="Project ID(s)")
+    parser.add_argument("--use-case", "-u", type=str, action="append", help="Use case(s)")
+    parser.add_argument("--tasks", "-t", type=str, help="Load tasks from JSON file")
+    parser.add_argument("--output", "-o", type=str, default=".", help="Base directory where benchmark-output/ will be created")
+    parser.add_argument("--mode", "-m", choices=["concurrent", "stateful"], default="stateful")
+    parser.add_argument("--max-steps", type=int, default=50)
+    parser.add_argument("--prompts-per-use-case", "-n", type=int, default=1)
+    parser.add_argument("--runs", type=int, default=1)
+    parser.add_argument("--parallel", "-j", type=int, default=1, help="Max parallel evaluations (browsers)")
+    parser.add_argument("--headless", action="store_true", default=True)
+    parser.add_argument("--no-headless", dest="headless", action="store_false")
+    return parser.parse_args()
 
-# from autoppia_iwa.src.web_agents.cua import ApifiedWebAgent
-from autoppia_iwa.src.web_agents import ApifiedOneShotWebAgent
 
-# =============================================================================
-# 1) AGENTS
-# =============================================================================
-# Standard: all agents expose POST /act. Use ApifiedWebAgent for both modes.
-# - Concurrent: benchmark calls /act once (step_index=0); agent returns full action list.
-# - Stateful:   benchmark calls /act repeatedly with browser snapshot each step.
-# Legacy: if your agent only exposes POST /solve_task, use ApifiedOneShotWebAgent instead.
+def _build_agent(agent: str):
+    from autoppia_iwa.src.web_agents import ApifiedWebAgent
+    from autoppia_iwa.src.web_agents.examples.random_clicker.agent import RandomClickerWebAgent
 
-# =========================
-# 💡 Code configuration
-# =========================
+    normalized = agent.strip()
+    if normalized in {"random-clicker", "random", "random_clicker"}:
+        return RandomClickerWebAgent(id="random-clicker", name="Random Clicker")
+    return ApifiedWebAgent(base_url=normalized, name=f"agent@{normalized}")
 
-# Define external HTTP SOTA agents (examples). Uncomment to enable.
-# Ensure unique `id` per agent.
 
-# BROWSER_USE_AGENT = ApifiedWebAgent(
-#     id="browser_use",
-#     name="BrowserUse",
-#     host="browser-use-agent-sota.autoppia.com",
-#     port=80,
-#     timeout=120,
-# )
+async def run(
+    agent: str,
+    project_ids: list[str] | None = None,
+    use_cases: list[str] | None = None,
+    tasks_file: str | None = None,
+    output_dir: str = "./benchmark-output",
+    mode: str = "stateful",
+    max_steps: int = 50,
+    prompts_per_use_case: int = 1,
+    runs: int = 1,
+    parallel: int = 1,
+    headless: bool = True,
+):
+    from autoppia_iwa.src.bootstrap import AppBootstrap
+    from autoppia_iwa.src.demo_webs.config import demo_web_projects
+    from autoppia_iwa.src.evaluation.benchmark import Benchmark, BenchmarkConfig
+    from autoppia_iwa.src.evaluation.benchmark.utils.task_generation import get_projects_by_ids
 
-# OPENAI_CUA_AGENT = ApifiedWebAgent(
-#     id="openai_cua",
-#     name="OpenAI CUA",
-#     host="openai-cua-agent-sota.autoppia.com",
-#     port=80,
-#     timeout=120,
-# )
+    AppBootstrap()
 
-# CLAUDE_CUA_AGENT = ApifiedWebAgent(
-#     id="claude_cua",
-#     name="Claude CUA",
-#     host="anthropic-cua-agent-sota.autoppia.com",
-#     port=80,
-#     timeout=120,
-# )
+    projects = get_projects_by_ids(demo_web_projects, project_ids) if project_ids else demo_web_projects
+    web_agent = _build_agent(agent)
 
-# Group SOTA agent examples (commented). Uncomment to use, or set
-# `AGENTS = SOTA_AGENTS` below after uncommenting individual agents.
-SOTA_AGENTS = [
-    # BROWSER_USE_AGENT,
-    # OPENAI_CUA_AGENT,
-    # CLAUDE_CUA_AGENT,
-]
-# Active agents to run.
-AGENTS = [
-    # ApifiedWebAgent(host="127.0.0.1", id="1", name="BrowserUse-Cloud", timeout=248, port=7000),
-    ApifiedOneShotWebAgent(host="127.0.0.1", id="1", name="BrowserUse-Cloud", timeout=248, port=7000),
-    # ApifiedOneShotWebAgent(base_url="http://84.247.180.192:5000/", id="1", name="BrowseUse-OpenAI", timeout=48)
-]
+    base_dir = Path(output_dir)
+    if base_dir.name == "benchmark-output":
+        base_dir = base_dir.parent
 
-# 2) Projects to evaluate (by id from demo_web_projects)
-PROJECT_IDS = [
-    # "autocinema",
-    # "autobooks",
-    # "autozone",
-    # "autodining",
-    # "autocrm",
-    # "automail",
-    # "autolodge",
-    # "autodelivery",
-    # "autowork",
-    # "autoconnect",
-    # "autocalendar",
-    "autolist",
-    "autodrive",
-    "autohealth",
-    "autostats",
-]
-PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
-USE_CASES = None  # None = all use cases
+    config = BenchmarkConfig(
+        projects=projects,
+        agents=[web_agent],
+        use_cases=use_cases,
+        prompts_per_use_case=prompts_per_use_case,
+        evaluator_mode=mode,
+        max_steps_per_task=max_steps,
+        runs=runs,
+        max_parallel_evaluations=parallel,
+        headless=headless,
+        base_dir=base_dir,
+        use_cached_tasks=bool(tasks_file),
+    )
 
-# =====================================================
-# CONFIGURATION: Choose the evaluation mode here
-# =====================================================
+    if tasks_file:
+        _stage_tasks(Path(tasks_file), config)
 
-# OPTION 1: CONCURRENT mode (traditional)
-# Agent generates ALL actions at once and they are evaluated
-CFG = BenchmarkConfig(
-    projects=PROJECTS,
-    agents=AGENTS,
-    # Evaluator mode
-    evaluator_mode="concurrent",  # ← Agent generates full action list
-    # Tasks
-    prompts_per_use_case=1,
-    # use_cases=None means all use-cases
-    use_cases=USE_CASES,
-    # Execution
-    runs=1,  # single run is enough for this fixed agent
-    max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
-    record_gif=False,  # if your evaluator returns GIFs
-    # Dynamic mode: disabled for this simple fixed-task test to avoid seed constraints.
-    dynamic=True,
-    # Persistence
-    save_results_json=True,
-    headless=True,  # Show Chromium window (set True or omit to use EVALUATOR_HEADLESS env)
-)
+    benchmark = Benchmark(config)
+    await benchmark.run()
+    return benchmark.last_run_report or {}
 
-# --- STATEFUL: agent decides step-by-step (must use ApifiedWebAgent in AGENTS) ---
-# Uncomment this block and comment the CFG block above to run in stateful mode.
-# CFG = BenchmarkConfig(
-#     projects=PROJECTS,
-#     agents=AGENTS,
-#     # Evaluator mode
-#     evaluator_mode="stateful",  # ← Iterative mode: agent decides step by step
-#     max_steps_per_task=50,  # ← Step limit per task
-#     # Tasks
-#     use_cached_tasks=True,
-#     prompts_per_use_case=1,
-#     num_use_cases=0,
-#     use_cases=USE_CASES,
-#     # Execution
-#     runs=1,
-#     max_parallel_agent_calls=1,
-#     use_cached_solutions=False,  # ⚠️ Not compatible with stateful mode
-#     record_gif=True,  # Recommended to see adaptive navigation
-#     # Dynamic mode
-#     dynamic=False,
-#     # Persistence
-#     save_results_json=True,
-#     plot_results=False,
-# )
+
+def _stage_tasks(tasks_path: Path, config):
+    cache_dir = config.base_dir / "benchmark-output" / "cache" / "tasks"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    data = json.loads(tasks_path.read_text())
+    if "project_id" in data and "tasks" in data:
+        _write_staged_tasks(cache_dir, data)
+        return
+
+    if isinstance(data, dict):
+        wrote = False
+        for payload in data.values():
+            if isinstance(payload, dict) and "project_id" in payload and "tasks" in payload:
+                _write_staged_tasks(cache_dir, payload)
+                wrote = True
+        if wrote:
+            return
+
+    raise ValueError(f"Unsupported tasks file format: {tasks_path}")
+
+
+def _write_staged_tasks(cache_dir: Path, payload: dict) -> None:
+    pid = str(payload.get("project_id", "unknown"))
+    (cache_dir / f"{pid}_tasks.json").write_text(json.dumps(payload, indent=2, ensure_ascii=False, default=str))
 
 
 def main():
-    """
-    Main entrypoint for the benchmark.
-    """
+    args = _parse_args()
+    raise SystemExit(asyncio.run(_main_async(args)))
+
+
+async def _main_async(args) -> int:
     try:
-        setup_logging(str(CFG.benchmark_log_file))
-        logger.info(f"Selected {len(CFG.projects)} projects: {[p.name for p in CFG.projects]}")
-        logger.info("Initializing benchmark...")
-
-        # Validate configuration early
-        if not CFG.projects:
-            logger.error("No valid projects in PROJECT_IDS.")
-            return
-
-        if not CFG.agents:
-            logger.error("No agents configured in AGENTS.")
-            return
-
-        logger.info(f"Configuration: {len(CFG.projects)} projects, {len(CFG.agents)} agents, {CFG.runs} runs, evaluator_mode={CFG.evaluator_mode}")
-
-        if CFG.evaluator_mode == "stateful":
-            logger.info(f"Stateful mode enabled: max {CFG.max_steps_per_task} steps per task")
-
-        benchmark = Benchmark(CFG)
-        asyncio.run(benchmark.run())
-
-    except KeyboardInterrupt:
-        logger.warning("Benchmark interrupted by user")
-    except Exception as e:
-        logger.error(f"Benchmark failed: {e}", exc_info=True)
-        raise
+        await run(
+            agent=args.agent,
+            project_ids=args.project,
+            use_cases=args.use_case,
+            tasks_file=args.tasks,
+            output_dir=args.output,
+            mode=args.mode,
+            max_steps=args.max_steps,
+            prompts_per_use_case=args.prompts_per_use_case,
+            runs=args.runs,
+            parallel=args.parallel,
+            headless=args.headless,
+        )
+    except ValueError as exc:
+        print(str(exc))
+        return 1
+    return 0
 
 
 if __name__ == "__main__":

@@ -15,7 +15,7 @@ from loguru import logger
 
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.data_provider import get_seed_from_url
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.interfaces import ILLM
 
@@ -42,7 +42,7 @@ def _ensure_task_generation_level() -> None:
 def _log_task_generation(message: str, context: str = "TASK_GENERATION") -> None:
     """Log task generation events with TASK_GENERATION level or fallback."""
     try:
-        from autoppia_iwa.entrypoints.benchmark.utils.logging import log_task_generation_event
+        from autoppia_iwa.src.evaluation.benchmark.utils.logging import log_task_generation_event
 
         log_task_generation_event(message, context=context)
     except ImportError:
@@ -64,7 +64,7 @@ class SimpleTaskGenerator:
         retry_delay: float = 0.1,
     ):
         self.web_project = web_project
-        self.llm_service = llm_service
+        self.llm_service = DIContainer.resolve_llm_service(llm_service)
         self.max_retries = max_retries
         self.retry_delay = retry_delay
         self._seed_cache: dict[str, int] = {}
@@ -516,9 +516,9 @@ class SimpleTaskGenerator:
         system_prompt = "You are a helpful assistant that generates user tasks as a list of strings."
         messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": llm_prompt}]
 
-        # Print temperature being used for task generation
+        # Log temperature to make prompt-generation behavior easier to inspect.
         task_gen_temp = self.llm_service.config.temperature if hasattr(self.llm_service, "config") else "unknown"
-        print(f"🌡️  Task Generation: Calling LLM with temperature={task_gen_temp}")
+        logger.info(f"[TASK_GENERATION] Calling LLM with temperature={task_gen_temp}")
 
         for attempt in range(self.max_retries):
             try:

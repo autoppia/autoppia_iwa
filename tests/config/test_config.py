@@ -58,18 +58,24 @@ class TestConfigValues:
 
 
 class TestConfigValidation:
-    """Test config validation (OPENAI_API_KEY / CHUTES_API_KEY required by LLM_PROVIDER)."""
+    """Test config credential flags under different providers."""
 
-    def test_raises_when_openai_provider_and_no_api_key(self):
+    def test_openai_provider_without_api_key_sets_missing_credentials_flag(self):
         import autoppia_iwa.config.config as config_module
 
-        with pytest.raises(ValueError, match="OPENAI_API_KEY is required"), patch.dict(os.environ, {"OPENAI_API_KEY": "", "LLM_PROVIDER": "openai"}, clear=False):
-            importlib.reload(config_module)
-        importlib.reload(config_module)  # restore module with normal env for other tests
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "", "LLM_PROVIDER": "openai"}, clear=False):
+            reloaded = importlib.reload(config_module)
+            assert reloaded.LLM_PROVIDER == "openai"
+            assert reloaded.HAS_OPENAI_CREDENTIALS is False
 
-    def test_raises_when_chutes_provider_and_no_api_key(self):
+        importlib.reload(config_module)
+
+    def test_chutes_provider_without_api_key_sets_missing_credentials_flag(self):
         import autoppia_iwa.config.config as config_module
 
-        with pytest.raises(ValueError, match="CHUTES_API_KEY is required"), patch.dict(os.environ, {"CHUTES_API_KEY": "", "LLM_PROVIDER": "chutes"}, clear=False):
-            importlib.reload(config_module)
-        importlib.reload(config_module)  # restore module with normal env for other tests
+        with patch.dict(os.environ, {"CHUTES_API_KEY": "", "LLM_PROVIDER": "chutes"}, clear=False):
+            reloaded = importlib.reload(config_module)
+            assert reloaded.LLM_PROVIDER == "chutes"
+            assert reloaded.HAS_CHUTES_CREDENTIALS is False
+
+        importlib.reload(config_module)

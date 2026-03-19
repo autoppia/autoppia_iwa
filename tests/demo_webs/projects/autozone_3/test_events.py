@@ -3,7 +3,7 @@
 import pytest
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.projects.autozone_3.events import (
+from autoppia_iwa.src.demo_webs.projects.p03_autozone.events import (
     BACKEND_EVENT_TYPES,
     SearchProductEvent,
 )
