@@ -1,4 +1,6 @@
-DATA_EXTRACTION_TASK_GENERATION_PROMPT = """
+# Used when there is only a verify field (no question_fields_and_values): ask directly for the value of that field.
+# E.g. date/time/people dropdown use cases: "What date is selected?", "What time is shown?", "How many guests?"
+DATA_EXTRACTION_TASK_GENERATION_PROMPT_VERIFY_FIELD_ONLY = """
 SYNTHETIC DATA-EXTRACTION QUESTION GENERATION PROTOCOL
 
 ## USE CASE DETAILS
@@ -6,25 +8,21 @@ SYNTHETIC DATA-EXTRACTION QUESTION GENERATION PROTOCOL
 - Description: {use_case_description}
 
 ## GOAL
-You generate a SINGLE natural-language QUESTION whose answer can be extracted directly
-from the target web page for this use case.
+You generate a SINGLE natural-language QUESTION that asks for the VALUE of a single field shown on the page.
+There is no entity identifier; the question must ask what value is displayed or selected for this field.
 
-Examples of valid question styles:
-- "When was the movie 'Gladiator' released?"
-- "Who is the director of 'Inception'?"
-- "What is the rating of the movie 'The Matrix'?"
+## FIELD TO ASK FOR (verify field)
+The question MUST ask for the value of: **{verify_field}**
 
-## CONSTRAINT CONTEXT
-You will receive a description of constraints that identify the specific entity
-on the page (for example, which movie to open).
-
-Current constraints:
-{constraints_info}
+Examples of valid question styles (adapt to the actual verify_field):
+- For date: "What date is selected?", "What is the current date shown on page?"
+- For time: "What time is displayed?", "What time is selected in the dropdown?"
+- For people/guests: "How many guests are selected in dropdown?", "What is the number of selected people?"
 
 You MUST:
-- Use these constraints to decide WHICH entity you are asking about (e.g. which movie).
-- NOT restate all constraints in the question; the question itself should be short and natural.
-- Ask about a SINGLE concrete fact (year, director, rating, title, etc.) that is clearly visible on the page.
+- Ask specifically for the value of **{verify_field}** (what is shown/selected on the page).
+- Keep the question short and natural.
+- NOT include any entity identifier or extra constraints; only ask for this field's value.
 
 ## ADDITIONAL INFO
 {additional_prompt_info}
@@ -34,9 +32,9 @@ You MUST:
 - That string is the final user-facing QUESTION.
 - Do NOT include any explanation, markdown, or other wrapper text.
 
-Example:
+Example (when verify_field is date):
 [
-  "When was the movie 'Gladiator' released?"
+  "What date is selected?"
 ]
 """
 

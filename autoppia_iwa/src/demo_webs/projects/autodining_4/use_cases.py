@@ -60,6 +60,19 @@ Examples:
 - INCORRECT: "Open the date selector." (missing required date selection when constraints specify a date)
 """
 
+DATE_DROPDOWN_OPENED_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the date field (what date is shown or selected on the page).
+
+Use natural language only. Do NOT use schema-style field names such as "date" or any names with underscores (_).
+
+Do NOT start the question with imperative phrasing like "Select...", "Pick...", or "Open...".
+
+Examples:
+- "What is the date currently selected in the dropdown?"
+- "Which date is displayed on the page?"
+
+The output must be a single question asking only for the date value.
+""".strip()
 DATE_DROPDOWN_OPENED_USE_CASE = UseCase(
     name="DATE_DROPDOWN_OPENED",
     description="User interacts with (opens or focuses on) a date selection dropdown/input, which is often pre-filled.",
@@ -67,6 +80,8 @@ DATE_DROPDOWN_OPENED_USE_CASE = UseCase(
     event_source_code=DateDropdownOpenedEvent.get_source_code_of_class(),
     additional_prompt_info=DATE_DROPDOWN_OPENED_INFO,
     constraints_generator=generate_date_dropdown_opened_constraints,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=DATE_DROPDOWN_OPENED_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Open the date selector and select the date '2026-02-23T19:00:00+00:00'.",
@@ -113,6 +128,9 @@ Examples:
 - INCORRECT: "Open the time dropdown." (missing required time selection when constraints specify a time)
 """
 
+TIME_DROPDOWN_OPENED_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the time field (what time is shown or selected on the page).
+"""
 
 TIME_DROPDOWN_OPENED_USE_CASE = UseCase(
     name="TIME_DROPDOWN_OPENED",
@@ -121,6 +139,8 @@ TIME_DROPDOWN_OPENED_USE_CASE = UseCase(
     event_source_code=TimeDropdownOpenedEvent.get_source_code_of_class(),
     additional_prompt_info=TIME_DROPDOWN_OPENED_INFO,
     constraints_generator=generate_time_dropdown_opened_constraints,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=TIME_DROPDOWN_OPENED_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Open the time dropdown and select the time equals '2:30 PM'.",
@@ -167,6 +187,10 @@ Examples:
 - INCORRECT: "Open the guest selector dropdown." (missing required people selection when constraints specify a value)
 """
 
+PEOPLE_DROPDOWN_OPENED_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the people/guests field (how many guests are shown or selected on the page).
+"""
+
 PEOPLE_DROPDOWN_OPENED_USE_CASE = UseCase(
     name="PEOPLE_DROPDOWN_OPENED",
     description="User interacts with (opens or focuses on) a dropdown to select the number of people/guests.",
@@ -174,6 +198,8 @@ PEOPLE_DROPDOWN_OPENED_USE_CASE = UseCase(
     event_source_code=PeopleDropdownOpenedEvent.get_source_code_of_class(),
     additional_prompt_info=PEOPLE_DROPDOWN_OPENED_INFO,
     constraints_generator=generate_people_dropdown_opened_constraints,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=PEOPLE_DROPDOWN_OPENED_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Open the guest selector dropdown and select people equals 4.",

@@ -394,15 +394,44 @@ async def generate_collapse_menu_constraints(
     )
 
 
-async def generate_date_dropdown_opened_constraints():
+async def generate_date_dropdown_opened_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+):
+    if test_types == "data_extraction_only":
+        # Verify field only: no question_fields_and_values, no _build_data_extraction_result.
+        # Data = today's date (dynamic).
+        today = datetime.datetime.now(datetime.UTC).date().isoformat()
+        return {
+            "constraints": [create_constraint_dict("date", ComparisonOperator.EQUALS, today)],
+        }
     return await generate_constraints_for_single_field("date", OPERATORS_ALLOWED_DATE_DROPDOWN_OPENED)
 
 
-async def generate_time_dropdown_opened_constraints():
+async def generate_time_dropdown_opened_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+):
+    if test_types == "data_extraction_only":
+        # Verify field only; fixed value as in UI (default time in autodining_4).
+        return {
+            "constraints": [create_constraint_dict("time", ComparisonOperator.EQUALS, "1:00 PM")],
+        }
     return await generate_constraints_for_single_field("time", OPERATORS_ALLOWED_TIME_DROPDOWN_OPENED)
 
 
-async def generate_people_dropdown_opened_constraints():
+async def generate_people_dropdown_opened_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+):
+    if test_types == "data_extraction_only":
+        # Verify field only; fixed value as in UI (default guests in autodining_4).
+        return {
+            "constraints": [create_constraint_dict("people", ComparisonOperator.EQUALS, 2)],
+        }
     return await generate_constraints_for_single_field("people", OPERATORS_ALLOWED_PEOPLE_DROPDOWN_OPENED)
 
 

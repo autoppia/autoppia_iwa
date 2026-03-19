@@ -20,7 +20,7 @@ from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.interfaces import ILLM
 
 from .data_extraction_prompts import (
-    DATA_EXTRACTION_TASK_GENERATION_PROMPT,
+    DATA_EXTRACTION_TASK_GENERATION_PROMPT_VERIFY_FIELD_ONLY,
     DATA_EXTRACTION_TASK_GENERATION_PROMPT_WITH_QUESTION_FIELDS,
 )
 from .prompts import GLOBAL_TASK_GENERATION_PROMPT
@@ -212,10 +212,10 @@ class SimpleTaskGenerator:
 
             if generate_data_extraction:
                 qfav = getattr(use_case_copy, "question_fields_and_values", None)
-                if qfav and isinstance(qfav, dict):
+                constraints_list = use_case_copy.constraints or []
+                if qfav and isinstance(qfav, dict) and qfav:
                     question_fields_info = "\n".join(f"- {k} = {v}" for k, v in qfav.items())
                     # Verify field is the single constraint's field (what we ask for in the question).
-                    constraints_list = use_case_copy.constraints or []
                     verify_field = constraints_list[0].get("field") if len(constraints_list) == 1 else None
                     if verify_field is not None and not isinstance(verify_field, str):
                         verify_field = getattr(verify_field, "value", str(verify_field))
@@ -228,11 +228,16 @@ class SimpleTaskGenerator:
                         verify_field=verify_field,
                     )
                 else:
-                    llm_prompt = DATA_EXTRACTION_TASK_GENERATION_PROMPT.format(
+                    # Verify field only (no question_fields_and_values): ask directly for the value of the verify field.
+                    verify_field = constraints_list[0].get("field")
+                    if verify_field is not None and not isinstance(verify_field, str):
+                        verify_field = getattr(verify_field, "value", str(verify_field))
+                    verify_field = verify_field or "the requested field"
+                    llm_prompt = DATA_EXTRACTION_TASK_GENERATION_PROMPT_VERIFY_FIELD_ONLY.format(
                         use_case_name=use_case_copy.name,
                         use_case_description=use_case_copy.description,
                         additional_prompt_info=use_case_copy.additional_prompt_info_for_data_extraction_task or "",
-                        constraints_info=constraints_info,
+                        verify_field=verify_field,
                     )
             else:
                 llm_prompt = GLOBAL_TASK_GENERATION_PROMPT.format(
