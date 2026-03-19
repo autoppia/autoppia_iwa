@@ -24,6 +24,7 @@ from .generation_functions import (
     generate_order_completed_constraints,
     generate_quantity_change_constraints,
     generate_search_query_constraints,
+    generate_view_detail_constraints,
 )
 from .replace_functions import replace_products_placeholders
 
@@ -70,7 +71,7 @@ PRODUCT_DETAIL_USE_CASE = UseCase(
     description="The user explicitly requests to view the details page of a specific product that meets certain criteria.",
     event=ItemDetailEvent,
     event_source_code=ItemDetailEvent.get_source_code_of_class(),
-    constraints_generator=generate_autozone_products_constraints,
+    constraints_generator=generate_view_detail_constraints,
     replace_func=replace_products_placeholders,
     additional_prompt_info=PRODUCT_DETAIL_INFO,
     supports_data_extraction=True,
@@ -222,14 +223,25 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 """
 
 CATEGORY_FILTER_DATA_EXTRACTION_PROMPT_INFO = """
-Generate a QUESTION that asks for the value of the verify field, which could be the category or the product name.
+Generate a QUESTION that asks for the value of the verify field, which could be either the category or the product name.
 
-Use natural language only. Do NOT use schema-style field names such as "category", "title", or any names with underscores (_).
+Use natural language only. Do NOT use schema-style field names such as "category", "name", or any names with underscores (_).
+
+Always refer to fields using simple phrasing like "category" or "product name".
 
 Identify the context using the provided visible field values (e.g. category, product name), then ask for the verify field value naturally.
 
-Do NOT start with imperative phrasing like "Filter...", "Switch category...", or "Show only...".
-The output must be a single question.
+Do NOT start with imperative phrasing like "Filter...", "Switch category...", "Show only...", or "Browse...".
+
+Every generated question MUST end with a confirmation phrase like "Confirm the value before applying the category filter" or "Please confirm before filtering by category". This must appear at the end of the question.
+
+Examples:
+- "What is the category of the product 'iPhone 14'? Please confirm before applying the category filter."
+- "Which product belongs to the Electronics category? Confirm the value before filtering by category."
+- "What is the product name in the Kitchen category with a rating of 4.4? Please confirm before applying the category filter."
+- "Which category does the product 'Nike Air Max' belong to? Confirm before filtering by category."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
 """.strip()
 
 CATEGORY_FILTER_USE_CASE = UseCase(
@@ -277,11 +289,23 @@ For example:
 ADD_TO_CART_DATA_EXTRACTION_PROMPT_INFO = """
 Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the product.
 
-Use natural language only. Do NOT use schema-style field names such as "title", "brand", "category", "rating", "price", or any names with underscores (_).
+Use natural language only. Do NOT use schema-style field names such as "name", "brand", "category", "rating", "price", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., product name, brand, category, rating, price).
 
 Identify the product using the provided visible field values (e.g. product name, brand, category), then ask for the verify field value naturally.
 
+Do NOT start questions with imperative phrasing like "Add...", "Buy...", "Purchase...", "Order...", or "Checkout...".
+
 Every generated question MUST end with a confirmation phrase like "Confirm the value before adding to cart" or "Please confirm before adding to cart". This must appear at the end of the question.
+
+Examples:
+- "What is the price of the product 'iPhone 14'? Please confirm before adding to cart."
+- "What is the brand of the product in the Electronics category with a rating of 4.7? Confirm the value before adding to cart."
+- "Which category does the product 'Nike Air Max' belong to? Please confirm before adding to cart."
+- "What is the rating of the product 'Instant Pot Duo 7-in-1'? Confirm before adding to cart."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
 """.strip()
 
 ADD_TO_CART_USE_CASE = UseCase(
@@ -325,11 +349,23 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 ADD_TO_WISHLIST_DATA_EXTRACTION_PROMPT_INFO = """
 Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the product.
 
-Use natural language only. Do NOT use schema-style field names such as "title", "brand", "category", "rating", "price", or any names with underscores (_).
+Use natural language only. Do NOT use schema-style field names such as "name", "brand", "category", "rating", "price", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., product name, brand, category, rating, price).
 
 Identify the product using the provided visible field values (e.g. product name, brand, category), then ask for the verify field value naturally.
 
+Do NOT start questions with imperative phrasing like "Add...", "Save...", "Wishlist...", "Bookmark...", or "Store...".
+
 Every generated question MUST end with a confirmation phrase like "Confirm the value before adding to wishlist" or "Please confirm before adding to wishlist". This must appear at the end of the question.
+
+Examples:
+- "What is the price of the product 'iPhone 14'? Please confirm before adding to wishlist."
+- "What is the brand of the product in the Electronics category with a rating of 4.5? Confirm the value before adding to wishlist."
+- "Which category does the product 'Nike Air Max' belong to? Please confirm before adding to wishlist."
+- "What is the rating of the product 'Instant Pot Duo 7-in-1'? Confirm before adding to wishlist."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
 """.strip()
 
 ADD_TO_WISHLIST_USE_CASE = UseCase(
@@ -712,13 +748,13 @@ CAROUSEL_SCROLL_USE_CASE = UseCase(
 ###############################################################################
 
 ALL_USE_CASES = [
-    PRODUCT_DETAIL_USE_CASE,  # will fix its question field to name of product and verify field will be random to view product detail
-    DETAILS_TOGGLE_USE_CASE,  # done
-    SHARE_PRODUCT_USE_CASE,  # done
-    SEARCH_PRODUCT_USE_CASE,  # done
-    CATEGORY_FILTER_USE_CASE,  # remaining
-    ADD_TO_CART_USE_CASE,  # remaining
-    ADD_TO_WISHLIST_USE_CASE,  # remaining
+    PRODUCT_DETAIL_USE_CASE,
+    DETAILS_TOGGLE_USE_CASE,
+    SHARE_PRODUCT_USE_CASE,
+    SEARCH_PRODUCT_USE_CASE,
+    CATEGORY_FILTER_USE_CASE,
+    ADD_TO_CART_USE_CASE,
+    ADD_TO_WISHLIST_USE_CASE,
     VIEW_CART_USE_CASE,
     VIEW_WISHLIST_USE_CASE,
     CAROUSEL_SCROLL_USE_CASE,

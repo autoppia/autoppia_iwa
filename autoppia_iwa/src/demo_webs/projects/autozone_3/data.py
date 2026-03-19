@@ -9,6 +9,6 @@ FIELD_OPERATORS_MAP_PRODUCTS = {
 }
 
 # Visible fields for data-extraction use cases (product detail, search, filter, share, add-to-cart, add-to-wishlist)
-VISIBLE_FIELDS_PRODUCT_DETAIL = ["name", "brand", "rating", "price"]
-VISIBLE_FIELDS_SEARCH_PRODUCT = ["name", "brand", "rating", "price"]
-VISIBLE_FIELDS_CATEGORY_FILTER = ["category", "title"]
+VISIBLE_FIELDS_PRODUCT_DETAIL = ["name", "brand", "rating", "price", "category"]
+VISIBLE_FIELDS_SEARCH_PRODUCT = ["name", "brand", "rating", "price", "category"]
+VISIBLE_FIELDS_CATEGORY_FILTER = ["category", "name"]

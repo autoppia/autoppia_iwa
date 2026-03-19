@@ -22,31 +22,61 @@ def _build_data_extraction_result(
     visible_fields: list[str],
     *,
     verify_field: str | None = None,
+    question_fields_override: list[str] | None = None,
 ) -> dict[str, Any] | None:
     """Build constraints + question_fields_and_values for data_extraction_only; returns None on validation failure.
 
     When verify_field is provided, it is used as the verify field (fixed). Otherwise, verify field is chosen randomly
     from the available visible fields.
+
+    When question_fields_override is provided and non-empty, those fields (that exist and have values) are used
+    as the fixed question fields, and verify field is chosen randomly from the remaining available fields.
+    If, apart from the verify field and the fixed question fields, there are 2 or more visible fields left,
+    a random subset of those is added to the question fields.
     """
     available_fields = [f for f in visible_fields if selected_item.get(f) is not None]
     if len(available_fields) < 2:
         return None
 
-    chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+    question_fields: list[str]
+    chosen_verify_field: str
+
+    if question_fields_override:
+        question_fields = [f for f in question_fields_override if f in available_fields and selected_item.get(f) is not None]
+        if question_fields:
+            remaining = [f for f in available_fields if f not in question_fields]
+            if not remaining:
+                return None
+            chosen_verify_field = random.choice(remaining)
+            # If 2+ fields remain apart from verify and fixed question fields, add a random subset to question fields
+            remaining_for_extra = [f for f in available_fields if f != chosen_verify_field and f not in question_fields]
+            if len(remaining_for_extra) >= 2:
+                num_extra = random.randint(1, len(remaining_for_extra))
+                question_fields = question_fields + random.sample(remaining_for_extra, num_extra)
+        else:
+            question_fields = []
+            chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+    else:
+        chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+        question_fields = []
+
     if chosen_verify_field not in available_fields:
         return None
     verify_value = selected_item.get(chosen_verify_field)
     if verify_value is None:
         return None
 
-    question_candidates = [f for f in available_fields if f != chosen_verify_field]
-    if not question_candidates:
-        return None
-    num_question_fields = min(len(question_candidates), random.randint(2, len(question_candidates)))
-    question_fields = random.sample(question_candidates, num_question_fields)
+    if question_fields:
+        question_candidates = question_fields
+    else:
+        question_candidates = [f for f in available_fields if f != chosen_verify_field]
+        if not question_candidates:
+            return None
+        num_question_fields = 1 if len(question_candidates) == 1 else 2
+        question_candidates = random.sample(question_candidates, num_question_fields)
 
     question_fields_and_values: dict[str, Any] = {}
-    for qf in question_fields:
+    for qf in question_candidates:
         val = selected_item.get(qf)
         if val is not None:
             question_fields_and_values[qf] = val
@@ -253,7 +283,7 @@ async def generate_autozone_products_constraints(
 
     if test_types == "data_extraction_only":
         product = random.choice(data_items)
-        result = _build_data_extraction_result(product, VISIBLE_FIELDS_PRODUCT_DETAIL)
+        result = _build_data_extraction_result(product, VISIBLE_FIELDS_PRODUCT_DETAIL, question_fields_override=["price"])
         return result if result is not None else []
 
     constraints_list = []
@@ -274,6 +304,25 @@ async def generate_autozone_products_constraints(
     return constraints_list
 
 
+async def generate_view_detail_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    """Generate constraints for VIEW_DETAIL. In data_extraction_only, question field is fixed to product name; verify field is random."""
+    data_items = await _ensure_products_dataset(task_url, dataset)
+    if not data_items:
+        return []
+
+    if test_types == "data_extraction_only":
+        product = random.choice(data_items)
+        item_with_name = {**product, "name": product.get("title") or product.get("brand", "")}
+        result = _build_data_extraction_result(item_with_name, VISIBLE_FIELDS_PRODUCT_DETAIL, question_fields_override=["name"])
+        return result if result is not None else []
+
+    return await generate_autozone_products_constraints(task_url, dataset)
+
+
 async def generate_search_query_constraints(
     task_url: str | None = None,
     dataset: dict[str, list[dict[str, Any]]] | list[dict[str, Any]] | None = None,
@@ -286,7 +335,7 @@ async def generate_search_query_constraints(
     if test_types == "data_extraction_only":
         product = random.choice(data_items)
         item_with_name = {**product, "name": product.get("title") or product.get("brand", "")}
-        result = _build_data_extraction_result(item_with_name, VISIBLE_FIELDS_SEARCH_PRODUCT, verify_field="name")
+        result = _build_data_extraction_result(item_with_name, VISIBLE_FIELDS_SEARCH_PRODUCT, question_fields_override=["name"])
         return result if result is not None else []
 
     constraints_list = []
@@ -450,8 +499,8 @@ async def generate_category_filter_constraints(
         category = product.get("category")
         title = product.get("title")
         if category is not None and title is not None:
-            selected_item = {"category": category, "title": title}
-            result = _build_data_extraction_result(selected_item, VISIBLE_FIELDS_CATEGORY_FILTER)
+            selected_item = {"category": category, "name": title}
+            result = _build_data_extraction_result(selected_item, VISIBLE_FIELDS_CATEGORY_FILTER, verify_field="category")
             return result if result is not None else []
         return []
 
