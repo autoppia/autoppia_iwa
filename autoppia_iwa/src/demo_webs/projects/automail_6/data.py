@@ -46,6 +46,16 @@ def transform_email_data(email: dict) -> dict:
             email["is_spam"] = True
             break
 
+    # Each email is expected to have exactly one label.
+    # Expose it as `label_name` so prompts and extraction can refer to it directly.
+    label_name = None
+    labels = email.get("labels")
+    if isinstance(labels, list) and labels:
+        first = labels[0]
+        if isinstance(first, dict):
+            label_name = first.get("name")
+    email["label_name"] = label_name
+
     return email
 
 
@@ -136,3 +146,8 @@ FIELD_OPERATORS_TEMPLATE_SENT_MAP = {
     **FIELD_OPERATORS_TEMPLATE_BODY_EDITED_MAP,
     "to": STRING_OPERATORS,
 }
+
+# Visible fields used for synthetic data-extraction questions.
+# Keep this list small and text-based to maximize extraction reliability.
+VISIBLE_FIELDS_EMAIL_DETAIL = ["from_email", "subject", "from_name", "label_name", "body"]
+VISIBLE_FIELDS_EMAIL_SEARCH = ["from_email", "subject"]

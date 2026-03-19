@@ -58,6 +58,28 @@ Incorrect:
 "View for spam@unknown.com email and Win a Free Vacation! subject."
 """.strip()
 
+VIEW_EMAIL_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the email (e.g. sender email, subject, sender name, label name, message content).
+
+Use natural language only. Do NOT use schema-style field names such as "from_email", "subject", "from_name", "label_name", "body", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. sender email, subject, sender name, label, label name, message content).
+
+Identify the email using the provided visible field values (e.g. sender email, subject, sender name, label, label name, message content), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "View...", "Open...", "Show...", or "Read...".
+
+Every generated question MUST include a subtle confirmation context at the end, such as "Please confirm the value after viewing the detail" or "Confirm the value after viewing the detail". This must appear at the end of the question.
+
+Examples:
+- "What is the sender email of the message with subject 'Meeting Reminder'? Please confirm the value after viewing the detail."
+- "What is the subject of the email sent by 'John Doe'? Confirm the value after viewing the detail."
+- "What is the label of the email with subject 'Invoice for March'? Please confirm the value after viewing the detail."
+- "What is the message content of the email sent from 'support@example.com'? Confirm the value after viewing the detail."
+
+The output must be a single question asking only for the verify field value and must include the confirmation phrase at the end.
+""".strip()
+
 VIEW_EMAIL_USE_CASE = UseCase(
     name="VIEW_EMAIL",
     description="The user selects an email to view and read its contents.",
@@ -65,6 +87,8 @@ VIEW_EMAIL_USE_CASE = UseCase(
     event_source_code=ViewEmailEvent.get_source_code_of_class(),
     constraints_generator=generate_view_email_constraints,
     additional_prompt_info=VIEW_EMAIL_ADDITIONAL_PROMPT_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=VIEW_EMAIL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "View the email where email_from equals 'alice.smith@company.com' and subject equals 'Project Kickoff Meeting'",
@@ -674,6 +698,20 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 2. Clearly describe the search target in a natural way.
 """
 
+SEARCH_EMAIL_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of an email in the search results (e.g. sender email, subject, label name).
+
+Use natural language only. Do NOT use schema-style field names such as "from_email" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. sender email, email subject, label name).
+
+Identify the email using the provided visible field values (e.g. sender email and subject, and label name), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Search...", "Find...", or "Look up...".
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 SEARCH_EMAIL_USE_CASE = UseCase(
     name="SEARCH_EMAIL",
     description="The user performs a search query to locate emails based on specific keywords, sender, subject, or label.",
@@ -681,6 +719,8 @@ SEARCH_EMAIL_USE_CASE = UseCase(
     event_source_code=SearchEmailEvent.get_source_code_of_class(),
     constraints_generator=generate_search_email_constraints,
     additional_prompt_info=SEARCH_EMAIL_ADDITIONAL_PROMPT_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=SEARCH_EMAIL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Search for query containing 'Weekly Newsletter'",
