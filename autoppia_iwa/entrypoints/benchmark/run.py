@@ -84,9 +84,9 @@ PROJECT_IDS = [
     # "autowork",
     # "autoconnect",
     # "autocalendar",
-    "autolist",
-    "autodrive",
-    "autohealth",
+    # "autolist",
+    # "autodrive",
+    # "autohealth",
     "autostats",
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
