@@ -25,7 +25,8 @@ def _build_data_extraction_result(
     from the available visible fields.
 
     When question_fields_override is provided and non-empty, those fields (that exist and have values) are used
-    as the fixed question fields, and verify field is chosen randomly from the remaining available fields.
+    as the fixed question fields. The verify field is verify_field if it is provided and lies among the remaining
+    visible fields; otherwise it is chosen randomly from the remaining available fields.
     If, apart from the verify field and the fixed question fields, there are 2 or more visible fields left,
     a random subset of those is added to the question fields.
     """
@@ -42,7 +43,7 @@ def _build_data_extraction_result(
             remaining = [f for f in available_fields if f not in question_fields]
             if not remaining:
                 return None
-            chosen_verify_field = random.choice(remaining)
+            chosen_verify_field = verify_field if verify_field is not None and verify_field in remaining else random.choice(remaining)
             remaining_for_extra = [f for f in available_fields if f != chosen_verify_field and f not in question_fields]
             if len(remaining_for_extra) >= 2:
                 num_extra = random.randint(1, len(remaining_for_extra))
