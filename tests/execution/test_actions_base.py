@@ -11,6 +11,7 @@ from autoppia_iwa.src.execution.actions.actions import (
 from autoppia_iwa.src.execution.actions.base import (
     ActionRegistry,
     BaseAction,
+    BaseActionWithSelector,
     Selector,
     SelectorType,
 )
@@ -57,6 +58,14 @@ class TestSelectorToPlaywrightSelector:
         s = Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute=None, value="x")
         with pytest.raises(ValueError):
             s.to_playwright_selector()
+
+    def test_attribute_custom_passthrough(self):
+        s = Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="custom", value="div > span")
+        assert s.to_playwright_selector() == "div > span"
+
+    def test_attribute_unknown_fallback_format(self):
+        s = Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="data-x", value="abc")
+        assert s.to_playwright_selector() == "[data-x='abc']"
 
 
 class TestActionRegistry:
@@ -110,6 +119,25 @@ class TestBaseActionCreateAction:
         assert action is not None
         assert isinstance(action, NavigateAction)
 
+    def test_create_action_with_nested_action_payload(self):
+        data = {
+            "selector": {"type": "attributeValueSelector", "attribute": "id", "value": "btn"},
+            "action": {"type": "click"},
+        }
+        action = BaseAction.create_action(data)
+        assert action is not None
+        assert isinstance(action, ClickAction)
+
+    def test_create_action_unsupported_returns_none(self):
+        # Unsupported action is logged and returns None (no raise in current implementation).
+        action = BaseAction.create_action({"type": "unknownAction"})
+        assert action is None
+
+    def test_get_playwright_selector_missing_selector_raises(self):
+        action = NavigateAction(url="http://example.com")
+        with pytest.raises(ValueError, match="Selector is required"):
+            action.get_playwright_selector()
+
 
 class TestTypeActionAndWaitAction:
     """Tests for TypeAction and WaitAction creation."""
@@ -151,4 +179,14 @@ async def test_execute_with_page_none_raises():
     """Actions that require a page raise ValueError when page is None (_ensure_page)."""
     action = NavigateAction(url="http://example.com")
     with pytest.raises(ValueError, match="requires a valid Page"):
+        await action.execute(page=None, backend_service=None, web_agent_id="t")
+
+
+@pytest.mark.asyncio
+async def test_base_action_with_selector_execute_not_implemented():
+    class DummyAction(BaseActionWithSelector):
+        type: str = "DummyAction"
+
+    action = DummyAction(selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="x"))
+    with pytest.raises(NotImplementedError):
         await action.execute(page=None, backend_service=None, web_agent_id="t")
