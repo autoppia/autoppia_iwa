@@ -4,9 +4,9 @@ import json
 
 from autoppia_iwa.src.shared.web_voyager_utils import (
     TaskData,
-    load_real_tasks,
     generate_hash,
     load_jsonl_file,
+    load_real_tasks,
     setup_logging,
 )
 

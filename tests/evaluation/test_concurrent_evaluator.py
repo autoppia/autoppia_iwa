@@ -860,10 +860,7 @@ async def test_group_and_evaluate_cancels_progress_tracker_when_verbose():
         ) as mocked_progress,
     ):
         evaluator = ConcurrentEvaluator(web_project=PROJECT, config=EvaluatorConfig(verbose_logging=True, chunk_size=3))
-        sols = [
-            TaskSolution(task_id=task.id, actions=[NavigateAction(url=f"{data_url}#{i}")], web_agent_id=f"a{i}")
-            for i in range(6)
-        ]
+        sols = [TaskSolution(task_id=task.id, actions=[NavigateAction(url=f"{data_url}#{i}")], web_agent_id=f"a{i}") for i in range(6)]
         results = await evaluator._group_and_evaluate_task_solutions(task, sols)
         assert len(results) == 6
         assert mocked_progress.called

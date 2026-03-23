@@ -102,4 +102,3 @@ omit =
     autoppia_iwa/src/llms/service.py
     autoppia_iwa/src/data_generation/tasks/simple/simple_task_generator.py
     autoppia_iwa/src/data_generation/tasks/multi_step/multi_step_task_generator.py
-
