@@ -213,6 +213,9 @@ class SimpleTaskGenerator:
             if generate_data_extraction:
                 qfav = getattr(use_case_copy, "question_fields_and_values", None)
                 constraints_list = use_case_copy.constraints or []
+                if not constraints_list:
+                    logger.warning(f"No constraints generated for data-extraction use case '{use_case_copy.name}' (seed={seed}). Skipping iteration.")
+                    continue
                 if qfav and isinstance(qfav, dict) and qfav:
                     question_fields_info = "\n".join(f"- {k} = {v}" for k, v in qfav.items())
                     # Verify field is the single constraint's field (what we ask for in the question).

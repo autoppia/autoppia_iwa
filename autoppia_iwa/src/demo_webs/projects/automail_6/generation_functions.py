@@ -525,10 +525,7 @@ async def generate_save_as_draft_send_email_constraints(
         base = await _ensure_email_dataset(task_url, dataset)
         if not base:
             return []
-        draft_emails = [e for e in base if e.get("is_draft") is True]
-        if not draft_emails:
-            return []
-        email = choice(draft_emails)
+        email = choice(base)
         result = _build_data_extraction_result(email, VISIBLE_FIELDS_EMAIL_DETAIL, question_fields_override=["subject"])
         return result if result is not None else []
 
@@ -559,6 +556,30 @@ async def generate_save_as_draft_send_email_constraints(
             value = _generate_constraint_value(operator, field_value, field, base)
         constraints_list.append(create_constraint_dict(field, operator, value))
     return constraints_list
+
+
+async def generate_draft_only_data_extraction_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    """Shared generator for draft-related use cases.
+
+    Event-only behavior stays identical by delegating to the existing send/draft generator.
+    Data-extraction behavior is draft-only (`is_draft == True`).
+    """
+    if test_types != "data_extraction_only":
+        return await generate_save_as_draft_send_email_constraints(task_url=task_url, dataset=dataset, test_types=test_types)
+
+    base = await _ensure_email_dataset(task_url, dataset)
+    if not base:
+        return []
+    draft_emails = [e for e in base if e.get("is_draft") is True]
+    if not draft_emails:
+        return []
+    email = choice(draft_emails)
+    result = _build_data_extraction_result(email, VISIBLE_FIELDS_EMAIL_DETAIL, question_fields_override=["subject"])
+    return result if result is not None else []
 
 
 async def generate_archive_email_constraints(

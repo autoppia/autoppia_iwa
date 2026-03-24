@@ -31,6 +31,7 @@ from .generation_functions import (
     generate_add_label_constraints,
     generate_archive_email_constraints,
     generate_create_label_constraints,
+    generate_draft_only_data_extraction_constraints,
     generate_is_important_constraints,
     generate_is_read_constraints,
     generate_is_spam_constraints,
@@ -59,21 +60,32 @@ Incorrect:
 """.strip()
 
 VIEW_EMAIL_DATA_EXTRACTION_PROMPT_INFO = """
-Generate a QUESTION that asks for the value of the verify field in an email to be viewed (e.g., sender email, subject, sender name, label name, message content, date).
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of an email to be viewed (e.g. sender email, subject, sender name, label, message content, date).
 
-Use natural language only. Do NOT use schema-style field names such as "from_email", "subject", "from_name", "label_name", "body", "date_detail", or any names with underscores (_).
+Use natural language only. Do NOT use schema-style field names such as "from_email", "from_name", "label_name", "body", "subject", "date_detail", or any names with underscores (_).
 
-Always refer to fields using simple phrasing (e.g., sender email, email subject, sender name, label name, message content, date).
+Always refer to fields using simple phrasing (e.g. sender email, sender name, subject, label, message content, date).
 
-Identify the email using the provided visible field values (e.g., sender email, subject, sender name, label name, message content, date), then ask for the verify field value naturally in a **direct-question style**.
+Identify the email using ALL the provided visible field values (e.g. subject, sender name, label, message content, date), then ask for the verify field value naturally.
 
-Every generated question MUST be a **single sentence** directly asking for the value, clearly indicating this is an email to be viewed, e.g.:
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field. If multiple fields are provided, combine them naturally (e.g. "with subject ... from ... in label ...").
 
-- "Can you tell me the sender email of the email with subject 'Meeting Reminder' from 'Alice Smith' after viewing it?"
+Do NOT assume any field. Only include fields that are actually provided.
+
+Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
+
+Every generated question MUST follow this structure:
+"Can you tell me the [verify field] of the email with [ALL identification details] after viewing it?"
+
+Examples:
+- "Can you tell me the sender email of the email with subject 'Meeting Reminder' after viewing it?"
 - "Can you tell me the subject of the email from 'John Doe' after viewing it?"
-- "Can you tell me the message content of the email with subject 'Project Update' from 'Sarah Turner' after viewing it?"
-- "Can you tell me the label name of the email with subject 'Invoice for March' from 'Michael Brown' after viewing it?"
-- "Can you tell me the date of the email with subject 'Special Offer - 40% Off' from 'Sarah Turner' after viewing it?"
+- "Can you tell me the message content of the email with subject 'Project Update' in label 'Work' after viewing it?"
+- "Can you tell me the label of the email with subject 'Invoice for March' from 'Michael Brown' after viewing it?"
+- "Can you tell me the date of the email with subject 'Special Offer - 40% Off' after viewing it?"
+- "Can you tell me the sender name of the email from 'alice@example.com' with subject 'Project Kickoff' after viewing it?"
+
+The output must be a single question asking only for the verify field value and must include ALL provided identification details.
 """.strip()
 
 VIEW_EMAIL_USE_CASE = UseCase(
@@ -116,6 +128,15 @@ Identify the email using the provided visible field values, then ask for the ver
 
 Do NOT start questions with imperative phrasing like "Open...", "View...", "Archive...", "Star...", "Mark...", "Delete...", "Reply...", "Forward...", or "Save...".
 
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only non-verify fields for identification.
+- If the verify field is sender name, do NOT include sender name in the identification clause.
+- If the verify field is subject, do NOT include subject text in the identification clause.
+- If the verify field is label name, do NOT include label name in the identification clause.
+- If the verify field is message content, do NOT include message content in the identification clause.
+- If the verify field is detailed date, do NOT include the date value in the identification clause.
+
 For the detailed date field, ask naturally in a conditional style, such as:
 - "When was the email with subject 'Meeting Reminder' from 'John Doe' received?"
 
@@ -135,21 +156,32 @@ Correct:
 """.strip()
 
 STAR_AN_EMAIL_DATA_EXTRACTION_PROMPT_INFO = """
-Generate a QUESTION that asks for the value of the verify field in an email to be starred (e.g., sender email, subject, sender name, label name, message content, date).
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of an email to be starred (e.g. sender email, subject, sender name, label, message content, date).
 
-Use natural language only. Do NOT use schema-style field names such as "from_email", "subject", "from_name", "label_name", "body", "date_detail", or any names with underscores (_).
+Use natural language only. Do NOT use schema-style field names such as "from_email", "from_name", "label_name", "body", "subject", "date_detail", or any names with underscores (_).
 
-Always refer to fields using simple phrasing (e.g., sender email, email subject, sender name, label name, message content, date).
+Always refer to fields using simple phrasing (e.g. sender email, sender name, subject, label, message content, date).
 
-Identify the email using the provided visible field values (e.g., sender email, subject, sender name, label name, message content, date), then ask for the verify field value naturally in a **direct-question style**.
+Identify the email using ALL the provided visible field values (e.g. subject, sender name, label, message content, date), then ask for the verify field value naturally.
 
-Every generated question MUST be a **single sentence** directly asking for the value, clearly indicating this is an email to be starred, e.g.:
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field. If multiple fields are provided, combine them naturally (e.g. "with subject ... from ... in label ...").
 
-- "Can you tell me the sender email of the email with subject 'Meeting Reminder' from 'Alice Smith' so I can star it?"
+Do NOT assume any field. Only include fields that are actually provided.
+
+Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
+
+Every generated question MUST follow this structure:
+"Can you tell me the [verify field] of the email with [ALL identification details] so I can star it?"
+
+Examples:
+- "Can you tell me the sender email of the email with subject 'Meeting Reminder' so I can star it?"
 - "Can you tell me the subject of the email from 'John Doe' so I can star it?"
-- "Can you tell me the message content of the email with subject 'Project Update' from 'Sarah Turner' so I can star it?"
-- "Can you tell me the label name of the email with subject 'Invoice for March' from 'Michael Brown' so I can star it?"
-- "Can you tell me the date of the email with subject 'Special Offer - 40% Off' from 'Sarah Turner' so I can star it?"
+- "Can you tell me the message content of the email with subject 'Project Update' in label 'Work' so I can star it?"
+- "Can you tell me the label of the email with subject 'Invoice for March' from 'Michael Brown' so I can star it?"
+- "Can you tell me the date of the email with subject 'Special Offer - 40% Off' so I can star it?"
+- "Can you tell me the sender name of the email from 'alice@example.com' with subject 'Project Kickoff' so I can star it?"
+
+The output must be a single question asking only for the verify field value and must include ALL provided identification details.
 """.strip()
 
 STAR_EMAIL_USE_CASE = UseCase(
@@ -194,21 +226,32 @@ Correct:
 """.strip()
 
 MARK_EMAIL_AS_IMPORTANT_DATA_EXTRACTION_PROMPT_INFO = """
-Generate a QUESTION that asks for the value of the verify field in an email to be marked as important (e.g., sender email, subject, sender name, label name, message content, date).
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of an email to be marked as important (e.g. sender email, subject, sender name, label, message content, date).
 
-Use natural language only. Do NOT use schema-style field names such as "from_email", "subject", "from_name", "label_name", "body", "date_detail", or any names with underscores (_).
+Use natural language only. Do NOT use schema-style field names such as "from_email", "from_name", "label_name", "body", "subject", "date_detail", or any names with underscores (_).
 
-Always refer to fields using simple phrasing (e.g., sender email, email subject, sender name, label name, message content, date).
+Always refer to fields using simple phrasing (e.g. sender email, sender name, subject, label, message content, date).
 
-Identify the email using the provided visible field values (e.g., sender email, subject, sender name, label name, message content, date), then ask for the verify field value naturally in a **direct-question style**.
+Identify the email using ALL the provided visible field values (e.g. subject, sender name, label, message content, date), then ask for the verify field value naturally.
 
-Every generated question MUST be a **single sentence** directly asking for the value, clearly indicating this is an email to be marked as important, e.g.:
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field. If multiple fields are provided, combine them naturally (e.g. "with subject ... from ... in label ...").
 
-- "Can you tell me the sender email of the email with subject 'Meeting Reminder' from 'Alice Smith' so I can mark it as important?"
+Do NOT assume any field. Only include fields that are actually provided.
+
+Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
+
+Every generated question MUST follow this structure:
+"Can you tell me the [verify field] of the email with [ALL identification details] so I can mark it as important?"
+
+Examples:
+- "Can you tell me the sender email of the email with subject 'Meeting Reminder' so I can mark it as important?"
 - "Can you tell me the subject of the email from 'John Doe' so I can mark it as important?"
-- "Can you tell me the message content of the email with subject 'Project Update' from 'Sarah Turner' so I can mark it as important?"
-- "Can you tell me the label name of the email with subject 'Invoice for March' from 'Michael Brown' so I can mark it as important?"
-- "Can you tell me the date of the email with subject 'Special Offer - 40% Off' from 'Sarah Turner' so I can mark it as important?"
+- "Can you tell me the message content of the email with subject 'Project Update' in label 'Work' so I can mark it as important?"
+- "Can you tell me the label of the email with subject 'Invoice for March' from 'Michael Brown' so I can mark it as important?"
+- "Can you tell me the date of the email with subject 'Special Offer - 40% Off' so I can mark it as important?"
+- "Can you tell me the sender name of the email from 'alice@example.com' with subject 'Project Kickoff' so I can mark it as important?"
+
+The output must be a single question asking only for the verify field value and must include ALL provided identification details.
 """.strip()
 
 
@@ -255,21 +298,32 @@ INCORRECT: Mark the email unread 'emma.davis@yahoo.com'.
 """
 
 MARK_AS_UNREAD_DATA_EXTRACTION_PROMPT_INFO = """
-Generate a QUESTION that asks for the value of the verify field in an email to be marked as unread (e.g., sender email, subject, sender name, label name, message content, date).
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of an email to be marked as unread (e.g. sender email, subject, sender name, label, message content, date).
 
-Use natural language only. Do NOT use schema-style field names such as "from_email", "subject", "from_name", "label_name", "body", "date_detail", or any names with underscores (_).
+Use natural language only. Do NOT use schema-style field names such as "from_email", "from_name", "label_name", "body", "subject", "date_detail", or any names with underscores (_).
 
-Always refer to fields using simple phrasing (e.g., sender email, email subject, sender name, label name, message content, date).
+Always refer to fields using simple phrasing (e.g. sender email, sender name, subject, label, message content, date).
 
-Identify the email using the provided visible field values (e.g., sender email, subject, sender name, label name, message content, date), then ask for the verify field value naturally in a **direct-question style**.
+Identify the email using ALL the provided visible field values (e.g. subject, sender name, label, message content, date), then ask for the verify field value naturally.
 
-Every generated question MUST be a **single sentence** directly asking for the value, clearly indicating this is an email to be marked as unread, e.g.:
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field. If multiple fields are provided, combine them naturally (e.g. "with subject ... from ... in label ...").
 
-- "Can you tell me the sender email of the email with subject 'Meeting Reminder' from 'Alice Smith' so I can mark it as unread?"
+Do NOT assume any field. Only include fields that are actually provided.
+
+Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
+
+Every generated question MUST follow this structure:
+"Can you tell me the [verify field] of the email with [ALL identification details] so I can mark it as unread?"
+
+Examples:
+- "Can you tell me the sender email of the email with subject 'Meeting Reminder' so I can mark it as unread?"
 - "Can you tell me the subject of the email from 'John Doe' so I can mark it as unread?"
-- "Can you tell me the message content of the email with subject 'Project Update' from 'Sarah Turner' so I can mark it as unread?"
-- "Can you tell me the label name of the email with subject 'Invoice for March' from 'Michael Brown' so I can mark it as unread?"
-- "Can you tell me the date of the email with subject 'Special Offer - 40% Off' from 'Sarah Turner' so I can mark it as unread?"
+- "Can you tell me the message content of the email with subject 'Project Update' in label 'Work' so I can mark it as unread?"
+- "Can you tell me the label of the email with subject 'Invoice for March' from 'Michael Brown' so I can mark it as unread?"
+- "Can you tell me the date of the email with subject 'Special Offer - 40% Off' so I can mark it as unread?"
+- "Can you tell me the sender name of the email from 'alice@example.com' with subject 'Project Kickoff' so I can mark it as unread?"
+
+The output must be a single question asking only for the verify field value and must include ALL provided identification details.
 """.strip()
 
 MARK_AS_UNREAD_USE_CASE = UseCase(
@@ -313,21 +367,32 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 """
 
 DELETE_EMAIL_DATA_EXTRACTION_PROMPT_INFO = """
-Generate a QUESTION that asks for the value of the verify field in an email to be deleted (e.g., sender email, subject, sender name, label name, message content, date).
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of an email to be deleted (e.g. sender email, subject, sender name, label, message content, date).
 
-Use natural language only. Do NOT use schema-style field names such as "from_email", "subject", "from_name", "label_name", "body", "date_detail", or any names with underscores (_).
+Use natural language only. Do NOT use schema-style field names such as "from_email", "from_name", "label_name", "body", "subject", "date_detail", or any names with underscores (_).
 
-Always refer to fields using simple phrasing (e.g., sender email, email subject, sender name, label name, message content, date).
+Always refer to fields using simple phrasing (e.g. sender email, sender name, subject, label, message content, date).
 
-Identify the email using the provided visible field values (e.g., sender email, subject, sender name, label name, message content, date), then ask for the verify field value naturally in a **direct-question style**.
+Identify the email using ALL the provided visible field values (e.g. subject, sender name, label, message content, date), then ask for the verify field value naturally.
 
-Every generated question MUST be a **single sentence** directly asking for the value, clearly indicating this is an email to be deleted, e.g.:
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field. If multiple fields are provided, combine them naturally (e.g. "with subject ... from ... in label ...").
 
-- "Can you tell me the sender email of the email with subject 'Meeting Reminder' from 'Alice Smith' so I can delete it?"
+Do NOT assume any field. Only include fields that are actually provided.
+
+Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
+
+Every generated question MUST follow this structure:
+"Can you tell me the [verify field] of the email with [ALL identification details] so I can delete it?"
+
+Examples:
+- "Can you tell me the sender email of the email with subject 'Meeting Reminder' so I can delete it?"
 - "Can you tell me the subject of the email from 'John Doe' so I can delete it?"
-- "Can you tell me the message content of the email with subject 'Project Update' from 'Sarah Turner' so I can delete it?"
-- "Can you tell me the label name of the email with subject 'Invoice for March' from 'Michael Brown' so I can delete it?"
-- "Can you tell me the date of the email with subject 'Special Offer - 40% Off' from 'Sarah Turner' so I can delete it?"
+- "Can you tell me the message content of the email with subject 'Project Update' in label 'Work' so I can delete it?"
+- "Can you tell me the label of the email with subject 'Invoice for March' from 'Michael Brown' so I can delete it?"
+- "Can you tell me the date of the email with subject 'Special Offer - 40% Off' so I can delete it?"
+- "Can you tell me the sender name of the email from 'alice@example.com' with subject 'Project Kickoff' so I can delete it?"
+
+The output must be a single question asking only for the verify field value and must include ALL provided identification details.
 """.strip()
 
 DELETE_EMAIL_USE_CASE = UseCase(
@@ -370,22 +435,33 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 3. Maintain natural, varied phrasing while preserving intent.
 """
 
-MARK_AS_SPAM_DATA_EXTRACTION_PROMPT_INFO = """
-Generate a QUESTION that asks for the value of the verify field in an email to be marked as spam (e.g., sender email, subject, sender name, label name, message content, date).
+EMAIL_MARK_AS_SPAM_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of an email to be marked as spam (e.g. sender email, subject, sender name, label, message content, date).
 
-Use natural language only. Do NOT use schema-style field names such as "from_email", "subject", "from_name", "label_name", "body", "date_detail", or any names with underscores (_).
+Use natural language only. Do NOT use schema-style field names such as "from_email", "from_name", "label_name", "body", "subject", "date_detail", or any names with underscores (_).
 
-Always refer to fields using simple phrasing (e.g., sender email, email subject, sender name, label name, message content, date).
+Always refer to fields using simple phrasing (e.g. sender email, sender name, subject, label, message content, date).
 
-Identify the email using the provided visible field values (e.g., sender email, subject, sender name, label name, message content, date), then ask for the verify field value naturally in a **direct-question style**.
+Identify the email using ALL the provided visible field values (e.g. subject, sender name, label, message content, date), then ask for the verify field value naturally.
 
-Every generated question MUST be a **single sentence** directly asking for the value, clearly indicating this is an email to be marked as spam, e.g.:
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field. If multiple fields are provided, combine them naturally (e.g. "with subject ... from ... in label ...").
 
-- "Can you tell me the sender email of the email with subject 'Meeting Reminder' from 'Alice Smith' so I can mark it as spam?"
+Do NOT assume any field. Only include fields that are actually provided.
+
+Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
+
+Every generated question MUST follow this structure:
+"Can you tell me the [verify field] of the email with [ALL identification details] so I can mark it as spam?"
+
+Examples:
+- "Can you tell me the sender email of the email with subject 'Meeting Reminder' so I can mark it as spam?"
 - "Can you tell me the subject of the email from 'John Doe' so I can mark it as spam?"
-- "Can you tell me the message content of the email with subject 'Project Update' from 'Sarah Turner' so I can mark it as spam?"
-- "Can you tell me the label name of the email with subject 'Invoice for March' from 'Michael Brown' so I can mark it as spam?"
-- "Can you tell me the date of the email with subject 'Special Offer - 40% Off' from 'Sarah Turner' so I can mark it as spam?"
+- "Can you tell me the message content of the email with subject 'Project Update' in label 'Work' so I can mark it as spam?"
+- "Can you tell me the label of the email with subject 'Invoice for March' from 'Michael Brown' so I can mark it as spam?"
+- "Can you tell me the date of the email with subject 'Special Offer - 40% Off' so I can mark it as spam?"
+- "Can you tell me the sender name of the email from 'alice@example.com' with subject 'Project Kickoff' so I can mark it as spam?"
+
+The output must be a single question asking only for the verify field value and must include ALL provided identification details.
 """.strip()
 
 MARK_AS_SPAM_USE_CASE = UseCase(
@@ -396,7 +472,7 @@ MARK_AS_SPAM_USE_CASE = UseCase(
     constraints_generator=generate_is_spam_constraints,
     additional_prompt_info=MARK_AS_SPAM_ADDITIONAL_PROMPT_INFO,
     supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=MARK_AS_SPAM_DATA_EXTRACTION_PROMPT_INFO,
+    additional_prompt_info_for_data_extraction_task=EMAIL_MARK_AS_SPAM_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Mark the email from 'alice.smith@company.com' with subject 'Project Kickoff Meeting' as spam",
@@ -573,19 +649,32 @@ Examples:
 """
 
 EMAIL_SAVE_AS_DRAFT_DATA_EXTRACTION_PROMPT_INFO = """
-Generate a QUESTION that asks for the value of the verify field in an email to be saved as draft (e.g., sender email, subject, sender name, label name, message content, date).
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of an email to be saved as draft (e.g. sender email, subject, sender name, label, message content, date).
 
-Use natural language only. Do NOT use schema-style field names.
+Use natural language only. Do NOT use schema-style field names such as "from_email", "from_name", "label_name", "body", "subject", "date", or any names with underscores (_).
 
-Every generated question MUST be a **single sentence** following this structure:
-'Can you tell me the [verify field] of the email with [identification using visible fields]?'
+Always refer to fields using simple phrasing (e.g. sender email, sender name, subject, label, message content, date).
+
+Identify the email using ALL the provided visible field values (e.g. subject, sender name, label, message content, date), then ask for the verify field value naturally.
+
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field. If multiple fields are provided, combine them naturally (e.g. "with subject ... from ... in label ...").
+
+Do NOT assume any field. Only include fields that are actually provided.
+
+Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
+
+Every generated question MUST follow this structure:
+"Can you tell me the [verify field] of the email with [ALL identification details]?"
 
 Examples:
-- "Can you tell me the sender email of the drafted email with subject 'Meeting Reminder' from 'Alice Smith'?"
+- "Can you tell me the sender email of the drafted email with subject 'Meeting Reminder'?"
 - "Can you tell me the subject of the drafted email from 'John Doe'?"
-- "Can you tell me the message content of the drafted email with subject 'Project Update' from 'Sarah Turner'?"
-- "Can you tell me the label name of the drafted email with subject 'Invoice for March' from 'Michael Brown'?"
-- "Can you tell me the date of the drafted email with subject 'Special Offer - 40% Off' from 'Sarah Turner'?"
+- "Can you tell me the message content of the drafted email with subject 'Project Update' in label 'Work'?"
+- "Can you tell me the label of the drafted email with subject 'Invoice for March' from 'Michael Brown'?"
+- "Can you tell me the date of the drafted email with subject 'Special Offer - 40% Off'?"
+- "Can you tell me the sender name of the email from 'alice@example.com' with subject 'Project Kickoff'?"
+
+The output must be a single question asking only for the verify field value and must include ALL provided identification details.
 """.strip()
 
 EMAIL_SAVE_AS_DRAFT_USE_CASE = UseCase(
@@ -593,7 +682,7 @@ EMAIL_SAVE_AS_DRAFT_USE_CASE = UseCase(
     description="The user saves a composed email as a draft without sending it.",
     event=EmailSaveAsDraftEvent,
     event_source_code=EmailSaveAsDraftEvent.get_source_code_of_class(),
-    constraints_generator=generate_save_as_draft_send_email_constraints,
+    constraints_generator=generate_draft_only_data_extraction_constraints,
     additional_prompt_info=SAVE_AS_DRAFT_ADDITIONAL_PROMPT_INFO,
     supports_data_extraction=True,
     additional_prompt_info_for_data_extraction_task=EMAIL_SAVE_AS_DRAFT_DATA_EXTRACTION_PROMPT_INFO,
@@ -655,19 +744,30 @@ Examples:
 """.strip()
 
 EDIT_DRAFT_EMAIL_DATA_EXTRACTION_PROMPT_INFO = """
-Generate a QUESTION that asks for the value of the verify field in a drafted email to be edited (e.g., sender email, subject, sender name, label name, message content, date).
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a drafted email to be edited (e.g. sender email, subject, sender name, label, message content, date).
 
-Use natural language only. Do NOT use schema-style field names.
+Use natural language only. Do NOT use schema-style field names such as "from_email", "from_name", "label_name", "body", "subject", "date", or any names with underscores (_).
 
-Every generated question MUST be a **single sentence** following this structure:
-'Can you tell me the [verify field] of the drafted email with [identification using visible fields] so I can edit it?'
+Always refer to fields using simple phrasing (e.g. sender email, sender name, subject, label, message content, date).
+
+Identify the drafted email using ALL the provided visible field values (e.g. subject, sender name, label, message content, date), then ask for the verify field value naturally.
+
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field. If multiple fields are provided, combine them naturally (e.g. "with subject ... from ... in label ...").
+
+Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
+
+Every generated question MUST follow this structure:
+"Can you tell me the [verify field] of the drafted email with [ALL identification details] so I can edit it?"
 
 Examples:
-- "Can you tell me the sender email of the drafted email with subject 'Meeting Reminder' from 'Alice Smith' so I can edit it?"
+- "Can you tell me the sender email of the drafted email with subject 'Meeting Reminder' so I can edit it?"
 - "Can you tell me the subject of the drafted email from 'John Doe' so I can edit it?"
-- "Can you tell me the message content of the drafted email with subject 'Project Update' from 'Sarah Turner' so I can edit it?"
-- "Can you tell me the label name of the drafted email with subject 'Invoice for March' from 'Michael Brown' so I can edit it?"
-- "Can you tell me the date of the drafted email with subject 'Special Offer - 40% Off' from 'Sarah Turner' so I can edit it?"
+- "Can you tell me the message content of the drafted email with subject 'Project Update' in label 'Work' so I can edit it?"
+- "Can you tell me the date of the drafted email in label 'Promotions' so I can edit it?"
+- "Can you tell me the label name of the drafted email with subject 'Invoice for March' so I can edit it?"
+- "Can you tell me the sender name of the email from 'alice@example.com' with subject 'Project Kickoff' so I can edit it?"
+
+The output must be a single question asking only for the verify field value and must include ALL provided identification details.
 """.strip()
 
 EDIT_DRAFT_EMAIL_USE_CASE = UseCase(
@@ -675,7 +775,7 @@ EDIT_DRAFT_EMAIL_USE_CASE = UseCase(
     description="The user opens and edits an existing draft email.",
     event=EditDraftEmailEvent,
     event_source_code=EditDraftEmailEvent.get_source_code_of_class(),
-    constraints_generator=generate_save_as_draft_send_email_constraints,
+    constraints_generator=generate_draft_only_data_extraction_constraints,
     additional_prompt_info=EDIT_DRAFT_EMAIL_ADDITIONAL_PROMPT_INFO,
     supports_data_extraction=True,
     additional_prompt_info_for_data_extraction_task=EDIT_DRAFT_EMAIL_DATA_EXTRACTION_PROMPT_INFO,
@@ -704,21 +804,32 @@ CORRECT: "Archive the email whose from email equals 'alice.smith@company.com' an
 """
 
 ARCHIVE_EMAIL_DATA_EXTRACTION_PROMPT_INFO = """
-Generate a QUESTION that asks for the value of the verify field in an email to be archived (e.g., sender email, subject, sender name, label name, message content, date).
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of an email to be archived (e.g. sender email, subject, sender name, label, message content, date).
 
-Use natural language only. Do NOT use schema-style field names such as "from_email", "subject", "from_name", "label_name", "body", "date_detail", or any names with underscores (_).
+Use natural language only. Do NOT use schema-style field names such as "from_email", "from_name", "label_name", "body", "subject", "date_detail", or any names with underscores (_).
 
-Always refer to fields using simple phrasing (e.g., sender email, email subject, sender name, label name, message content, date).
+Always refer to fields using simple phrasing (e.g. sender email, sender name, subject, label, message content, date).
 
-Identify the email using the provided visible field values (e.g., sender email, subject, sender name, label name, message content, date), then ask for the verify field value naturally in a **direct-question style**.
+Identify the email using ALL the provided visible field values (e.g. subject, sender name, label, message content, date), then ask for the verify field value naturally.
 
-Every generated question MUST be a **single sentence** directly asking for the value, clearly indicating this is an email to be archived, e.g.:
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field. If multiple fields are provided, combine them naturally (e.g. "with subject ... from ... in label ...").
 
-- "Can you tell me the sender email of the email with subject 'Meeting Reminder' from 'Alice Smith' so I can archive it?"
+Do NOT assume any field. Only include fields that are actually provided.
+
+Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
+
+Every generated question MUST follow this structure:
+"Can you tell me the [verify field] of the email with [ALL identification details] so I can archive it?"
+
+Examples:
+- "Can you tell me the sender email of the email with subject 'Meeting Reminder' so I can archive it?"
 - "Can you tell me the subject of the email from 'John Doe' so I can archive it?"
-- "Can you tell me the message content of the email with subject 'Project Update' from 'Sarah Turner' so I can archive it?"
-- "Can you tell me the label name of the email with subject 'Invoice for March' from 'Michael Brown' so I can archive it?"
-- "Can you tell me the date of the email with subject 'Special Offer - 40% Off' from 'Sarah Turner' so I can archive it?"
+- "Can you tell me the message content of the email with subject 'Project Update' in label 'Work' so I can archive it?"
+- "Can you tell me the label of the email with subject 'Invoice for March' from 'Michael Brown' so I can archive it?"
+- "Can you tell me the date of the email with subject 'Special Offer - 40% Off' so I can archive it?"
+- "Can you tell me the sender name of the email from 'alice@example.com' with subject 'Project Kickoff' so I can archive it?"
+
+The output must be a single question asking only for the verify field value and must include ALL provided identification details.
 """.strip()
 
 ARCHIVE_EMAIL_USE_CASE = UseCase(
@@ -760,21 +871,32 @@ Examples:
 """.strip()
 
 REPLY_EMAIL_DATA_EXTRACTION_PROMPT_INFO = """
-Generate a QUESTION that asks for the value of the verify field in an email to be replied (e.g., sender email, subject, sender name, label name, message content, detailed date).
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of an email to be replied to (e.g. sender email, subject, sender name, label, message content, date).
 
-Use natural language only. Do NOT use schema-style field names such as "from_email", "subject", "from_name", "label_name", "body", "date_detail", or any names with underscores (_).
+Use natural language only. Do NOT use schema-style field names such as "from_email", "from_name", "label_name", "body", "date_detail", "subject", or any names with underscores (_).
 
-Always refer to fields using simple phrasing (e.g., sender email, email subject, sender name, label name, message content, date).
+Always refer to fields using simple phrasing (e.g. sender email, sender name, subject, label, message content, date).
 
-Identify the email using the provided visible field values (e.g., sender email, subject, sender name, label name, message content, date), then ask for the verify field value naturally in a **direct-question style**.
+Identify the email using ALL the provided visible field values (e.g. subject, sender name, label, message content, date), then ask for the verify field value naturally.
 
-Every generated question MUST be a **single sentence** directly asking for the value, clearly indicating this is an email to be replied, e.g.:
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field. If multiple fields are provided, combine them naturally (e.g. "with subject ... from ... in label ...").
 
-- "Can you tell me the sender email of the email with subject 'Meeting Reminder' from 'Alice Smith' so I can reply to it?"
+Do NOT assume any field. Only include fields that are actually provided.
+
+Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
+
+Every generated question MUST follow this structure:
+"Can you tell me the [verify field] of the email with [ALL identification details] so I can reply to it?"
+
+Examples:
+- "Can you tell me the sender email of the email with subject 'Meeting Reminder' so I can reply to it?"
 - "Can you tell me the subject of the email from 'John Doe' so I can reply to it?"
-- "Can you tell me the message content of the email with subject 'Project Update' from 'Sarah Turner' so I can reply to it?"
-- "Can you tell me the label name of the email with subject 'Invoice for March' from 'Michael Brown' so I can reply to it?"
-- "Can you tell me the date of the email with subject 'Special Offer - 40% Off' from 'Sarah Turner' so I can reply to it?"
+- "Can you tell me the message content of the email with subject 'Project Update' in label 'Work' so I can reply to it?"
+- "Can you tell me the date of the email in label 'Promotions' so I can reply to it?"
+- "Can you tell me the sender name of the email with subject 'Budget Plan' and label 'Finance' so I can reply to it?"
+- "Can you tell me the sender name of the email from 'alice@example.com' with subject 'Project Kickoff' so I can reply it?"
+
+The output must be a single question asking only for the verify field value and must include ALL provided identification details.
 """.strip()
 
 REPLY_EMAIL_USE_CASE = UseCase(
@@ -822,15 +944,21 @@ Use natural language only. Do NOT use schema-style field names such as "from_ema
 
 Always refer to fields using simple phrasing (e.g., sender email, email subject, sender name, label name, message content, date).
 
-Identify the email using the provided visible field values (e.g., sender email, subject, sender name, label name, message content, date), then ask for the verify field value naturally in a **direct-question style**.
+Identify the email using ONLY the provided question fields (a subset of visible fields such as sender email, subject, sender name, label name, message content, date). Do NOT include any field that is not part of the question fields.
 
-Every generated question MUST be a **single sentence** directly asking for the value, clearly indicating this is an email to be forwarded, e.g.:
+Then ask for the verify field value naturally in a **direct-question style**.
 
-- "Can you tell me the sender email of the email with subject 'Meeting Reminder' from 'Alice Smith' so I can forward it?"
+Every generated question MUST be a **single sentence** following this structure:
+"Can you tell me the [verify field] of the email with [identification using visible fields] so I can forward it?"
+
+Examples:
+- "Can you tell me the sender email of the email with subject 'Meeting Reminder' so I can forward it?"
 - "Can you tell me the subject of the email from 'John Doe' so I can forward it?"
-- "Can you tell me the message content of the email with subject 'Project Update' from 'Sarah Turner' so I can forward it?"
-- "Can you tell me the label name of the email with subject 'Invoice for March' from 'Michael Brown' so I can forward it?"
-- "Can you tell me the date of the email with subject 'Special Offer - 40% Off' from 'Sarah Turner' so I can forward it?"
+- "Can you tell me the message content of the email with label 'Work' so I can forward it?"
+- "Can you tell me the label name of the email with subject 'Invoice for March' so I can forward it?"
+- "Can you tell me the date of the email from 'Sarah Turner' so I can forward it?"
+- "Can you tell me the sender name of the email from 'alice@example.com' with subject 'Project Kickoff' so I can forward it?"
+
 """.strip()
 
 FORWARD_EMAIL_USE_CASE = UseCase(
