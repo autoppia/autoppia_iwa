@@ -32,39 +32,6 @@ from .data import (
 )
 from .data_utils import fetch_data
 
-TEMPLATES = [
-    {
-        "id": "intro",
-        "name": "Warm Introduction",
-        "subject": "Introduction & Next Steps",
-        "body": "Hi <name>,\n\nIt was great connecting with you. I'm sharing a quick summary of what we discussed and suggested next steps. Please let me know if you'd like me to adjust anything.\n\nThanks,\nMe",
-    },
-    {
-        "id": "follow-up",
-        "name": "Friendly Follow Up",
-        "subject": "Quick follow-up on our last conversation",
-        "body": "Hello <name>,\n\nI wanted to check in on the items we talked about last week. I'm happy to help keep things moving.\n\nBest,\nMe",
-    },
-    {
-        "id": "meeting-recap",
-        "name": "Meeting Recap",
-        "subject": "Recap: key notes from our meeting",
-        "body": "Hi <name>,\n\nHere's a concise recap of today's discussion and the action items we agreed on. Feel free to add or adjust anything I might have missed.\n\nRegards,\nMe",
-    },
-    {
-        "id": "thank-you",
-        "name": "Thank You",
-        "subject": "Thank you for your time",
-        "body": "Hi <name>,\n\nThank you for the thoughtful conversation. I appreciated your insights and look forward to collaborating soon.\n\nWarm regards,\nMe",
-    },
-    {
-        "id": "reminder",
-        "name": "Gentle Reminder",
-        "subject": "Friendly reminder",
-        "body": "Hello <name>,\n\nThis is a quick reminder about the pending items we discussed. Please let me know if there's anything you need from my side.\n\nThanks,\nMe",
-    },
-]
-
 
 def _body_safe_substring_for_contains(body: str) -> str:
     """
@@ -102,12 +69,31 @@ async def _ensure_email_dataset(task_url: str | None = None, dataset: dict[str, 
     """Extract emails data from the pre-loaded dataset, or fetch from server if not available."""
     _ = dataset  # Unused parameter kept for backward compatibility
     seed = get_seed_from_url(task_url)
-    emails = await fetch_data(seed_value=seed)
+    emails = await fetch_data(seed_value=seed, entity_type="emails", method="distribute", filter_key="category")
     fetched_dataset = {"emails": emails}
 
     if fetched_dataset and "emails" in fetched_dataset:
         return fetched_dataset["emails"]
     return []
+
+
+async def _ensure_templates_dataset(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+) -> list[dict[str, Any]]:
+    seed = get_seed_from_url(task_url)
+    rows = await fetch_data(seed_value=seed, count=5, entity_type="templates", method="select")
+    normalized: list[dict[str, Any]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        name = row.get("name") or row.get("template_name") or row.get("templateName")
+        subject = row.get("subject")
+        body = row.get("body")
+        if name is None and subject is None and body is None:
+            continue
+        normalized.append({**row, "name": name})
+    return normalized
 
 
 def _build_data_extraction_result(
@@ -716,9 +702,15 @@ def generate_theme_changed_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_template_selection_constraints() -> list[dict[str, Any]]:
+async def generate_template_selection_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None,
+) -> list[dict[str, Any]]:
     constraints_list = []
-    template = choice(TEMPLATES)
+    templates = await _ensure_templates_dataset(task_url, dataset if isinstance(dataset, dict) else None)
+    if not templates:
+        return constraints_list
+    template = choice(templates)
     possible_fields = ["template_name", "subject"]
     for field in possible_fields:
         allowed_ops = FIELD_OPERATORS_TEMPLATE_SELECTED_MAP.get(field, [])
@@ -727,16 +719,22 @@ def generate_template_selection_constraints() -> list[dict[str, Any]]:
         operator = ComparisonOperator(choice(allowed_ops))
         mapped_field = FIELD_MAP_TEMPLATE_NAME.get(field, field)
         field_value = template.get(mapped_field)
-        value = _generate_constraint_value(operator, field_value, mapped_field, TEMPLATES)
+        value = _generate_constraint_value(operator, field_value, mapped_field, templates)
         constraint = create_constraint_dict(field, operator, value)
         constraints_list.append(constraint)
 
     return constraints_list
 
 
-def generate_template_body_constraints() -> list[dict[str, Any]]:
+async def generate_template_body_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None,
+) -> list[dict[str, Any]]:
     constraints_list = []
-    template = choice(TEMPLATES)
+    templates = await _ensure_templates_dataset(task_url, dataset if isinstance(dataset, dict) else None)
+    if not templates:
+        return constraints_list
+    template = choice(templates)
     possible_fields = ["template_name", "subject", "body"]
     num_fields = randint(1, len(possible_fields))
     selected_fields = sample(possible_fields, num_fields)
@@ -750,16 +748,22 @@ def generate_template_body_constraints() -> list[dict[str, Any]]:
         if field == "body" and operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
             value = _body_safe_substring_for_contains(field_value)
         else:
-            value = _generate_constraint_value(operator, field_value, mapped_field, TEMPLATES)
+            value = _generate_constraint_value(operator, field_value, mapped_field, templates)
         constraint = create_constraint_dict(field, operator, value)
         constraints_list.append(constraint)
 
     return constraints_list
 
 
-def generate_sent_template_constraints() -> list[dict[str, Any]]:
+async def generate_sent_template_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None,
+) -> list[dict[str, Any]]:
     constraints_list = []
-    template = choice(TEMPLATES)
+    templates = await _ensure_templates_dataset(task_url, dataset if isinstance(dataset, dict) else None)
+    if not templates:
+        return constraints_list
+    template = choice(templates)
     to_emails = [{"to": email} for email in LIST_OF_EMAILS]
     sample_email = choice(to_emails)
     possible_fields = ["template_name", "subject", "body", "to"]
@@ -781,7 +785,7 @@ def generate_sent_template_constraints() -> list[dict[str, Any]]:
             if field == "body" and operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
                 value = _body_safe_substring_for_contains(field_value)
             else:
-                value = _generate_constraint_value(operator, field_value, mapped_field, TEMPLATES)
+                value = _generate_constraint_value(operator, field_value, mapped_field, templates)
             constraint = create_constraint_dict(field, operator, value)
             constraints_list.append(constraint)
 

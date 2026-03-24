@@ -461,7 +461,6 @@ class SimpleTaskGenerator:
             "autobooks_2": "books",
             "autozone_3": "products",
             "autodining_4": "restaurants",
-            "automail_6": "emails",
             "autodelivery_7": "restaurants",
             "autolodge_8": "hotels",
             "autoconnect_9": "users",  # Primary entity, but has multiple
@@ -478,6 +477,7 @@ class SimpleTaskGenerator:
         # Map project directories to their entity types
         entity_types_map = {
             "autocrm_5": ["matters", "clients", "logs", "events", "files"],
+            "automail_6": ["emails", "templates"],
             "autoconnect_9": ["users", "posts", "jobs", "recommendations"],
             "autowork_10": ["jobs", "experts", "hires", "skills"],
             "autodrive_13": ["places", "rides"],

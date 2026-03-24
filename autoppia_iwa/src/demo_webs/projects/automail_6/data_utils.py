@@ -17,9 +17,15 @@ def _transform_all(records: list[dict], mapping: dict) -> list[dict]:
     return [_apply_mapping(record, mapping) for record in records]
 
 
-async def fetch_data(seed_value: int | None = None, count: int = 50) -> list[dict]:
+async def fetch_data(
+    seed_value: int | None = None,
+    count: int = 50,
+    entity_type: str | None = None,
+    method: str | None = None,
+    filter_key: str | None = None,
+) -> list[dict]:
     """
-    Fetch and normalize emails data from the backend.
+    Fetch project data from the backend.
 
     This is the unified function replacing:
     - fetch_emails_data()
@@ -29,26 +35,33 @@ async def fetch_data(seed_value: int | None = None, count: int = 50) -> list[dic
     Args:
         seed_value: Seed value for deterministic selection
         count: Number of items to fetch
+        entity_type: Type of entity to fetch
+        method: Method used to fetch the data
+        filter_key: Filter key applied to the dataset
 
     Returns:
-        list[dict] of normalized emails
+        list[dict] records. For `entity_type="emails"` records are normalized.
     """
-    from .data import transform_emails_list
     from .main import FRONTEND_PORT_INDEX, automail_project
-
-    field_mapping = {"isRead": "is_read", "isStarred": "is_starred", "isDraft": "is_draft", "isImportant": "is_important"}
 
     project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{automail_project.id}"
     items = await load_dataset_data(
         backend_url=automail_project.backend_url,
         project_key=project_key,
-        entity_type="emails",
+        entity_type=entity_type,
         seed_value=seed_value if seed_value is not None else 1,
         limit=count,
-        method="distribute",
-        filter_key="category",
+        method=method,
+        filter_key=filter_key,
     )
     if not items:
         return []
-    modified_emails = transform_emails_list(items)
-    return _transform_all(modified_emails, field_mapping)
+
+    if entity_type == "emails":
+        from .data import transform_emails_list
+
+        field_mapping = {"isRead": "is_read", "isStarred": "is_starred", "isDraft": "is_draft", "isImportant": "is_important"}
+        modified_emails = transform_emails_list(items)
+        return _transform_all(modified_emails, field_mapping)
+
+    return items
