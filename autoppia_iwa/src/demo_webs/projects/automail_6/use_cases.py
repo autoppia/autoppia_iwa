@@ -68,17 +68,19 @@ Always refer to fields using simple phrasing (e.g. sender email, sender name, su
 
 Identify the email using ALL the provided visible field values (e.g. subject, sender name, label, message content, date), then ask for the verify field value naturally.
 
-You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field. If multiple fields are provided, combine them naturally (e.g. "with subject ... from ... in label ...").
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field.
 
 Do NOT assume any field. Only include fields that are actually provided.
 
 Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
 
-Every generated question MUST follow this structure:
-"Can you tell me the [verify field] of the email with [ALL identification details] after viewing it?"
+Every generated question MUST follow a single-sentence structure. You can use either:
+- "Can you tell me the [verify field] of the email that [ALL identification details] after viewing it?"
+OR
+- "What is the [verify field] of the email that [ALL identification details] after viewing it?"
 
 Examples:
-- "Can you tell me the sender email of the email with subject 'Meeting Reminder' after viewing it?"
+- "Can you tell me the sender email of the email that subject is 'Meeting Reminder' after viewing it?"
 - "Can you tell me the subject of the email from 'John Doe' after viewing it?"
 - "Can you tell me the message content of the email with subject 'Project Update' in label 'Work' after viewing it?"
 - "Can you tell me the label of the email with subject 'Invoice for March' from 'Michael Brown' after viewing it?"
@@ -164,14 +166,16 @@ Always refer to fields using simple phrasing (e.g. sender email, sender name, su
 
 Identify the email using ALL the provided visible field values (e.g. subject, sender name, label, message content, date), then ask for the verify field value naturally.
 
-You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field. If multiple fields are provided, combine them naturally (e.g. "with subject ... from ... in label ...").
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field.
 
 Do NOT assume any field. Only include fields that are actually provided.
 
 Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
 
-Every generated question MUST follow this structure:
-"Can you tell me the [verify field] of the email with [ALL identification details] so I can star it?"
+Every generated question MUST follow a single-sentence structure. You can use either:
+- "Can you tell me the [verify field] of the email with [ALL identification details] so I can star it?"
+OR
+- "What is the [verify field] of the email with [ALL identification details] so I can star it?"
 
 Examples:
 - "Can you tell me the sender email of the email with subject 'Meeting Reminder' so I can star it?"
@@ -234,14 +238,16 @@ Always refer to fields using simple phrasing (e.g. sender email, sender name, su
 
 Identify the email using ALL the provided visible field values (e.g. subject, sender name, label, message content, date), then ask for the verify field value naturally.
 
-You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field. If multiple fields are provided, combine them naturally (e.g. "with subject ... from ... in label ...").
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field.
 
 Do NOT assume any field. Only include fields that are actually provided.
 
 Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
 
-Every generated question MUST follow this structure:
-"Can you tell me the [verify field] of the email with [ALL identification details] so I can mark it as important?"
+Every generated question MUST follow a single-sentence structure. You can use either:
+- "Can you tell me the [verify field] of the email with [ALL identification details] so I can mark it as important?"
+OR
+- "What is the [verify field] of the email with [ALL identification details] so I can mark it as important?"
 
 Examples:
 - "Can you tell me the sender email of the email with subject 'Meeting Reminder' so I can mark it as important?"
@@ -306,14 +312,16 @@ Always refer to fields using simple phrasing (e.g. sender email, sender name, su
 
 Identify the email using ALL the provided visible field values (e.g. subject, sender name, label, message content, date), then ask for the verify field value naturally.
 
-You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field. If multiple fields are provided, combine them naturally (e.g. "with subject ... from ... in label ...").
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field.
 
 Do NOT assume any field. Only include fields that are actually provided.
 
 Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
 
-Every generated question MUST follow this structure:
-"Can you tell me the [verify field] of the email with [ALL identification details] so I can mark it as unread?"
+Every generated question MUST follow a single-sentence structure. You can use either:
+- "Can you tell me the [verify field] of the email with [ALL identification details] so I can mark it as unread?"
+OR
+- "What is the [verify field] of the email with [ALL identification details] so I can mark it as unread?"
 
 Examples:
 - "Can you tell me the sender email of the email with subject 'Meeting Reminder' so I can mark it as unread?"
@@ -375,14 +383,16 @@ Always refer to fields using simple phrasing (e.g. sender email, sender name, su
 
 Identify the email using ALL the provided visible field values (e.g. subject, sender name, label, message content, date), then ask for the verify field value naturally.
 
-You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field. If multiple fields are provided, combine them naturally (e.g. "with subject ... from ... in label ...").
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field.
 
 Do NOT assume any field. Only include fields that are actually provided.
 
 Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
 
-Every generated question MUST follow this structure:
-"Can you tell me the [verify field] of the email with [ALL identification details] so I can delete it?"
+Every generated question MUST follow a single-sentence structure. You can use either:
+- "Can you tell me the [verify field] of the email with [ALL identification details] so I can delete it?"
+OR
+- "What is the [verify field] of the email with [ALL identification details] so I can delete it?"
 
 Examples:
 - "Can you tell me the sender email of the email with subject 'Meeting Reminder' so I can delete it?"
@@ -444,14 +454,16 @@ Always refer to fields using simple phrasing (e.g. sender email, sender name, su
 
 Identify the email using ALL the provided visible field values (e.g. subject, sender name, label, message content, date), then ask for the verify field value naturally.
 
-You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field. If multiple fields are provided, combine them naturally (e.g. "with subject ... from ... in label ...").
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field.
 
 Do NOT assume any field. Only include fields that are actually provided.
 
 Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
 
-Every generated question MUST follow this structure:
-"Can you tell me the [verify field] of the email with [ALL identification details] so I can mark it as spam?"
+Every generated question MUST follow a single-sentence structure. You can use either:
+- "Can you tell me the [verify field] of the email with [ALL identification details] so I can mark it as spam?"
+OR
+- "What is the [verify field] of the email with [ALL identification details] so I can mark it as spam?"
 
 Examples:
 - "Can you tell me the sender email of the email with subject 'Meeting Reminder' so I can mark it as spam?"
@@ -657,14 +669,16 @@ Always refer to fields using simple phrasing (e.g. sender email, sender name, su
 
 Identify the email using ALL the provided visible field values (e.g. subject, sender name, label, message content, date), then ask for the verify field value naturally.
 
-You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field. If multiple fields are provided, combine them naturally (e.g. "with subject ... from ... in label ...").
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field.
 
 Do NOT assume any field. Only include fields that are actually provided.
 
 Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
 
-Every generated question MUST follow this structure:
-"Can you tell me the [verify field] of the email with [ALL identification details]?"
+Every generated question MUST follow a single-sentence structure. You can use either:
+- "Can you tell me the [verify field] of the email with [ALL identification details]?"
+OR
+- "What is the [verify field] of the email with [ALL identification details]?"
 
 Examples:
 - "Can you tell me the sender email of the drafted email with subject 'Meeting Reminder'?"
@@ -752,12 +766,14 @@ Always refer to fields using simple phrasing (e.g. sender email, sender name, su
 
 Identify the drafted email using ALL the provided visible field values (e.g. subject, sender name, label, message content, date), then ask for the verify field value naturally.
 
-You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field. If multiple fields are provided, combine them naturally (e.g. "with subject ... from ... in label ...").
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field.
 
 Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
 
-Every generated question MUST follow this structure:
-"Can you tell me the [verify field] of the drafted email with [ALL identification details] so I can edit it?"
+Every generated question MUST follow a single-sentence structure. You can use either:
+- "Can you tell me the [verify field] of the drafted email with [ALL identification details] so I can edit it?"
+OR
+- "What is the [verify field] of the drafted email with [ALL identification details] so I can edit it?"
 
 Examples:
 - "Can you tell me the sender email of the drafted email with subject 'Meeting Reminder' so I can edit it?"
@@ -812,14 +828,16 @@ Always refer to fields using simple phrasing (e.g. sender email, sender name, su
 
 Identify the email using ALL the provided visible field values (e.g. subject, sender name, label, message content, date), then ask for the verify field value naturally.
 
-You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field. If multiple fields are provided, combine them naturally (e.g. "with subject ... from ... in label ...").
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field.
 
 Do NOT assume any field. Only include fields that are actually provided.
 
 Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
 
-Every generated question MUST follow this structure:
-"Can you tell me the [verify field] of the email with [ALL identification details] so I can archive it?"
+Every generated question MUST follow a single-sentence structure. You can use either:
+- "Can you tell me the [verify field] of the email with [ALL identification details] so I can archive it?"
+OR
+- "What is the [verify field] of the email with [ALL identification details] so I can archive it?"
 
 Examples:
 - "Can you tell me the sender email of the email with subject 'Meeting Reminder' so I can archive it?"
@@ -879,14 +897,16 @@ Always refer to fields using simple phrasing (e.g. sender email, sender name, su
 
 Identify the email using ALL the provided visible field values (e.g. subject, sender name, label, message content, date), then ask for the verify field value naturally.
 
-You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field. If multiple fields are provided, combine them naturally (e.g. "with subject ... from ... in label ...").
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field.
 
 Do NOT assume any field. Only include fields that are actually provided.
 
 Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
 
-Every generated question MUST follow this structure:
-"Can you tell me the [verify field] of the email with [ALL identification details] so I can reply to it?"
+Every generated question MUST follow a single-sentence structure. You can use either:
+- "Can you tell me the [verify field] of the email with [ALL identification details] so I can reply to it?"
+OR
+- "What is the [verify field] of the email with [ALL identification details] so I can reply to it?"
 
 Examples:
 - "Can you tell me the sender email of the email with subject 'Meeting Reminder' so I can reply to it?"
