@@ -82,10 +82,10 @@ OR
 Examples:
 - "Can you tell me the sender email of the email that subject is 'Meeting Reminder' after viewing it?"
 - "Can you tell me the subject of the email from 'John Doe' after viewing it?"
-- "Can you tell me the message content of the email with subject 'Project Update' in label 'Work' after viewing it?"
-- "Can you tell me the label of the email with subject 'Invoice for March' from 'Michael Brown' after viewing it?"
-- "Can you tell me the date of the email with subject 'Special Offer - 40% Off' after viewing it?"
-- "Can you tell me the sender name of the email from 'alice@example.com' with subject 'Project Kickoff' after viewing it?"
+- "Can you tell me the message content of the email whose subject is 'Project Update' and label is 'Work' after viewing it?"
+- "Can you tell me the label of the email whose subject is 'Invoice for March' and sender is 'Michael Brown' after viewing it?"
+- "Can you tell me the date of the email whose subject is 'Special Offer - 40% Off' after viewing it?"
+- "Can you tell me the sender name of the email whose sender email is 'alice@example.com' and subject is 'Project Kickoff' after viewing it?"
 
 The output must be a single question asking only for the verify field value and must include ALL provided identification details.
 """.strip()
@@ -173,17 +173,17 @@ Do NOT assume any field. Only include fields that are actually provided.
 Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
 
 Every generated question MUST follow a single-sentence structure. You can use either:
-- "Can you tell me the [verify field] of the email with [ALL identification details] so I can star it?"
+- "Can you tell me the [verify field] of the email [ALL identification details] so I can star it?"
 OR
-- "What is the [verify field] of the email with [ALL identification details] so I can star it?"
+- "What is the [verify field] of the email [ALL identification details] so I can star it?"
 
 Examples:
-- "Can you tell me the sender email of the email with subject 'Meeting Reminder' so I can star it?"
+- "Can you tell me the sender email of the email whose subject is 'Meeting Reminder' so I can star it?"
 - "Can you tell me the subject of the email from 'John Doe' so I can star it?"
-- "Can you tell me the message content of the email with subject 'Project Update' in label 'Work' so I can star it?"
-- "Can you tell me the label of the email with subject 'Invoice for March' from 'Michael Brown' so I can star it?"
-- "Can you tell me the date of the email with subject 'Special Offer - 40% Off' so I can star it?"
-- "Can you tell me the sender name of the email from 'alice@example.com' with subject 'Project Kickoff' so I can star it?"
+- "Can you tell me the message content of the email whose subject is 'Project Update' and label is 'Work' so I can star it?"
+- "Can you tell me the label of the email whose subject is 'Invoice for March' and sender is 'Michael Brown' so I can star it?"
+- "Can you tell me the date of the email whose subject is 'Special Offer - 40% Off' so I can star it?"
+- "Can you tell me the sender name of the email whose sender email is 'alice@example.com' and subject is 'Project Kickoff' so I can star it?"
 
 The output must be a single question asking only for the verify field value and must include ALL provided identification details.
 """.strip()
@@ -245,17 +245,17 @@ Do NOT assume any field. Only include fields that are actually provided.
 Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
 
 Every generated question MUST follow a single-sentence structure. You can use either:
-- "Can you tell me the [verify field] of the email with [ALL identification details] so I can mark it as important?"
+- "Can you tell me the [verify field] of the email [ALL identification details] so I can mark it as important?"
 OR
-- "What is the [verify field] of the email with [ALL identification details] so I can mark it as important?"
+- "What is the [verify field] of the email [ALL identification details] so I can mark it as important?"
 
 Examples:
-- "Can you tell me the sender email of the email with subject 'Meeting Reminder' so I can mark it as important?"
+- "Can you tell me the sender email of the email whose subject is 'Meeting Reminder' so I can mark it as important?"
 - "Can you tell me the subject of the email from 'John Doe' so I can mark it as important?"
-- "Can you tell me the message content of the email with subject 'Project Update' in label 'Work' so I can mark it as important?"
-- "Can you tell me the label of the email with subject 'Invoice for March' from 'Michael Brown' so I can mark it as important?"
-- "Can you tell me the date of the email with subject 'Special Offer - 40% Off' so I can mark it as important?"
-- "Can you tell me the sender name of the email from 'alice@example.com' with subject 'Project Kickoff' so I can mark it as important?"
+- "Can you tell me the message content of the email whose subject is 'Project Update' and label is 'Work' so I can mark it as important?"
+- "Can you tell me the label of the email whose subject is 'Invoice for March' and sender is 'Michael Brown' so I can mark it as important?"
+- "Can you tell me the date of the email whose subject is 'Special Offer - 40% Off' so I can mark it as important?"
+- "Can you tell me the sender name of the email whose sender email is 'alice@example.com' and subject is 'Project Kickoff' so I can mark it as important?"
 
 The output must be a single question asking only for the verify field value and must include ALL provided identification details.
 """.strip()
@@ -319,17 +319,17 @@ Do NOT assume any field. Only include fields that are actually provided.
 Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
 
 Every generated question MUST follow a single-sentence structure. You can use either:
-- "Can you tell me the [verify field] of the email with [ALL identification details] so I can mark it as unread?"
+- "Can you tell me the [verify field] of the email [ALL identification details] so I can mark it as unread?"
 OR
-- "What is the [verify field] of the email with [ALL identification details] so I can mark it as unread?"
+- "What is the [verify field] of the email [ALL identification details] so I can mark it as unread?"
 
 Examples:
-- "Can you tell me the sender email of the email with subject 'Meeting Reminder' so I can mark it as unread?"
+- "Can you tell me the sender email of the email whose subject is 'Meeting Reminder' so I can mark it as unread?"
 - "Can you tell me the subject of the email from 'John Doe' so I can mark it as unread?"
-- "Can you tell me the message content of the email with subject 'Project Update' in label 'Work' so I can mark it as unread?"
-- "Can you tell me the label of the email with subject 'Invoice for March' from 'Michael Brown' so I can mark it as unread?"
-- "Can you tell me the date of the email with subject 'Special Offer - 40% Off' so I can mark it as unread?"
-- "Can you tell me the sender name of the email from 'alice@example.com' with subject 'Project Kickoff' so I can mark it as unread?"
+- "Can you tell me the message content of the email whose subject is 'Project Update' and label is 'Work' so I can mark it as unread?"
+- "Can you tell me the label of the email whose subject is 'Invoice for March' and sender is 'Michael Brown' so I can mark it as unread?"
+- "Can you tell me the date of the email whose subject is 'Special Offer - 40% Off' so I can mark it as unread?"
+- "Can you tell me the sender name of the email whose sender email is 'alice@example.com' and subject is 'Project Kickoff' so I can mark it as unread?"
 
 The output must be a single question asking only for the verify field value and must include ALL provided identification details.
 """.strip()
@@ -390,17 +390,17 @@ Do NOT assume any field. Only include fields that are actually provided.
 Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
 
 Every generated question MUST follow a single-sentence structure. You can use either:
-- "Can you tell me the [verify field] of the email with [ALL identification details] so I can delete it?"
+- "Can you tell me the [verify field] of the email [ALL identification details] so I can delete it?"
 OR
-- "What is the [verify field] of the email with [ALL identification details] so I can delete it?"
+- "What is the [verify field] of the email [ALL identification details] so I can delete it?"
 
 Examples:
-- "Can you tell me the sender email of the email with subject 'Meeting Reminder' so I can delete it?"
+- "Can you tell me the sender email of the email whose subject is 'Meeting Reminder' so I can delete it?"
 - "Can you tell me the subject of the email from 'John Doe' so I can delete it?"
-- "Can you tell me the message content of the email with subject 'Project Update' in label 'Work' so I can delete it?"
-- "Can you tell me the label of the email with subject 'Invoice for March' from 'Michael Brown' so I can delete it?"
-- "Can you tell me the date of the email with subject 'Special Offer - 40% Off' so I can delete it?"
-- "Can you tell me the sender name of the email from 'alice@example.com' with subject 'Project Kickoff' so I can delete it?"
+- "Can you tell me the message content of the email whose subject is 'Project Update' and label is 'Work' so I can delete it?"
+- "Can you tell me the label of the email whose subject is 'Invoice for March' and sender is 'Michael Brown' so I can delete it?"
+- "Can you tell me the date of the email whose subject is 'Special Offer - 40% Off' so I can delete it?"
+- "Can you tell me the sender name of the email whose sender email is 'alice@example.com' and subject is 'Project Kickoff' so I can delete it?"
 
 The output must be a single question asking only for the verify field value and must include ALL provided identification details.
 """.strip()
@@ -461,17 +461,17 @@ Do NOT assume any field. Only include fields that are actually provided.
 Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
 
 Every generated question MUST follow a single-sentence structure. You can use either:
-- "Can you tell me the [verify field] of the email with [ALL identification details] so I can mark it as spam?"
+- "Can you tell me the [verify field] of the email [ALL identification details] so I can mark it as spam?"
 OR
-- "What is the [verify field] of the email with [ALL identification details] so I can mark it as spam?"
+- "What is the [verify field] of the email [ALL identification details] so I can mark it as spam?"
 
 Examples:
-- "Can you tell me the sender email of the email with subject 'Meeting Reminder' so I can mark it as spam?"
+- "Can you tell me the sender email of the email whose subject is 'Meeting Reminder' so I can mark it as spam?"
 - "Can you tell me the subject of the email from 'John Doe' so I can mark it as spam?"
-- "Can you tell me the message content of the email with subject 'Project Update' in label 'Work' so I can mark it as spam?"
-- "Can you tell me the label of the email with subject 'Invoice for March' from 'Michael Brown' so I can mark it as spam?"
-- "Can you tell me the date of the email with subject 'Special Offer - 40% Off' so I can mark it as spam?"
-- "Can you tell me the sender name of the email from 'alice@example.com' with subject 'Project Kickoff' so I can mark it as spam?"
+- "Can you tell me the message content of the email whose subject is 'Project Update' and label is 'Work' so I can mark it as spam?"
+- "Can you tell me the label of the email whose subject is 'Invoice for March' and sender is 'Michael Brown' so I can mark it as spam?"
+- "Can you tell me the date of the email whose subject is 'Special Offer - 40% Off' so I can mark it as spam?"
+- "Can you tell me the sender name of the email whose sender email is 'alice@example.com' and subject is 'Project Kickoff' so I can mark it as spam?"
 
 The output must be a single question asking only for the verify field value and must include ALL provided identification details.
 """.strip()
@@ -676,17 +676,17 @@ Do NOT assume any field. Only include fields that are actually provided.
 Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
 
 Every generated question MUST follow a single-sentence structure. You can use either:
-- "Can you tell me the [verify field] of the email with [ALL identification details]?"
+- "Can you tell me the [verify field] of the email [ALL identification details]?"
 OR
-- "What is the [verify field] of the email with [ALL identification details]?"
+- "What is the [verify field] of the email [ALL identification details]?"
 
 Examples:
-- "Can you tell me the sender email of the drafted email with subject 'Meeting Reminder'?"
+- "Can you tell me the sender email of the drafted email whose subject is 'Meeting Reminder'?"
 - "Can you tell me the subject of the drafted email from 'John Doe'?"
-- "Can you tell me the message content of the drafted email with subject 'Project Update' in label 'Work'?"
-- "Can you tell me the label of the drafted email with subject 'Invoice for March' from 'Michael Brown'?"
-- "Can you tell me the date of the drafted email with subject 'Special Offer - 40% Off'?"
-- "Can you tell me the sender name of the email from 'alice@example.com' with subject 'Project Kickoff'?"
+- "Can you tell me the message content of the drafted email whose subject is 'Project Update' and label is 'Work'?"
+- "Can you tell me the label of the drafted email whose subject is 'Invoice for March' and sender is 'Michael Brown'?"
+- "Can you tell me the date of the drafted email whose subject is 'Special Offer - 40% Off'?"
+- "Can you tell me the sender name of the email whose sender email is 'alice@example.com' and subject is 'Project Kickoff'?"
 
 The output must be a single question asking only for the verify field value and must include ALL provided identification details.
 """.strip()
@@ -771,17 +771,17 @@ You MUST include ALL provided identification fields and their values in the ques
 Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
 
 Every generated question MUST follow a single-sentence structure. You can use either:
-- "Can you tell me the [verify field] of the drafted email with [ALL identification details] so I can edit it?"
+- "Can you tell me the [verify field] of the drafted email [ALL identification details] so I can edit it?"
 OR
-- "What is the [verify field] of the drafted email with [ALL identification details] so I can edit it?"
+- "What is the [verify field] of the drafted email [ALL identification details] so I can edit it?"
 
 Examples:
-- "Can you tell me the sender email of the drafted email with subject 'Meeting Reminder' so I can edit it?"
+- "Can you tell me the sender email of the drafted email whose subject is 'Meeting Reminder' so I can edit it?"
 - "Can you tell me the subject of the drafted email from 'John Doe' so I can edit it?"
-- "Can you tell me the message content of the drafted email with subject 'Project Update' in label 'Work' so I can edit it?"
-- "Can you tell me the date of the drafted email in label 'Promotions' so I can edit it?"
-- "Can you tell me the label name of the drafted email with subject 'Invoice for March' so I can edit it?"
-- "Can you tell me the sender name of the email from 'alice@example.com' with subject 'Project Kickoff' so I can edit it?"
+- "Can you tell me the message content of the drafted email whose subject is 'Project Update' and label is 'Work' so I can edit it?"
+- "Can you tell me the date of the drafted email whose label is 'Promotions' so I can edit it?"
+- "Can you tell me the label name of the drafted email whose subject is 'Invoice for March' so I can edit it?"
+- "Can you tell me the sender name of the email whose sender email is 'alice@example.com' and subject is 'Project Kickoff' so I can edit it?"
 
 The output must be a single question asking only for the verify field value and must include ALL provided identification details.
 """.strip()
@@ -835,17 +835,17 @@ Do NOT assume any field. Only include fields that are actually provided.
 Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
 
 Every generated question MUST follow a single-sentence structure. You can use either:
-- "Can you tell me the [verify field] of the email with [ALL identification details] so I can archive it?"
+- "Can you tell me the [verify field] of the email [ALL identification details] so I can archive it?"
 OR
-- "What is the [verify field] of the email with [ALL identification details] so I can archive it?"
+- "What is the [verify field] of the email [ALL identification details] so I can archive it?"
 
 Examples:
-- "Can you tell me the sender email of the email with subject 'Meeting Reminder' so I can archive it?"
+- "Can you tell me the sender email of the email whose subject is 'Meeting Reminder' so I can archive it?"
 - "Can you tell me the subject of the email from 'John Doe' so I can archive it?"
-- "Can you tell me the message content of the email with subject 'Project Update' in label 'Work' so I can archive it?"
-- "Can you tell me the label of the email with subject 'Invoice for March' from 'Michael Brown' so I can archive it?"
-- "Can you tell me the date of the email with subject 'Special Offer - 40% Off' so I can archive it?"
-- "Can you tell me the sender name of the email from 'alice@example.com' with subject 'Project Kickoff' so I can archive it?"
+- "Can you tell me the message content of the email whose subject is 'Project Update' and label is 'Work' so I can archive it?"
+- "Can you tell me the label of the email whose subject is 'Invoice for March' and sender is 'Michael Brown' so I can archive it?"
+- "Can you tell me the date of the email whose subject is 'Special Offer - 40% Off' so I can archive it?"
+- "Can you tell me the sender name of the email whose sender email is 'alice@example.com' and subject is 'Project Kickoff' so I can archive it?"
 
 The output must be a single question asking only for the verify field value and must include ALL provided identification details.
 """.strip()
@@ -904,17 +904,17 @@ Do NOT assume any field. Only include fields that are actually provided.
 Do NOT start questions with imperative phrasing like "Navigate...", "Show...", "Open...", or "View...".
 
 Every generated question MUST follow a single-sentence structure. You can use either:
-- "Can you tell me the [verify field] of the email with [ALL identification details] so I can reply to it?"
+- "Can you tell me the [verify field] of the email [ALL identification details] so I can reply to it?"
 OR
-- "What is the [verify field] of the email with [ALL identification details] so I can reply to it?"
+- "What is the [verify field] of the email [ALL identification details] so I can reply to it?"
 
 Examples:
-- "Can you tell me the sender email of the email with subject 'Meeting Reminder' so I can reply to it?"
+- "Can you tell me the sender email of the email whose subject is 'Meeting Reminder' so I can reply to it?"
 - "Can you tell me the subject of the email from 'John Doe' so I can reply to it?"
-- "Can you tell me the message content of the email with subject 'Project Update' in label 'Work' so I can reply to it?"
-- "Can you tell me the date of the email in label 'Promotions' so I can reply to it?"
-- "Can you tell me the sender name of the email with subject 'Budget Plan' and label 'Finance' so I can reply to it?"
-- "Can you tell me the sender name of the email from 'alice@example.com' with subject 'Project Kickoff' so I can reply it?"
+- "Can you tell me the message content of the email whose subject is 'Project Update' and label is 'Work' so I can reply to it?"
+- "Can you tell me the date of the email whose label is 'Promotions' so I can reply to it?"
+- "Can you tell me the sender name of the email whose subject is 'Budget Plan' and label is 'Finance' so I can reply to it?"
+- "Can you tell me the sender name of the email whose sender email is 'alice@example.com' and subject is 'Project Kickoff' so I can reply to it?"
 
 The output must be a single question asking only for the verify field value and must include ALL provided identification details.
 """.strip()
@@ -969,15 +969,15 @@ Identify the email using ONLY the provided question fields (a subset of visible 
 Then ask for the verify field value naturally in a **direct-question style**.
 
 Every generated question MUST be a **single sentence** following this structure:
-"Can you tell me the [verify field] of the email with [identification using visible fields] so I can forward it?"
+"Can you tell me the [verify field] of the email [identification using visible fields] so I can forward it?"
 
 Examples:
-- "Can you tell me the sender email of the email with subject 'Meeting Reminder' so I can forward it?"
+- "Can you tell me the sender email of the email whose subject is 'Meeting Reminder' so I can forward it?"
 - "Can you tell me the subject of the email from 'John Doe' so I can forward it?"
 - "Can you tell me the message content of the email with label 'Work' so I can forward it?"
-- "Can you tell me the label name of the email with subject 'Invoice for March' so I can forward it?"
+- "Can you tell me the label name of the email whose subject is 'Invoice for March' so I can forward it?"
 - "Can you tell me the date of the email from 'Sarah Turner' so I can forward it?"
-- "Can you tell me the sender name of the email from 'alice@example.com' with subject 'Project Kickoff' so I can forward it?"
+- "Can you tell me the sender name of the email whose sender email is 'alice@example.com' and subject is 'Project Kickoff' so I can forward it?"
 
 """.strip()
 
@@ -1067,13 +1067,13 @@ Identify the email using the provided visible field values (e.g. subject, sender
 Do NOT start questions with imperative phrasing like "Search...", "Find...", or "Look up...".
 
 For the date field specifically, format the question in a natural descriptive style:
-- "What is the date shown for the email with subject 'Meeting Reminder' and sender 'John Doe'?"
+- "What is the date shown for the email whose subject is 'Meeting Reminder' and sender is 'John Doe'?"
 
 Examples:
-- "What is the sender name of the email with subject 'Project Update'?"
+- "What is the sender name of the email whose subject is 'Project Update'?"
 - "What is the label name of the email sent by 'John Doe'?"
 - "What is the subject of the email labeled 'Important' with date 'Dec 1'?"
-- "What is the date shown for the email with subject 'Meeting Reminder' and sender 'John Doe'?"
+- "What is the date shown for the email whose subject is 'Meeting Reminder' and sender is 'John Doe'?"
 
 The output must be a single question asking only for the verify field value.
 """.strip()
