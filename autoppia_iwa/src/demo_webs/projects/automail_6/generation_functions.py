@@ -28,6 +28,7 @@ from .data import (
     FIELD_OPERATORS_VIEW_EMAIL_MAP,
     VISIBLE_FIELDS_EMAIL_DETAIL,
     VISIBLE_FIELDS_EMAIL_SEARCH,
+    VISIBLE_FIELDS_TEMPLATE_DETAIL,
     get_all_email_words,
 )
 from .data_utils import fetch_data
@@ -705,7 +706,16 @@ def generate_theme_changed_constraints() -> list[dict[str, Any]]:
 async def generate_template_selection_constraints(
     task_url: str | None = None,
     dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None,
-) -> list[dict[str, Any]]:
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        templates = await _ensure_templates_dataset(task_url, dataset if isinstance(dataset, dict) else None)
+        if not templates:
+            return []
+        template = choice(templates)
+        result = _build_data_extraction_result(template, VISIBLE_FIELDS_TEMPLATE_DETAIL, question_fields_override=["name"])
+        return result if result is not None else []
+
     constraints_list = []
     templates = await _ensure_templates_dataset(task_url, dataset if isinstance(dataset, dict) else None)
     if not templates:
@@ -729,7 +739,16 @@ async def generate_template_selection_constraints(
 async def generate_template_body_constraints(
     task_url: str | None = None,
     dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None,
-) -> list[dict[str, Any]]:
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        templates = await _ensure_templates_dataset(task_url, dataset if isinstance(dataset, dict) else None)
+        if not templates:
+            return []
+        template = choice(templates)
+        result = _build_data_extraction_result(template, VISIBLE_FIELDS_TEMPLATE_DETAIL, question_fields_override=["name"])
+        return result if result is not None else []
+
     constraints_list = []
     templates = await _ensure_templates_dataset(task_url, dataset if isinstance(dataset, dict) else None)
     if not templates:
@@ -758,7 +777,16 @@ async def generate_template_body_constraints(
 async def generate_sent_template_constraints(
     task_url: str | None = None,
     dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None,
-) -> list[dict[str, Any]]:
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        templates = await _ensure_templates_dataset(task_url, dataset if isinstance(dataset, dict) else None)
+        if not templates:
+            return []
+        template = choice(templates)
+        result = _build_data_extraction_result(template, VISIBLE_FIELDS_TEMPLATE_DETAIL, question_fields_override=["name"])
+        return result if result is not None else []
+
     constraints_list = []
     templates = await _ensure_templates_dataset(task_url, dataset if isinstance(dataset, dict) else None)
     if not templates:

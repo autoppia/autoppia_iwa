@@ -1185,6 +1185,30 @@ Examples:
     Incorrect: Select the template where template_name equals 'Warm Introduction' and name equals 'Warm Introduction' (mentioned template_name twice).
 """.strip()
 
+TEMPLATE_SELECTED_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field in a template that has been selected (e.g., template name, subject, body content).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "subject", "body", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., template name, subject, body content).
+
+Identify the template using ALL the provided visible field values (e.g. name, subject, body), then ask for the verify field value naturally.
+
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field.
+
+Do NOT start questions with imperative phrasing like "Select...", "Open...", or "View...".
+
+Every generated question MUST follow this structure:
+"Can you tell me the [verify field] of the template that [ALL identification details] so I can select it?"
+
+Examples:
+- "Can you tell me the template name of the template that subject is 'Meeting Reminder' and body is 'Please join the meeting at 10 AM' so I can select it?"
+- "Can you tell me the subject of the template that name is 'Project Update' and body is 'The project is on track for completion' so I can select it?"
+- "Can you tell me the body content of the template that name is 'Invoice Template' and subject 'Invoice for March' so I can select it?"
+
+The output must be a single question asking only for the verify field value and must include ALL provided identification details.
+""".strip()
+
 TEMPLATE_SELECTED_USE_CASE = UseCase(
     name="TEMPLATE_SELECTED",
     description="The user chooses a specific email template to work with.",
@@ -1192,6 +1216,8 @@ TEMPLATE_SELECTED_USE_CASE = UseCase(
     event_source_code=TemplateSelectedEvent.get_source_code_of_class(),
     constraints_generator=generate_template_selection_constraints,
     additional_prompt_info=TEMPLATE_SELECTED_ADDITIONAL_PROMPT_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=TEMPLATE_SELECTED_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Select the template where template_name equals 'Meeting Recap'.",
@@ -1229,6 +1255,30 @@ Examples:
     Incorrect: Edit the body where body equals 'Hi , welcome!' (placeholder removed - WRONG!).
 """.strip()
 
+TEMPLATE_BODY_EDITED_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field in a template whose body has been edited (e.g., template name, subject, body content).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "subject", "body", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., template name, subject, body content).
+
+Identify the template using ALL the provided visible field values (e.g. name, subject, body), then ask for the verify field value naturally.
+
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field.
+
+Do NOT start questions with imperative phrasing like "Edit...", "Open...", or "View...".
+
+Every generated question MUST follow this structure:
+"Can you tell me the [verify field] of the template that [ALL identification details] so I can update it?"
+
+Examples:
+- "Can you tell me the template name of the template that subject is 'Meeting Reminder' and body is 'Please join the meeting at 10 AM' so I can update it?"
+- "Can you tell me the subject of the template that name is 'Project Update' and body is 'The project is on track for completion' so I can update it?"
+- "Can you tell me the body content of the template that name is 'Invoice Template' and subject is 'Invoice for March' so I can update it?"
+
+The output must be a single question asking only for the verify field value and must include ALL provided identification details.
+""".strip()
+
 TEMPLATE_BODY_EDITED_USE_CASE = UseCase(
     name="TEMPLATE_BODY_EDITED",
     description="The user edits the body of a selected template.",
@@ -1236,6 +1286,8 @@ TEMPLATE_BODY_EDITED_USE_CASE = UseCase(
     event_source_code=TemplateBodyEditedEvent.get_source_code_of_class(),
     constraints_generator=generate_template_body_constraints,
     additional_prompt_info=TEMPLATE_BODY_EDITED_ADDITIONAL_PROMPT_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=TEMPLATE_BODY_EDITED_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Update the body text of the template where template_name equals 'Warm Introduction'.",
@@ -1273,6 +1325,30 @@ Examples:
     Incorrect: Send the template where body equals 'Hello , welcome!' (placeholder removed - WRONG!).
 """.strip()
 
+TEMPLATE_SENT_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field in a template that will be sent (e.g., template name, subject, body content).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "subject", "body", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., template name, subject, body content).
+
+Identify the template using ALL the provided visible field values (e.g. name, subject, body), then ask for the verify field value naturally.
+
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field.
+
+Do NOT start questions with imperative phrasing like "Send...", "Open...", or "View...".
+
+Every generated question MUST follow this structure:
+"Can you tell me the [verify field] of the template that [ALL identification details] so I can send it?"
+
+Examples:
+- "Can you tell me the template name of the template that subject is 'Meeting Reminder' and body is 'Please join the meeting at 10 AM' so I can send it?"
+- "Can you tell me the subject of the template that name is 'Project Update' and body is 'The project is on track for completion' so I can send it?"
+- "Can you tell me the body content of the template that name is 'Invoice Template' and subject is 'Invoice for March' so I can send it?"
+
+The output must be a single question asking only for the verify field value and must include ALL provided identification details.
+""".strip()
+
 TEMPLATE_SENT_USE_CASE = UseCase(
     name="TEMPLATE_SENT",
     description="The user sends an email from a template.",
@@ -1280,6 +1356,8 @@ TEMPLATE_SENT_USE_CASE = UseCase(
     event_source_code=TemplateSentEvent.get_source_code_of_class(),
     constraints_generator=generate_sent_template_constraints,
     additional_prompt_info=TEMPLATE_SENT_ADDITIONAL_PROMPT_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=TEMPLATE_SENT_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Send an email using the template where template_name equals 'Friendly Follow Up'.",
@@ -1317,6 +1395,30 @@ Examples:
     Incorrect: Save template as draft where body equals 'Hello , welcome!' (placeholder removed - WRONG!).
 """.strip()
 
+TEMPLATE_SAVED_DRAFT_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field in a template that will be saved as draft (e.g., template name, subject, body content).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "subject", "body", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., template name, subject, body content).
+
+Identify the template using ALL the provided visible field values (e.g. name, subject, body), then ask for the verify field value naturally.
+
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field.
+
+Do NOT start questions with imperative phrasing like "Save...", "Open...", or "View...".
+
+Every generated question MUST follow this structure:
+"Can you tell me the [verify field] of the template that [ALL identification details] so I can save it as draft?"
+
+Examples:
+- "Can you tell me the template name of the template that subject is 'Meeting Reminder' and body is 'Please join the meeting at 10 AM' so I can save it as draft?"
+- "Can you tell me the subject of the template that name is 'Project Update' and body is 'The project is on track for completion' so I can save it as draft?"
+- "Can you tell me the body content of the template that name is 'Invoice Template' and subject is 'Invoice for March' so I can save it as draft?"
+
+The output must be a single question asking only for the verify field value and must include ALL provided identification details.
+""".strip()
+
 TEMPLATE_SAVED_DRAFT_USE_CASE = UseCase(
     name="TEMPLATE_SAVED_DRAFT",
     description="The user saves an email template as a draft.",
@@ -1324,6 +1426,8 @@ TEMPLATE_SAVED_DRAFT_USE_CASE = UseCase(
     event_source_code=TemplateSavedDraftEvent.get_source_code_of_class(),
     constraints_generator=generate_sent_template_constraints,
     additional_prompt_info=TEMPLATE_SAVED_DRAFT_ADDITIONAL_PROMPT_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=TEMPLATE_SAVED_DRAFT_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Save the template as draft where template_name equals 'Warm Introduction'.",
@@ -1361,6 +1465,30 @@ Examples:
     Incorrect: Cancel template where body equals 'Hi , thank you!' (placeholder removed - WRONG!).
 """.strip()
 
+TEMPLATE_CANCELED_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field in a template that will be canceled (e.g., template name, subject, body content).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "subject", "body", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., template name, subject, body content).
+
+Identify the template using ALL the provided visible field values (e.g. name, subject, body), then ask for the verify field value naturally.
+
+You MUST include ALL provided identification fields and their values in the question. Do NOT omit any field.
+
+Do NOT start questions with imperative phrasing like "Cancel...", "Open...", or "View...".
+
+Every generated question MUST follow this structure:
+"Can you tell me the [verify field] of the template that [ALL identification details] so I can cancel it?"
+
+Examples:
+- "Can you tell me the template name of the template that subject is 'Meeting Reminder' and body is 'Please join the meeting at 10 AM' so I can cancel it?"
+- "Can you tell me the subject of the template that name is 'Project Update' and body is 'The project is on track for completion' so I can cancel it?"
+- "Can you tell me the body content of the template that name is 'Invoice Template' and subject is 'Invoice for March' so I can cancel it?"
+
+The output must be a single question asking only for the verify field value and must include ALL provided identification details.
+""".strip()
+
 TEMPLATE_CANCELED_USE_CASE = UseCase(
     name="TEMPLATE_CANCELED",
     description="The user cancels working on a template and resets changes.",
@@ -1368,6 +1496,8 @@ TEMPLATE_CANCELED_USE_CASE = UseCase(
     event_source_code=TemplateCanceledEvent.get_source_code_of_class(),
     constraints_generator=generate_sent_template_constraints,
     additional_prompt_info=TEMPLATE_CANCELED_ADDITIONAL_PROMPT_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=TEMPLATE_CANCELED_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Cancel changes on the template where template_name equals 'Thank You'.",

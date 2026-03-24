@@ -175,3 +175,4 @@ FIELD_OPERATORS_TEMPLATE_SENT_MAP = {
 # Keep this list small and text-based to maximize extraction reliability.
 VISIBLE_FIELDS_EMAIL_DETAIL = ["from_email", "subject", "from_name", "label_name", "body", "date_detail"]
 VISIBLE_FIELDS_EMAIL_SEARCH = ["subject", "from_name", "label_name", "date"]
+VISIBLE_FIELDS_TEMPLATE_DETAIL = ["name", "subject", "body"]
