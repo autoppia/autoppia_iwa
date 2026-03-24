@@ -1198,13 +1198,15 @@ You MUST include ALL provided identification fields and their values in the ques
 
 Do NOT start questions with imperative phrasing like "Select...", "Open...", or "View...".
 
-Every generated question MUST follow this structure:
-"Can you tell me the [verify field] of the template that [ALL identification details] so I can select it?"
+Every generated question MUST follow a single-sentence structure. You can use either:
+- "Can you tell me the [verify field] of the template that [ALL identification details] so I can select it?"
+OR
+- "What is the [verify field] of the template that [ALL identification details] so I can select it?"
 
 Examples:
 - "Can you tell me the template name of the template that subject is 'Meeting Reminder' and body is 'Please join the meeting at 10 AM' so I can select it?"
-- "Can you tell me the subject of the template that name is 'Project Update' and body is 'The project is on track for completion' so I can select it?"
-- "Can you tell me the body content of the template that name is 'Invoice Template' and subject 'Invoice for March' so I can select it?"
+- "What is the subject of the template that name is 'Project Update' and body is 'The project is on track for completion' so I can select it?"
+- "Can you tell me the body content of the template that name is 'Invoice Template' and subject is 'Invoice for March' so I can select it?"
 
 The output must be a single question asking only for the verify field value and must include ALL provided identification details.
 """.strip()
@@ -1268,12 +1270,14 @@ You MUST include ALL provided identification fields and their values in the ques
 
 Do NOT start questions with imperative phrasing like "Edit...", "Open...", or "View...".
 
-Every generated question MUST follow this structure:
-"Can you tell me the [verify field] of the template that [ALL identification details] so I can update it?"
+Every generated question MUST follow a single-sentence structure. You can use either:
+- "Can you tell me the [verify field] of the template that [ALL identification details] so I can update it?"
+OR
+- "What is the [verify field] of the template that [ALL identification details] so I can update it?"
 
 Examples:
 - "Can you tell me the template name of the template that subject is 'Meeting Reminder' and body is 'Please join the meeting at 10 AM' so I can update it?"
-- "Can you tell me the subject of the template that name is 'Project Update' and body is 'The project is on track for completion' so I can update it?"
+- "What is the subject of the template that name is 'Project Update' and body is 'The project is on track for completion' so I can update it?"
 - "Can you tell me the body content of the template that name is 'Invoice Template' and subject is 'Invoice for March' so I can update it?"
 
 The output must be a single question asking only for the verify field value and must include ALL provided identification details.
@@ -1338,12 +1342,14 @@ You MUST include ALL provided identification fields and their values in the ques
 
 Do NOT start questions with imperative phrasing like "Send...", "Open...", or "View...".
 
-Every generated question MUST follow this structure:
-"Can you tell me the [verify field] of the template that [ALL identification details] so I can send it?"
+Every generated question MUST follow a single-sentence structure. You can use either:
+- "Can you tell me the [verify field] of the template that [ALL identification details] so I can send it?"
+OR
+- "What is the [verify field] of the template that [ALL identification details] so I can send it?"
 
 Examples:
 - "Can you tell me the template name of the template that subject is 'Meeting Reminder' and body is 'Please join the meeting at 10 AM' so I can send it?"
-- "Can you tell me the subject of the template that name is 'Project Update' and body is 'The project is on track for completion' so I can send it?"
+- "What is the subject of the template that name is 'Project Update' and body is 'The project is on track for completion' so I can send it?"
 - "Can you tell me the body content of the template that name is 'Invoice Template' and subject is 'Invoice for March' so I can send it?"
 
 The output must be a single question asking only for the verify field value and must include ALL provided identification details.
@@ -1408,12 +1414,14 @@ You MUST include ALL provided identification fields and their values in the ques
 
 Do NOT start questions with imperative phrasing like "Save...", "Open...", or "View...".
 
-Every generated question MUST follow this structure:
-"Can you tell me the [verify field] of the template that [ALL identification details] so I can save it as draft?"
+Every generated question MUST follow a single-sentence structure. You can use either:
+- "Can you tell me the [verify field] of the template that [ALL identification details] so I can save it as draft?"
+OR
+- "What is the [verify field] of the template that [ALL identification details] so I can save it as draft?"
 
 Examples:
 - "Can you tell me the template name of the template that subject is 'Meeting Reminder' and body is 'Please join the meeting at 10 AM' so I can save it as draft?"
-- "Can you tell me the subject of the template that name is 'Project Update' and body is 'The project is on track for completion' so I can save it as draft?"
+- "What is the subject of the template that name is 'Project Update' and body is 'The project is on track for completion' so I can save it as draft?"
 - "Can you tell me the body content of the template that name is 'Invoice Template' and subject is 'Invoice for March' so I can save it as draft?"
 
 The output must be a single question asking only for the verify field value and must include ALL provided identification details.
@@ -1478,12 +1486,14 @@ You MUST include ALL provided identification fields and their values in the ques
 
 Do NOT start questions with imperative phrasing like "Cancel...", "Open...", or "View...".
 
-Every generated question MUST follow this structure:
-"Can you tell me the [verify field] of the template that [ALL identification details] so I can cancel it?"
+Every generated question MUST follow a single-sentence structure. You can use either:
+- "Can you tell me the [verify field] of the template that [ALL identification details] so I can cancel it?"
+OR
+- "What is the [verify field] of the template that [ALL identification details] so I can cancel it?"
 
 Examples:
 - "Can you tell me the template name of the template that subject is 'Meeting Reminder' and body is 'Please join the meeting at 10 AM' so I can cancel it?"
-- "Can you tell me the subject of the template that name is 'Project Update' and body is 'The project is on track for completion' so I can cancel it?"
+- "What is the subject of the template that name is 'Project Update' and body is 'The project is on track for completion' so I can cancel it?"
 - "Can you tell me the body content of the template that name is 'Invoice Template' and subject is 'Invoice for March' so I can cancel it?"
 
 The output must be a single question asking only for the verify field value and must include ALL provided identification details.
