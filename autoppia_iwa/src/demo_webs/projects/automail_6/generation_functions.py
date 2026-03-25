@@ -129,7 +129,6 @@ def _build_data_extraction_result(
             if not remaining:
                 return None
             chosen_verify_field = verify_field if verify_field is not None and verify_field in remaining else random.choice(remaining)
-            # chosen_verify_field = "date_detail"
             remaining_for_extra = [f for f in available_fields if f != chosen_verify_field and f not in question_fields]
             if len(remaining_for_extra) >= 2:
                 num_extra = random.randint(1, len(remaining_for_extra))

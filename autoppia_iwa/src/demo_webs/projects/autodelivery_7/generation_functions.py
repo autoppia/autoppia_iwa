@@ -19,8 +19,103 @@ from .data import (
     FIELD_OPERATORS_REVIEW_SUBMIT_MAP,
     FIELD_OPERATORS_SEARCH_RESTAURANT_MAP,
     FIELD_OPERATORS_VIEW_RESTAURANT_MAP,
+    VISIBLE_FIELD_QUICK_REORDER,
+    VISIBLE_FIELDS_DELETE_RESTAURANT_REVIEW,
+    VISIBLE_FIELDS_MENU_ITEM_DETAIL,
+    VISIBLE_FIELDS_RESTAURANT_DETAIL,
+    VISIBLE_FIELDS_VIEW_RESTAURANT_DETAIL,
 )
 from .data_utils import fetch_data
+
+
+def _format_price_for_ui(v):
+    if v is None:
+        return None
+    # If already formatted like "$54.70"
+    if isinstance(v, str):
+        s = v.strip()
+        if s.startswith("$"):
+            s = s[1:].strip()
+        try:
+            return f"${float(s):.2f}"
+        except ValueError:
+            return v  # fallback: keep original string
+    if isinstance(v, int | float):
+        return f"${float(v):.2f}"
+    return v
+
+
+def _build_data_extraction_result(
+    selected_item: dict[str, Any],
+    visible_fields: list[str],
+    *,
+    verify_field: str | None = None,
+    question_fields_override: list[str] | None = None,
+) -> dict[str, Any] | None:
+    """Build constraints + question_fields_and_values for data_extraction_only; returns None on validation failure.
+
+    When verify_field is provided, it is used as the verify field (fixed). Otherwise, verify field is chosen randomly
+    from the available visible fields.
+
+    When question_fields_override is provided and non-empty, those fields (that exist and have values) are used
+    as the fixed question fields. The verify field is verify_field if it is provided and lies among the remaining
+    visible fields; otherwise it is chosen randomly from the remaining available fields.
+    If, apart from the verify field and the fixed question fields, there are 2 or more visible fields left,
+    a random subset of those is added to the question fields.
+    """
+    available_fields = [f for f in visible_fields if selected_item.get(f) is not None]
+    if len(available_fields) < 2:
+        return None
+
+    question_fields: list[str]
+    chosen_verify_field: str
+
+    if question_fields_override:
+        question_fields = [f for f in question_fields_override if f in available_fields and selected_item.get(f) is not None]
+        if question_fields:
+            remaining = [f for f in available_fields if f not in question_fields]
+            if not remaining:
+                return None
+            chosen_verify_field = verify_field if verify_field is not None and verify_field in remaining else random.choice(remaining)
+            remaining_for_extra = [f for f in available_fields if f != chosen_verify_field and f not in question_fields]
+            if len(remaining_for_extra) >= 2:
+                num_extra = random.randint(1, len(remaining_for_extra))
+                question_fields = question_fields + random.sample(remaining_for_extra, num_extra)
+        else:
+            question_fields = []
+            chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+    else:
+        chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+        question_fields = []
+
+    if chosen_verify_field not in available_fields:
+        return None
+    verify_value = selected_item.get(chosen_verify_field)
+    if verify_value is None:
+        return None
+
+    if question_fields:
+        question_candidates = question_fields
+    else:
+        question_candidates = [f for f in available_fields if f != chosen_verify_field]
+        if not question_candidates:
+            return None
+        num_question_fields = 1 if len(question_candidates) == 1 else 2
+        question_candidates = random.sample(question_candidates, num_question_fields)
+
+    question_fields_and_values: dict[str, Any] = {}
+    for qf in question_candidates:
+        val = selected_item.get(qf)
+        if val is not None:
+            question_fields_and_values[qf] = val
+    if not question_fields_and_values:
+        return None
+
+    constraints = [create_constraint_dict(chosen_verify_field, ComparisonOperator.EQUALS, verify_value)]
+    return {
+        "constraints": constraints,
+        "question_fields_and_values": question_fields_and_values,
+    }
 
 
 def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]] | None:
@@ -130,7 +225,15 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
     return value
 
 
-async def generate_search_restaurant_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_search_restaurant_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None, test_types: str | None = None) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        restaurants = await _ensure_restaurant_dataset(task_url, dataset)
+        if not restaurants:
+            return []
+        selected = random.choice(restaurants)
+        result = _build_data_extraction_result(selected, VISIBLE_FIELDS_RESTAURANT_DETAIL, question_fields_override=["name"])
+        return result if result is not None else []
+
     constraints_list: list[dict[str, Any]] = []
 
     data_items = await _ensure_restaurant_dataset(task_url, dataset)
@@ -184,7 +287,15 @@ async def __generate_view_restaurant_constraints(task_url: str | None = None, da
     return constraints_list, restaurant
 
 
-async def generate_view_restaurant_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict]:
+async def generate_view_restaurant_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None, test_types: str | None = None) -> list[dict] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        restaurants = await _ensure_restaurant_dataset(task_url, dataset)
+        if not restaurants:
+            return []
+        selected = random.choice(restaurants)
+        result = _build_data_extraction_result(selected, VISIBLE_FIELDS_VIEW_RESTAURANT_DETAIL, question_fields_override=["name"])
+        return result if result is not None else []
+
     constraints_list, _ = await __generate_view_restaurant_constraints(task_url=task_url, dataset=dataset)
 
     return constraints_list
@@ -212,6 +323,7 @@ def _get_menu_items_for_restaurant(restaurant: dict) -> list[dict[str, Any]]:
         {
             "item": menu_item.get("name"),
             "price": menu_item.get("price"),
+            "description": menu_item.get("description"),
             "size": menu_item.get("size"),
             "quantity": random.randint(1, 5),
             "restaurant": restaurant.get("name"),
@@ -257,7 +369,40 @@ async def __generate_add_to_cart_modal_open_constraints(task_url: str | None = N
     return constraints_list, item
 
 
-async def generate_add_to_cart_modal_open_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict]:
+async def generate_add_to_cart_modal_open_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None, test_types: str | None = None) -> list[dict] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        restaurants = await _ensure_restaurant_dataset(task_url, dataset)
+        if not restaurants:
+            return []
+        selected_restaurant = random.choice(restaurants)
+        menu_items = _get_menu_items_for_restaurant(selected_restaurant)
+        if not menu_items:
+            return []
+        item = random.choice(menu_items)
+        raw_price = item.get("price", "")
+        formatted_price = _format_price_for_ui(raw_price)
+
+        selected_item = {
+            "restaurant_name": selected_restaurant.get("name"),
+            "item_name": item.get("item"),
+            "price": formatted_price,
+            "item_description": item.get("description"),
+            "cuisine": selected_restaurant.get("cuisine"),
+        }
+        # Pick verify_field randomly
+        all_menu_fields = ["item_name", "price", "item_description"]
+        available_verify_fields = [f for f in all_menu_fields if selected_item.get(f) is not None]
+        if not available_verify_fields:
+            return []
+        verify_field = random.choice(available_verify_fields)
+        # Pick question fields that do NOT include verify_field
+        remaining_fields = [f for f in all_menu_fields if f != verify_field and selected_item.get(f) is not None]
+        num_question_fields = random.randint(1, len(remaining_fields)) if remaining_fields else 0
+        question_fields_override = random.sample(remaining_fields, num_question_fields) if num_question_fields else []
+        question_fields_override.extend(["restaurant_name"])
+        result = _build_data_extraction_result(selected_item, VISIBLE_FIELDS_MENU_ITEM_DETAIL, question_fields_override=question_fields_override, verify_field=verify_field)
+        return result if result is not None else []
+
     constraints_list, _ = await __generate_add_to_cart_modal_open_constraints(task_url=task_url, dataset=dataset)
     return constraints_list
 
@@ -326,7 +471,43 @@ def __get_delete_review_fields(restaurants):
     return result
 
 
-async def generate_delete_review_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict]:
+async def generate_delete_review_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None, test_types: str | None = None) -> list[dict] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        restaurants = await _ensure_restaurant_dataset(task_url, dataset)
+        if not restaurants:
+            return []
+        selected_restaurant = random.choice(restaurants)
+        review_rows = __get_delete_review_fields([selected_restaurant])
+        if not review_rows:
+            return []
+        selected = random.choice(review_rows)
+
+        # Normalize rating representation
+        rating = selected.get("review_rating")
+        if rating is not None:
+            try:
+                # Convert string to float if possible
+                rating_float = float(rating)
+                # If it is an integer (e.g., 1.0, 5.0), keep decimal format
+                if rating_float.is_integer():
+                    rating_float = float(int(rating_float))  # ensures 5 -> 5.0
+                selected["review_rating"] = rating_float
+            except ValueError:
+                # If rating cannot be converted to float, keep original
+                pass
+
+        # Pick verify_field randomly
+        all_review_fields = ["author", "review_rating", "comment", "date"]
+        verify_field = random.choice(all_review_fields)
+        # Pick question fields that do NOT include verify_field
+        remaining_fields = [f for f in all_review_fields if f != verify_field]
+        num_question_fields = random.randint(1, len(remaining_fields))  # at least 1
+        question_fields_override = random.sample(remaining_fields, num_question_fields)
+        question_fields_override.extend(["name"])
+
+        result = _build_data_extraction_result(selected, VISIBLE_FIELDS_DELETE_RESTAURANT_REVIEW, question_fields_override=question_fields_override, verify_field=verify_field)
+        return result if result is not None else []
+
     constraints_list, restaurant = await __generate_view_restaurant_constraints(task_url, dataset=dataset)
     delete_review_dict = __get_delete_review_fields([restaurant])
     fields = ["author", "review_rating", "comment"]  # , "date"]
@@ -349,7 +530,40 @@ async def generate_delete_review_constraints(task_url: str | None = None, datase
     return constraints_list
 
 
-async def generate_add_to_cart_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict]:
+async def generate_add_to_cart_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None, test_types: str | None = None) -> list[dict] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        restaurants = await _ensure_restaurant_dataset(task_url, dataset)
+        if not restaurants:
+            return []
+        selected_restaurant = random.choice(restaurants)
+        menu_items = _get_menu_items_for_restaurant(selected_restaurant)
+        if not menu_items:
+            return []
+        item = random.choice(menu_items)
+        raw_price = item.get("price", "")
+        formatted_price = _format_price_for_ui(raw_price)
+
+        selected_item = {
+            "restaurant_name": selected_restaurant.get("name"),
+            "item_name": item.get("item"),
+            "price": formatted_price,
+            "item_description": item.get("description"),
+            "cuisine": selected_restaurant.get("cuisine"),
+        }
+        # Pick verify_field randomly
+        all_menu_fields = ["item_name", "price", "item_description"]
+        available_verify_fields = [f for f in all_menu_fields if selected_item.get(f) is not None]
+        if not available_verify_fields:
+            return []
+        verify_field = random.choice(available_verify_fields)
+        # Pick question fields that do NOT include verify_field
+        remaining_fields = [f for f in all_menu_fields if f != verify_field and selected_item.get(f) is not None]
+        num_question_fields = random.randint(1, len(remaining_fields)) if remaining_fields else 0
+        question_fields_override = random.sample(remaining_fields, num_question_fields) if num_question_fields else []
+        question_fields_override.extend(["restaurant_name"])
+        result = _build_data_extraction_result(selected_item, VISIBLE_FIELDS_MENU_ITEM_DETAIL, question_fields_override=question_fields_override, verify_field=verify_field)
+        return result if result is not None else []
+
     constraints_list = []
     sizes_list = ["small", "medium", "large"]
     preferences_list = [
@@ -512,7 +726,17 @@ async def generate_place_order_constraints(task_url: str | None = None) -> list[
     return constraints
 
 
-async def generate_restaurant_filter_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_restaurant_filter_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None, test_types: str | None = None) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        restaurants = await _ensure_restaurant_dataset(task_url, dataset)
+        if not restaurants:
+            return []
+        selected = random.choice(restaurants)
+        # Pick verify_field randomly from 'cuisine' or 'rating'
+        verify_field = random.choice(["cuisine", "rating"])
+        result = _build_data_extraction_result(selected, VISIBLE_FIELDS_RESTAURANT_DETAIL, question_fields_override=["name"], verify_field=verify_field)
+        return result if result is not None else []
+
     constraints_list: list[dict[str, Any]] = []
     restaurants = await _ensure_restaurant_dataset(task_url, dataset)
     if not restaurants:
@@ -533,7 +757,15 @@ async def generate_restaurant_filter_constraints(task_url: str | None = None, da
     return constraints_list
 
 
-async def generate_quick_reorder_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_quick_reorder_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None, test_types: str | None = None) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        restaurants = await _ensure_restaurant_dataset(task_url, dataset)
+        if not restaurants:
+            return []
+        selected = random.choice(restaurants)
+        result = _build_data_extraction_result(selected, VISIBLE_FIELD_QUICK_REORDER, question_fields_override=["name"])
+        return result if result is not None else []
+
     constraints_list: list[dict[str, Any]] = []
     restaurants = await _ensure_restaurant_dataset(task_url, dataset)
     if not restaurants:
@@ -654,7 +886,15 @@ async def generate_review_submitted_constraints(task_url: str | None = None, dat
     return constraint_list
 
 
-async def generate_delivery_priority_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_delivery_priority_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None, test_types: str | None = None) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        _, item = await __generate_add_to_cart_modal_open_constraints(task_url=task_url, dataset=dataset)
+        if not item:
+            return []
+        selected = {**item, "priority": random.choice(["normal", "priority"])}
+        result = _build_data_extraction_result(selected, [*VISIBLE_FIELDS_MENU_ITEM_DETAIL, "priority"], question_fields_override=["item"])
+        return result if result is not None else []
+
     constraints = []
     constraints = await generate_add_to_cart_constraints(task_url, dataset)
     field = "priority"

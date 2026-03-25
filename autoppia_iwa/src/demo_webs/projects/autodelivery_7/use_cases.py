@@ -46,6 +46,27 @@ Critical requirements:
 2. Do not mention a single constraint more than once in the request.
 3. Do not add additional information in the prompt that is not mentioned in the constraints.
 """.strip()
+
+SEARCH_RESTAURANT_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a restaurant in the search results (e.g. name, cuisine, rating, description).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "cuisine", "rating", "description", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. restaurant name, type of cuisine, rating, description).
+
+Identify the restaurant using the provided visible field values (e.g. name, cuisine, rating, and description), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Search...", "Find...", or "Look up...".
+
+Examples:
+- "What is the cuisine of the restaurant named 'Spice Garden'?"
+- "What is the description of the restaurant with rating 4.5 and name 'Ocean Delight'?"
+- "What is the name of the restaurant serving Mexican cuisine with a rating of 4.2?"
+- "What is the rating of the restaurant whose name is 'Sunset Diner' and description mentions 'family-friendly'?"
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 SEARCH_RESTAURANT_USE_CASE = UseCase(
     name="SEARCH_DELIVERY_RESTAURANT",
     description="The user searches for restaurants using a query string.",
@@ -53,6 +74,8 @@ SEARCH_RESTAURANT_USE_CASE = UseCase(
     event_source_code=SearchRestaurantEvent.get_source_code_of_class(),
     constraints_generator=generate_search_restaurant_constraints,
     additional_prompt_info=SEARCH_RESTAURANT_ADDITIONAL_PROMPT_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=SEARCH_RESTAURANT_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Search for restaurants serving Italian cuisine.", "prompt_for_task_generation": "Search for restaurants serving Italian cuisine."},
         {"prompt": "Find restaurants with 'Sushi' in their name.", "prompt_for_task_generation": "Find restaurants with 'Sushi' in their name."},
@@ -68,6 +91,34 @@ VIEW_RESTAURANT_ADDITIONAL_PROMPT_INFO = """
     "View the details...", "Show me the details...", "Open the restaurant page for...",
     "View the restaurant that has...", or "Show details for the featured restaurant.""".strip()
 
+VIEW_RESTAURANT_DETAIL_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a restaurant in the view restaurant details (e.g. name, cuisine, rating, description, delivery time, pickup time, number of dishes, names of menu items).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "cuisine", "rating", "description", "deliveryTime", "pickupTime", "dishes", "names_of_menu_items" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. restaurant name, cuisine, rating, description, delivery time, pickup time, number of dishes, names of menu items).
+
+Identify the restaurant using the provided visible field values, then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "View...", "Open...", or "See...".
+
+For the 'dishes' field specifically (countable), format the question in a natural style:
+- "Can you tell me how many dishes the restaurant whose name is 'Burnt Ends' and rating is 4.6 offers after viewing the restaurant details?"
+
+For the names_of_menu_items field specifically (list), format the question in a natural style:
+- "Can you tell me the names of the menu items of the restaurant whose name is 'Burnt Ends' and cuisine is 'Australian' after viewing the restaurant details?"
+
+Examples:
+- "Can you tell me the description of the restaurant whose name is 'The River Café' and cuisine is 'Italian' after viewing the restaurant details?"
+- "Can you tell me the rating of the restaurant whose name is 'Burnt Ends' and delivery time is 25-58 min after viewing the restaurant details?"
+- "Can you tell me how many dishes the restaurant whose name is 'Burnt Ends' and rating is 4.6 offers after viewing the restaurant details?"
+- "Can you tell me the names of the menu items of the restaurant whose name is 'Burnt Ends' and cuisine is 'Australian' after viewing the restaurant details?"
+- "Can you tell me the cuisine of the restaurant whose name is 'Spice Garden' and delivery time is 20-40 min after viewing the restaurant details?"
+- "Can you tell me the pickup time of the restaurant whose name is 'Olive Bistro' and rating is 4.2 after viewing the restaurant details?"
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 VIEW_RESTAURANT_USE_CASE = UseCase(
     name="VIEW_DELIVERY_RESTAURANT",
     description="The user views the details of a restaurant.",
@@ -75,6 +126,8 @@ VIEW_RESTAURANT_USE_CASE = UseCase(
     event_source_code=ViewRestaurantEvent.get_source_code_of_class(),
     constraints_generator=generate_view_restaurant_constraints,
     additional_prompt_info=VIEW_RESTAURANT_ADDITIONAL_PROMPT_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=VIEW_RESTAURANT_DETAIL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "View details for 'Pizza Palace'.", "prompt_for_task_generation": "View details for 'Pizza Palace'."},
         {"prompt": "Show me the menu of the restaurant with cuisine 'Japanese'.", "prompt_for_task_generation": "Show me the menu of the restaurant with cuisine 'Japanese'."},
@@ -87,12 +140,36 @@ VIEW_RESTAURANT_USE_CASE = UseCase(
     ],
 )
 
+RESTAURANT_FILTER_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a restaurant in the filtered restaurant results ( cuisine, rating).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "cuisine", "rating", "description" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. restaurant name, cuisine, rating, description).
+
+Identify the restaurant using the provided visible field values, then ask for the verify field value naturally, ending the question with 'so I can apply filter'.
+
+Do NOT start questions with imperative phrasing like "Filter...", "Show...", or "Find...".
+
+Examples:
+- "Can you tell me the cuisine of the restaurant whose name is 'Spice Garden', so I can apply filter?"
+- "Can you tell me the rating of the restaurant whose name is 'Sunset Diner' and description 'family-friendly', so I can apply filter?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only non-verify fields for identification.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 RESTAURANT_FILTER_USE_CASE = UseCase(
     name="RESTAURANT_FILTER",
     description="The user filters restaurants by search, cuisine, or rating.",
     event=RestaurantFilterEvent,
     event_source_code=RestaurantFilterEvent.get_source_code_of_class(),
     constraints_generator=generate_restaurant_filter_constraints,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=RESTAURANT_FILTER_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Filter restaurants to show only Italian cuisine with rating above 4.", "prompt_for_task_generation": "Filter restaurants to show only Italian cuisine with rating above 4."},
         {"prompt": "Show restaurants matching search 'pizza' and rating at least 4.5.", "prompt_for_task_generation": "Show restaurants matching search 'pizza' and rating at least 4.5."},
@@ -125,6 +202,35 @@ Incorrect:
 "Open the add-to-cart modal for 'Margherita Pizza' at 'Pizza Palace' with extra cheese."
 """.strip()
 
+ADD_TO_CART_MODAL_OPEN_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of an item in the add-to-cart modal context (e.g., restaurant name, item name, price, item description).
+
+Use natural language only. Do NOT use schema-style field names such as "restaurant_name", "item_name", "price", "item_description" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., restaurant name, item name, price, item description).
+
+Include all question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Add...", "Open...", or "Select...".
+
+Always end the question naturally with "so I can open its add to cart modal."
+
+For example, if the verify field is 'price', format the question naturally:
+- "Can you tell me the price of the 'Margherita Pizza' from the restaurant 'Olive Bistro', and item description 'Classic cheese pizza', so I can open its add to cart modal?"
+
+Examples:
+- "Can you tell me the restaurant name for the item 'Spicy Chicken Burger' priced at $8.99, with description 'Juicy grilled chicken with spicy sauce', and restaurant rating 4.2, so I can open its add to cart modal?"
+- "Can you tell me the item name from the restaurant 'Sunset Diner', which costs $12.50, has description 'Grilled salmon with herbs', and restaurant rating 4.8, so I can open its add to cart modal?"
+- "Can you tell me the item description of 'Veggie Delight Sandwich' from the restaurant 'Green Garden', priced at $6.75, with restaurant rating 4.3, so I can open its add to cart modal?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only non-verify fields for identification.
+- Always include all question fields with values in the question for precise identification.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 
 ADD_TO_CART_MODAL_OPEN_USE_CASE = UseCase(
     name="ADD_TO_CART_MODAL_OPEN",
@@ -133,6 +239,8 @@ ADD_TO_CART_MODAL_OPEN_USE_CASE = UseCase(
     event_source_code=AddToCartModalOpenEvent.get_source_code_of_class(),
     constraints_generator=generate_add_to_cart_modal_open_constraints,
     additional_prompt_info=ADD_TO_CART_MODAL_OPEN_ADDITIONAL_PROMPT_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=ADD_TO_CART_MODAL_OPEN_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Open the add-to-cart modal for 'Margherita Pizza' at 'Pizza Palace'.", "prompt_for_task_generation": "Open the add-to-cart modal for 'Margherita Pizza' at 'Pizza Palace'."},
         {"prompt": "Show the add-to-cart modal for 'Salmon Nigiri'.", "prompt_for_task_generation": "Show the add-to-cart modal for 'Salmon Nigiri'."},
@@ -202,6 +310,35 @@ Incorrect:
 "Add 'Margherita Pizza' (Large) to my cart with extra olives."
 """.strip()
 
+ADD_TO_CART_MENU_ITEM_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of an item in the add-to-cart menu item context (e.g., restaurant name, item name, price, item description).
+
+Use natural language only. Do NOT use schema-style field names such as "restaurant_name", "item_name", "price", "item_description" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., restaurant name, item name, price, item description).
+
+Include all question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Add...", "Open...", or "Select...".
+
+Always end the question naturally with "so I can add it to the cart."
+
+For example, if the verify field is 'price', format the question naturally:
+- "Can you tell me the price of the 'Margherita Pizza' from the restaurant 'Olive Bistro', and item description 'Classic cheese pizza', so I can add it to the cart?"
+
+Examples:
+- "Can you tell me the restaurant name for the item 'Spicy Chicken Burger' priced at $8.99, with description 'Juicy grilled chicken with spicy sauce', so I can add it to the cart?"
+- "Can you tell me the item name from the restaurant 'Sunset Diner', which costs $12.50, has description 'Grilled salmon with herbs', so I can add it to the cart?"
+- "Can you tell me the item description of 'Veggie Delight Sandwich' from the restaurant 'Green Garden', priced at $6.75, so I can add it to the cart?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only non-verify fields for identification.
+- Always include all question fields with values in the question for precise identification.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 ADD_TO_CART_USE_CASE = UseCase(
     name="ADD_TO_CART_MENU_ITEM",
     description="The user adds a menu item to the cart.",
@@ -209,6 +346,8 @@ ADD_TO_CART_USE_CASE = UseCase(
     event_source_code=AddToCartEvent.get_source_code_of_class(),
     constraints_generator=generate_add_to_cart_constraints,
     additional_prompt_info=ADD_TO_CART_ADDITIONAL_PROMPT_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=ADD_TO_CART_MENU_ITEM_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Add when item equals 'Margherita Pizza' and size equals 'Large' to my cart.",
@@ -255,12 +394,43 @@ QUICK_ORDER_USE_CASE = UseCase(
     ],
 )
 
+QUICK_REORDER_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a restaurant in the quick reorder context (e.g., name, rating, cuisine, delivery time, pickup time).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "rating", "cuisine", "deliveryTime", "pickupTime" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., restaurant name, rating, cuisine, delivery time, pickup time).
+
+Include all question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Reorder...", "Order...", or "Select...".
+
+Always end the question naturally with "so I can quickly reorder it."
+
+For example, if the verify field is 'rating', format the question naturally:
+- "Can you tell me the rating of the restaurant 'Olive Bistro', which serves Italian cuisine, has delivery time 30 minutes, and pickup time 20 minutes, so I can quickly reorder from it?"
+
+Examples:
+- "Can you tell me the cuisine of the restaurant 'Spice Garden', which has a rating of 4.2, delivery time 35 minutes, and pickup time 20 minutes, so I can quickly reorder from it?"
+- "Can you tell me the delivery time of the restaurant 'Sunset Diner', which has a rating of 4.8, serves American cuisine, and pickup time 15 minutes, so I can quickly reorder from it?"
+- "Can you tell me the pickup time of the restaurant 'Green Delight', which has a rating of 4.3, serves vegetarian cuisine, and delivery time 40 minutes, so I can quickly reorder from it?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only non-verify fields for identification.
+- Always include all question fields with values in the question for precise identification.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 QUICK_REORDER_USE_CASE = UseCase(
     name="QUICK_REORDER",
     description="The user reorders a recently ordered item.",
     event=QuickReorderEvent,
     event_source_code=QuickReorderEvent.get_source_code_of_class(),
     constraints_generator=generate_quick_reorder_constraints,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=QUICK_REORDER_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Reorder the recent item 'California Roll' from Sushi Zen.", "prompt_for_task_generation": "Reorder the recent item 'California Roll' from Sushi Zen."},
         {"prompt": "Quick reorder my last pizza order.", "prompt_for_task_generation": "Quick reorder my last pizza order."},
@@ -453,6 +623,35 @@ constraint: {'cuisine': 'Steakhouse'}
 request: "Delete the review for the restaurant with cuisine 'Steakhouse'."
 """.strip()
 
+DELETE_REVIEW_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a restaurant review in the delete review context (e.g. author, review rating, comment, date).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "description", "cuisine", "rating", "author", "review_rating", "comment", "date" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. restaurant name, description, cuisine, restaurant rating, author, review rating, comment, date).
+
+Identify the review using the provided visible field values, then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Delete...", "Remove...", or "Find...".
+
+For the 'date' field specifically, format the question in a natural style:
+- "Can you tell me the date of the review by 'Michael Lee' for the restaurant whose name is 'Olive Bistro', so I can delete the review?"
+
+Examples:
+- "Can you tell me the author of the review for the restaurant whose name is 'Spice Garden', so I can delete the review?"
+- "Can you tell me the review rating given by 'John Doe' for the restaurant whose name is 'La Piazza', so I can delete the review?"
+- "Can you tell me the comment of the review by 'Emily Clark' for the restaurant whose name is 'Sunset Diner', so I can delete the review?"
+- "Can you tell me the date of the review by 'Michael Lee' for the restaurant whose name is 'Olive Bistro', so I can delete the review?"
+- "Can you tell me the author of the review for the restaurant whose name is 'Ocean Delight' and review rating is 4.5, so I can delete the review?"
+- "Can you tell me the comment of the review by 'Jane Smith' for the restaurant whose name is 'Sunset Diner' and date is 'Mar 10', so I can delete the review?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only non-verify fields for identification.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 DELETE_REVIEW_USE_CASE = UseCase(
     name="DELETE_REVIEW",
     description="The user deletes a review they wrote for a restaurant.",
@@ -460,6 +659,8 @@ DELETE_REVIEW_USE_CASE = UseCase(
     event_source_code=DeleteReviewEvent.get_source_code_of_class(),
     constraints_generator=generate_delete_review_constraints,
     additional_prompt_info=DELETE_REVIEW_ADDITIONAL_PROMPT_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=DELETE_REVIEW_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Delete my review for 'Pizza Palace' written on 2025-06-02.", "prompt_for_task_generation": "Delete my review for 'Pizza Palace' written on 2025-06-02."},
         {"prompt": "Remove the review I wrote with a rating of 4.", "prompt_for_task_generation": "Remove the review I wrote with a rating of 4."},
