@@ -432,6 +432,35 @@ Reserve the hotel for a stay with guests NOT equal to '1' at a location that doe
 Reserve the hotel for a stay with guests NOT equal to '1' AND '2'...  # (Added extra guest value not in criteria)
 """
 
+RESERVE_HOTEL_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a hotel in the reserve hotel context (e.g., name, location, rating, price, reviews, guests, bedrooms, beds, baths, host name, amenities).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "location", "rating", "price", "reviews", "guests", "bedrooms", "beds", "baths", "host_name", "amenities" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., hotel name, location, rating, price, number of reviews, number of guests, bedrooms, beds, baths, host name, amenities).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Reserve...", "Book...", or "Select...".
+
+Always end the question naturally with "so I can reserve the hotel."
+
+For example, if the verify field is 'price', format the question naturally:
+- "Can you tell me the price of the hotel 'Ocean View Resort', located in Miami, which has a rating of 4.5, 120 reviews, accommodates 4 guests, has 2 bedrooms, 3 beds, 2 baths, hosted by 'John Smith', and includes amenities like WiFi and pool, so I can reserve the hotel?"
+
+Examples:
+- "Can you tell me the location of the hotel 'Sunset Inn', which has a rating of 4.3, costs $150 per night, has 80 reviews, accommodates 3 guests, has 2 bedrooms, 2 beds, 1 bath, hosted by 'Michael Lee', and includes amenities like parking and air conditioning, so I can reserve the hotel?"
+- "Can you tell me the amenities of the hotel 'Green Valley Stay', located in Bali, which has a rating of 4.8, costs $250 per night, has 150 reviews, accommodates 5 guests, has 3 bedrooms, 4 beds, 3 baths, hosted by 'Sophia Brown', so I can reserve the hotel?"
+- "Can you tell me the host name of the hotel 'Mountain Retreat', located in Aspen, which has a rating of 4.6, costs $300 per night, has 110 reviews, accommodates 6 guests, has 4 bedrooms, 5 beds, 3 baths, and includes amenities like fireplace and hot tub, so I can reserve the hotel?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 RESERVE_HOTEL_USE_CASE = UseCase(
     name="RESERVE_HOTEL",
     description="Triggered when the user confirms a reservation or booking for a hotel.",
@@ -439,6 +468,8 @@ RESERVE_HOTEL_USE_CASE = UseCase(
     event_source_code=ReserveHotelEvent.get_source_code_of_class(),
     constraints_generator=generate_reserve_hotel_constraints,
     additional_prompt_info=RESERVE_HOTEL_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=RESERVE_HOTEL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Reserve hotel from 5th to 9th August for 2 guests.",
@@ -615,6 +646,32 @@ Message the host with message equals 'Is early check-in possible?', guests NOT e
 Message the host with message equals 'Is early check-in possible?', guests NOT equal to '1' AND '2'...  # (Added extra guest value not in criteria)
 """
 
+MESSAGE_HOST_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute in the message host context (e.g., hotel name, host name).
+
+Use natural language only. Do NOT use schema-style field names such as "hotel_name", "host_name" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., hotel name, host name).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Message...", "Contact...", or "Send...".
+
+Always end the question naturally with "so I can message the host."
+
+For example, if the verify field is 'host name', format the question naturally:
+- "Can you tell me the host name of the hotel 'Ocean View Resort', so I can message the host?"
+
+Examples:
+- "Can you tell me the host name of the hotel 'Sunset Inn', so I can message the host?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
 MESSAGE_HOST_USE_CASE = UseCase(
     name="MESSAGE_HOST",
     description="Triggered when the user sends a message to the host.",
@@ -622,6 +679,8 @@ MESSAGE_HOST_USE_CASE = UseCase(
     event_source_code=MessageHostEvent.get_source_code_of_class(),
     constraints_generator=generate_message_host_constraints,
     additional_prompt_info=MESSAGE_HOST_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=MESSAGE_HOST_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Message host Natalie where message contains 'ly check-in possible?', title contains 'cozy' and location equals 'New York'",
@@ -825,10 +884,10 @@ ALL_USE_CASES = [
     SEARCH_HOTEL_USE_CASE,  # 1
     VIEW_HOTEL_USE_CASE,  # 2
     EDIT_NUMBER_OF_GUESTS_USE_CASE,  # will add support and verify field "guest"
-    RESERVE_HOTEL_USE_CASE,  # will add support
+    RESERVE_HOTEL_USE_CASE,  # 6
     EDIT_CHECK_IN_OUT_DATES_USE_CASE,  # will add support and verify field "check in and checkout date"
     CONFIRM_AND_PAY_USE_CASE,
-    MESSAGE_HOST_USE_CASE,  # will add support
+    MESSAGE_HOST_USE_CASE,  # 7
     SHARE_HOTEL_USE_CASE,  # 3
     ADD_TO_WISHLIST_USE_CASE,  # 4
     REMOVE_FROM_WISHLIST_USE_CASE,

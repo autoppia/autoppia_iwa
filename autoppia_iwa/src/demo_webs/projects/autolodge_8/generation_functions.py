@@ -582,7 +582,15 @@ async def _generate_reserve_hotel_constraints(task_url: str | None = None, datas
     return constraints_list, sample_hotel
 
 
-async def generate_reserve_hotel_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_reserve_hotel_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        # Reuse the same data-extraction structure as VIEW_HOTEL.
+        return await generate_view_hotel_constraints(task_url=task_url, dataset=dataset, test_types=test_types) or []
+
     constraints_list, _ = await _generate_reserve_hotel_constraints(task_url, dataset=dataset)
     return constraints_list
 
@@ -747,7 +755,32 @@ async def generate_confirm_and_pay_constraints(task_url: str | None = None, data
     return constraints_list
 
 
-async def generate_message_host_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_message_host_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        hotels = await _ensure_hotel_dataset(task_url, dataset)
+        if not hotels:
+            return []
+
+        selected = random.choice(hotels)
+        selected_item = {
+            "hotel_name": selected.get("title"),
+            "host_name": selected.get("host_name"),
+        }
+        visible_fields = ["hotel_name", "host_name"]
+        return (
+            _build_data_extraction_result(
+                selected_item,
+                visible_fields,
+                verify_field="host_name",
+                question_fields_override=["hotel_name"],
+            )
+            or []
+        )
+
     constraints_list: list[dict[str, Any]] = []
     data = await _ensure_hotel_dataset(task_url, dataset)
     if not data:
