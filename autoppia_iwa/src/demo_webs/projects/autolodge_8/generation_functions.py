@@ -101,6 +101,94 @@ async def _ensure_hotel_dataset(task_url: str | None = None, dataset: dict[str, 
     return []
 
 
+def _format_rating_to_fixed_2(value: Any) -> str | None:
+    """Match the UI formatting for hotel ratings (React uses toFixed(2))."""
+    if value is None:
+        return None
+    try:
+        return f"{float(value):.2f}"
+    except (TypeError, ValueError):
+        return None
+
+
+def _extract_region_from_location(location: Any) -> str | None:
+    """
+    UI shows location as 'City, Country' (or similar), and we use the country part as 'region'.
+    """
+    if location is None:
+        return None
+    loc = str(location).strip()
+    if not loc:
+        return None
+    parts = [p.strip() for p in loc.split(",") if p.strip()]
+    if not parts:
+        return None
+    return parts[-1]
+
+
+def _build_data_extraction_result(
+    selected_item: dict[str, Any],
+    visible_fields: list[str],
+    *,
+    verify_field: str | None = None,
+    question_fields_override: list[str] | None = None,
+) -> dict[str, Any] | None:
+    """Build constraints + question_fields_and_values for data_extraction_only; returns None on validation failure."""
+    available_fields = [f for f in visible_fields if selected_item.get(f) is not None]
+    if len(available_fields) < 2:
+        return None
+
+    question_fields: list[str]
+    chosen_verify_field: str
+
+    if question_fields_override:
+        question_fields = [f for f in question_fields_override if f in available_fields and selected_item.get(f) is not None]
+        if question_fields:
+            remaining = [f for f in available_fields if f not in question_fields]
+            if not remaining:
+                return None
+            chosen_verify_field = verify_field if verify_field is not None and verify_field in remaining else random.choice(remaining)
+            remaining_for_extra = [f for f in available_fields if f != chosen_verify_field and f not in question_fields]
+            if len(remaining_for_extra) >= 2:
+                num_extra = random.randint(1, len(remaining_for_extra))
+                question_fields = question_fields + random.sample(remaining_for_extra, num_extra)
+        else:
+            question_fields = []
+            chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+    else:
+        chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+        question_fields = []
+
+    if chosen_verify_field not in available_fields:
+        return None
+    verify_value = selected_item.get(chosen_verify_field)
+    if verify_value is None:
+        return None
+
+    if question_fields:
+        question_candidates = question_fields
+    else:
+        question_candidates = [f for f in available_fields if f != chosen_verify_field]
+        if not question_candidates:
+            return None
+        num_question_fields = 1 if len(question_candidates) == 1 else 2
+        question_candidates = random.sample(question_candidates, num_question_fields)
+
+    question_fields_and_values: dict[str, Any] = {}
+    for qf in question_candidates:
+        val = selected_item.get(qf)
+        if val is not None:
+            question_fields_and_values[qf] = val
+    if not question_fields_and_values:
+        return None
+
+    constraints = [create_constraint_dict(chosen_verify_field, ComparisonOperator.EQUALS, verify_value)]
+    return {
+        "constraints": constraints,
+        "question_fields_and_values": question_fields_and_values,
+    }
+
+
 def _generate_constraint_value(
     operator: ComparisonOperator,
     field_value: Any,
@@ -200,7 +288,27 @@ def _generate_constraint_value(
     return None
 
 
-async def generate_search_hotel_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_search_hotel_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        hotels = await _ensure_hotel_dataset(task_url, dataset)
+        if not hotels:
+            return []
+
+        selected = random.choice(hotels)
+        title = selected.get("title")
+        location = selected.get("location")
+        rating = _format_rating_to_fixed_2(selected.get("rating"))
+        raw_price = selected.get("price")
+        price = f"${raw_price}"
+
+        selected_item = {"name": title, "location": location, "rating": rating, "price": price}
+        visible_fields = ["name", "location", "rating", "price"]
+        return _build_data_extraction_result(selected_item, visible_fields, question_fields_override=["name"]) or []
+
     constraints_list: list[dict[str, Any]] = []
     data = await _ensure_hotel_dataset(task_url, dataset)
     possible_fields = [
@@ -378,9 +486,55 @@ async def __generate_view_hotel_constraints(task_url: str | None = None, dataset
     return constraints_list, hotel
 
 
-async def generate_view_hotel_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    constraints_list, _ = await __generate_view_hotel_constraints(task_url, dataset=dataset)
+async def generate_view_hotel_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        hotels = await _ensure_hotel_dataset(task_url, dataset)
+        if not hotels:
+            return []
 
+        selected = random.choice(hotels)
+        rating = _format_rating_to_fixed_2(selected.get("rating"))
+        raw_price = selected.get("price")
+        price: str | None = None
+        if raw_price is not None:
+            try:
+                price = f"${float(raw_price):.2f}"  # "$120.00"
+            except (TypeError, ValueError):
+                price = None
+        amenities = selected.get("amenities") or []
+        selected_item = {
+            "name": selected.get("title"),
+            "location": selected.get("location"),
+            "rating": rating,
+            "price": price,
+            "reviews": selected.get("reviews"),
+            "guests": selected.get("guests"),
+            "bedrooms": selected.get("bedrooms"),
+            "beds": selected.get("beds"),
+            "baths": selected.get("baths"),
+            "host_name": selected.get("host_name"),
+            "amenities": amenities,
+        }
+        visible_fields = [
+            "name",
+            "location",
+            "rating",
+            "price",
+            "reviews",
+            "guests",
+            "bedrooms",
+            "beds",
+            "baths",
+            "host_name",
+            "amenities",
+        ]
+        return _build_data_extraction_result(selected_item, visible_fields, question_fields_override=["name"]) or []
+
+    constraints_list, _ = await __generate_view_hotel_constraints(task_url, dataset=dataset)
     return constraints_list
 
 
@@ -632,7 +786,20 @@ async def generate_message_host_constraints(task_url: str | None = None, dataset
     return constraints_list
 
 
-async def generate_share_hotel_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_share_hotel_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        return (
+            await generate_view_hotel_constraints(
+                task_url=task_url,
+                dataset=dataset,
+                test_types=test_types,
+            )
+            or []
+        )
     constraints_list: list[dict[str, Any]] = []
     data = await _ensure_hotel_dataset(task_url, dataset)
     if not data:
@@ -681,7 +848,35 @@ async def generate_share_hotel_constraints(task_url: str | None = None, dataset:
     return constraints_list
 
 
-async def generate_apply_filter_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_apply_filter_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        hotels = await _ensure_hotel_dataset(task_url, dataset)
+        if not hotels:
+            return []
+
+        selected = random.choice(hotels)
+        title = selected.get("title")
+        location = selected.get("location")
+        rating = _format_rating_to_fixed_2(selected.get("rating"))
+        raw_price = selected.get("price")
+        price = f"${raw_price}"
+        # In the UI, the only region-like info shown is the full `location` string (e.g. "City, Country").
+        # We keep the expected "region" value aligned to that visible text.
+        # Extract country from "City, Country"
+        region_value = None
+        if isinstance(location, str):
+            parts = [p.strip() for p in location.split(",")]
+            region_value = parts[-1] if parts else None
+        selected_item = {"name": title, "rating": rating, "region": region_value, "price": price}
+        visible_fields = ["name", "rating", "region", "price"]
+        filter_fields = ["rating", "region"]
+        verify_field = random.choice(filter_fields)
+        return _build_data_extraction_result(selected_item, visible_fields, verify_field=verify_field) or []
+
     await _ensure_hotel_dataset(task_url, dataset)
     possible_fields = ["rating", "region"]
     constraint_list = []

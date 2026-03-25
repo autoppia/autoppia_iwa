@@ -59,6 +59,25 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
     INCORRECT: Search for hotels where the search term CONTAINS 'k' and 'Ic'
 """
 
+SEARCH_HOTEL_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a hotel in the search results (e.g. hotel title, location, rating, price per night).
+
+Use natural language only. Do NOT use schema-style field names such as "title", "location", "rating", "price", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. hotel title, hotel location, rating, nightly price).
+
+Identify the hotel using the provided visible field values (e.g. title, location, rating, and price), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Search...", "Find...", or "Look up...".
+
+Examples:
+- "What is the location of the hotel titled 'Seaside Retreat' with rating 4.50 and price $120?"
+- "What is the guest rating of the hotel named 'Mountain View Lodge' shown with price $95?"
+- "What is the nightly price of the hotel in 'Lahore' with rating 4.70?"
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 SEARCH_HOTEL_USE_CASE = UseCase(
     name="SEARCH_HOTEL",
     description="The user searches for hotels with optional filters like location, dates, and guest composition.",
@@ -66,6 +85,8 @@ SEARCH_HOTEL_USE_CASE = UseCase(
     event_source_code=SearchHotelEvent.get_source_code_of_class(),
     constraints_generator=generate_search_hotel_constraints,
     additional_prompt_info=SEARCH_HOTEL_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=SEARCH_HOTEL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Search for hotels where search term is Murree from July 25 to July 28 for 2 adults and 1 child",
@@ -105,6 +126,35 @@ CRITICAL REQUIREMENT:
    Prompt: "Retrieve details of a hotel that has amenities in the list ['Memory foam mattress', 'Historic charm']."
 """
 
+VIEW_HOTEL_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a hotel in the view hotel context (e.g., name, location, rating, price, reviews, guests, bedrooms, beds, baths, host name, amenities).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "location", "rating", "price", "reviews", "guests", "bedrooms", "beds", "baths", "host_name", "amenities" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., hotel name, location, rating, price, number of reviews, number of guests, bedrooms, beds, baths, host name, amenities).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "View...", "Open...", or "Show...".
+
+Always end the question naturally with "after viewing it."
+
+For example, if the verify field is 'price', format the question naturally:
+- "Can you tell me the price of the hotel 'Ocean View Resort', located in Miami, which has a rating of 4.5, 120 reviews, accommodates 4 guests, has 2 bedrooms, 3 beds, 2 baths, hosted by 'John Smith', and includes amenities like WiFi and pool, after viewing it?"
+
+Examples:
+- "Can you tell me the location of the hotel 'Sunset Inn', which has a rating of 4.3, costs $150 per night, has 80 reviews, accommodates 3 guests, has 2 bedrooms, 2 beds, 1 bath, hosted by 'Michael Lee', and includes amenities like parking and air conditioning, after viewing it?"
+- "Can you tell me the amenities of the hotel 'Green Valley Stay', located in Bali, which has a rating of 4.8, costs $250 per night, has 150 reviews, accommodates 5 guests, has 3 bedrooms, 4 beds, 3 baths, hosted by 'Sophia Brown', after viewing it?"
+- "Can you tell me the host name of the hotel 'Mountain Retreat', located in Aspen, which has a rating of 4.6, costs $300 per night, has 110 reviews, accommodates 6 guests, has 4 bedrooms, 5 beds, 3 baths, and includes amenities like fireplace and hot tub, after viewing it?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 VIEW_HOTEL_USE_CASE = UseCase(
     name="VIEW_HOTEL",
     description="Triggered when the user views a specific hotel listing with detailed information.",
@@ -112,6 +162,8 @@ VIEW_HOTEL_USE_CASE = UseCase(
     event_source_code=ViewHotelEvent.get_source_code_of_class(),
     constraints_generator=generate_view_hotel_constraints,
     additional_prompt_info=VIEW_HOTEL_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=VIEW_HOTEL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "View the hotel located in Murree with 5-star rating and free breakfast. Can you show me more about it?",
@@ -154,6 +206,35 @@ Constraint: {'amenities': {'operator': 'in_list', 'value': ['Pool', 'City view']
 Prompt: "Add to wishlist a hotel that has a pool and city view."
 """
 
+ADD_TO_WISHLIST_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a hotel in the add to wishlist context (e.g., name, location, rating, price, reviews, guests, bedrooms, beds, baths, host name, amenities).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "location", "rating", "price", "reviews", "guests", "bedrooms", "beds", "baths", "host_name", "amenities" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., hotel name, location, rating, price, number of reviews, number of guests, bedrooms, beds, baths, host name, amenities).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Add...", "Save...", or "Select...".
+
+Always end the question naturally with "so I can add it to my wishlist."
+
+For example, if the verify field is 'price', format the question naturally:
+- "Can you tell me the price of the hotel 'Ocean View Resort', located in Miami, which has a rating of 4.5, 120 reviews, accommodates 4 guests, has 2 bedrooms, 3 beds, 2 baths, hosted by 'John Smith', and includes amenities like WiFi and pool, so I can add it to my wishlist?"
+
+Examples:
+- "Can you tell me the location of the hotel 'Sunset Inn', which has a rating of 4.3, costs $150 per night, has 80 reviews, accommodates 3 guests, has 2 bedrooms, 2 beds, 1 bath, hosted by 'Michael Lee', and includes amenities like parking and air conditioning, so I can add it to my wishlist?"
+- "Can you tell me the amenities of the hotel 'Green Valley Stay', located in Bali, which has a rating of 4.8, costs $250 per night, has 150 reviews, accommodates 5 guests, has 3 bedrooms, 4 beds, 3 baths, hosted by 'Sophia Brown', so I can add it to my wishlist?"
+- "Can you tell me the host name of the hotel 'Mountain Retreat', located in Aspen, which has a rating of 4.6, costs $300 per night, has 110 reviews, accommodates 6 guests, has 4 bedrooms, 5 beds, 3 baths, and includes amenities like fireplace and hot tub, so I can add it to my wishlist?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 ADD_TO_WISHLIST_USE_CASE = UseCase(
     name="ADD_TO_WISHLIST",
     description="Triggered when the user adds a hotel listing to their wishlist.",
@@ -161,6 +242,8 @@ ADD_TO_WISHLIST_USE_CASE = UseCase(
     event_source_code=AddToWishlistEvent.get_source_code_of_class(),
     constraints_generator=generate_view_hotel_constraints,
     additional_prompt_info=ADD_TO_WISHLIST_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=ADD_TO_WISHLIST_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Add that beautiful hotel in Skardu with the river view to my wishlist.",
@@ -219,6 +302,35 @@ Prompt: "Share the hotel with email that contains '.scott@design'."
 MENTION the constraint operator defined in the prompt.
 """
 
+SHARE_HOTEL_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a hotel in the share hotel context (e.g., name, location, rating, price, reviews, guests, bedrooms, beds, baths, host name, amenities).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "location", "rating", "price", "reviews", "guests", "bedrooms", "beds", "baths", "host_name", "amenities" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., hotel name, location, rating, price, number of reviews, number of guests, bedrooms, beds, baths, host name, amenities).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Share...", "Send...", or "Forward...".
+
+Always end the question naturally with "so I can share the hotel."
+
+For example, if the verify field is 'price', format the question naturally:
+- "Can you tell me the price of the hotel 'Ocean View Resort', located in Miami, which has a rating of 4.5, 120 reviews, accommodates 4 guests, has 2 bedrooms, 3 beds, 2 baths, hosted by 'John Smith', and includes amenities like WiFi and pool, so I can share the hotel?"
+
+Examples:
+- "Can you tell me the location of the hotel 'Sunset Inn', which has a rating of 4.3, costs $150 per night, has 80 reviews, accommodates 3 guests, has 2 bedrooms, 2 beds, 1 bath, hosted by 'Michael Lee', and includes amenities like parking and air conditioning, so I can share the hotel?"
+- "Can you tell me the amenities of the hotel 'Green Valley Stay', located in Bali, which has a rating of 4.8, costs $250 per night, has 150 reviews, accommodates 5 guests, has 3 bedrooms, 4 beds, 3 baths, hosted by 'Sophia Brown', so I can share the hotel?"
+- "Can you tell me the host name of the hotel 'Mountain Retreat', located in Aspen, which has a rating of 4.6, costs $300 per night, has 110 reviews, accommodates 6 guests, has 4 bedrooms, 5 beds, 3 baths, and includes amenities like fireplace and hot tub, so I can share the hotel?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 SHARE_HOTEL_USE_CASE = UseCase(
     name="SHARE_HOTEL",
     description="Triggered when the user shares a hotel listing with someone, typically via email.",
@@ -226,6 +338,8 @@ SHARE_HOTEL_USE_CASE = UseCase(
     event_source_code=ShareHotelEvent.get_source_code_of_class(),
     constraints_generator=generate_share_hotel_constraints,
     additional_prompt_info=SHARE_HOTEL_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=SHARE_HOTEL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Share the hotel listing with zoe.baker@civicgroup.org where the title does NOT contain lcu, location does NOT contain pep, rating equals 4.5, price is less than or equal to 198, reviews are less than or equal to 44, available from a date before 2025-07-16 00:00:00 to a date on or after 2025-07-16 00:00:00, for 5 guests, hosted by Brian, and amenities do NOT contain Art-inspired decor.",
@@ -608,12 +722,43 @@ SUBMIT_HOTEL_REVIEW_USE_CASE = UseCase(
     ],
 )
 
+# APPLY_FILTERS_DATA_EXTRACTION_PROMPT_INFO
+APPLY_FILTERS_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a hotel or listing in the apply filters context (e.g., rating, region).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "rating", "region", "price" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., hotel name, rating, region, price).
+
+Include only the selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Apply...", "Filter...", or "Select...".
+
+Always end the question naturally with "so I can apply the filters."
+
+For example, if the verify field is 'price', format the question naturally:
+- "Can you tell me the price of the hotel 'Spice Garden', which has a rating of 4.5 and is located in Downtown, so I can apply the filters?"
+
+Examples:
+- "Can you tell me the rating of the hotel 'Ocean Delight', which is located in Midtown and costs $25 per person, so I can apply the filters?"
+- "Can you tell me the region of the hotel 'Sunset Diner', which has a rating of 4.0 and costs $15 per person, so I can apply the filters?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 APPLY_FILTERS_USE_CASE = UseCase(
     name="APPLY_FILTERS",
     description="User applies filters like rating, price cap, and region on the hotel list.",
     event=ApplyFilterEvent,
     event_source_code=ApplyFilterEvent.get_source_code_of_class(),
     constraints_generator=generate_apply_filter_constraints,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=APPLY_FILTERS_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Apply filters for rating at least 4.5, and region contains Italy.",
@@ -677,19 +822,19 @@ FAQ_OPENED_USE_CASE = UseCase(
 )
 
 ALL_USE_CASES = [
-    SEARCH_HOTEL_USE_CASE,
-    VIEW_HOTEL_USE_CASE,
-    EDIT_NUMBER_OF_GUESTS_USE_CASE,
-    RESERVE_HOTEL_USE_CASE,
-    EDIT_CHECK_IN_OUT_DATES_USE_CASE,
+    SEARCH_HOTEL_USE_CASE,  # 1
+    VIEW_HOTEL_USE_CASE,  # 2
+    EDIT_NUMBER_OF_GUESTS_USE_CASE,  # will add support and verify field "guest"
+    RESERVE_HOTEL_USE_CASE,  # will add support
+    EDIT_CHECK_IN_OUT_DATES_USE_CASE,  # will add support and verify field "check in and checkout date"
     CONFIRM_AND_PAY_USE_CASE,
-    MESSAGE_HOST_USE_CASE,
-    SHARE_HOTEL_USE_CASE,
-    ADD_TO_WISHLIST_USE_CASE,
+    MESSAGE_HOST_USE_CASE,  # will add support
+    SHARE_HOTEL_USE_CASE,  # 3
+    ADD_TO_WISHLIST_USE_CASE,  # 4
     REMOVE_FROM_WISHLIST_USE_CASE,
     BACK_TO_ALL_HOTELS_USE_CASE,
     SUBMIT_HOTEL_REVIEW_USE_CASE,
-    APPLY_FILTERS_USE_CASE,
+    APPLY_FILTERS_USE_CASE,  # 5
     PAYMENT_METHOD_SELECTED_USE_CASE,
     WISHLIST_OPENED_USE_CASE,
     BOOK_FROM_WISHLIST_USE_CASE,
