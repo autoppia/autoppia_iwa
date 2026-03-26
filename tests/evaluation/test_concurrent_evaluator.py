@@ -6,6 +6,7 @@ Separate test uses real demo server (localhost frontend, real backend) and
 FILM_DETAIL task; skip when server is unavailable.
 """
 
+import asyncio
 import base64
 import textwrap
 import urllib.error
@@ -23,6 +24,7 @@ from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStats, EvaluatorConfig
 from autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator import (
     ConcurrentEvaluator,
+    _ensure_evaluation_level,
     _is_navigation_url_allowed as _orig_nav_allowed,
 )
 from autoppia_iwa.src.execution.actions.actions import ClickAction, NavigateAction, TypeAction
@@ -782,6 +784,86 @@ async def test_concurrent_evaluator_group_exception_fills_errors():
     assert results[0].stats.had_errors is True
     assert "group eval failed" in results[0].stats.error_message
     assert "group eval failed" in evaluator.errors
+
+
+def test_ensure_evaluation_level_registers_when_missing(monkeypatch):
+    calls = {"n": 0}
+
+    def _fake_level(*args, **kwargs):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise ValueError("missing level")
+        return None
+
+    monkeypatch.setattr("autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.logger.level", _fake_level)
+    _ensure_evaluation_level()
+    assert calls["n"] == 2
+
+
+@pytest.mark.asyncio
+async def test_evaluate_single_task_solution_seed_extraction_error_is_handled():
+    html = _make_mock_html()
+    data_url = _data_url(html)
+    task = _make_task(data_url)
+    task.url = "http://localhost:8000"
+    mock_backend = AsyncMock()
+    mock_backend.reset_database = AsyncMock()
+    mock_backend.close = AsyncMock()
+    mock_backend.get_backend_events = AsyncMock(return_value=[])
+
+    with (
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.BackendDemoWebService",
+            return_value=mock_backend,
+        ),
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.extract_seed_from_url",
+            side_effect=RuntimeError("seed parse failed"),
+        ),
+    ):
+        evaluator = ConcurrentEvaluator(web_project=PROJECT, config=EvaluatorConfig(verbose_logging=False))
+        solution = TaskSolution(task_id=task.id, actions=[NavigateAction(url="http://localhost:8000/path")], web_agent_id=WEB_AGENT_ID)
+        result = await evaluator.evaluate_single_task_solution(task, solution)
+
+    assert result is not None
+    assert result.stats is not None
+
+
+@pytest.mark.asyncio
+async def test_group_and_evaluate_cancels_progress_tracker_when_verbose():
+    html = _make_mock_html()
+    data_url = _data_url(html)
+    task = _make_task(data_url)
+    mock_backend = AsyncMock()
+    mock_backend.reset_database = AsyncMock()
+    mock_backend.close = AsyncMock()
+    mock_backend.get_backend_events = AsyncMock(return_value=[])
+
+    async def _fake_group_eval(*_args, **_kwargs):
+        return None
+
+    async def _fake_log_progress(*_args, **_kwargs):
+        await asyncio.sleep(3600)
+
+    with (
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.BackendDemoWebService",
+            return_value=mock_backend,
+        ),
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.ConcurrentEvaluator._evaluate_group_with_semaphore",
+            side_effect=_fake_group_eval,
+        ),
+        patch(
+            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.log_progress",
+            side_effect=_fake_log_progress,
+        ) as mocked_progress,
+    ):
+        evaluator = ConcurrentEvaluator(web_project=PROJECT, config=EvaluatorConfig(verbose_logging=True, chunk_size=3))
+        sols = [TaskSolution(task_id=task.id, actions=[NavigateAction(url=f"{data_url}#{i}")], web_agent_id=f"a{i}") for i in range(6)]
+        results = await evaluator._group_and_evaluate_task_solutions(task, sols)
+        assert len(results) == 6
+        assert mocked_progress.called
 
 
 @pytest.mark.integration

@@ -196,6 +196,43 @@ class TestShowTaskWithTests:
         with patch.object(v.console, "print"):
             v.show_task_with_tests(task)
 
+    def test_show_task_with_tests_model_dump_mode_json_failure_falls_back(self):
+        v = SubnetVisualizer()
+        task = MagicMock()
+        task.id = "t1"
+        task.prompt = "P"
+        task.url = "http://x.com"
+
+        test = MagicMock()
+
+        def _model_dump_side_effect(*args, **kwargs):
+            if kwargs.get("mode") == "json":
+                raise TypeError("mode json not supported")
+            return {"type": "FallbackTest", "x": 1}
+
+        test.model_dump.side_effect = _model_dump_side_effect
+        task.tests = [test]
+
+        with patch.object(v.console, "print") as console_print:
+            v.show_task_with_tests(task)
+            assert console_print.call_count > 0
+
+    def test_show_task_with_tests_vars_fallback_when_no_dump_or_dict(self):
+        v = SubnetVisualizer()
+        task = MagicMock()
+        task.id = "t1"
+        task.prompt = "P"
+        task.url = "http://x.com"
+
+        class BareTest:
+            def __init__(self) -> None:
+                self.some_attr = "hello"
+
+        task.tests = [BareTest()]
+
+        with patch.object(v.console, "print"):
+            v.show_task_with_tests(task)
+
 
 class TestShowFullEvaluation:
     """Tests for show_full_evaluation (mocked console)."""
@@ -267,6 +304,49 @@ class TestShowFullEvaluation:
                 [MagicMock()],
                 test_results,
                 evaluation_result=MagicMock(final_score=0.5),
+                feedback=None,
+            )
+
+    def test_show_full_evaluation_when_tests_exist_but_no_results(self):
+        v = SubnetVisualizer()
+        task = MagicMock()
+        task.id = "t1"
+        task.prompt = "P"
+        task.url = "http://x.com"
+
+        test_mock = MagicMock()
+        test_mock.__class__.__name__ = "CheckUrlTest"
+        task.tests = [test_mock]
+
+        with patch.object(v.console, "print") as console_print:
+            v.show_full_evaluation(
+                "agent-1",
+                "validator-1",
+                task,
+                actions=[],
+                test_results=[],
+                evaluation_result=None,
+                feedback=None,
+            )
+            # Covers debug branch when no configured results are available.
+            assert any("No configured tests" in str(call.args[0]) for call in console_print.call_args_list)
+
+    def test_show_full_evaluation_unknown_evaluation_object_sets_zero(self):
+        v = SubnetVisualizer()
+        task = MagicMock()
+        task.id = "t1"
+        task.prompt = "P"
+        task.url = "http://x.com"
+        task.tests = []
+
+        with patch.object(v.console, "print"):
+            v.show_full_evaluation(
+                "agent-1",
+                "validator-1",
+                task,
+                actions=[],
+                test_results=[],
+                evaluation_result=object(),
                 feedback=None,
             )
 
