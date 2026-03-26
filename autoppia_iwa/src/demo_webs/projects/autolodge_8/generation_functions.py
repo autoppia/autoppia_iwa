@@ -111,6 +111,40 @@ def _format_rating_to_fixed_2(value: Any) -> str | None:
         return None
 
 
+def _guests_shown_in_property_detail_ui(hotel: dict[str, Any]) -> int | None:
+    """Match web_8_autolodge stay page guests input: min(max(1, guests ?? 1), maxGuests ?? guests ?? 1)."""
+    max_guests_raw = hotel.get("maxGuests")
+    if max_guests_raw is None:
+        max_guests_raw = hotel.get("guests")
+    if max_guests_raw is None:
+        max_guests_raw = 1
+    try:
+        max_guests = int(max_guests_raw)
+    except (TypeError, ValueError):
+        return None
+
+    raw_guests = hotel.get("guests")
+    if raw_guests is None:
+        g = 1
+    else:
+        try:
+            g = int(raw_guests)
+        except (TypeError, ValueError):
+            return None
+    g = max(1, g)
+    return min(g, max_guests)
+
+
+def format_date(date_input) -> str:
+    try:
+        if isinstance(date_input, datetime):
+            return date_input.strftime("%m/%d/%Y")
+        parsed = datetime.strptime(date_input, "%Y-%m-%d")
+        return parsed.strftime("%m/%d/%Y")
+    except Exception:
+        return str(date_input)
+
+
 def _extract_region_from_location(location: Any) -> str | None:
     """
     UI shows location as 'City, Country' (or similar), and we use the country part as 'region'.
@@ -595,7 +629,67 @@ async def generate_reserve_hotel_constraints(
     return constraints_list
 
 
-async def generate_edit_guests_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_edit_guests_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        hotels = await _ensure_hotel_dataset(task_url, dataset)
+        if not hotels:
+            return []
+
+        selected = random.choice(hotels)
+        guests_ui = _guests_shown_in_property_detail_ui(selected)
+        if guests_ui is None:
+            return []
+
+        rating = _format_rating_to_fixed_2(selected.get("rating"))
+        raw_price = selected.get("price")
+        price: str | None = None
+        if raw_price is not None:
+            try:
+                price = f"${float(raw_price):.2f}"
+            except (TypeError, ValueError):
+                price = None
+        amenities = selected.get("amenities") or []
+
+        selected_item = {
+            "name": selected.get("title"),
+            "location": selected.get("location"),
+            "rating": rating,
+            "price": price,
+            "reviews": selected.get("reviews"),
+            "guests": guests_ui,
+            "bedrooms": selected.get("bedrooms"),
+            "beds": selected.get("beds"),
+            "baths": selected.get("baths"),
+            "host_name": selected.get("host_name"),
+            "amenities": amenities,
+        }
+        visible_fields = [
+            "name",
+            "location",
+            "rating",
+            "price",
+            "reviews",
+            "guests",
+            "bedrooms",
+            "beds",
+            "baths",
+            "host_name",
+            "amenities",
+        ]
+        return (
+            _build_data_extraction_result(
+                selected_item,
+                visible_fields,
+                verify_field="guests",
+                question_fields_override=["name"],
+            )
+            or []
+        )
+
     constraints_list: list[dict[str, Any]] = []
     data = await _ensure_hotel_dataset(task_url, dataset)
     # Prefer hotels that allow increasing guests (capacity >= 2). If none, bail out early.
@@ -637,7 +731,65 @@ async def generate_edit_guests_constraints(task_url: str | None = None, dataset:
     return constraints_list
 
 
-async def generate_edit_checkin_checkout_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_edit_checkin_checkout_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]]:
+    if test_types == "data_extraction_only":
+        hotels = await _ensure_hotel_dataset(task_url, dataset)
+        if not hotels:
+            return []
+
+        selected = random.choice(hotels)
+
+        rating = _format_rating_to_fixed_2(selected.get("rating"))
+        raw_price = selected.get("price")
+        price: str | None = None
+        if raw_price is not None:
+            try:
+                price = f"${float(raw_price):.2f}"
+            except (TypeError, ValueError):
+                price = None
+        amenities = selected.get("amenities") or []
+        checkin_date = selected.get("datesFrom")
+        if checkin_date is not None:
+            checkin_date = format_date(checkin_date)
+        else:
+            logger.warning("checkin date value is None")
+        checkout_date = selected.get("datesTo")
+        if checkout_date is not None:
+            checkout_date = format_date(checkout_date)
+        else:
+            logger.warning("checkout date value is None")
+        selected_item = {
+            "name": selected.get("title"),
+            "location": selected.get("location"),
+            "rating": rating,
+            "price": price,
+            "reviews": selected.get("reviews"),
+            "guests": selected.get("guests"),
+            "bedrooms": selected.get("bedrooms"),
+            "beds": selected.get("beds"),
+            "baths": selected.get("baths"),
+            "host_name": selected.get("host_name"),
+            "amenities": amenities,
+            "checkin_date": checkin_date,
+            "checkout_date": checkout_date,
+        }
+        visible_fields = ["name", "location", "rating", "price", "reviews", "guests", "bedrooms", "beds", "baths", "host_name", "amenities", "checkin_date", "checkout_date"]
+        # Pick verify_field randomly
+        verify_field = random.choice(["checkin_date", "checkout_date"])
+
+        return (
+            _build_data_extraction_result(
+                selected_item,
+                visible_fields,
+                verify_field=verify_field,
+                question_fields_override=["name"],
+            )
+            or []
+        )
     constraints_list: list[dict[str, Any]] = []
     reserve_constraints_list, sample_hotel = await _generate_reserve_hotel_constraints(task_url, dataset=dataset)
 

@@ -394,6 +394,35 @@ We need to increase the number of guests where guests_to is less than or equal t
 Increase number of guests and update availability where guests_to is less than or equal to '2'...
 """
 
+EDIT_NUMBER_OF_GUESTS_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which is the number of guests in the edit number of guests context.
+
+Use natural language only. Do NOT use schema-style field names such as "name", "location", "rating", "price", "reviews", "guests", "bedrooms", "beds", "baths", "host_name", "amenities" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., hotel name, location, rating, price, number of reviews, number of guests, bedrooms, beds, baths, host name, amenities).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the number of guests.
+
+Do NOT start questions with imperative phrasing like "Edit...", "Change...", or "Update...".
+
+Always end the question naturally with "so I can update the number of guests."
+
+For example, format the question naturally like:
+- "Can you tell me how many guests the hotel 'Ocean View Resort', located in Miami, which has a rating of 4.5, costs $200 per night, has 120 reviews, 2 bedrooms, 3 beds, 2 baths, hosted by 'John Smith', and includes amenities like WiFi and pool can accommodate, so I can update the number of guests?"
+
+Examples:
+- "Can you tell me how many guests the hotel 'Sunset Inn', located in Paris, which has a rating of 4.3, costs $150 per night, has 80 reviews, 2 bedrooms, 2 beds, 1 bath, hosted by 'Michael Lee', and includes amenities like parking and air conditioning can accommodate, so I can update the number of guests?"
+- "Can you tell me how many guests the hotel 'Green Valley Stay', located in Bali, which has a rating of 4.8, costs $250 per night, has 150 reviews, 3 bedrooms, 4 beds, 3 baths, hosted by 'Sophia Brown', and includes amenities like WiFi and pool can accommodate, so I can update the number of guests?"
+- "Can you tell me how many guests the hotel 'Mountain Retreat', located in Aspen, which has a rating of 4.6, costs $300 per night, has 110 reviews, 4 bedrooms, 5 beds, 3 baths, hosted by 'John Carter', and includes amenities like fireplace and hot tub can accommodate, so I can update the number of guests?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value (number of guests) itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the number of guests.
+""".strip()
+
 
 EDIT_NUMBER_OF_GUESTS_USE_CASE = UseCase(
     name="EDIT_NUMBER_OF_GUESTS",
@@ -401,6 +430,8 @@ EDIT_NUMBER_OF_GUESTS_USE_CASE = UseCase(
     event=EditNumberOfGuestsEvent,
     event_source_code=EditNumberOfGuestsEvent.get_source_code_of_class(),
     constraints_generator=generate_edit_guests_constraints,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=EDIT_NUMBER_OF_GUESTS_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Set total guests to 4 for this booking.", "prompt_for_task_generation": "Set total guests to 4 for this booking."},
         {"prompt": "Change the guests count to 2.", "prompt_for_task_generation": "Change the guests count to 2."},
@@ -516,6 +547,38 @@ EXAMPLES:
 ❌ INCORRECT: Edit checkin dates where date '11-19' and checkout '12-21'. (Not all constraints in the prompt and also not exactly the value copied)
 """.strip()
 
+EDIT_CHECK_IN_OUT_DATES_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be either the check-in date or the check-out date in the edit check-in/out dates context.
+
+Use natural language only. Do NOT use schema-style field names such as "name", "location", "rating", "price", "reviews", "guests", "bedrooms", "beds", "baths", "host_name", "amenities", "checkin_date", "checkout_date" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., hotel name, location, rating, price, number of reviews, number of guests, bedrooms, beds, baths, host name, amenities, check-in date, check-out date).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Edit...", "Change...", or "Update...".
+
+Always end the question naturally with "so I can update the dates."
+
+For example, if the verify field is 'check-in date', format the question naturally:
+- "Can you tell me the check-in date for the hotel 'Ocean View Resort', located in Miami, which has a rating of 4.5, costs $200 per night, has 120 reviews, accommodates 4 guests, has 2 bedrooms, 3 beds, 2 baths, hosted by 'John Smith', includes amenities like WiFi and pool, and has a check-out date of March 20, so I can update the dates?"
+
+If the verify field is 'check-out date', format the question naturally:
+- "Can you tell me the check-out date for the hotel 'Ocean View Resort', located in Miami, which has a rating of 4.5, costs $200 per night, has 120 reviews, accommodates 4 guests, has 2 bedrooms, 3 beds, 2 baths, hosted by 'John Smith', includes amenities like WiFi and pool, and has a check-in date of March 15, so I can update the dates?"
+
+Examples:
+- "Can you tell me the check-in date for the hotel 'Sunset Inn', located in Paris, which has a rating of 4.3, costs $150 per night, has 80 reviews, accommodates 3 guests, has 2 bedrooms, 2 beds, 1 bath, hosted by 'Michael Lee', includes amenities like parking and air conditioning, and has a check-out date of April 10, so I can update the dates?"
+- "Can you tell me the check-out date for the hotel 'Green Valley Stay', located in Bali, which has a rating of 4.8, costs $250 per night, has 150 reviews, accommodates 5 guests, has 3 bedrooms, 4 beds, 3 baths, hosted by 'Sophia Brown', includes amenities like WiFi and pool, and has a check-in date of May 5, so I can update the dates?"
+- "Can you tell me the check-in date for the hotel 'Mountain Retreat', located in Aspen, which has a rating of 4.6, costs $300 per night, has 110 reviews, accommodates 6 guests, has 4 bedrooms, 5 beds, 3 baths, hosted by 'John Carter', includes amenities like fireplace and hot tub, and has a check-out date of June 18, so I can update the dates?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value (check-in or check-out date) itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 EDIT_CHECK_IN_OUT_DATES_USE_CASE = UseCase(
     name="EDIT_CHECK_IN_OUT_DATES",
     description="Triggered when a user edits the check-in or check-out dates of a reservation or search.",
@@ -523,6 +586,8 @@ EDIT_CHECK_IN_OUT_DATES_USE_CASE = UseCase(
     event_source_code=EditCheckInOutDatesEvent.get_source_code_of_class(),
     constraints_generator=generate_edit_checkin_checkout_constraints,
     additional_prompt_info=EDIT_CHECK_IN_OUT_DATES_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=EDIT_CHECK_IN_OUT_DATES_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Edit checkin checkout dates where checkin date '2025-08-20 00:00:00', and checkout date less than or equal '2025-10-24 00:00:00'.",
@@ -881,19 +946,19 @@ FAQ_OPENED_USE_CASE = UseCase(
 )
 
 ALL_USE_CASES = [
-    SEARCH_HOTEL_USE_CASE,  # 1
-    VIEW_HOTEL_USE_CASE,  # 2
-    EDIT_NUMBER_OF_GUESTS_USE_CASE,  # will add support and verify field "guest"
-    RESERVE_HOTEL_USE_CASE,  # 6
-    EDIT_CHECK_IN_OUT_DATES_USE_CASE,  # will add support and verify field "check in and checkout date"
+    SEARCH_HOTEL_USE_CASE,
+    VIEW_HOTEL_USE_CASE,
+    EDIT_NUMBER_OF_GUESTS_USE_CASE,
+    RESERVE_HOTEL_USE_CASE,
+    EDIT_CHECK_IN_OUT_DATES_USE_CASE,
     CONFIRM_AND_PAY_USE_CASE,
-    MESSAGE_HOST_USE_CASE,  # 7
-    SHARE_HOTEL_USE_CASE,  # 3
-    ADD_TO_WISHLIST_USE_CASE,  # 4
+    MESSAGE_HOST_USE_CASE,
+    SHARE_HOTEL_USE_CASE,
+    ADD_TO_WISHLIST_USE_CASE,
     REMOVE_FROM_WISHLIST_USE_CASE,
     BACK_TO_ALL_HOTELS_USE_CASE,
     SUBMIT_HOTEL_REVIEW_USE_CASE,
-    APPLY_FILTERS_USE_CASE,  # 5
+    APPLY_FILTERS_USE_CASE,
     PAYMENT_METHOD_SELECTED_USE_CASE,
     WISHLIST_OPENED_USE_CASE,
     BOOK_FROM_WISHLIST_USE_CASE,
