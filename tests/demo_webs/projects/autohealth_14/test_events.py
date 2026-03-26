@@ -49,3 +49,16 @@ def test_backend_event_types_parse(event_name, data):
     e = event_class.parse(_be(event_name, data))
     assert e.event_name == event_name
     assert_parse_cls_kwargs_match_model(event_class)
+
+
+@pytest.mark.parametrize("event_name,data", AUTOHEALTH_PAYLOADS)
+def test_backend_event_types_validate_none_criteria(event_name, data):
+    event_class = BACKEND_EVENT_TYPES[event_name]
+    e = event_class.parse(_be(event_name, data))
+    assert e.validate_criteria(None) is True
+
+
+def test_search_doctors_parse_with_non_dict_data_raises():
+    # Current parser assumes data["data"] is mapping-like and raises on malformed payloads.
+    with pytest.raises(AttributeError):
+        SearchDoctorsEvent.parse(_be("SEARCH_DOCTORS", {"data": "not-a-dict"}))
