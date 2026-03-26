@@ -48,6 +48,21 @@ def _action_execution_exception_types():
 
 
 _SUPPRESS_PLAYWRIGHT = (PlaywrightError, PWTimeout, RuntimeError)
+_NON_NAVIGATING_ACTIONS = {
+    "TypeAction",
+    "SelectAction",
+    "SelectDropDownOptionAction",
+    "HoverAction",
+    "ExtractAction",
+    "EvaluateAction",
+    "ScreenshotAction",
+    "MouseMoveAction",
+    "MouseDownAction",
+    "MouseUpAction",
+    "HoldKeyAction",
+    "SendKeysIWAAction",
+}
+_STABILIZE_LOAD_STATE_TIMEOUT_MS = 1200
 
 
 class PlaywrightBrowserExecutor:
@@ -106,8 +121,10 @@ class PlaywrightBrowserExecutor:
             action_output = await action.execute(self.page, self.backend_demo_webs_service, web_agent_id)
             execution_time = (datetime.now(UTC) - start_time).total_seconds()
 
-            # Capture backend events and updated browser state
-            await self.page.wait_for_load_state("domcontentloaded")
+            # Capture backend events and updated browser state. Do not force
+            # text-entry and other non-navigation actions through a full
+            # navigation-style load wait.
+            await self._stabilize_after_action(action)
             await self._after_action(action, iteration)
 
             # backend_events = await self._get_backend_events(web_agent_id, is_web_real)
@@ -223,6 +240,17 @@ class PlaywrightBrowserExecutor:
             return {"html": html, "screenshot": encoded_screenshot, "url": current_url}
         except (PlaywrightError, PWTimeout, RuntimeError, ValueError) as e:
             return _minimal_snapshot(error=str(e))
+
+    async def _stabilize_after_action(self, action: BaseAction) -> None:
+        if not self.page:
+            return
+        if type(action).__name__ in _NON_NAVIGATING_ACTIONS:
+            return
+        with contextlib.suppress(PWTimeout, PlaywrightError, RuntimeError):
+            await self.page.wait_for_load_state(
+                "domcontentloaded",
+                timeout=_STABILIZE_LOAD_STATE_TIMEOUT_MS,
+            )
 
     async def _before_action(self, action: BaseAction, iteration: int) -> None:
         """

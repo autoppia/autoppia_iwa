@@ -136,3 +136,35 @@ async def test_get_backend_events_for_action_returns_empty_for_real_web():
 
     assert result == []
     backend.get_backend_events.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_executor_does_not_wait_for_load_state_after_type_action():
+    from autoppia_iwa.src.execution.actions.actions import Selector, SelectorType, TypeAction
+
+    page = AsyncMock()
+    page.content = AsyncMock(return_value="<html></html>")
+    page.url = "http://example.com/login"
+    page.fill = AsyncMock(return_value=None)
+    page.wait_for_load_state = AsyncMock(return_value=None)
+    config = BrowserSpecification()
+    executor = browser_executor.PlaywrightBrowserExecutor(config, page=page)
+
+    result = await executor.execute_single_action(
+        TypeAction(
+            selector=Selector(
+                type=SelectorType.ATTRIBUTE_VALUE_SELECTOR,
+                attribute="id",
+                value="login-username",
+            ),
+            text="user1",
+        ),
+        "agent1",
+        0,
+        is_web_real=True,
+        should_record=False,
+    )
+
+    assert result.successfully_executed is True
+    page.fill.assert_awaited_once()
+    page.wait_for_load_state.assert_not_awaited()

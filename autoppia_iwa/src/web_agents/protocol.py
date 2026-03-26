@@ -13,6 +13,62 @@ class StepExecutionMode(str, Enum):
     BATCH = "batch"
 
 
+class StepHistoryItem(BaseModel):
+    """Compact execution-history item sent back to the agent on later /step calls."""
+
+    model_config = ConfigDict(extra="allow")
+
+    index: int | None = Field(default=None, ge=0)
+    action: dict[str, Any] | str | None = None
+    success: bool | None = None
+    error: str | None = None
+
+    @field_validator("action", mode="before")
+    @classmethod
+    def normalize_action(cls, value: Any) -> dict[str, Any] | str | None:
+        if value is None:
+            return None
+        if isinstance(value, dict):
+            return dict(value)
+        if isinstance(value, str):
+            return value
+        raise ValueError("history item `action` must be a JSON object or string when provided.")
+
+
+class StepAllowedTool(BaseModel):
+    """Tool definition advertised to the agent in the /step request."""
+
+    model_config = ConfigDict(extra="allow")
+
+    name: str
+    description: str = ""
+    parameters: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str) -> str:
+        name = str(value or "").strip()
+        if not name:
+            raise ValueError("allowed tool `name` must be a non-empty string.")
+        return name
+
+    @field_validator("description", mode="before")
+    @classmethod
+    def normalize_description(cls, value: Any) -> str:
+        if value is None:
+            return ""
+        return str(value)
+
+    @field_validator("parameters", mode="before")
+    @classmethod
+    def normalize_parameters(cls, value: Any) -> dict[str, Any]:
+        if value is None:
+            return {}
+        if isinstance(value, dict):
+            return dict(value)
+        raise ValueError("allowed tool `parameters` must be a JSON object.")
+
+
 class StepRequest(BaseModel):
     """Canonical request payload sent to /step endpoints."""
 
@@ -25,8 +81,8 @@ class StepRequest(BaseModel):
     html: str = ""
     screenshot: str | bytes | None = None
     step_index: int = Field(default=0, ge=0)
-    history: list[dict[str, Any]] | None = None
-    tools: list[dict[str, Any]] = Field(default_factory=list)
+    history: list[StepHistoryItem] | None = None
+    tools: list[StepAllowedTool] = Field(default_factory=list)
     include_reasoning: bool = False
 
     @model_validator(mode="before")
@@ -103,6 +159,8 @@ class StepResponse(BaseModel):
 # Backward compat aliases
 ACT_PROTOCOL_VERSION = STEP_PROTOCOL_VERSION
 ActExecutionMode = StepExecutionMode
+ActHistoryItem = StepHistoryItem
+ActAllowedTool = StepAllowedTool
 ActRequest = StepRequest
 ActToolCall = StepToolCall
 ActResponse = StepResponse

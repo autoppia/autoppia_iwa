@@ -84,7 +84,7 @@ def _generate_allowed_genres_list(movies_data: list[dict]) -> list[str]:
 REGISTRATION_ADDITIONAL_PROMPT_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above (username, email, and password).
-2. Explicitly include instruction to register using username equals 'signup_username', email equals 'signup_email' and password equals 'signup_password' (**strictly** containing these identifiers).
+2. Explicitly include instruction to register using username equals '<signup_username>', email equals '<signup_email>' and password equals '<signup_password>' (**strictly** containing these placeholders).
 3. Be phrased as a request to register or create a new account (e.g., "Please register using...", "Create an account with...", "Sign up using...").
 4. {STRICT_COPY_INSTRUCTION}
 
@@ -100,20 +100,20 @@ REGISTRATION_USE_CASE = UseCase(
     additional_prompt_info=REGISTRATION_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Register where username equals signup_username, email equals signup_email and password equals signup_password",
-            "prompt_for_task_generation": "Register where username equals signup_username, email equals signup_email and password equals signup_password",
+            "prompt": "Register where username equals <signup_username>, email equals <signup_email> and password equals <signup_password>",
+            "prompt_for_task_generation": "Register where username equals <signup_username>, email equals <signup_email> and password equals <signup_password>",
         },
         {
-            "prompt": "Create a new account where username equals signup_username, email equals signup_email and password equals signup_password",
-            "prompt_for_task_generation": "Create a new account where username equals signup_username, email equals signup_email and password equals signup_password",
+            "prompt": "Create a new account where username equals <signup_username>, email equals <signup_email> and password equals <signup_password>",
+            "prompt_for_task_generation": "Create a new account where username equals <signup_username>, email equals <signup_email> and password equals <signup_password>",
         },
         {
-            "prompt": "Fill the registration form where username equals signup_username, email equals signup_email and password equals signup_password",
-            "prompt_for_task_generation": "Fill the registration form where username equals signup_username, email equals signup_email and password equals signup_password",
+            "prompt": "Fill the registration form where username equals <signup_username>, email equals <signup_email> and password equals <signup_password>",
+            "prompt_for_task_generation": "Fill the registration form where username equals <signup_username>, email equals <signup_email> and password equals <signup_password>",
         },
         {
-            "prompt": "Sign up for an account where username equals signup_username, email equals signup_email and password equals signup_password",
-            "prompt_for_task_generation": "Sign up for an account where username equals signup_username, email equals signup_email and password equals signup_password",
+            "prompt": "Sign up for an account where username equals <signup_username>, email equals <signup_email> and password equals <signup_password>",
+            "prompt_for_task_generation": "Sign up for an account where username equals <signup_username>, email equals <signup_email> and password equals <signup_password>",
         },
     ],
 )

@@ -1,6 +1,8 @@
 from autoppia_iwa.src.web_agents.protocol import (
     STEP_PROTOCOL_VERSION,
+    StepAllowedTool,
     StepExecutionMode,
+    StepHistoryItem,
     StepRequest,
     StepResponse,
 )
@@ -29,7 +31,9 @@ __all__ = [
     "BrowserSnapshot",
     "ScoreDetails",
     "STEP_PROTOCOL_VERSION",
+    "StepAllowedTool",
     "StepExecutionMode",
+    "StepHistoryItem",
     "StepRequest",
     "StepResponse",
     "StepResult",

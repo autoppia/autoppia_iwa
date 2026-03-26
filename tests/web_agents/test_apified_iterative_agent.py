@@ -304,6 +304,7 @@ class TestAct:
             await agent.step(
                 task=task,
                 html="<main>hello</main>",
+                screenshot=b"raw-shot",
                 url="http://example.com:8000/page",
                 step_index=3,
                 history=[{"action": "click"}],
@@ -315,11 +316,13 @@ class TestAct:
         assert payload["prompt"] == task.prompt
         assert payload["url"] == "http://localhost:8000/page"
         assert payload["html"] == "<main>hello</main>"
+        assert payload["screenshot"] == "raw-shot"
         assert payload["step_index"] == 3
         assert payload["history"] == [{"action": "click"}]
         assert payload["include_reasoning"] is True
         assert "tools" in payload
         assert isinstance(payload["tools"], list)
+        assert all(isinstance(item, dict) for item in payload["tools"])
 
     @pytest.mark.asyncio
     async def test_step_uses_snapshot_html_alias_when_provided(self):

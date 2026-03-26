@@ -1,4 +1,4 @@
-"""Tests for entrypoints.benchmark.utils.task_generation."""
+"""Tests for canonical benchmark task generation utilities."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from autoppia_iwa.entrypoints.benchmark.utils import task_generation
+from autoppia_iwa.src.evaluation.benchmark.utils import task_generation
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 
@@ -141,3 +141,10 @@ def test_get_projects_by_ids_missing_raises():
     p1 = _make_project("a", "A")
     with pytest.raises(ValueError, match="Project IDs not found"):
         task_generation.get_projects_by_ids([p1], ["a", "missing"])
+
+
+def test_entrypoint_task_generation_module_re_exports_canonical_objects():
+    from autoppia_iwa.entrypoints.benchmark.utils import task_generation as entrypoint_task_generation
+
+    assert entrypoint_task_generation.get_projects_by_ids is task_generation.get_projects_by_ids
+    assert entrypoint_task_generation.save_tasks_to_json is task_generation.save_tasks_to_json

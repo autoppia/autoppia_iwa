@@ -95,17 +95,3 @@ class EvaluationResult(BaseModel):
             feedback_dump.pop("execution_history", None)
             feedback_dump.pop("test_results", None)
         return base_dump
-
-
-class EvaluatorConfig(BaseModel):
-    # save_results_in_db: bool = False
-    task_delay_in_seconds: float = Field(default=0.1, gt=0)
-    chunk_size: int = Field(default=20, gt=0)
-    browser_timeout: float = Field(default=10000, gt=0)
-    enable_grouping_tasks: bool = Field(default=True)
-    normalize_scores: bool = Field(default=True)
-    verbose_logging: bool = Field(default=False)  # Default to minimal logging
-    debug_mode: bool = Field(default=False)  # Even more minimal logging
-    should_record_gif: bool = Field(default=False, description="Record evaluation on browser executions.")
-    max_consecutive_action_failures: int = Field(default=2, gt=0, description="Maximum consecutive action failures before marking task as failed. Default: 2")
-    headless: bool | None = Field(default=None, description="Override browser headless. None = use EVALUATOR_HEADLESS env.")

@@ -614,3 +614,11 @@ class TestCleanListResponseCodePaths:
         result = gen._clean_list_response(content)
         parsed = json.loads(result)
         assert parsed == ["x"]
+
+    def test_preserves_signup_placeholders(self):
+        project = _make_project()
+        gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
+        content = '["Register with <signup_username> <signup_email> <signup_password> <email> <username> <password>"]'
+        result = gen._clean_list_response(content)
+        parsed = json.loads(result)
+        assert parsed == ["Register with <signup_username> <signup_email> <signup_password> <email> <username> <password>"]

@@ -3,10 +3,11 @@
 from autoppia_iwa.src.evaluation.classes import (
     EvaluationResult,
     EvaluationStats,
-    EvaluatorConfig,
     Feedback,
     TestResult as EvalTestResult,
 )
+from autoppia_iwa.src.evaluation.legacy.concurrent_config import EvaluatorConfig as LegacyConcurrentEvaluatorConfig
+from autoppia_iwa.src.evaluation.stateful_evaluator import TaskExecutionSessionConfig
 from autoppia_iwa.src.execution.actions.actions import NavigateAction
 from autoppia_iwa.src.execution.classes import ActionExecutionResult, BrowserSnapshot
 
@@ -128,7 +129,7 @@ def test_evaluation_result_model_dump_feedback_pops():
 
 
 def test_evaluator_config_defaults():
-    config = EvaluatorConfig()
+    config = LegacyConcurrentEvaluatorConfig()
     assert config.task_delay_in_seconds == 0.1
     assert config.chunk_size == 20
     assert config.enable_grouping_tasks is True
@@ -136,7 +137,7 @@ def test_evaluator_config_defaults():
 
 
 def test_evaluator_config_custom():
-    config = EvaluatorConfig(
+    config = LegacyConcurrentEvaluatorConfig(
         task_delay_in_seconds=0.5,
         chunk_size=10,
         should_record_gif=True,
@@ -144,3 +145,9 @@ def test_evaluator_config_custom():
     assert config.task_delay_in_seconds == 0.5
     assert config.chunk_size == 10
     assert config.should_record_gif is True
+
+
+def test_task_execution_session_config_defaults():
+    config = TaskExecutionSessionConfig()
+    assert config.action_timeout_s == 15.0
+    assert config.page_default_timeout_ms == 10_000

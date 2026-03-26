@@ -20,6 +20,13 @@ def test_cli_main_unknown_command(capsys):
     assert "Unknown command: missing" in out
 
 
+def test_cli_main_dash_help_prints_command_help(capsys):
+    assert cli_main.main(["--help"]) == 0
+    out = capsys.readouterr().out
+    assert "usage: iwa <command>" in out
+    assert "generate-tasks" in out
+
+
 @pytest.mark.parametrize(
     ("command", "target"),
     [
@@ -34,4 +41,11 @@ def test_cli_main_dispatches(monkeypatch, command: str, target: str):
     called = Mock()
     monkeypatch.setattr(target, called)
     assert cli_main.main([command, "--help"]) == 0
+    called.assert_called_once_with()
+
+
+def test_cli_help_subcommand_dispatches(monkeypatch):
+    called = Mock()
+    monkeypatch.setattr("autoppia_iwa.entrypoints.benchmark.run.main", called)
+    assert cli_main.main(["help", "benchmark"]) == 0
     called.assert_called_once_with()

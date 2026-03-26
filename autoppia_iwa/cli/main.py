@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import argparse
 import sys
 from collections.abc import Callable
 
@@ -14,15 +13,6 @@ COMMAND_HELP = {
     "verify": "Run web verification pipeline",
     "debug": "Launch debugger UI for trace inspection",
 }
-
-
-def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="iwa", description="CLI for Autoppia IWA")
-    parser.add_argument("command", nargs="?", help="Command to run")
-    parser.add_argument("args", nargs=argparse.REMAINDER, help="Arguments forwarded to the command")
-    return parser
-
-
 def _resolve_command(command: str) -> Callable[[], None]:
     if command == "check":
         from autoppia_iwa.entrypoints.check.run import main as cmd
@@ -40,19 +30,29 @@ def _resolve_command(command: str) -> Callable[[], None]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = _build_parser().parse_args(argv)
-    if not args.command:
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if not argv or argv[0] in {"-h", "--help"}:
         _print_help()
         return 0
 
+    command = argv[0]
+    forwarded_args = list(argv[1:])
+
+    if command == "help":
+        if not forwarded_args:
+            _print_help()
+            return 0
+        command = forwarded_args[0]
+        forwarded_args = ["--help", *forwarded_args[1:]]
+
     try:
-        cmd = _resolve_command(args.command)
+        cmd = _resolve_command(command)
     except KeyError:
-        print(f"Unknown command: {args.command}")
+        print(f"Unknown command: {command}")
         _print_help()
         return 1
 
-    sys.argv = [f"iwa {args.command}"] + list(args.args)
+    sys.argv = [f"iwa {command}", *forwarded_args]
     cmd()
     return 0
 

@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
+from autoppia_iwa.config.config import VALIDATOR_ID
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.web_agents.classes import IWebAgent
@@ -36,12 +37,14 @@ class BenchmarkConfig:
     use_cached_tasks: bool = False
 
     # Evaluation mode
-    evaluator_mode: Literal["concurrent", "stateful"] = "concurrent"
+    evaluator_mode: Literal["stateful"] = "stateful"
     max_steps_per_task: int = 50
 
     # Execution
     runs: int = 1
     max_parallel_evaluations: int = 1
+    web_agent_id_prefix: str = "benchmark-agent"
+    validator_id_prefix: str = VALIDATOR_ID or "validator_001"
     record_gif: bool = False
     headless: bool | None = None
     save_results_json: bool = True
@@ -55,9 +58,9 @@ class BenchmarkConfig:
     traces_dir: Path = field(init=False)
 
     def __post_init__(self):
-        if self.evaluator_mode not in ("concurrent", "stateful"):
+        if self.evaluator_mode != "stateful":
             raise ValueError(f"Invalid evaluator_mode: {self.evaluator_mode}")
-        if self.evaluator_mode == "stateful" and self.max_steps_per_task <= 0:
+        if self.max_steps_per_task <= 0:
             raise ValueError("max_steps_per_task must be > 0 in stateful mode")
         if self.runs <= 0:
             raise ValueError("runs must be > 0")
@@ -65,6 +68,8 @@ class BenchmarkConfig:
             raise ValueError("max_parallel_evaluations must be > 0")
         if self.prompts_per_use_case <= 0:
             raise ValueError("prompts_per_use_case must be > 0")
+        self.web_agent_id_prefix = str(self.web_agent_id_prefix or "benchmark-agent").strip() or "benchmark-agent"
+        self.validator_id_prefix = str(self.validator_id_prefix or VALIDATOR_ID or "validator_001").strip() or "validator_001"
 
         benchmark_dir = self.base_dir / "benchmark-output"
         self.output_dir = benchmark_dir / "results"
@@ -87,6 +92,8 @@ class BenchmarkConfig:
             "max_steps_per_task": self.max_steps_per_task,
             "runs": self.runs,
             "max_parallel_evaluations": self.max_parallel_evaluations,
+            "web_agent_id_prefix": self.web_agent_id_prefix,
+            "validator_id_prefix": self.validator_id_prefix,
             "record_gif": self.record_gif,
             "headless": self.headless,
             "save_results_json": self.save_results_json,

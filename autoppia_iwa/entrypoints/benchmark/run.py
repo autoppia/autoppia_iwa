@@ -21,11 +21,12 @@ def _parse_args():
     parser.add_argument("--use-case", "-u", type=str, action="append", help="Use case(s)")
     parser.add_argument("--tasks", "-t", type=str, help="Load tasks from JSON file")
     parser.add_argument("--output", "-o", type=str, default=".", help="Base directory where benchmark-output/ will be created")
-    parser.add_argument("--mode", "-m", choices=["concurrent", "stateful"], default="stateful")
     parser.add_argument("--max-steps", type=int, default=50)
     parser.add_argument("--prompts-per-use-case", "-n", type=int, default=1)
     parser.add_argument("--runs", type=int, default=1)
     parser.add_argument("--parallel", "-j", type=int, default=1, help="Max parallel evaluations (browsers)")
+    parser.add_argument("--web-agent-prefix", type=str, default="benchmark-agent", help="Prefix used to generate unique web_agent_id values per evaluation")
+    parser.add_argument("--validator-prefix", type=str, default=None, help="Prefix used to generate unique validator_id values per evaluation")
     parser.add_argument("--headless", action="store_true", default=True)
     parser.add_argument("--no-headless", dest="headless", action="store_false")
     return parser.parse_args()
@@ -52,6 +53,8 @@ async def run(
     prompts_per_use_case: int = 1,
     runs: int = 1,
     parallel: int = 1,
+    web_agent_prefix: str = "benchmark-agent",
+    validator_prefix: str | None = None,
     headless: bool = True,
 ):
     from autoppia_iwa.src.bootstrap import AppBootstrap
@@ -60,6 +63,9 @@ async def run(
     from autoppia_iwa.src.evaluation.benchmark.utils.task_generation import get_projects_by_ids
 
     AppBootstrap()
+
+    if mode != "stateful":
+        raise ValueError("Only stateful benchmark mode is supported. Concurrent evaluation has moved to autoppia_iwa.src.evaluation.legacy.")
 
     projects = get_projects_by_ids(demo_web_projects, project_ids) if project_ids else demo_web_projects
     web_agent = _build_agent(agent)
@@ -73,10 +79,11 @@ async def run(
         agents=[web_agent],
         use_cases=use_cases,
         prompts_per_use_case=prompts_per_use_case,
-        evaluator_mode=mode,
         max_steps_per_task=max_steps,
         runs=runs,
         max_parallel_evaluations=parallel,
+        web_agent_id_prefix=web_agent_prefix,
+        validator_id_prefix=validator_prefix or "validator_001",
         headless=headless,
         base_dir=base_dir,
         use_cached_tasks=bool(tasks_file),
@@ -128,11 +135,12 @@ async def _main_async(args) -> int:
             use_cases=args.use_case,
             tasks_file=args.tasks,
             output_dir=args.output,
-            mode=args.mode,
             max_steps=args.max_steps,
             prompts_per_use_case=args.prompts_per_use_case,
             runs=args.runs,
             parallel=args.parallel,
+            web_agent_prefix=args.web_agent_prefix,
+            validator_prefix=args.validator_prefix,
             headless=args.headless,
         )
     except ValueError as exc:

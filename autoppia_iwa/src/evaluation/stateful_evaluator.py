@@ -49,7 +49,7 @@ class StepResult:
 
 
 @dataclass
-class EvaluatorConfig:
+class TaskExecutionSessionConfig:
     """
     Lightweight configuration for StatefulEvaluator behaviour.
     """
@@ -120,7 +120,7 @@ class TaskExecutionSession(AsyncTaskExecutionSession):
         enable_score_cheating: bool = False,
         should_record_gif: bool = False,
         capture_screenshot: bool = False,
-        config: EvaluatorConfig | None = None,
+        config: TaskExecutionSessionConfig | None = None,
         headless: bool | None = None,
     ) -> None:
         self.task = task
@@ -129,7 +129,7 @@ class TaskExecutionSession(AsyncTaskExecutionSession):
         self.enable_score_cheating = bool(enable_score_cheating)
         self.should_record_gif = should_record_gif
         self.capture_screenshot = capture_screenshot
-        self.config = config or EvaluatorConfig()
+        self.config = config or TaskExecutionSessionConfig()
         self._headless = headless
 
         self._playwright = None
@@ -383,9 +383,9 @@ StatefulEvaluator = TaskExecutionSession
 
 __all__ = [
     "BrowserSnapshot",
-    "EvaluatorConfig",
     "ScoreDetails",
     "TaskExecutionSession",
+    "TaskExecutionSessionConfig",
     "AsyncStatefulEvaluator",
     "StatefulEvaluator",
     "StepResult",

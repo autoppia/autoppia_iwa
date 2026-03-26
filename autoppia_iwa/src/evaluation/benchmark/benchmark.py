@@ -28,7 +28,6 @@ from loguru import logger
 from autoppia_iwa.src.data_generation.tasks.classes import Task, TaskGenerationConfig
 from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.evaluation.benchmark.config import BenchmarkConfig
 from autoppia_iwa.src.evaluation.benchmark.reporting import (
     aggregate_project_results,
@@ -41,16 +40,21 @@ from autoppia_iwa.src.evaluation.benchmark.trace_writer import TraceWriter
 from autoppia_iwa.src.evaluation.benchmark.utils.logging import setup_logging
 from autoppia_iwa.src.evaluation.benchmark.utils.metrics import TimingMetrics
 from autoppia_iwa.src.evaluation.benchmark.utils.task_generation import load_tasks_from_json, save_tasks_to_json
-from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStats, EvaluatorConfig
-from autoppia_iwa.src.evaluation.concurrent_evaluator import ConcurrentEvaluator
+from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStats
 from autoppia_iwa.src.evaluation.stateful_evaluator import TaskExecutionSession
-from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution, sanitize_html
+from autoppia_iwa.src.web_agents.classes import IWebAgent, sanitize_html
 
 
 def _make_eval_id(agent_id: str, task_id: str, run_idx: int) -> str:
     """Generate a unique web_agent_id for isolation. Each parallel eval gets its own."""
     short = uuid.uuid4().hex[:8]
     return f"{agent_id}-{short}-r{run_idx}"
+
+
+def _make_validator_id(base_validator_id: str, run_idx: int) -> str:
+    """Generate a unique validator_id for backend isolation per evaluation."""
+    short = uuid.uuid4().hex[:8]
+    return f"{base_validator_id}-{short}-r{run_idx}"
 
 
 class Benchmark:
@@ -183,16 +187,25 @@ class Benchmark:
         total = len(jobs)
         logger.info(f"Running {total} evaluations ({len(tasks)} tasks x {len(self.config.agents)} agents) with max {self.config.max_parallel_evaluations} parallel")
 
-        eval_results = await asyncio.gather(
-            *[self._run_eval_job(project, agent, task, run_idx, idx, total) for idx, (agent, task) in enumerate(jobs, 1)],
-            return_exceptions=True,
-        )
+        async def _run_job_with_context(
+            *,
+            agent: IWebAgent,
+            task: Task,
+            idx: int,
+        ) -> tuple[IWebAgent, Task, EvaluationResult | None]:
+            return agent, task, await self._run_eval_job(agent, task, run_idx, idx, total)
 
-        # Collect results
         results: dict[str, dict[str, dict[str, Any]]] = {}
-        for (agent, task), ev_result in zip(jobs, eval_results):
-            if isinstance(ev_result, Exception):
-                logger.error(f"{agent.name} x {task.id}: {ev_result}")
+        pending = [
+            asyncio.create_task(_run_job_with_context(agent=agent, task=task, idx=idx))
+            for idx, (agent, task) in enumerate(jobs, 1)
+        ]
+
+        for future in asyncio.as_completed(pending):
+            try:
+                agent, task, ev_result = await future
+            except Exception as exc:
+                logger.error(f"Benchmark evaluation failed: {exc}")
                 continue
             if ev_result is None:
                 continue
@@ -214,7 +227,6 @@ class Benchmark:
 
     async def _run_eval_job(
         self,
-        project: WebProject,
         agent: IWebAgent,
         task: Task,
         run_idx: int,
@@ -223,65 +235,25 @@ class Benchmark:
     ) -> EvaluationResult | None:
         """Run a single (agent, task) evaluation. Acquires semaphore for browser resources."""
         async with self._sem:
-            eval_id = _make_eval_id(agent.id, task.id, run_idx)
-            logger.info(f"[{job_num}/{total_jobs}] {agent.name} x {task.id} (eval_id={eval_id})")
-
-            if self.config.evaluator_mode == "stateful":
-                return await self._run_stateful(task, agent, eval_id)
-            else:
-                return await self._run_concurrent(project, task, agent, eval_id, run_idx)
-
-    # ── Concurrent mode: agent returns all actions, evaluator replays ───
-
-    async def _run_concurrent(
-        self, project: WebProject, task: Task, agent: IWebAgent, eval_id: str, run_idx: int
-    ) -> EvaluationResult | None:
-        backend = BackendDemoWebService(project, web_agent_id=eval_id)
-        try:
-            await backend.reset_database(web_agent_id=eval_id)
-            start = time.time()
-
-            actions = await agent.step(task=task, html="", url=task.url, step_index=0)
-            if not actions:
-                return None
-
-            solution = TaskSolution(task_id=task.id, actions=actions, web_agent_id=eval_id)
-            solution.replace_credentials(eval_id)
-            solution.replace_web_agent_id()
-
-            self._timing.record_solution_time(agent.id, task.id, time.time() - start)
-
-            evaluator = ConcurrentEvaluator(
-                web_project=project,
-                config=EvaluatorConfig(
-                    should_record_gif=self.config.record_gif,
-                    headless=self.config.headless,
-                ),
+            eval_id = _make_eval_id(self.config.web_agent_id_prefix or agent.id, task.id, run_idx)
+            validator_id = _make_validator_id(self.config.validator_id_prefix, run_idx)
+            logger.info(
+                f"[{job_num}/{total_jobs}] {agent.name} x {task.id} "
+                f"(eval_id={eval_id}, validator_id={validator_id})"
             )
-            results = await evaluator.evaluate_task_solutions(task, [solution])
-            if not results:
-                return None
-            result = results[0]
-            result.web_agent_id = agent.id
-            if result.stats:
-                result.stats.web_agent_id = eval_id
-            self._timing.record_evaluation_time(agent.id, task.id, result.evaluation_time)
-            return result
-        except Exception as e:
-            logger.error(f"{agent.name} concurrent eval failed on {task.id}: {e}")
-            return None
-        finally:
-            with contextlib.suppress(Exception):
-                await backend.close()
+
+            return await self._run_stateful(task, agent, eval_id, validator_id)
 
     # ── Stateful mode: step-by-step with live browser ───────────────────
 
-    async def _run_stateful(self, task: Task, agent: IWebAgent, eval_id: str) -> EvaluationResult:
+    async def _run_stateful(self, task: Task, agent: IWebAgent, eval_id: str, validator_id: str) -> EvaluationResult:
         max_steps = self.config.max_steps_per_task
         evaluator = TaskExecutionSession(
             task=task,
             web_agent_id=eval_id,
+            validator_id=validator_id,
             should_record_gif=self.config.record_gif,
+            capture_screenshot=True,
             headless=self.config.headless,
         )
 
@@ -313,6 +285,7 @@ class Benchmark:
                     actions = await agent.step(
                         task=task,
                         html=html,
+                        screenshot=step_result.snapshot.screenshot,
                         url=before_url,
                         step_index=step_idx,
                         history=self._compact_history(history),
@@ -383,11 +356,11 @@ class Benchmark:
         return EvaluationResult(
             final_score=sr.raw_score if sr else 0.0,
             raw_score=sr.raw_score if sr else 0.0,
-            web_agent_id=agent.id,
+            web_agent_id=eval_id,
             execution_history=history,
             evaluation_time=elapsed,
             stats=EvaluationStats(
-                web_agent_id=agent.id,
+                web_agent_id=eval_id,
                 task_id=task.id,
                 action_count=total_actions,
                 start_time=start,

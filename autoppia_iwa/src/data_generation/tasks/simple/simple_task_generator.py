@@ -584,8 +584,12 @@ class SimpleTaskGenerator:
         # First, remove <think>...</think> blocks completely (including multiline)
         content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL | re.IGNORECASE)
 
-        # Remove any remaining XML-like tags except <username> and <password>
-        content = re.sub(r"<(?!/?(?:username|password|web_agent_id)\b)[^>]+>", "", content)
+        # Preserve credential placeholders that are part of the task contract.
+        allowed_placeholders = (
+            "username|password|email|web_agent_id|"
+            "signup_username|signup_email|signup_password"
+        )
+        content = re.sub(rf"<(?!/?(?:{allowed_placeholders})\b)[^>]+>", "", content)
 
         # Remove markdown code blocks
         content = re.sub(r"```(?:json)?\s*\n?", "", content)
