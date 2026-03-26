@@ -321,20 +321,36 @@ class EditBookEvent(Event, BaseEventValidator):
 
     event_name: str = "EDIT_BOOK"
 
+    book_id: int | str
     book_name: str
     book_author: str | None = None
+    book_year: int | str | None = None
+    book_pages: int | str | None = None
+    book_rating: int | str | float | None = None
 
     class ValidationCriteria(BaseModel):
-        name: str | CriterionValue | None = None
-        author: str | CriterionValue | None = None
+        book_id: str | CriterionValue | None = None
+        book_name: str | CriterionValue | None = None
+        book_author: str | CriterionValue | None = None
+        book_year: int | CriterionValue | None = None
+        book_pages: int | CriterionValue | None = None
+        book_rating: float | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
+        if criteria.book_id is not None and not self._validate_field(self.book_id, criteria.book_id):
+            return False
+        if criteria.book_year is not None and not self._validate_field(self.book_year, criteria.book_year):
+            return False
+        if criteria.book_rating is not None and not self._validate_field(self.book_rating, criteria.book_rating):
+            return False
+        if criteria.book_pages is not None and not self._validate_field(self.book_pages, criteria.book_pages):
+            return False
         return all(
             [
-                self._validate_field(self.book_name, criteria.name),
-                self._validate_field(self.book_author, criteria.author),
+                self._validate_field(self.book_name, criteria.book_name),
+                self._validate_field(self.book_author, criteria.book_author),
             ]
         )
 
@@ -342,13 +358,18 @@ class EditBookEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "EditBookEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
+        book_id_raw = data.get("book_id", 0)
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
+            book_id=str(book_id_raw),
             book_name=data.get("name", ""),
             book_author=get_author_from_data(data),
+            book_year=data.get("year"),
+            book_pages=get_pages_from_data(data),
+            book_rating=data.get("rating"),
         )
 
 

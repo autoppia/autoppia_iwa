@@ -736,8 +736,10 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 
 1. Include ALL edit constraints mentioned above — not just some of them.
 2. Include ONLY the edit constraints mentioned above — do not add any other criteria or filters.
-3. Be phrased as a request to edit or modify a book (use phrases like "Edit...", "Modify...", "Update...", "Change...", etc.).
-4. Begin with a creative instruction to log in using username '<username>' and password '<password>'.
+3. Begin with a creative instruction to log in using username '<username>' and password '<password>'.
+4. The edit statement MUST place editable numeric fields first in this style: "Edit the book year to <book_year>, page_count to <book_pages>, and rating to <book_rating>..."
+5. After stating editable fields, identify the target book using a trailing qualifier with identity constraints: "...whose name equals '<book_name>', id equals '<book_id>', and author equals '<book_author>'."
+6. Keep the same field names and operators exactly ("equals" wording). Do not change the order into "where name equals ... and year equals ...".
 
 STRICT FIELD USAGE RULE:
 
@@ -767,7 +769,7 @@ INCORRECT:
 - Repeating username or password inside the edit condition.
 - Editing a random or unspecified book.
 
-ALL prompts must follow this structure exactly, with varied phrasing but identical constraint logic and EXACT field values.
+ALL prompts must follow this structure exactly, with varied phrasing but identical constraint logic and EXACT field values while preserving this ordering.
 """
 EDIT_BOOK_USE_CASE = UseCase(
     name="EDIT_BOOK",
@@ -779,28 +781,28 @@ EDIT_BOOK_USE_CASE = UseCase(
     additional_prompt_info=EDIT_BOOK_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Sign in with username: <username> and password: <password>. After that, update the author of your book to Jamie Oliver.",
-            "prompt_for_task_generation": "Sign in with username: <username> and password: <password>. After that, update the author of <your_book> to Jamie Oliver.",
+            "prompt": "Login with username equals <username> and password equals <password>. Edit the book year to 1987, page_count to 138, and rating to 5.5, whose name equals '<book_name>', id equals '<book_id>', and author equals '<book_author>'.",
+            "prompt_for_task_generation": "Login with username equals <username> and password equals <password>. Edit the book year to <book_year>, page_count to <book_pages>, and rating to <book_rating>, whose name equals '<book_name>', id equals '<book_id>', and author equals '<book_author>'.",
         },
         {
-            "prompt": "First, log into your account with username: <username>, password: <password>. Then, modify the release year of your book to 2023.",
-            "prompt_for_task_generation": "First, log into your account with username: <username>, password: <password>. Then, modify the release year of <your_book> to 2023.",
+            "prompt": "Login with username equals <username> and password equals <password>. Update the book year to 2004, page_count to 121, and rating to 7.8, whose name equals '<book_name>', id equals '<book_id>', and author equals '<book_author>'.",
+            "prompt_for_task_generation": "Login with username equals <username> and password equals <password>. Update the book year to <book_year>, page_count to <book_pages>, and rating to <book_rating>, whose name equals '<book_name>', id equals '<book_id>', and author equals '<book_author>'.",
         },
         {
-            "prompt": "Access your account by entering username: <username> and password: <password>. Once logged in, add 'Baking' to the genres of your book.",
-            "prompt_for_task_generation": "Access your account by entering username: <username> and password: <password>. Once logged in, add 'Baking' to the genres of <your_book>.",
+            "prompt": "Login with username equals <username> and password equals <password>. Modify the book year to 1999, page_count to 167, and rating to 8.4, whose name equals '<book_name>', id equals '<book_id>', and author equals '<book_author>'.",
+            "prompt_for_task_generation": "Login with username equals <username> and password equals <password>. Modify the book year to <book_year>, page_count to <book_pages>, and rating to <book_rating>, whose name equals '<book_name>', id equals '<book_id>', and author equals '<book_author>'.",
         },
         {
-            "prompt": "Using username: <username> and password: <password>, sign into the platform. Then change the rating of your book to 4.9.",
-            "prompt_for_task_generation": "Using username: <username> and password: <password>, sign into the platform. Then change the rating of <your_book> to 4.9.",
+            "prompt": "Login with username equals <username> and password equals <password>. Please edit the book year to 2012, page_count to 150, and rating to 9.1, whose name equals '<book_name>', id equals '<book_id>', and author equals '<book_author>'.",
+            "prompt_for_task_generation": "Login with username equals <username> and password equals <password>. Please edit the book year to <book_year>, page_count to <book_pages>, and rating to <book_rating>, whose name equals '<book_name>', id equals '<book_id>', and author equals '<book_author>'.",
         },
         {
-            "prompt": "Authenticate yourself with username <username> and password <password>. After logging in, edit the page_count of your book to 1000 pages.",
-            "prompt_for_task_generation": "Authenticate yourself with username <username> and password <password>. After logging in, edit the page_count of <your_book> to 1000 pages.",
+            "prompt": "Login with username equals <username> and password equals <password>. Adjust the book year to 1976, page_count to 102, and rating to 6.4, whose name equals '<book_name>', id equals '<book_id>', and author equals '<book_author>'.",
+            "prompt_for_task_generation": "Login with username equals <username> and password equals <password>. Adjust the book year to <book_year>, page_count to <book_pages>, and rating to <book_rating>, whose name equals '<book_name>', id equals '<book_id>', and author equals '<book_author>'.",
         },
         {
-            "prompt": "Login credentials: username <username>, password <password>. Sign in first and then modify the author of your book to include Neil Gaiman.",
-            "prompt_for_task_generation": "Login credentials: username <username>, password <password>. Sign in first and then modify the author of <your_book> to include 'Neil Gaiman'.",
+            "prompt": "Login with username equals <username> and password equals <password>. Edit the book year to 2020, page_count to 89, and rating to 4.3, whose name equals '<book_name>', id equals '<book_id>', and author equals '<book_author>'.",
+            "prompt_for_task_generation": "Login with username equals <username> and password equals <password>. Edit the book year to <book_year>, page_count to <book_pages>, and rating to <book_rating>, whose name equals '<book_name>', id equals '<book_id>', and author equals '<book_author>'.",
         },
     ],
 )

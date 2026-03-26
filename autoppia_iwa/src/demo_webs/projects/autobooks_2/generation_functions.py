@@ -570,16 +570,24 @@ async def generate_edit_book_constraints(task_url: str | None = None, dataset: d
     Generates constraints specifically for editing book-related use cases.
     Returns the constraints as structured data.
     """
-    from .utils import parse_constraints_str
-
-    constraints_str = (
-        f"username equals {USERNAME_PLACEHOLDER} AND "
-        f"password equals {PASSWORD_PLACEHOLDER} AND "
-        f"name equals {BOOK_NAME_PLACEHOLDER} AND "
-        f"id equals {BOOK_ID_PLACEHOLDER} AND "
-        f"author equals {BOOK_AUTHOR_PLACEHOLDER}"
+    _ = task_url  # Unused parameter kept for backward compatibility
+    _ = dataset  # Unused parameter kept for backward compatibility
+    constraints = [
+        {"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": USERNAME_PLACEHOLDER},
+        {"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": PASSWORD_PLACEHOLDER},
+        {"field": "book_name", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": BOOK_NAME_PLACEHOLDER},
+        {"field": "book_id", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": BOOK_ID_PLACEHOLDER},
+        {"field": "book_author", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": BOOK_AUTHOR_PLACEHOLDER},
+    ]
+    # Local editable-field constraints requested for EDIT_BOOK (autocinema parity).
+    constraints.extend(
+        [
+            {"field": "book_year", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": randint(1950, 2030)},
+            {"field": "book_pages", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": randint(80, 180)},
+            {"field": "book_rating", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": choice([value / 10 for value in range(40, 100)])},
+        ]
     )
-    return parse_constraints_str(constraints_str)
+    return constraints
 
 
 async def generate_add_book_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
