@@ -441,14 +441,17 @@ class EditFilmEvent(FilmEvent):
     """Event triggered when a user edits an existing film"""
 
     event_name: str = "EDIT_FILM"
-    previous_values: dict[str, Any] = Field(default_factory=dict)
-    changed_fields: list[str] = Field(default_factory=list)
+    movie_year: int | str
+    movie_duration: int | str
+    movie_rating: int | str | float
 
     class ValidationCriteria(FilmEvent.ValidationCriteria):
         """Criteria for validating edit film events"""
 
         movie_id: str | CriterionValue | None = None
-        changed_field: str | CriterionValue | None = None
+        movie_year: int | CriterionValue | None = None
+        movie_duration: int | CriterionValue | None = None
+        movie_rating: float | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """Validate if this edit film event meets the criteria."""
@@ -458,27 +461,11 @@ class EditFilmEvent(FilmEvent):
         # Validate movie_id using BaseEventValidator
         if criteria.movie_id is not None and not self._validate_field(self.movie_id, criteria.movie_id):
             return False
-
-        # Validate common film criteria
-        if not self._validate_film_criteria(criteria):
+        if criteria.movie_year is not None and not self._validate_field(self.movie_year, criteria.movie_year):
             return False
-
-        # Validate changed_field
-        if criteria.changed_field is not None:
-            if isinstance(criteria.changed_field, str):
-                if criteria.changed_field not in self.changed_fields:
-                    return False
-            else:
-                if criteria.changed_field.operator == ComparisonOperator.IN_LIST:
-                    if not isinstance(criteria.changed_field.value, list):
-                        return False
-                    if not any(field in criteria.changed_field.value for field in self.changed_fields):
-                        return False
-                elif criteria.changed_field.operator == ComparisonOperator.EQUALS:
-                    if criteria.changed_field.value not in self.changed_fields:
-                        return False
-
-        return True
+        if criteria.movie_rating is not None and not self._validate_field(self.movie_rating, criteria.movie_rating):
+            return False
+        return not (criteria.movie_duration is not None and not self._validate_field(self.movie_duration, criteria.movie_duration))
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "EditFilmEvent":
@@ -493,8 +480,6 @@ class EditFilmEvent(FilmEvent):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            previous_values=data.get("previous_values", {}),
-            changed_fields=data.get("changed_fields", []),
             **film_data,
         )
 

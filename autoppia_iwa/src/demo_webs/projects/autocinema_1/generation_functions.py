@@ -453,9 +453,9 @@ async def generate_edit_film_constraints(task_url: str | None = None, dataset: d
     # Local editable-field constraints requested for EDIT_FILM.
     constraints.extend(
         [
-            create_constraint_dict("year", ComparisonOperator.EQUALS, random.randint(1950, 2030)),
-            create_constraint_dict("duration", ComparisonOperator.EQUALS, random.randint(80, 180)),
-            create_constraint_dict("rating", ComparisonOperator.EQUALS, choice([value / 10 for value in range(40, 100)])),
+            create_constraint_dict("movie_year", ComparisonOperator.EQUALS, random.randint(1950, 2030)),
+            create_constraint_dict("movie_duration", ComparisonOperator.EQUALS, random.randint(80, 180)),
+            create_constraint_dict("movie_rating", ComparisonOperator.EQUALS, choice([value / 10 for value in range(40, 100)])),
         ]
     )
     return constraints
