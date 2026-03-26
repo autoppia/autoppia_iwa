@@ -1,5 +1,3 @@
-from typing import Any
-
 from pydantic import BaseModel, Field
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
@@ -325,46 +323,18 @@ class EditBookEvent(Event, BaseEventValidator):
 
     book_name: str
     book_author: str | None = None
-    book_year: int | None = None
-    book_genres: list[str] = Field(default_factory=list)
-    book_rating: float | None = None
-    book_pages: int | None = None
-    previous_values: dict[str, Any] = Field(default_factory=dict)
-    changed_fields: list[str] = Field(default_factory=list)
 
     class ValidationCriteria(BaseModel):
         name: str | CriterionValue | None = None
-        genre: str | CriterionValue | None = None
         author: str | CriterionValue | None = None
-        year: int | CriterionValue | None = None
-        rating: float | CriterionValue | None = None
-        changed_field: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        if not _validate_genre_criteria(self.book_genres, criteria.genre):
-            return False
-        if criteria.changed_field is not None:
-            if isinstance(criteria.changed_field, str):
-                if criteria.changed_field not in self.changed_fields:
-                    return False
-            else:
-                crit = criteria.changed_field
-                if crit.operator == ComparisonOperator.IN_LIST:
-                    if not isinstance(crit.value, list):
-                        return False
-                    if not any(field in crit.value for field in self.changed_fields):
-                        return False
-                elif crit.operator == ComparisonOperator.EQUALS:
-                    if crit.value not in self.changed_fields:
-                        return False
         return all(
             [
                 self._validate_field(self.book_name, criteria.name),
                 self._validate_field(self.book_author, criteria.author),
-                self._validate_field(self.book_year, criteria.year),
-                self._validate_field(self.book_rating, criteria.rating),
             ]
         )
 
@@ -372,11 +342,6 @@ class EditBookEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "EditBookEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        genres = extract_genres_from_data(data, "genres")
-
-        previous_values = data.get("previous_values", {})
-        changed = data.get("changed_fields", []) or []
-
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
@@ -384,12 +349,6 @@ class EditBookEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             book_name=data.get("name", ""),
             book_author=get_author_from_data(data),
-            book_year=data.get("year"),
-            book_genres=genres,
-            book_rating=data.get("rating"),
-            book_pages=get_pages_from_data(data),
-            previous_values=previous_values,
-            changed_fields=list(changed),
         )
 
 

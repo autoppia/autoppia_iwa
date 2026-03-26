@@ -199,7 +199,7 @@ async def run_global_tests(task: Task, backend_events: list[BackendEvent], web_a
     Returns:
         List[TestResult]: A list of test results (one per test).
     """
-    tests_for_run = await _resolve_autobooks_delete_placeholders_in_tests(task, web_agent_id)
+    tests_for_run = await _resolve_autobooks_book_placeholders_in_tests(task, web_agent_id)
     test_runner = TestRunner(tests_for_run)
     test_results = await test_runner.run_global_tests(
         backend_events=backend_events,
@@ -269,17 +269,17 @@ def _replace_placeholders_in_criteria(
     return value
 
 
-async def _resolve_autobooks_delete_placeholders_in_tests(task: Task, web_agent_id: str | None):
+async def _resolve_autobooks_book_placeholders_in_tests(task: Task, web_agent_id: str | None):
     """
-    Clone tests and resolve assigned-book placeholders for autobooks DELETE_BOOK checks.
+    Clone tests and resolve assigned-book placeholders for autobooks DELETE_BOOK/EDIT_BOOK checks.
     """
     cloned_tests = copy.deepcopy(task.tests)
     if not web_agent_id:
         return cloned_tests
     if getattr(task, "web_project_id", None) != "autobooks":
         return cloned_tests
-    delete_book_tests = [test for test in cloned_tests if isinstance(test, CheckEventTest) and getattr(test, "event_name", "") == "DELETE_BOOK"]
-    if not delete_book_tests:
+    target_tests = [test for test in cloned_tests if isinstance(test, CheckEventTest) and getattr(test, "event_name", "") in {"DELETE_BOOK", "EDIT_BOOK"}]
+    if not target_tests:
         return cloned_tests
 
     seed = get_seed_from_url(task.url)
@@ -297,7 +297,7 @@ async def _resolve_autobooks_delete_placeholders_in_tests(task: Task, web_agent_
     if not assigned_book_name and not assigned_book_id:
         return cloned_tests
 
-    for test in delete_book_tests:
+    for test in target_tests:
         test.event_criteria = _replace_placeholders_in_criteria(
             test.event_criteria,
             assigned_book_name,
