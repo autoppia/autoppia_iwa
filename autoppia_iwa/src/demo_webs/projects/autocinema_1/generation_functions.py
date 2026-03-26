@@ -443,13 +443,22 @@ async def generate_edit_film_constraints(task_url: str | None = None, dataset: d
     """Generate constraints for EDIT_FILM using fixed placeholders (autobooks parity)."""
     _ = task_url  # Unused parameter kept for backward compatibility
     _ = dataset  # Unused parameter kept for backward compatibility
-    return [
+    constraints = [
         create_constraint_dict("username", ComparisonOperator.EQUALS, USERNAME_PLACEHOLDER),
         create_constraint_dict("password", ComparisonOperator.EQUALS, DEFAULT_PASSWORD),
         create_constraint_dict("name", ComparisonOperator.EQUALS, FILM_NAME_PLACEHOLDER),
         create_constraint_dict("id", ComparisonOperator.EQUALS, FILM_ID_PLACEHOLDER),
         create_constraint_dict("director", ComparisonOperator.EQUALS, FILM_DIRECTOR_PLACEHOLDER),
     ]
+    # Local editable-field constraints requested for EDIT_FILM.
+    constraints.extend(
+        [
+            create_constraint_dict("year", ComparisonOperator.EQUALS, random.randint(1950, 2030)),
+            create_constraint_dict("duration", ComparisonOperator.EQUALS, random.randint(80, 180)),
+            create_constraint_dict("rating", ComparisonOperator.EQUALS, choice([value / 10 for value in range(40, 100)])),
+        ]
+    )
+    return constraints
 
 
 def generate_add_film_constraints(dataset: list[dict]):
