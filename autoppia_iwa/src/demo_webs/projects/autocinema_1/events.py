@@ -108,7 +108,7 @@ class FilmEvent(Event, BaseEventValidator):
 
     event_name: str = "BASE_FILM_EVENT"
 
-    movie_id: int
+    movie_id: int | str
     movie_name: str
     movie_director: str | list[str] | None = None  # Can be string (single) or list (multiple directors)
     movie_year: int | None = None
@@ -447,7 +447,7 @@ class EditFilmEvent(FilmEvent):
     class ValidationCriteria(FilmEvent.ValidationCriteria):
         """Criteria for validating edit film events"""
 
-        movie_id: int | CriterionValue | None = None
+        movie_id: str | CriterionValue | None = None
         changed_field: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
@@ -486,6 +486,8 @@ class EditFilmEvent(FilmEvent):
         base_event = Event.parse(backend_event)
         data = backend_event.data
         film_data = FilmEvent._extract_film_data(data)
+        movie_id_raw = film_data.get("movie_id", 0)
+        film_data["movie_id"] = str(movie_id_raw)
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
@@ -505,7 +507,7 @@ class DeleteFilmEvent(FilmEvent):
     class ValidationCriteria(FilmEvent.ValidationCriteria):
         """Criteria for validating delete film events"""
 
-        movie_id: int | CriterionValue | None = None
+        movie_id: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """Validate if this delete film event meets the criteria."""
@@ -532,6 +534,8 @@ class DeleteFilmEvent(FilmEvent):
         base_event = Event.parse(backend_event)
         data = backend_event.data
         film_data = FilmEvent._extract_film_data(data)
+        movie_id_raw = film_data.get("movie_id", 0)
+        film_data["movie_id"] = str(movie_id_raw)
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,

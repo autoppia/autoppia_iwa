@@ -647,46 +647,68 @@ EDIT_FILM_USE_CASE = UseCase(
     additional_prompt_info=EDIT_FILM_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Update the director of The Matrix to Christopher Nolan",
-            "prompt_for_task_generation": "Update the director of <movie> to Christopher Nolan",
+            "prompt": "Log in with username: user<web_agent_id>, password: <password> and update the director of The Matrix to Christopher Nolan",
+            "prompt_for_task_generation": "Log in with username: user<web_agent_id>, password: <password> and update the director of <movie> to Christopher Nolan",
         },
         {
-            "prompt": "Modify the release year of Pulp Fiction to 1994",
-            "prompt_for_task_generation": "Modify the release year of <movie> to 1994",
+            "prompt": "Log in with username: user<web_agent_id>, password: <password> and modify the release year of Pulp Fiction to 1994",
+            "prompt_for_task_generation": "Log in with username: user<web_agent_id>, password: <password> and modify the release year of <movie> to 1994",
         },
         {
-            "prompt": "Add Sci-Fi to the genres of Inception",
-            "prompt_for_task_generation": "Add 'Sci-Fi' to the genres of <movie>",
+            "prompt": "Log in with username: user<web_agent_id>, password: <password> and add Sci-Fi to the genres of Inception",
+            "prompt_for_task_generation": "Log in with username: user<web_agent_id>, password: <password> and add 'Sci-Fi' to the genres of <movie>",
         },
         {
-            "prompt": "Change the rating of Interstellar to 4.8",
-            "prompt_for_task_generation": "Change the rating of <movie> to 4.8",
+            "prompt": "Log in with username: user<web_agent_id>, password: <password> and change the rating of Interstellar to 4.8",
+            "prompt_for_task_generation": "Log in with username: user<web_agent_id>, password: <password> and change the rating of <movie> to 4.8",
         },
         {
-            "prompt": "Edit the duration of The Godfather to 175 minutes",
-            "prompt_for_task_generation": "Edit the duration of <movie> to 175 minutes",
+            "prompt": "Log in with username: user<web_agent_id>, password: <password> and edit the duration of The Godfather to 175 minutes",
+            "prompt_for_task_generation": "Log in with username: user<web_agent_id>, password: <password> and edit the duration of <movie> to 175 minutes",
         },
         {
-            "prompt": "Modify the cast of The Shawshank Redemption to include Morgan Freeman",
-            "prompt_for_task_generation": "Modify the cast of <movie> to include 'Morgan Freeman'",
+            "prompt": "Log in with username: user<web_agent_id>, password: <password> and modify the cast of The Shawshank Redemption to include Morgan Freeman",
+            "prompt_for_task_generation": "Log in with username: user<web_agent_id>, password: <password> and modify the cast of <movie> to include 'Morgan Freeman'",
         },
     ],
 )
 ###############################################################################
 # DELETE_FILM_USE_CASE
 ###############################################################################
-DELETE_FILM_ADDITIONAL_PROMPT_INFO = f"""
-CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above (field, operator, and value).
-2. Include ONLY the constraints mentioned above - do not add any other criteria.
-3. Be phrased as a request to delete or remove a film (e.g., "Remove the film...", "Delete...", "Erase...").
-4. {STRICT_COPY_INSTRUCTION}
+DELETE_FILM_ADDITIONAL_PROMPT_INFO = """
+CRITICAL RULE (HIGHEST PRIORITY):
 
-For example, if the constraints are "year greater_than 2014 AND genres contains 'Sci-Fi'":
-- CORRECT: "Delete a film whose year is greater than 2014 and that belongs to the 'Sci-Fi' genre."
-- INCORRECT: "Delete a film from 2015 with a high rating" (wrong constraints)
+* You MUST include ALL deletion constraints: name, id, and director.
+* You MUST use its placeholder exactly:
 
-ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+  * name → '<film_name>'
+  * id → '<film_id>'
+  * director → '<film_director>'
+* NEVER use empty strings like ''.
+* NEVER omit any constraint.
+
+TASK REQUIREMENTS:
+
+1. Start with login:
+   "First, authenticate with username 'user<web_agent_id>' and password '<password>'."
+
+2. Then write a delete request for a user-owned book.
+
+3. Use ONLY these constraints:
+
+   * name
+   * id
+   * director
+
+4. Do NOT:
+
+   * Add extra filters
+   * Repeat username/password in constraints
+   * Modify any values
+
+EXPECTED FORMAT:
+
+"First, authenticate with username 'user<web_agent_id>' and password '<password>'. Then, delete your film whose name equals '<film_name>' and id equals '<film_id>' and director equals '<film_director>'."
 """
 
 DELETE_FILM_USE_CASE = UseCase(
@@ -698,44 +720,44 @@ DELETE_FILM_USE_CASE = UseCase(
     constraints_generator=generate_delete_film_constraints,
     examples=[
         {
-            "prompt": "Remove The Matrix, a film released after 2014, from the database",
-            "prompt_for_task_generation": "Remove '<movie>' that was released after <year> from the database",
+            "prompt": "Log in with username: user<web_agent_id>, password: <password> and remove '<your_film>'.",
+            "prompt_for_task_generation": "Log in with username: user<web_agent_id>, password: <password> and remove '<your_film>'.",
         },
         {
-            "prompt": "Erase all records of Pulp Fiction, a film not directed by Quentin Tarantino",
-            "prompt_for_task_generation": "Erase all records of '<movie>' not directed by <director>",
+            "prompt": "After logging in with username: user<web_agent_id> and password: <password>, erase all records of '<your_film>'.",
+            "prompt_for_task_generation": "After logging in with username: user<web_agent_id> and password: <password>, erase all records of '<your_film>'.",
         },
         {
-            "prompt": "Permanently delete The Godfather, which has a duration greater than 175 minutes",
-            "prompt_for_task_generation": "Permanently delete '<movie>' with duration greater than <duration> minutes",
+            "prompt": "Log in with username: user<web_agent_id>, password: <password> and permanently delete '<your_film>'.",
+            "prompt_for_task_generation": "Log in with username: user<web_agent_id>, password: <password> and permanently delete '<your_film>'.",
         },
         {
-            "prompt": "Discard Titanic, a film with a rating less than 7.0, from the system",
-            "prompt_for_task_generation": "Discard '<movie>' with rating less than <rating>",
+            "prompt": "Sign into your account where username: user<web_agent_id>, password: <password> and discard '<your_film>'.",
+            "prompt_for_task_generation": "Sign into your account where username: user<web_agent_id>, password: <password> and discard '<your_film>'.",
         },
         {
-            "prompt": "Remove Airplane!, a comedy film released before 1980, from the records",
-            "prompt_for_task_generation": "Remove a <genre> film called '<movie>' released before <year>",
+            "prompt": "Initiate a session with username: user<web_agent_id> and password: <password>, then remove '<your_film>'.",
+            "prompt_for_task_generation": "Initiate a session with username: user<web_agent_id> and password: <password>, then remove '<your_film>'.",
         },
         {
-            "prompt": "Erase the horror film that is not directed by Wes Craven",
-            "prompt_for_task_generation": "Erase a <genre> film not directed by <director>",
+            "prompt": "Once logged in as username: user<web_agent_id> and password: <password>, delete '<your_film>'.",
+            "prompt_for_task_generation": "Once logged in as username: user<web_agent_id> and password: <password>, delete '<your_film>'.",
         },
         {
-            "prompt": "Permanently delete a film featuring Robert De Niro that was released after 2000",
-            "prompt_for_task_generation": "Permanently delete a film with cast containing <actor> and released after <year>",
+            "prompt": "Begin by signing in with username user<web_agent_id> and password <password>. Then, delete '<your_film>'.",
+            "prompt_for_task_generation": "Begin by signing in with username user<web_agent_id> and password <password>. Then, delete '<your_film>'.",
         },
         {
-            "prompt": "Discard Inception, a film with a rating greater than 8.0, from the system",
-            "prompt_for_task_generation": "Discard '<movie>' with rating greater than <rating>",
+            "prompt": "First, log into the system with username: user<web_agent_id>, password: <password>, then discard '<your_film>'.",
+            "prompt_for_task_generation": "First, log into the system with username: user<web_agent_id>, password: <password>, then discard '<your_film>'.",
         },
         {
-            "prompt": "Remove Gladiator, ensuring it was released before 2000",
-            "prompt_for_task_generation": "Remove '<movie>' ensuring it was released before <year>",
+            "prompt": "Authenticate yourself with username user<web_agent_id> and password <password>. Then, remove '<your_film>'.",
+            "prompt_for_task_generation": "Authenticate yourself with username user<web_agent_id> and password <password>. Then, remove '<your_film>'.",
         },
         {
-            "prompt": "Erase all records of Avatar, a film that does not belong to the Action genre",
-            "prompt_for_task_generation": "Erase all records of '<movie>' that does not belong to the <genre> genre",
+            "prompt": "Using your credentials username: user<web_agent_id>, password: <password>, sign in and erase all records of '<your_film>'.",
+            "prompt_for_task_generation": "Using your credentials username: user<web_agent_id>, password: <password>, sign in and erase all records of '<your_film>'.",
         },
     ],
 )

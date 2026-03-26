@@ -589,7 +589,7 @@ class SimpleTaskGenerator:
         # Remove any remaining XML-like tags, while preserving known task placeholders.
         # This prevents placeholders used by constraints (e.g. book_* / assigned_book_*) from being stripped.
         content = re.sub(
-            r"<(?!/?(?:username|password|web_agent_id|book_name|book_id|book_author|assigned_book_name|assigned_book_id|assigned_book_author)\b)[^>]+>",
+            r"<(?!/?(?:username|password|web_agent_id|book_name|book_id|book_author|assigned_book_name|assigned_book_id|assigned_book_author|film_name|film_id|film_director|assigned_film_name|assigned_film_id|assigned_film_director)\b)[^>]+>",
             "",
             content,
         )

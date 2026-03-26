@@ -13,6 +13,7 @@ from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.data_generation.tests.classes import CheckEventTest
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
 from autoppia_iwa.src.demo_webs.projects.autobooks_2.data_utils import fetch_data as fetch_books_data
+from autoppia_iwa.src.demo_webs.projects.autocinema_1.data_utils import fetch_data as fetch_movies_data
 from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 from autoppia_iwa.src.evaluation.classes import EvaluationStats, Feedback, TestResult
 from autoppia_iwa.src.evaluation.shared.feedback_generator import FeedbackGenerator
@@ -200,6 +201,7 @@ async def run_global_tests(task: Task, backend_events: list[BackendEvent], web_a
         List[TestResult]: A list of test results (one per test).
     """
     tests_for_run = await _resolve_autobooks_book_placeholders_in_tests(task, web_agent_id)
+    tests_for_run = await _resolve_autocinema_film_placeholders_in_tests(task, tests_for_run, web_agent_id)
     test_runner = TestRunner(tests_for_run)
     test_results = await test_runner.run_global_tests(
         backend_events=backend_events,
@@ -306,6 +308,95 @@ async def _resolve_autobooks_book_placeholders_in_tests(task: Task, web_agent_id
         )
 
     return cloned_tests
+
+
+def _resolve_assigned_movie_for_agent(movies: list[dict], web_agent_id: str) -> dict | None:
+    """Mirror web_1_autocinema seed-dependent assignment from current list."""
+    if not movies:
+        return None
+    username = f"user{web_agent_id}"
+    user_index = _get_deterministic_user_index(username)
+    movie_index = ((user_index % len(movies)) + len(movies)) % len(movies)
+    return movies[movie_index] if 0 <= movie_index < len(movies) else None
+
+
+def _replace_film_placeholders_in_criteria(
+    value,
+    assigned_film_name: str,
+    assigned_film_id: str,
+    assigned_film_director: str,
+):
+    """Recursively replace assigned-film placeholders in criteria values."""
+    if isinstance(value, str):
+        return (
+            value.replace("<assigned_film_name>", assigned_film_name)
+            .replace("<assigned_film_id>", assigned_film_id)
+            .replace("<assigned_film_director>", assigned_film_director)
+            .replace("<film_name>", assigned_film_name)
+            .replace("<film_id>", assigned_film_id)
+            .replace("<film_director>", assigned_film_director)
+        )
+    if isinstance(value, list):
+        return [
+            _replace_film_placeholders_in_criteria(
+                v,
+                assigned_film_name,
+                assigned_film_id,
+                assigned_film_director,
+            )
+            for v in value
+        ]
+    if isinstance(value, dict):
+        return {
+            k: _replace_film_placeholders_in_criteria(
+                v,
+                assigned_film_name,
+                assigned_film_id,
+                assigned_film_director,
+            )
+            for k, v in value.items()
+        }
+    return value
+
+
+async def _resolve_autocinema_film_placeholders_in_tests(task: Task, tests_for_run, web_agent_id: str | None):
+    """
+    Resolve assigned-film placeholders for autocinema DELETE_FILM/EDIT_FILM checks.
+    """
+    if not web_agent_id:
+        return tests_for_run
+    if getattr(task, "web_project_id", None) != "autocinema":
+        return tests_for_run
+    target_tests = [test for test in tests_for_run if isinstance(test, CheckEventTest) and getattr(test, "event_name", "") in {"DELETE_FILM", "EDIT_FILM"}]
+    if not target_tests:
+        return tests_for_run
+
+    seed = get_seed_from_url(task.url)
+    movies = await fetch_movies_data(seed_value=seed, count=50)
+    if not movies:
+        return tests_for_run
+
+    assigned_movie = _resolve_assigned_movie_for_agent(movies, web_agent_id)
+    if not assigned_movie:
+        return tests_for_run
+
+    assigned_film_name = str(assigned_movie.get("name", assigned_movie.get("title", "")))
+    assigned_film_id_in_str = str(assigned_movie.get("id", ""))
+    assigned_film_id = str(int(assigned_film_id_in_str.rsplit("-", 1)[-1]))
+
+    assigned_film_director = str(assigned_movie.get("director", ""))
+    if not assigned_film_name and not assigned_film_id:
+        return tests_for_run
+
+    for test in target_tests:
+        test.event_criteria = _replace_film_placeholders_in_criteria(
+            test.event_criteria,
+            assigned_film_name,
+            assigned_film_id,
+            assigned_film_director,
+        )
+
+    return tests_for_run
 
 
 async def run_partial_tests(web_project: WebProject, task: Task, execution_history: list[ActionExecutionResult]) -> list[list[TestResult]]:

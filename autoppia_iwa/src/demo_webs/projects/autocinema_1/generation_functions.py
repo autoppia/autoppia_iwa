@@ -18,7 +18,6 @@ from .data import (
     FIELD_OPERATORS_MAP_ADD_COMMENT,
     FIELD_OPERATORS_MAP_ADD_FILM,
     FIELD_OPERATORS_MAP_CONTACT,
-    FIELD_OPERATORS_MAP_EDIT_FILM,
     FIELD_OPERATORS_MAP_EDIT_USER,
     FIELD_OPERATORS_MAP_FILM,
     FIELD_OPERATORS_MAP_FILTER_FILM,
@@ -29,6 +28,11 @@ from .data import (
     PROFILE_WEBSITES,
 )
 from .data_utils import fetch_data
+
+USERNAME_PLACEHOLDER = "user<web_agent_id>"
+FILM_NAME_PLACEHOLDER = "<film_name>"
+FILM_ID_PLACEHOLDER = "<film_id>"
+FILM_DIRECTOR_PLACEHOLDER = "<film_director>"
 
 
 async def _ensure_dataset(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None) -> dict:
@@ -342,12 +346,16 @@ async def generate_watch_trailer_constraints(task_url: str | None = None, datase
 
 
 async def generate_delete_film_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
-    """Generate constraints for DELETE_FILM: film fields from DB (name, director, year, rating, duration, genres)."""
-    films = await _get_films_data(task_url, dataset)
-    if not films:
-        return []
-    num_constraints = random.randint(1, 3)
-    return _generate_constraints(films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS)
+    """Generate constraints for DELETE_FILM using fixed placeholders (autobooks parity)."""
+    _ = task_url  # Unused parameter kept for backward compatibility
+    _ = dataset  # Unused parameter kept for backward compatibility
+    return [
+        create_constraint_dict("username", ComparisonOperator.EQUALS, USERNAME_PLACEHOLDER),
+        create_constraint_dict("password", ComparisonOperator.EQUALS, DEFAULT_PASSWORD),
+        create_constraint_dict("name", ComparisonOperator.EQUALS, FILM_NAME_PLACEHOLDER),
+        create_constraint_dict("id", ComparisonOperator.EQUALS, FILM_ID_PLACEHOLDER),
+        create_constraint_dict("director", ComparisonOperator.EQUALS, FILM_DIRECTOR_PLACEHOLDER),
+    ]
 
 
 def generate_contact_constraints() -> list:
@@ -432,24 +440,16 @@ async def generate_add_comment_constraints(task_url: str | None = None, dataset:
 
 
 async def generate_edit_film_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
-    """Generate constraints for EDIT_FILM: login + name from base movie + 1-4 editable fields (auth required)."""
-    try:
-        films = await _get_films_data(task_url, dataset)
-        if not films:
-            data = await _ensure_dataset(task_url, dataset)
-            films = data.get("movies", []) if data else []
-            if not films:
-                return [*_login_constraints(), create_constraint_dict("name", ComparisonOperator.EQUALS, "The Matrix")]
-        base_movie = choice(films)
-        constraints = [create_constraint_dict("name", ComparisonOperator.EQUALS, base_movie["name"])]
-        editable_fields = list(FIELD_OPERATORS_MAP_EDIT_FILM.keys())
-        n = min(choice([1, 2, 3, 4]), len(editable_fields))
-        selected = list(sample(editable_fields, n))
-        extra = _generate_constraints([base_movie], FIELD_OPERATORS_MAP_EDIT_FILM, num_constraints=n, selected_fields=selected)
-        constraints.extend(extra)
-        return [*_login_constraints(), *constraints]
-    except Exception:
-        return [*_login_constraints(), create_constraint_dict("name", ComparisonOperator.EQUALS, "The Matrix")]
+    """Generate constraints for EDIT_FILM using fixed placeholders (autobooks parity)."""
+    _ = task_url  # Unused parameter kept for backward compatibility
+    _ = dataset  # Unused parameter kept for backward compatibility
+    return [
+        create_constraint_dict("username", ComparisonOperator.EQUALS, USERNAME_PLACEHOLDER),
+        create_constraint_dict("password", ComparisonOperator.EQUALS, DEFAULT_PASSWORD),
+        create_constraint_dict("name", ComparisonOperator.EQUALS, FILM_NAME_PLACEHOLDER),
+        create_constraint_dict("id", ComparisonOperator.EQUALS, FILM_ID_PLACEHOLDER),
+        create_constraint_dict("director", ComparisonOperator.EQUALS, FILM_DIRECTOR_PLACEHOLDER),
+    ]
 
 
 def generate_add_film_constraints(dataset: list[dict]):
