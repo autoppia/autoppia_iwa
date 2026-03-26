@@ -821,7 +821,7 @@ STRICT FIELD USAGE RULE:
 - The username and password MUST appear exactly as provided in the LOGIN sentence only.
 - Do NOT repeat username or password inside the delete constraint description unless they are explicitly part of the deletion constraints.
 - Only include fields that are explicitly defined as deletion constraints.
-- If "id" is a deletion constraint, include it exactly as given.
+- If "id" or "name" is a deletion constraint, include each exactly as given.
 - Do NOT automatically include username or password as deletion filters unless they are explicitly stated as deletion constraints.
 - Do NOT rewrite, transform, infer, or replace any provided field values.
 - Every constraint value must be copied verbatim.
@@ -831,11 +831,11 @@ IMPORTANT DISTINCTION:
 - Deletion constraints describe which book to delete.
 - Do NOT mix authentication fields into deletion filtering unless explicitly instructed.
 
-For example, if the deletion constraint is:
-"id equals '<web_agent_id>'"
+For example, if the deletion constraints are:
+"name equals '<assigned_book_name>' AND id equals '<assigned_book_id>'"
 
 CORRECT:
-"First, authenticate with username '<username>' and password '<password>'. Then, delete your book whose id equals '<web_agent_id>'."
+"First, authenticate with username '<username>' and password '<password>'. Then, delete your book whose name equals '<assigned_book_name>' and id equals '<assigned_book_id>'."
 
 INCORRECT:
 - Adding username or password as deletion filters.

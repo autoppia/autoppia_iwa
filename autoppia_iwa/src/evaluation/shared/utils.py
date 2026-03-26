@@ -1,6 +1,7 @@
 # evaluation_helper.py
 import asyncio
 import base64
+import copy
 import hashlib
 import io
 from collections import defaultdict
@@ -9,7 +10,10 @@ from loguru import logger
 
 # Avoid importing Pillow at module import time; import lazily in functions that need it.
 from autoppia_iwa.src.data_generation.tasks.classes import Task
+from autoppia_iwa.src.data_generation.tests.classes import CheckEventTest
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
+from autoppia_iwa.src.demo_webs.projects.autobooks_2.data_utils import fetch_data as fetch_books_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 from autoppia_iwa.src.evaluation.classes import EvaluationStats, Feedback, TestResult
 from autoppia_iwa.src.evaluation.shared.feedback_generator import FeedbackGenerator
 from autoppia_iwa.src.evaluation.shared.test_runner import TestRunner
@@ -195,12 +199,79 @@ async def run_global_tests(task: Task, backend_events: list[BackendEvent], web_a
     Returns:
         List[TestResult]: A list of test results (one per test).
     """
-    test_runner = TestRunner(task.tests)
+    tests_for_run = await _resolve_autobooks_delete_placeholders_in_tests(task, web_agent_id)
+    test_runner = TestRunner(tests_for_run)
     test_results = await test_runner.run_global_tests(
         backend_events=backend_events,
         web_agent_id=web_agent_id,
     )
     return test_results
+
+
+def _get_deterministic_user_index(username: str) -> int:
+    """Mirror web_2_autobooks username -> index logic."""
+    import re
+
+    match = re.match(r"^user(\d+)$", username.strip(), flags=re.IGNORECASE)
+    if match:
+        parsed = int(match.group(1))
+        if parsed > 0:
+            return parsed - 1
+    return sum(ord(ch) for ch in username)
+
+
+def _resolve_assigned_book_for_agent(books: list[dict], web_agent_id: str) -> dict | None:
+    """Mirror web_2_autobooks seed-dependent assignment from current list."""
+    if not books:
+        return None
+    username = f"user{web_agent_id}"
+    user_index = _get_deterministic_user_index(username)
+    book_index = ((user_index % len(books)) + len(books)) % len(books)
+    return books[book_index] if 0 <= book_index < len(books) else None
+
+
+def _replace_placeholders_in_criteria(value, assigned_book_name: str, assigned_book_id: str):
+    """Recursively replace assigned-book placeholders in criteria values."""
+    if isinstance(value, str):
+        return value.replace("<assigned_book_name>", assigned_book_name).replace("<assigned_book_id>", assigned_book_id)
+    if isinstance(value, list):
+        return [_replace_placeholders_in_criteria(v, assigned_book_name, assigned_book_id) for v in value]
+    if isinstance(value, dict):
+        return {k: _replace_placeholders_in_criteria(v, assigned_book_name, assigned_book_id) for k, v in value.items()}
+    return value
+
+
+async def _resolve_autobooks_delete_placeholders_in_tests(task: Task, web_agent_id: str | None):
+    """
+    Clone tests and resolve assigned-book placeholders for autobooks DELETE_BOOK checks.
+    """
+    cloned_tests = copy.deepcopy(task.tests)
+    if not web_agent_id:
+        return cloned_tests
+    if getattr(task, "web_project_id", None) != "autobooks":
+        return cloned_tests
+    delete_book_tests = [test for test in cloned_tests if isinstance(test, CheckEventTest) and getattr(test, "event_name", "") == "DELETE_BOOK"]
+    if not delete_book_tests:
+        return cloned_tests
+
+    seed = get_seed_from_url(task.url)
+    books = await fetch_books_data(seed_value=seed, count=50)
+    if not books:
+        return cloned_tests
+
+    assigned_book = _resolve_assigned_book_for_agent(books, web_agent_id)
+    if not assigned_book:
+        return cloned_tests
+
+    assigned_book_name = str(assigned_book.get("name", ""))
+    assigned_book_id = str(assigned_book.get("id", ""))
+    if not assigned_book_name and not assigned_book_id:
+        return cloned_tests
+
+    for test in delete_book_tests:
+        test.event_criteria = _replace_placeholders_in_criteria(test.event_criteria, assigned_book_name, assigned_book_id)
+
+    return cloned_tests
 
 
 async def run_partial_tests(web_project: WebProject, task: Task, execution_history: list[ActionExecutionResult]) -> list[list[TestResult]]:
