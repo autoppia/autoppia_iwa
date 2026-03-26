@@ -808,41 +808,39 @@ EDIT_BOOK_USE_CASE = UseCase(
 # DELETE_BOOK_USE_CASE
 ###############################################################################
 DELETE_BOOK_ADDITIONAL_PROMPT_INFO = """
-CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+CRITICAL RULE (HIGHEST PRIORITY):
 
-1. Include ALL deletion constraints mentioned above — not just some of them.
-2. Include ONLY the deletion constraints mentioned above — do not add any other criteria or filters.
-3. Be phrased as a request to delete or remove a book (use phrases like "Remove...", "Delete...", "Erase...", "Discard...").
-4. The user is only allowed to delete books they have added. Use terms like 'your book' or 'user-registered book' in the final prompt.
-5. Begin with a creative instruction to log in using username '<username>' and password '<password>'.
+* You MUST include ALL deletion constraints: name, id, and author.
+* You MUST use its placeholder exactly:
 
-STRICT FIELD USAGE RULE:
+  * name → '<book_name>'
+  * id → '<book_id>'
+  * author → '<book_author>'
+* NEVER use empty strings like ''.
+* NEVER omit any constraint.
 
-- The username and password MUST appear exactly as provided in the LOGIN sentence only.
-- Do NOT repeat username or password inside the delete constraint description unless they are explicitly part of the deletion constraints.
-- Only include fields that are explicitly defined as deletion constraints.
-- If "id" or "name" is a deletion constraint, include each exactly as given.
-- Do NOT automatically include username or password as deletion filters unless they are explicitly stated as deletion constraints.
-- Do NOT rewrite, transform, infer, or replace any provided field values.
-- Every constraint value must be copied verbatim.
+TASK REQUIREMENTS:
 
-IMPORTANT DISTINCTION:
-- Login credentials are for authentication only.
-- Deletion constraints describe which book to delete.
-- Do NOT mix authentication fields into deletion filtering unless explicitly instructed.
+1. Start with login:
+   "First, authenticate with username '<username>' and password '<password>'."
 
-For example, if the deletion constraints are:
-"name equals '<assigned_book_name>' AND id equals '<assigned_book_id>'"
+2. Then write a delete request for a user-owned book.
 
-CORRECT:
-"First, authenticate with username '<username>' and password '<password>'. Then, delete your book whose name equals '<assigned_book_name>' and id equals '<assigned_book_id>'."
+3. Use ONLY these constraints:
 
-INCORRECT:
-- Adding username or password as deletion filters.
-- Repeating login credentials inside the delete description.
-- Adding extra constraints like rating or year.
+   * name
+   * id
+   * author
 
-ALL prompts must follow this structure exactly, with varied phrasing but identical constraint logic and EXACT field values.
+4. Do NOT:
+
+   * Add extra filters
+   * Repeat username/password in constraints
+   * Modify any values
+
+EXPECTED FORMAT:
+
+"First, authenticate with username '<username>' and password '<password>'. Then, delete your book whose name equals '<book_name>' and id equals '<book_id>' and author equals '<book_author>'."
 """
 
 

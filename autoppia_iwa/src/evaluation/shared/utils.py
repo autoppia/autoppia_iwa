@@ -230,14 +230,42 @@ def _resolve_assigned_book_for_agent(books: list[dict], web_agent_id: str) -> di
     return books[book_index] if 0 <= book_index < len(books) else None
 
 
-def _replace_placeholders_in_criteria(value, assigned_book_name: str, assigned_book_id: str):
+def _replace_placeholders_in_criteria(
+    value,
+    assigned_book_name: str,
+    assigned_book_id: str,
+    assigned_book_author: str,
+):
     """Recursively replace assigned-book placeholders in criteria values."""
     if isinstance(value, str):
-        return value.replace("<assigned_book_name>", assigned_book_name).replace("<assigned_book_id>", assigned_book_id)
+        return (
+            value.replace("<assigned_book_name>", assigned_book_name)
+            .replace("<assigned_book_id>", assigned_book_id)
+            .replace("<assigned_book_author>", assigned_book_author)
+            .replace("<book_name>", assigned_book_name)
+            .replace("<book_id>", assigned_book_id)
+            .replace("<book_author>", assigned_book_author)
+        )
     if isinstance(value, list):
-        return [_replace_placeholders_in_criteria(v, assigned_book_name, assigned_book_id) for v in value]
+        return [
+            _replace_placeholders_in_criteria(
+                v,
+                assigned_book_name,
+                assigned_book_id,
+                assigned_book_author,
+            )
+            for v in value
+        ]
     if isinstance(value, dict):
-        return {k: _replace_placeholders_in_criteria(v, assigned_book_name, assigned_book_id) for k, v in value.items()}
+        return {
+            k: _replace_placeholders_in_criteria(
+                v,
+                assigned_book_name,
+                assigned_book_id,
+                assigned_book_author,
+            )
+            for k, v in value.items()
+        }
     return value
 
 
@@ -265,11 +293,17 @@ async def _resolve_autobooks_delete_placeholders_in_tests(task: Task, web_agent_
 
     assigned_book_name = str(assigned_book.get("name", ""))
     assigned_book_id = str(assigned_book.get("id", ""))
+    assigned_book_author = str(assigned_book.get("author", assigned_book.get("director", "")))
     if not assigned_book_name and not assigned_book_id:
         return cloned_tests
 
     for test in delete_book_tests:
-        test.event_criteria = _replace_placeholders_in_criteria(test.event_criteria, assigned_book_name, assigned_book_id)
+        test.event_criteria = _replace_placeholders_in_criteria(
+            test.event_criteria,
+            assigned_book_name,
+            assigned_book_id,
+            assigned_book_author,
+        )
 
     return cloned_tests
 

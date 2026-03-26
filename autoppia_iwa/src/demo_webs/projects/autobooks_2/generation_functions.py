@@ -11,6 +11,9 @@ from .data_utils import fetch_data
 # Constants for constraint placeholders
 USERNAME_PLACEHOLDER = "<username>"
 PASSWORD_PLACEHOLDER = "<password>"
+BOOK_NAME_PLACEHOLDER = "<book_name>"
+BOOK_ID_PLACEHOLDER = "<book_id>"
+BOOK_AUTHOR_PLACEHOLDER = "<book_author>"
 
 # Shared word list for author/text constraints (edit book, add book)
 RANDOM_WORDS_FOR_CONSTRAINTS = [
@@ -157,7 +160,13 @@ def generate_delete_book_constraints():
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = f"username equals {USERNAME_PLACEHOLDER} AND password equals {PASSWORD_PLACEHOLDER} AND name equals <assigned_book_name> AND id equals <assigned_book_id>"
+    constraints_str = (
+        f"username equals {USERNAME_PLACEHOLDER} AND "
+        f"password equals {PASSWORD_PLACEHOLDER} AND "
+        f"name equals {BOOK_NAME_PLACEHOLDER} AND "
+        f"id equals {BOOK_ID_PLACEHOLDER} AND "
+        f"author equals {BOOK_AUTHOR_PLACEHOLDER}"
+    )
 
     # Convertir el string a la estructura de datos
     return parse_constraints_str(constraints_str)
