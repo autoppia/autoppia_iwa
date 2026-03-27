@@ -441,9 +441,9 @@ class EditFilmEvent(FilmEvent):
     """Event triggered when a user edits an existing film"""
 
     event_name: str = "EDIT_FILM"
-    movie_year: int | str
-    movie_duration: int | str
-    movie_rating: int | str | float
+    movie_year: int | str | None = None
+    movie_duration: int | str | None = None
+    movie_rating: int | str | float | None = None
 
     class ValidationCriteria(FilmEvent.ValidationCriteria):
         """Criteria for validating edit film events"""
