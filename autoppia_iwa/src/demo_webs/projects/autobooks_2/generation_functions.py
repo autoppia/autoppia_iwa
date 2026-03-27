@@ -164,7 +164,7 @@ def generate_delete_book_constraints():
         f"username equals {USERNAME_PLACEHOLDER} AND "
         f"password equals {PASSWORD_PLACEHOLDER} AND "
         f"name equals {BOOK_NAME_PLACEHOLDER} AND "
-        f"id equals {BOOK_ID_PLACEHOLDER} AND "
+        f"book_id equals {BOOK_ID_PLACEHOLDER} AND "
         f"author equals {BOOK_AUTHOR_PLACEHOLDER}"
     )
 

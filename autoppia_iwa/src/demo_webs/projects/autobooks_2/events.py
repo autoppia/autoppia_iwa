@@ -380,10 +380,12 @@ class DeleteBookEvent(Event, BaseEventValidator):
 
     book_name: str
     book_author: str | None = None
+    book_id: int | str | None = None
 
     class ValidationCriteria(BaseModel):
         name: str | CriterionValue | None = None
         author: str | CriterionValue | None = None
+        book_id: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -392,6 +394,7 @@ class DeleteBookEvent(Event, BaseEventValidator):
             [
                 self._validate_field(self.book_name, criteria.name),
                 self._validate_field(self.book_author, criteria.author),
+                self._validate_field(self.book_id, criteria.book_id),
             ]
         )
 
@@ -399,6 +402,7 @@ class DeleteBookEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "DeleteBookEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
+        book_id_raw = data.get("book_id", "")
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
@@ -406,6 +410,7 @@ class DeleteBookEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             book_name=data.get("name", ""),
             book_author=get_author_from_data(data),
+            book_id=book_id_raw,
         )
 
 
