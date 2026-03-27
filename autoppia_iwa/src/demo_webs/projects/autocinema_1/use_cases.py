@@ -627,16 +627,16 @@ ADD_FILM_USE_CASE = UseCase(
 EDIT_FILM_ADDITIONAL_PROMPT_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Begin with a login instruction using username equals <username> and password equals <password> (exact constraint values).
-2. Include ALL constraints mentioned above (field, operator, and value).
-3. The edit statement MUST place editable numeric fields first in this style: "Edit the film year to <year>, duration to <duration>, and rating to <rating>..."
-4. After stating editable fields, identify the target film using a trailing qualifier with identity constraints: "...whose name equals '<film_name>', id equals '<film_id>', and director equals '<film_director>'."
-5. Keep the same field names and operators exactly ("equals" wording). Do not change the order into "where name equals ... and year equals ...".
-6. Include ONLY the constraints mentioned above - do not add any other criteria.
-7. Be phrased as a request to edit or modify a film (e.g., "Edit...", "Update the film...", "Modify...").
+2. Be explicitly phrased as a request to edit your movie.
+3. Include editable numeric fields in this style: "edit your movie by setting year to <year>, duration to <duration>, and rating to <rating>."
+4. Do NOT mention identity constraints in the prompt text (do NOT mention name, movie_id/id, or director).
+5. Keep the same field names and operators exactly ("equals" wording) for the constraints that are explicitly mentioned.
+6. Include ONLY the constraints that should be explicit in the prompt text - do not add any other criteria.
+7. Do not ask to edit any movie other than your movie.
 8. {STRICT_COPY_INSTRUCTION}
 
-For example: "Login with username equals <username> and password equals <password>. Edit the film year to 1987, duration to 138, and rating to 5.5, whose name equals '<film_name>', id equals '<film_id>', and director equals '<film_director>'."
-ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria and preserving this ordering.
+For example: "Login with username equals <username> and password equals <password>. Edit your movie by setting year to 1987, duration to 138, and rating to 5.5."
+ALL prompts must follow this pattern exactly, each phrased slightly differently while preserving the same explicit criteria and wording requirements.
 """
 EDIT_FILM_USE_CASE = UseCase(
     name="EDIT_FILM",
@@ -648,68 +648,66 @@ EDIT_FILM_USE_CASE = UseCase(
     additional_prompt_info=EDIT_FILM_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Edit the film year to 1987, duration to 138, and rating to 5.5, whose name equals '<film_name>', id equals '<film_id>', and director equals '<film_director>'.",
-            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Edit the film year to <year>, duration to <duration>, and rating to <rating>, whose name equals '<film_name>', id equals '<film_id>', and director equals '<film_director>'.",
+            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Edit your movie by setting year to 1987, duration to 138, and rating to 5.5.",
+            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Edit your movie by setting year to <year>, duration to <duration>, and rating to <rating>.",
         },
         {
-            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Update the film year to 2004, duration to 121, and rating to 7.8, whose name equals '<film_name>', id equals '<film_id>', and director equals '<film_director>'.",
-            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Update the film year to <year>, duration to <duration>, and rating to <rating>, whose name equals '<film_name>', id equals '<film_id>', and director equals '<film_director>'.",
+            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Update your movie by setting year to 2004, duration to 121, and rating to 7.8.",
+            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Update your movie by setting year to <year>, duration to <duration>, and rating to <rating>.",
         },
         {
-            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Modify the film year to 1999, duration to 167, and rating to 8.4, whose name equals '<film_name>', id equals '<film_id>', and director equals '<film_director>'.",
-            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Modify the film year to <year>, duration to <duration>, and rating to <rating>, whose name equals '<film_name>', id equals '<film_id>', and director equals '<film_director>'.",
+            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Modify your movie by setting year to 1999, duration to 167, and rating to 8.4.",
+            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Modify your movie by setting year to <year>, duration to <duration>, and rating to <rating>.",
         },
         {
-            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Please edit the film year to 2012, duration to 150, and rating to 9.1, whose name equals '<film_name>', id equals '<film_id>', and director equals '<film_director>'.",
-            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Please edit the film year to <year>, duration to <duration>, and rating to <rating>, whose name equals '<film_name>', id equals '<film_id>', and director equals '<film_director>'.",
+            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Please edit your movie by setting year to 2012, duration to 150, and rating to 9.1.",
+            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Please edit your movie by setting year to <year>, duration to <duration>, and rating to <rating>.",
         },
         {
-            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Adjust the film year to 1976, duration to 102, and rating to 6.4, whose name equals '<film_name>', id equals '<film_id>', and director equals '<film_director>'.",
-            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Adjust the film year to <year>, duration to <duration>, and rating to <rating>, whose name equals '<film_name>', id equals '<film_id>', and director equals '<film_director>'.",
+            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Adjust your movie by setting year to 1976, duration to 102, and rating to 6.4.",
+            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Adjust your movie by setting year to <year>, duration to <duration>, and rating to <rating>.",
         },
         {
-            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Edit the film year to 2020, duration to 89, and rating to 4.3, whose name equals '<film_name>', id equals '<film_id>', and director equals '<film_director>'.",
-            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Edit the film year to <year>, duration to <duration>, and rating to <rating>, whose name equals '<film_name>', id equals '<film_id>', and director equals '<film_director>'.",
+            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Edit your movie by setting year to 2020, duration to 89, and rating to 4.3.",
+            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Edit your movie by setting year to <year>, duration to <duration>, and rating to <rating>.",
         },
     ],
 )
 ###############################################################################
 # DELETE_FILM_USE_CASE
 ###############################################################################
-DELETE_FILM_ADDITIONAL_PROMPT_INFO = """
-CRITICAL RULE (HIGHEST PRIORITY):
+DELETE_FILM_ADDITIONAL_PROMPT_INFO = f"""
+CRITICAL REQUIREMENT — STRICT COMPLIANCE REQUIRED:
 
-* You MUST include ALL deletion constraints: name, id, and director.
-* You MUST use its placeholder exactly:
+You MUST follow ALL rules below EXACTLY. Any violation makes the output invalid.
 
-  * name → '<film_name>'
-  * id → '<film_id>'
-  * director → '<film_director>'
-* NEVER use empty strings like ''.
-* NEVER omit any constraint.
+1. ALWAYS begin with:
+   "Login with username equals <username> and password equals <password>."
 
-TASK REQUIREMENTS:
+2. The request MUST ONLY ask to delete your movie.
+   - Use phrasing like: "delete your movie"
+   - Do NOT reference any specific movie details.
 
-1. Start with login:
-   "First, authenticate with username 'user<web_agent_id>' and password '<password>'."
+3. STRICT PROHIBITION:
+   - You MUST NOT mention ANY identifying attributes of the movie.
+   - This includes (but is not limited to): title, name, id, movie_id, director, genre, or any other property.
+   - The prompt must remain completely generic.
 
-2. Then write a delete request for a user-owned book.
+4. DO NOT introduce ANY filters, conditions, or qualifiers.
+   - No descriptions
+   - No attributes
+   - No уточнение (clarification of which movie)
 
-3. Use ONLY these constraints:
+5. The sentence MUST remain simple, generic, and direct.
 
-   * name
-   * id
-   * director
+6. If you accidentally include any identifying detail, you MUST remove it and rewrite the sentence.
 
-4. Do NOT:
+7. {STRICT_COPY_INSTRUCTION}
 
-   * Add extra filters
-   * Repeat username/password in constraints
-   * Modify any values
+VALID EXAMPLE:
+"Login with username equals <username> and password equals <password>. Then, delete your movie."
 
-EXPECTED FORMAT:
-
-"First, authenticate with username 'user<web_agent_id>' and password '<password>'. Then, delete your film whose name equals '<film_name>' and id equals '<film_id>' and director equals '<film_director>'."
+All generated prompts must strictly follow this structure, with only minor natural wording variations.
 """
 
 DELETE_FILM_USE_CASE = UseCase(
@@ -721,44 +719,44 @@ DELETE_FILM_USE_CASE = UseCase(
     constraints_generator=generate_delete_film_constraints,
     examples=[
         {
-            "prompt": "Log in with username: user<web_agent_id>, password: <password> and remove '<your_film>'.",
-            "prompt_for_task_generation": "Log in with username: user<web_agent_id>, password: <password> and remove '<your_film>'.",
+            "prompt": "Log in with username equals user<web_agent_id> and password equals <password>. Then, delete your movie.",
+            "prompt_for_task_generation": "Log in with username equals user<web_agent_id> and password equals <password>. Then, delete your movie.",
         },
         {
-            "prompt": "After logging in with username: user<web_agent_id> and password: <password>, erase all records of '<your_film>'.",
-            "prompt_for_task_generation": "After logging in with username: user<web_agent_id> and password: <password>, erase all records of '<your_film>'.",
+            "prompt": "After logging in with username equals user<web_agent_id> and password equals <password>, remove your movie.",
+            "prompt_for_task_generation": "After logging in with username equals user<web_agent_id> and password equals <password>, remove your movie.",
         },
         {
-            "prompt": "Log in with username: user<web_agent_id>, password: <password> and permanently delete '<your_film>'.",
-            "prompt_for_task_generation": "Log in with username: user<web_agent_id>, password: <password> and permanently delete '<your_film>'.",
+            "prompt": "Log in with username equals user<web_agent_id> and password equals <password>, then permanently delete your movie.",
+            "prompt_for_task_generation": "Log in with username equals user<web_agent_id> and password equals <password>, then permanently delete your movie.",
         },
         {
-            "prompt": "Sign into your account where username: user<web_agent_id>, password: <password> and discard '<your_film>'.",
-            "prompt_for_task_generation": "Sign into your account where username: user<web_agent_id>, password: <password> and discard '<your_film>'.",
+            "prompt": "Sign into your account with username equals user<web_agent_id> and password equals <password>, and discard your movie.",
+            "prompt_for_task_generation": "Sign into your account with username equals user<web_agent_id> and password equals <password>, and discard your movie.",
         },
         {
-            "prompt": "Initiate a session with username: user<web_agent_id> and password: <password>, then remove '<your_film>'.",
-            "prompt_for_task_generation": "Initiate a session with username: user<web_agent_id> and password: <password>, then remove '<your_film>'.",
+            "prompt": "Initiate a session with username equals user<web_agent_id> and password equals <password>, then remove your movie.",
+            "prompt_for_task_generation": "Initiate a session with username equals user<web_agent_id> and password equals <password>, then remove your movie.",
         },
         {
-            "prompt": "Once logged in as username: user<web_agent_id> and password: <password>, delete '<your_film>'.",
-            "prompt_for_task_generation": "Once logged in as username: user<web_agent_id> and password: <password>, delete '<your_film>'.",
+            "prompt": "Once logged in as username equals user<web_agent_id> and password equals <password>, delete your movie.",
+            "prompt_for_task_generation": "Once logged in as username equals user<web_agent_id> and password equals <password>, delete your movie.",
         },
         {
-            "prompt": "Begin by signing in with username user<web_agent_id> and password <password>. Then, delete '<your_film>'.",
-            "prompt_for_task_generation": "Begin by signing in with username user<web_agent_id> and password <password>. Then, delete '<your_film>'.",
+            "prompt": "Begin by signing in with username equals user<web_agent_id> and password equals <password>. Then, delete your movie.",
+            "prompt_for_task_generation": "Begin by signing in with username equals user<web_agent_id> and password equals <password>. Then, delete your movie.",
         },
         {
-            "prompt": "First, log into the system with username: user<web_agent_id>, password: <password>, then discard '<your_film>'.",
-            "prompt_for_task_generation": "First, log into the system with username: user<web_agent_id>, password: <password>, then discard '<your_film>'.",
+            "prompt": "First, log into the system with username equals user<web_agent_id> and password equals <password>, then discard your movie.",
+            "prompt_for_task_generation": "First, log into the system with username equals user<web_agent_id> and password equals <password>, then discard your movie.",
         },
         {
-            "prompt": "Authenticate yourself with username user<web_agent_id> and password <password>. Then, remove '<your_film>'.",
-            "prompt_for_task_generation": "Authenticate yourself with username user<web_agent_id> and password <password>. Then, remove '<your_film>'.",
+            "prompt": "Authenticate yourself with username equals user<web_agent_id> and password equals <password>. Then, remove your movie.",
+            "prompt_for_task_generation": "Authenticate yourself with username equals user<web_agent_id> and password equals <password>. Then, remove your movie.",
         },
         {
-            "prompt": "Using your credentials username: user<web_agent_id>, password: <password>, sign in and erase all records of '<your_film>'.",
-            "prompt_for_task_generation": "Using your credentials username: user<web_agent_id>, password: <password>, sign in and erase all records of '<your_film>'.",
+            "prompt": "Using your credentials username equals user<web_agent_id> and password equals <password>, sign in and erase your movie.",
+            "prompt_for_task_generation": "Using your credentials username equals user<web_agent_id> and password equals <password>, sign in and erase your movie.",
         },
     ],
 )
@@ -1013,20 +1011,20 @@ async def update_use_cases_prompt_info(
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
-    FILM_DETAIL_USE_CASE,
-    LOGIN_USE_CASE,
+    # FILM_DETAIL_USE_CASE,
+    # LOGIN_USE_CASE,
     DELETE_FILM_USE_CASE,
-    LOGOUT_USE_CASE,
-    FILTER_FILM_USE_CASE,
-    SEARCH_FILM_USE_CASE,
-    CONTACT_USE_CASE,
-    REGISTRATION_USE_CASE,
-    ADD_COMMENT_USE_CASE,
+    # LOGOUT_USE_CASE,
+    # FILTER_FILM_USE_CASE,
+    # SEARCH_FILM_USE_CASE,
+    # CONTACT_USE_CASE,
+    # REGISTRATION_USE_CASE,
+    # ADD_COMMENT_USE_CASE,
     EDIT_FILM_USE_CASE,
-    ADD_FILM_USE_CASE,
-    EDIT_USER_PROFILE_USE_CASE,
-    ADD_TO_WATCHLIST_USE_CASE,
-    REMOVE_FROM_WATCHLIST_USE_CASE,
-    SHARE_FILM_USE_CASE,
-    WATCH_TRAILER_USE_CASE,
+    # ADD_FILM_USE_CASE,
+    # EDIT_USER_PROFILE_USE_CASE,
+    # ADD_TO_WATCHLIST_USE_CASE,
+    # REMOVE_FROM_WATCHLIST_USE_CASE,
+    # SHARE_FILM_USE_CASE,
+    # WATCH_TRAILER_USE_CASE,
 ]
