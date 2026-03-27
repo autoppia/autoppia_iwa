@@ -11,6 +11,8 @@ from .data_utils import fetch_data
 # Constants for constraint placeholders
 USERNAME_PLACEHOLDER = "<username>"
 PASSWORD_PLACEHOLDER = "<password>"
+BOOK_NAME_PLACEHOLDER = "<book_name>"
+BOOK_AUTHOR_PLACEHOLDER = "<book_author>"
 
 # Shared word list for author/text constraints (edit book, add book)
 RANDOM_WORDS_FOR_CONSTRAINTS = [
@@ -157,7 +159,7 @@ def generate_delete_book_constraints():
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = f"username equals {USERNAME_PLACEHOLDER} AND password equals {PASSWORD_PLACEHOLDER} AND id equals <web_agent_id>"
+    constraints_str = f"username equals {USERNAME_PLACEHOLDER} AND password equals {PASSWORD_PLACEHOLDER} AND book_name equals {BOOK_NAME_PLACEHOLDER} AND book_author equals {BOOK_AUTHOR_PLACEHOLDER}"
 
     # Convertir el string a la estructura de datos
     return parse_constraints_str(constraints_str)
@@ -561,55 +563,22 @@ async def generate_edit_book_constraints(task_url: str | None = None, dataset: d
     Generates constraints specifically for editing book-related use cases.
     Returns the constraints as structured data.
     """
-    editable_fields = ["author", "year", "genres", "rating", "page_count"]
-
-    dataset, books = await _get_books_from_task_or_dataset(task_url, dataset)
-    all_genres = list({genre for book in books for genre in book["genres"]})
-
-    constraints = []
-    constraints.extend(_default_auth_constraints())
-    # Security Hotspot: random.sample and random.choice are used for non-security purposes (test data generation)
-    selected_fields = sample(editable_fields, k=choice([1, 2, 3, 4]))
-
-    for field in selected_fields:
-        if field == "author":
-            constraints.append(
-                {
-                    "field": field,
-                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.CONTAINS), ComparisonOperator(ComparisonOperator.NOT_CONTAINS)]),
-                    "value": choice(RANDOM_WORDS_FOR_CONSTRAINTS),
-                }
-            )
-        elif field == "year":
-            # Security Hotspot: random.randint is used for non-security purposes (test data generation)
-            constraints.append(
-                {
-                    "field": field,
-                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.GREATER_EQUAL), ComparisonOperator(ComparisonOperator.LESS_EQUAL)]),
-                    "value": randint(1950, 2024),
-                }
-            )
-        elif field == "genres":
-            constraints.append({"field": field, "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": choice(all_genres)})
-        elif field == "rating":
-            # Security Hotspot: random.uniform is used for non-security purposes (test data generation)
-            rating_value = round(uniform(0, 5), 1)
-            constraints.append(
-                {
-                    "field": field,
-                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.GREATER_EQUAL), ComparisonOperator(ComparisonOperator.LESS_EQUAL)]),
-                    "value": rating_value,
-                }
-            )
-        elif field == "page_count":
-            # Security Hotspot: random.randint is used for non-security purposes (test data generation)
-            constraints.append(
-                {
-                    "field": field,
-                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.GREATER_EQUAL), ComparisonOperator(ComparisonOperator.LESS_EQUAL)]),
-                    "value": randint(50, 1080),
-                }
-            )
+    _ = task_url  # Unused parameter kept for backward compatibility
+    _ = dataset  # Unused parameter kept for backward compatibility
+    constraints = [
+        {"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": USERNAME_PLACEHOLDER},
+        {"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": PASSWORD_PLACEHOLDER},
+        {"field": "book_name", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": BOOK_NAME_PLACEHOLDER},
+        {"field": "book_author", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": BOOK_AUTHOR_PLACEHOLDER},
+    ]
+    # Local editable-field constraints requested for EDIT_BOOK (autocinema parity).
+    constraints.extend(
+        [
+            {"field": "book_year", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": randint(1950, 2030)},
+            {"field": "book_pages", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": randint(80, 180)},
+            {"field": "book_rating", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": choice([value / 10 for value in range(40, 100)])},
+        ]
+    )
     return constraints
 
 

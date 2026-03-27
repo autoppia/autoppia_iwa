@@ -734,15 +734,18 @@ ADD_BOOK_USE_CASE = UseCase(
 EDIT_BOOK_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 
-1. Include ALL edit constraints mentioned above — not just some of them.
-2. Include ONLY the edit constraints mentioned above — do not add any other criteria or filters.
-3. Be phrased as a request to edit or modify a book (use phrases like "Edit...", "Modify...", "Update...", "Change...", etc.).
-4. Begin with a creative instruction to log in using username '<username>' and password '<password>'.
+1. Begin with a login instruction using username '<username>' and password '<password>'.
+2. Be explicitly phrased as a request to edit your book.
+3. Include editable numeric fields in this style: "edit your book by setting year to <book_year>, page_count to <book_pages>, and rating to <book_rating>."
+4. Do NOT mention identity constraints in the prompt text (do NOT mention book_name, book_id/id, or book_author).
+5. Keep the same field names and operators exactly ("equals" wording) for the constraints that are explicitly mentioned.
+6. Include ONLY the constraints that should be explicit in the prompt text - do not add any other criteria.
+7. Do not ask to edit any book other than your book.
 
 STRICT FIELD USAGE RULE:
 
 - The username and password MUST appear exactly as provided in the LOGIN sentence only.
-- Do NOT repeat username or password inside the edit constraint description unless they are explicitly part of the edit constraints.
+- Do NOT repeat username or password inside the edit description.
 - Only include fields that are explicitly defined as edit constraints.
 - Every constraint value MUST be copied EXACTLY as given.
 - Do NOT rewrite, transform, infer, replace, generalize, or suggest alternative values.
@@ -752,14 +755,14 @@ STRICT FIELD USAGE RULE:
 IMPORTANT DISTINCTION:
 
 - Login credentials are for authentication only.
-- Edit constraints define which book should be modified.
-- Do NOT mix authentication fields into the edit filtering unless explicitly instructed.
+- Edit constraints define how to update your book.
+- Do NOT mix authentication fields into the edit request unless explicitly instructed.
 
 For example, if the constraints are:
 "year equals 2014 AND author contains 'e'"
 
 CORRECT:
-"First, authenticate with username '<username>' and password '<password>'. Then, edit your book where the year equals 2014 and the author contains 'e'."
+"First, authenticate with username '<username>' and password '<password>'. Then, edit your book by setting year to 2014."
 
 INCORRECT:
 - Adding extra filters such as rating or genre.
@@ -767,7 +770,7 @@ INCORRECT:
 - Repeating username or password inside the edit condition.
 - Editing a random or unspecified book.
 
-ALL prompts must follow this structure exactly, with varied phrasing but identical constraint logic and EXACT field values.
+ALL prompts must follow this structure exactly, with varied phrasing but preserving the same explicit criteria and wording requirements.
 """
 EDIT_BOOK_USE_CASE = UseCase(
     name="EDIT_BOOK",
@@ -779,28 +782,28 @@ EDIT_BOOK_USE_CASE = UseCase(
     additional_prompt_info=EDIT_BOOK_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Sign in with username: <username> and password: <password>. After that, update the author of your book to Jamie Oliver.",
-            "prompt_for_task_generation": "Sign in with username: <username> and password: <password>. After that, update the author of <your_book> to Jamie Oliver.",
+            "prompt": "Login with username equals <username> and password equals <password>. Edit your book by setting year to 1987, page_count to 138, and rating to 5.5.",
+            "prompt_for_task_generation": "Login with username equals <username> and password equals <password>. Edit your book by setting year to <book_year>, page_count to <book_pages>, and rating to <book_rating>.",
         },
         {
-            "prompt": "First, log into your account with username: <username>, password: <password>. Then, modify the release year of your book to 2023.",
-            "prompt_for_task_generation": "First, log into your account with username: <username>, password: <password>. Then, modify the release year of <your_book> to 2023.",
+            "prompt": "Login with username equals <username> and password equals <password>. Update your book by setting year to 2004, page_count to 121, and rating to 7.8.",
+            "prompt_for_task_generation": "Login with username equals <username> and password equals <password>. Update your book by setting year to <book_year>, page_count to <book_pages>, and rating to <book_rating>.",
         },
         {
-            "prompt": "Access your account by entering username: <username> and password: <password>. Once logged in, add 'Baking' to the genres of your book.",
-            "prompt_for_task_generation": "Access your account by entering username: <username> and password: <password>. Once logged in, add 'Baking' to the genres of <your_book>.",
+            "prompt": "Login with username equals <username> and password equals <password>. Modify your book by setting year to 1999, page_count to 167, and rating to 8.4.",
+            "prompt_for_task_generation": "Login with username equals <username> and password equals <password>. Modify your book by setting year to <book_year>, page_count to <book_pages>, and rating to <book_rating>.",
         },
         {
-            "prompt": "Using username: <username> and password: <password>, sign into the platform. Then change the rating of your book to 4.9.",
-            "prompt_for_task_generation": "Using username: <username> and password: <password>, sign into the platform. Then change the rating of <your_book> to 4.9.",
+            "prompt": "Login with username equals <username> and password equals <password>. Please edit your book by setting year to 2012, page_count to 150, and rating to 9.1.",
+            "prompt_for_task_generation": "Login with username equals <username> and password equals <password>. Please edit your book by setting year to <book_year>, page_count to <book_pages>, and rating to <book_rating>.",
         },
         {
-            "prompt": "Authenticate yourself with username <username> and password <password>. After logging in, edit the page_count of your book to 1000 pages.",
-            "prompt_for_task_generation": "Authenticate yourself with username <username> and password <password>. After logging in, edit the page_count of <your_book> to 1000 pages.",
+            "prompt": "Login with username equals <username> and password equals <password>. Adjust your book by setting year to 1976, page_count to 102, and rating to 6.4.",
+            "prompt_for_task_generation": "Login with username equals <username> and password equals <password>. Adjust your book by setting year to <book_year>, page_count to <book_pages>, and rating to <book_rating>.",
         },
         {
-            "prompt": "Login credentials: username <username>, password <password>. Sign in first and then modify the author of your book to include Neil Gaiman.",
-            "prompt_for_task_generation": "Login credentials: username <username>, password <password>. Sign in first and then modify the author of <your_book> to include 'Neil Gaiman'.",
+            "prompt": "Login with username equals <username> and password equals <password>. Edit your book by setting year to 2020, page_count to 89, and rating to 4.3.",
+            "prompt_for_task_generation": "Login with username equals <username> and password equals <password>. Edit your book by setting year to <book_year>, page_count to <book_pages>, and rating to <book_rating>.",
         },
     ],
 )
@@ -808,41 +811,36 @@ EDIT_BOOK_USE_CASE = UseCase(
 # DELETE_BOOK_USE_CASE
 ###############################################################################
 DELETE_BOOK_ADDITIONAL_PROMPT_INFO = """
-CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+CRITICAL REQUIREMENT — STRICT COMPLIANCE REQUIRED:
 
-1. Include ALL deletion constraints mentioned above — not just some of them.
-2. Include ONLY the deletion constraints mentioned above — do not add any other criteria or filters.
-3. Be phrased as a request to delete or remove a book (use phrases like "Remove...", "Delete...", "Erase...", "Discard...").
-4. The user is only allowed to delete books they have added. Use terms like 'your book' or 'user-registered book' in the final prompt.
-5. Begin with a creative instruction to log in using username '<username>' and password '<password>'.
+You MUST follow ALL rules below EXACTLY. Any violation makes the output invalid.
 
-STRICT FIELD USAGE RULE:
+1. ALWAYS begin with:
+   "Login with username equals <username> and password equals <password>."
 
-- The username and password MUST appear exactly as provided in the LOGIN sentence only.
-- Do NOT repeat username or password inside the delete constraint description unless they are explicitly part of the deletion constraints.
-- Only include fields that are explicitly defined as deletion constraints.
-- If "id" is a deletion constraint, include it exactly as given.
-- Do NOT automatically include username or password as deletion filters unless they are explicitly stated as deletion constraints.
-- Do NOT rewrite, transform, infer, or replace any provided field values.
-- Every constraint value must be copied verbatim.
+2. The request MUST ONLY ask to delete your movie.
+   - Use phrasing like: "delete your book"
+   - Do NOT reference any specific book details.
 
-IMPORTANT DISTINCTION:
-- Login credentials are for authentication only.
-- Deletion constraints describe which book to delete.
-- Do NOT mix authentication fields into deletion filtering unless explicitly instructed.
+3. STRICT PROHIBITION:
+   - You MUST NOT mention ANY identifying attributes of the book.
+   - This includes (but is not limited to): title, book_name, id, book_id, book_author, genre, or any other property.
+   - The prompt must remain completely generic.
 
-For example, if the deletion constraint is:
-"id equals '<web_agent_id>'"
+4. DO NOT introduce ANY filters, conditions, or qualifiers.
+   - No descriptions
+   - No attributes
+   - No уточнение (clarification of which book)
 
-CORRECT:
-"First, authenticate with username '<username>' and password '<password>'. Then, delete your book whose id equals '<web_agent_id>'."
+5. The sentence MUST remain simple, generic, and direct.
 
-INCORRECT:
-- Adding username or password as deletion filters.
-- Repeating login credentials inside the delete description.
-- Adding extra constraints like rating or year.
+6. If you accidentally include any identifying detail, you MUST remove it and rewrite the sentence.
 
-ALL prompts must follow this structure exactly, with varied phrasing but identical constraint logic and EXACT field values.
+
+VALID EXAMPLE:
+"Login with username equals <username> and password equals <password>. Then, delete your book."
+
+All generated prompts must strictly follow this structure, with only minor natural wording variations.
 """
 
 
@@ -855,44 +853,44 @@ DELETE_BOOK_USE_CASE = UseCase(
     constraints_generator=generate_delete_book_constraints,
     examples=[
         {
-            "prompt": "Log in with username: <username>, password: <password> and remove '<your_book>'.",
-            "prompt_for_task_generation": "Log in with username: <username>, password: <password> and remove '<your_book>'.",
+            "prompt": "Log in with username equals <username> and password equals <password>. Then, delete your book.",
+            "prompt_for_task_generation": "Log in with username equals <username> and password equals <password>. Then, delete your book.",
         },
         {
-            "prompt": "After logging in with username: <username> and password: <password>, erase all records of '<your_book>'.",
-            "prompt_for_task_generation": "After logging in with username: <username> and password: <password>, erase all records of '<your_book>'.",
+            "prompt": "After logging in with username equals <username> and password equals <password>, remove your book.",
+            "prompt_for_task_generation": "After logging in with username equals <username> and password equals <password>, remove your book.",
         },
         {
-            "prompt": "Log in with username: <username>, password: <password> and permanently delete '<your_book>'.",
-            "prompt_for_task_generation": "Log in with username: <username>, password: <password> and permanently delete '<your_book>'.",
+            "prompt": "Log in with username equals <username> and password equals <password>, then permanently delete your book.",
+            "prompt_for_task_generation": "Log in with username equals <username> and password equals <password>, then permanently delete your book.",
         },
         {
-            "prompt": "Sign into your account where username: <username>, password: <password> and discard '<your_book>'.",
-            "prompt_for_task_generation": "Sign into your account where username: <username>, password: <password> and discard '<your_book>'.",
+            "prompt": "Sign into your account with username equals <username> and password equals <password>, and discard your book.",
+            "prompt_for_task_generation": "Sign into your account with username equals <username> and password equals <password>, and discard your book.",
         },
         {
-            "prompt": "Initiate a session with username: <username> and password: <password>, then remove '<your_book>'.",
-            "prompt_for_task_generation": "Initiate a session with username: <username> and password: <password>, then remove '<your_book>'.",
+            "prompt": "Initiate a session with username equals <username> and password equals <password>, then remove your book.",
+            "prompt_for_task_generation": "Initiate a session with username equals <username> and password equals <password>, then remove your book.",
         },
         {
-            "prompt": "Once logged in as username: <username> and password: <password>, delete '<your_book>'.",
-            "prompt_for_task_generation": "Once logged in as username: <username> and password: <password>, delete '<your_book>'.",
+            "prompt": "Once logged in as username equals <username> and password equals <password>, delete your book.",
+            "prompt_for_task_generation": "Once logged in as username equals <username> and password equals <password>, delete your book.",
         },
         {
-            "prompt": "Begin by signing in with username <username> and password <password>. Then, delete '<your_book>'.",
-            "prompt_for_task_generation": "Begin by signing in with username <username> and password <password>. Then, delete '<your_book>'.",
+            "prompt": "Begin by signing in with username equals <username> and password equals <password>. Then, delete your book.",
+            "prompt_for_task_generation": "Begin by signing in with username equals <username> and password equals <password>. Then, delete your book.",
         },
         {
-            "prompt": "First, log into the system with username: <username>, password: <password>, then discard '<your_book>'.",
-            "prompt_for_task_generation": "First, log into the system with username: <username>, password: <password>, then discard '<your_book>'.",
+            "prompt": "First, log into the system with username equals <username> and password equals <password>, then discard your book.",
+            "prompt_for_task_generation": "First, log into the system with username equals <username> and password equals <password>, then discard your book.",
         },
         {
-            "prompt": "Authenticate yourself with username <username> and password <password>. Then, remove '<your_book>'.",
-            "prompt_for_task_generation": "Authenticate yourself with username <username> and password <password>. Then, remove '<your_book>'.",
+            "prompt": "Authenticate yourself with username equals <username> and password equals <password>. Then, remove your book.",
+            "prompt_for_task_generation": "Authenticate yourself with username equals <username> and password equals <password>. Then, remove your book.",
         },
         {
-            "prompt": "Using your credentials username: <username>, password: <password>, sign in and erase all records of '<your_book>'.",
-            "prompt_for_task_generation": "Using your credentials username: <username>, password: <password>, sign in and erase all records of '<your_book>'.",
+            "prompt": "Using your credentials username equals <username> and password equals <password>, sign in and erase your book.",
+            "prompt_for_task_generation": "Using your credentials username equals <username> and password equals <password>, sign in and erase your book.",
         },
     ],
 )

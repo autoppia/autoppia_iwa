@@ -108,7 +108,7 @@ class FilmEvent(Event, BaseEventValidator):
 
     event_name: str = "BASE_FILM_EVENT"
 
-    movie_id: int
+    movie_id: int | str
     movie_name: str
     movie_director: str | list[str] | None = None  # Can be string (single) or list (multiple directors)
     movie_year: int | None = None
@@ -441,44 +441,33 @@ class EditFilmEvent(FilmEvent):
     """Event triggered when a user edits an existing film"""
 
     event_name: str = "EDIT_FILM"
-    previous_values: dict[str, Any] = Field(default_factory=dict)
-    changed_fields: list[str] = Field(default_factory=list)
+    movie_year: int | str | None = None
+    movie_duration: int | str | None = None
+    movie_rating: int | str | float | None = None
+    movie_name: int | str | None = None
+    movie_director: int | str | None = None
 
     class ValidationCriteria(FilmEvent.ValidationCriteria):
         """Criteria for validating edit film events"""
 
-        movie_id: int | CriterionValue | None = None
-        changed_field: str | CriterionValue | None = None
+        movie_year: int | CriterionValue | None = None
+        movie_duration: int | CriterionValue | None = None
+        movie_rating: float | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """Validate if this edit film event meets the criteria."""
         if not criteria:
             return True
 
-        # Validate movie_id using BaseEventValidator
-        if criteria.movie_id is not None and not self._validate_field(self.movie_id, criteria.movie_id):
+        if criteria.movie_year is not None and not self._validate_field(self.movie_year, criteria.movie_year):
             return False
-
-        # Validate common film criteria
-        if not self._validate_film_criteria(criteria):
+        if criteria.movie_rating is not None and not self._validate_field(self.movie_rating, criteria.movie_rating):
             return False
-
-        # Validate changed_field
-        if criteria.changed_field is not None:
-            if isinstance(criteria.changed_field, str):
-                if criteria.changed_field not in self.changed_fields:
-                    return False
-            else:
-                if criteria.changed_field.operator == ComparisonOperator.IN_LIST:
-                    if not isinstance(criteria.changed_field.value, list):
-                        return False
-                    if not any(field in criteria.changed_field.value for field in self.changed_fields):
-                        return False
-                elif criteria.changed_field.operator == ComparisonOperator.EQUALS:
-                    if criteria.changed_field.value not in self.changed_fields:
-                        return False
-
-        return True
+        if criteria.name is not None and not self._validate_field(self.movie_name, criteria.name):
+            return False
+        if criteria.director is not None and not self._validate_field(self.movie_director, criteria.director):
+            return False
+        return not (criteria.movie_duration is not None and not self._validate_field(self.movie_duration, criteria.movie_duration))
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "EditFilmEvent":
@@ -486,13 +475,13 @@ class EditFilmEvent(FilmEvent):
         base_event = Event.parse(backend_event)
         data = backend_event.data
         film_data = FilmEvent._extract_film_data(data)
+        movie_id_raw = film_data.get("movie_id", 0)
+        film_data["movie_id"] = str(movie_id_raw)
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            previous_values=data.get("previous_values", {}),
-            changed_fields=data.get("changed_fields", []),
             **film_data,
         )
 
@@ -501,20 +490,16 @@ class DeleteFilmEvent(FilmEvent):
     """Event triggered when a user deletes a film"""
 
     event_name: str = "DELETE_FILM"
+    movie_name: int | str | None = None
+    movie_director: int | str | None = None
 
     class ValidationCriteria(FilmEvent.ValidationCriteria):
         """Criteria for validating delete film events"""
-
-        movie_id: int | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """Validate if this delete film event meets the criteria."""
         if not criteria:
             return True
-
-        # Validate movie_id using BaseEventValidator
-        if criteria.movie_id is not None and not self._validate_field(self.movie_id, criteria.movie_id):
-            return False
 
         # Validate common film criteria (name, genre, director, year)
         # Note: rating and duration are not validated for delete events
@@ -532,6 +517,8 @@ class DeleteFilmEvent(FilmEvent):
         base_event = Event.parse(backend_event)
         data = backend_event.data
         film_data = FilmEvent._extract_film_data(data)
+        movie_id_raw = film_data.get("movie_id", 0)
+        film_data["movie_id"] = str(movie_id_raw)
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
