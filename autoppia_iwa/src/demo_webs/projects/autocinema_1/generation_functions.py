@@ -353,7 +353,7 @@ async def generate_delete_film_constraints(task_url: str | None = None, dataset:
         create_constraint_dict("username", ComparisonOperator.EQUALS, USERNAME_PLACEHOLDER),
         create_constraint_dict("password", ComparisonOperator.EQUALS, DEFAULT_PASSWORD),
         create_constraint_dict("name", ComparisonOperator.EQUALS, FILM_NAME_PLACEHOLDER),
-        create_constraint_dict("id", ComparisonOperator.EQUALS, FILM_ID_PLACEHOLDER),
+        create_constraint_dict("movie_id", ComparisonOperator.EQUALS, FILM_ID_PLACEHOLDER),
         create_constraint_dict("director", ComparisonOperator.EQUALS, FILM_DIRECTOR_PLACEHOLDER),
     ]
 
@@ -447,7 +447,7 @@ async def generate_edit_film_constraints(task_url: str | None = None, dataset: d
         create_constraint_dict("username", ComparisonOperator.EQUALS, USERNAME_PLACEHOLDER),
         create_constraint_dict("password", ComparisonOperator.EQUALS, DEFAULT_PASSWORD),
         create_constraint_dict("name", ComparisonOperator.EQUALS, FILM_NAME_PLACEHOLDER),
-        create_constraint_dict("id", ComparisonOperator.EQUALS, FILM_ID_PLACEHOLDER),
+        create_constraint_dict("movie_id", ComparisonOperator.EQUALS, FILM_ID_PLACEHOLDER),
         create_constraint_dict("director", ComparisonOperator.EQUALS, FILM_DIRECTOR_PLACEHOLDER),
     ]
     # Local editable-field constraints requested for EDIT_FILM.
