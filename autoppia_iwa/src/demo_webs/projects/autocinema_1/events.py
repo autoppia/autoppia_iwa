@@ -453,8 +453,6 @@ class EditFilmEvent(FilmEvent):
         movie_year: int | CriterionValue | None = None
         movie_duration: int | CriterionValue | None = None
         movie_rating: float | CriterionValue | None = None
-        movie_name: str | CriterionValue | None = None
-        movie_director: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """Validate if this edit film event meets the criteria."""
@@ -465,9 +463,9 @@ class EditFilmEvent(FilmEvent):
             return False
         if criteria.movie_rating is not None and not self._validate_field(self.movie_rating, criteria.movie_rating):
             return False
-        if criteria.movie_name is not None and not self._validate_field(self.movie_name, criteria.movie_name):
+        if criteria.name is not None and not self._validate_field(self.movie_name, criteria.name):
             return False
-        if criteria.movie_director is not None and not self._validate_field(self.movie_director, criteria.movie_director):
+        if criteria.director is not None and not self._validate_field(self.movie_director, criteria.director):
             return False
         return not (criteria.movie_duration is not None and not self._validate_field(self.movie_duration, criteria.movie_duration))
 
@@ -498,9 +496,6 @@ class DeleteFilmEvent(FilmEvent):
     class ValidationCriteria(FilmEvent.ValidationCriteria):
         """Criteria for validating delete film events"""
 
-        movie_name: str | CriterionValue | None = None
-        movie_director: str | CriterionValue | None = None
-
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """Validate if this delete film event meets the criteria."""
         if not criteria:
@@ -508,11 +503,11 @@ class DeleteFilmEvent(FilmEvent):
 
         # Validate common film criteria (name, genre, director, year)
         # Note: rating and duration are not validated for delete events
-        if criteria.name is not None and not self._validate_field(self.movie_name, criteria.movie_name):
+        if criteria.name is not None and not self._validate_field(self.movie_name, criteria.name):
             return False
         if criteria.genre is not None and not validate_genre_criteria(self.movie_genres, criteria.genre):
             return False
-        if criteria.director is not None and not self._validate_field(self.movie_director, criteria.movie_director):
+        if criteria.director is not None and not self._validate_field(self.movie_director, criteria.director):
             return False
         return not (criteria.year is not None and not self._validate_field(self.movie_year, criteria.year))
 

@@ -629,7 +629,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Begin with a login instruction using username equals <username> and password equals <password> (exact constraint values).
 2. Be explicitly phrased as a request to edit your movie.
 3. Include editable numeric fields in this style: "edit your movie by setting year to <year>, duration to <duration>, and rating to <rating>."
-4. Do NOT mention identity constraints in the prompt text (do NOT mention movie_name, movie_id/id, or movie_director).
+4. Do NOT mention identity constraints in the prompt text (do NOT mention name, movie_id/id, or director).
 5. Keep the same field names and operators exactly ("equals" wording) for the constraints that are explicitly mentioned.
 6. Include ONLY the constraints that should be explicit in the prompt text - do not add any other criteria.
 7. Do not ask to edit any movie other than your movie.
@@ -690,7 +690,7 @@ You MUST follow ALL rules below EXACTLY. Any violation makes the output invalid.
 
 3. STRICT PROHIBITION:
    - You MUST NOT mention ANY identifying attributes of the movie.
-   - This includes (but is not limited to): title, movie_name, id, movie_id, movie_director, genre, or any other property.
+   - This includes (but is not limited to): title, name, id, movie_id, director, genre, or any other property.
    - The prompt must remain completely generic.
 
 4. DO NOT introduce ANY filters, conditions, or qualifiers.
@@ -1011,20 +1011,20 @@ async def update_use_cases_prompt_info(
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
-    # FILM_DETAIL_USE_CASE,
-    # LOGIN_USE_CASE,
+    FILM_DETAIL_USE_CASE,
+    LOGIN_USE_CASE,
     DELETE_FILM_USE_CASE,
-    # LOGOUT_USE_CASE,
-    # FILTER_FILM_USE_CASE,
-    # SEARCH_FILM_USE_CASE,
-    # CONTACT_USE_CASE,
-    # REGISTRATION_USE_CASE,
-    # ADD_COMMENT_USE_CASE,
+    LOGOUT_USE_CASE,
+    FILTER_FILM_USE_CASE,
+    SEARCH_FILM_USE_CASE,
+    CONTACT_USE_CASE,
+    REGISTRATION_USE_CASE,
+    ADD_COMMENT_USE_CASE,
     EDIT_FILM_USE_CASE,
-    # ADD_FILM_USE_CASE,
-    # EDIT_USER_PROFILE_USE_CASE,
-    # ADD_TO_WATCHLIST_USE_CASE,
-    # REMOVE_FROM_WATCHLIST_USE_CASE,
-    # SHARE_FILM_USE_CASE,
-    # WATCH_TRAILER_USE_CASE,
+    ADD_FILM_USE_CASE,
+    EDIT_USER_PROFILE_USE_CASE,
+    ADD_TO_WATCHLIST_USE_CASE,
+    REMOVE_FROM_WATCHLIST_USE_CASE,
+    SHARE_FILM_USE_CASE,
+    WATCH_TRAILER_USE_CASE,
 ]
