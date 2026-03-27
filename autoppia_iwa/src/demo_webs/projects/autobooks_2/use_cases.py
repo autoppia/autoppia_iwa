@@ -737,7 +737,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Begin with a login instruction using username '<username>' and password '<password>'.
 2. Be explicitly phrased as a request to edit your book.
 3. Include editable numeric fields in this style: "edit your book by setting year to <book_year>, page_count to <book_pages>, and rating to <book_rating>."
-4. Do NOT mention identity constraints in the prompt text (do NOT mention name, book_id/id, or author).
+4. Do NOT mention identity constraints in the prompt text (do NOT mention book_name, book_id/id, or book_author).
 5. Keep the same field names and operators exactly ("equals" wording) for the constraints that are explicitly mentioned.
 6. Include ONLY the constraints that should be explicit in the prompt text - do not add any other criteria.
 7. Do not ask to edit any book other than your book.

@@ -329,7 +329,6 @@ class EditBookEvent(Event, BaseEventValidator):
     book_rating: int | str | float | None = None
 
     class ValidationCriteria(BaseModel):
-        book_id: str | CriterionValue | None = None
         book_name: str | CriterionValue | None = None
         book_author: str | CriterionValue | None = None
         book_year: int | CriterionValue | None = None
@@ -339,8 +338,6 @@ class EditBookEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        if criteria.book_id is not None and not self._validate_field(self.book_id, criteria.book_id):
-            return False
         if criteria.book_year is not None and not self._validate_field(self.book_year, criteria.book_year):
             return False
         if criteria.book_rating is not None and not self._validate_field(self.book_rating, criteria.book_rating):
@@ -383,18 +380,16 @@ class DeleteBookEvent(Event, BaseEventValidator):
     book_id: int | str | None = None
 
     class ValidationCriteria(BaseModel):
-        name: str | CriterionValue | None = None
-        author: str | CriterionValue | None = None
-        book_id: str | CriterionValue | None = None
+        book_name: str | CriterionValue | None = None
+        book_author: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.book_name, criteria.name),
-                self._validate_field(self.book_author, criteria.author),
-                self._validate_field(self.book_id, criteria.book_id),
+                self._validate_field(self.book_name, criteria.book_name),
+                self._validate_field(self.book_author, criteria.book_author),
             ]
         )
 

@@ -12,7 +12,6 @@ from .data_utils import fetch_data
 USERNAME_PLACEHOLDER = "<username>"
 PASSWORD_PLACEHOLDER = "<password>"
 BOOK_NAME_PLACEHOLDER = "<book_name>"
-BOOK_ID_PLACEHOLDER = "<book_id>"
 BOOK_AUTHOR_PLACEHOLDER = "<book_author>"
 
 # Shared word list for author/text constraints (edit book, add book)
@@ -160,13 +159,7 @@ def generate_delete_book_constraints():
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = (
-        f"username equals {USERNAME_PLACEHOLDER} AND "
-        f"password equals {PASSWORD_PLACEHOLDER} AND "
-        f"name equals {BOOK_NAME_PLACEHOLDER} AND "
-        f"book_id equals {BOOK_ID_PLACEHOLDER} AND "
-        f"author equals {BOOK_AUTHOR_PLACEHOLDER}"
-    )
+    constraints_str = f"username equals {USERNAME_PLACEHOLDER} AND password equals {PASSWORD_PLACEHOLDER} AND book_name equals {BOOK_NAME_PLACEHOLDER} AND book_author equals {BOOK_AUTHOR_PLACEHOLDER}"
 
     # Convertir el string a la estructura de datos
     return parse_constraints_str(constraints_str)
@@ -576,7 +569,6 @@ async def generate_edit_book_constraints(task_url: str | None = None, dataset: d
         {"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": USERNAME_PLACEHOLDER},
         {"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": PASSWORD_PLACEHOLDER},
         {"field": "book_name", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": BOOK_NAME_PLACEHOLDER},
-        {"field": "book_id", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": BOOK_ID_PLACEHOLDER},
         {"field": "book_author", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": BOOK_AUTHOR_PLACEHOLDER},
     ]
     # Local editable-field constraints requested for EDIT_BOOK (autocinema parity).
