@@ -90,3 +90,17 @@ def test_backend_event_types_parse(event_name, data):
     e = event_class.parse(_be(event_name, data))
     assert e.event_name == event_name
     assert_parse_cls_kwargs_match_model(event_class)
+
+
+@pytest.mark.parametrize("event_name,data", AUTOCONNECT_PARSE_PAYLOADS)
+def test_backend_event_types_validate_none_criteria(event_name, data):
+    """Most event validators short-circuit to True when criteria is None."""
+    event_class = BACKEND_EVENT_TYPES[event_name]
+    e = event_class.parse(_be(event_name, data))
+    assert e.validate_criteria(None) is True
+
+
+def test_connect_with_user_parse_missing_target_user_defaults():
+    e = ConnectWithUserEvent.parse(_be("CONNECT_WITH_USER", {}))
+    assert e.target_username == ""
+    assert e.target_name == ""
