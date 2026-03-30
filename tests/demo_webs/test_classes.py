@@ -2,6 +2,8 @@
 
 from unittest.mock import MagicMock
 
+import pytest
+
 from autoppia_iwa.src.demo_webs.classes import (
     CONSTRAINTS_INFO_PLACEHOLDER,
     BackendEvent,
@@ -86,6 +88,68 @@ class TestUseCaseReplacements:
         result = uc.apply_replacements("Hello X")
         assert result == "Hello Y"
 
+    @pytest.mark.asyncio
+    async def test_apply_replacements_async_replace_func(self):
+        async def replace(text, **kwargs):
+            return text.replace("X", "Y")
+
+        uc = UseCase(
+            name="UC",
+            description="d",
+            event=None,
+            event_source_code="",
+            examples=[],
+            replace_func=replace,
+        )
+        result = await uc.apply_replacements_async("Hello X")
+        assert result == "Hello Y"
+
+
+class TestUseCaseConstraintsGeneration:
+    @pytest.mark.asyncio
+    async def test_generate_constraints_async_passes_dataset_to_single_param_generator(self):
+        captured = {}
+
+        def generator(dataset):
+            captured["dataset"] = dataset
+            return [{"field": "name", "operator": "equals", "value": "Alice"}]
+
+        uc = UseCase(
+            name="UC",
+            description="d",
+            event=None,
+            event_source_code="",
+            examples=[],
+            constraints_generator=generator,
+        )
+
+        result = await uc.generate_constraints_async(dataset={"users": [{"name": "Alice"}]})
+        assert "Alice" in result
+        assert captured["dataset"] == {"users": [{"name": "Alice"}]}
+
+    @pytest.mark.asyncio
+    async def test_generate_constraints_async_passes_named_kwargs(self):
+        captured = {}
+
+        async def generator(*, task_url=None, dataset=None):
+            captured["task_url"] = task_url
+            captured["dataset"] = dataset
+            return [{"field": "city", "operator": "equals", "value": "Madrid"}]
+
+        uc = UseCase(
+            name="UC",
+            description="d",
+            event=None,
+            event_source_code="",
+            examples=[],
+            constraints_generator=generator,
+        )
+
+        result = await uc.generate_constraints_async(task_url="http://localhost/?seed=5", dataset={"users": []})
+        assert "Madrid" in result
+        assert captured["task_url"] == "http://localhost/?seed=5"
+        assert captured["dataset"] == {"users": []}
+
 
 class TestUseCaseExamples:
     def test_get_example_prompts_from_use_case(self):
@@ -130,6 +194,30 @@ class TestUseCaseSerialize:
         assert data["name"] == "UC1"
         assert data["event"] == "MockEvent"
         assert data.get("constraints") is not None
+
+    def test_deserialize_rehydrates_event_class(self, monkeypatch):
+        class FakeEvent:
+            @staticmethod
+            def get_source_code_of_class():
+                return "class FakeEvent: ..."
+
+        monkeypatch.setattr(
+            "autoppia_iwa.src.demo_webs.base_events.EventRegistry.get_event_class",
+            lambda name: FakeEvent,
+        )
+
+        uc = UseCase.deserialize(
+            {
+                "name": "UC1",
+                "description": "d",
+                "event": "FakeEvent",
+                "event_source_code": True,
+                "examples": [],
+            }
+        )
+
+        assert uc.event is FakeEvent
+        assert uc.event_source_code == "class FakeEvent: ..."
 
 
 class TestWebProject:
