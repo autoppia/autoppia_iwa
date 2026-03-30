@@ -8,6 +8,8 @@ from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.web_agents.classes import IWebAgent
 
+BenchmarkAgentTarget = Literal["local", "remote"]
+
 
 @dataclass(slots=True)
 class BenchmarkConfig:
@@ -22,12 +24,17 @@ class BenchmarkConfig:
     """
 
     agents: list[IWebAgent] = field(default_factory=list)
+    agent_target: BenchmarkAgentTarget = "local"
+
     # Task generation
     projects: list[WebProject] = field(default_factory=list)
     use_cases: list[str] | None = None
     prompts_per_use_case: int = 1
     dynamic: bool = False
     use_cached_tasks: bool = False
+    # When set, load tasks from this JSON file instead of generating or using cache.
+    # File shape: {"project_id": "<id>", "project_name": "<name>", "tasks": [ Task.serialize() ... ] }
+    tasks_json_path: Path | str | None = None
 
     # Execution
     runs: int = 1
@@ -36,11 +43,11 @@ class BenchmarkConfig:
     headless: bool | None = None  # None = use EVALUATOR_HEADLESS env; False = show Chromium window
 
     # Evaluator mode
-    # "concurrent": El agente genera todas las acciones de una vez (modo tradicional)
-    # "stateful": El agente decide paso a paso viendo el estado del browser (iterativo)
+    # "concurrent": The agent produces all actions in one go (traditional mode).
+    # "stateful": The agent decides step by step using the browser state (iterative mode).
     evaluator_mode: Literal["concurrent", "stateful"] = "concurrent"
 
-    # Solo para modo stateful: límite de pasos por tarea
+    # Only for stateful mode: maximum steps per task.
     max_steps_per_task: int = 50
 
     # Persistence / plotting
@@ -56,8 +63,17 @@ class BenchmarkConfig:
         """
         Prepare directory structure used by the benchmark.
         """
-        # Validate required fields
-        if not self.projects:
+        # Resolve tasks_json_path to Path when set
+        if self.tasks_json_path is not None:
+            path = Path(self.tasks_json_path).resolve()
+            if not path.exists():
+                raise ValueError(f"tasks_json_path does not exist: {path}")
+            if not path.is_file():
+                raise ValueError(f"tasks_json_path must be a file, not a directory: {path}")
+            object.__setattr__(self, "tasks_json_path", path)
+
+        # Validate required fields (allow no projects when using custom tasks - resolved at run time)
+        if not self.tasks_json_path and not self.projects:
             logger.warning("No projects configured - benchmark will not run")
 
         if not self.agents:

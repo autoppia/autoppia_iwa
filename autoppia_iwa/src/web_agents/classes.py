@@ -119,6 +119,7 @@ class IWebAgent(ABC):
         url: str,
         step_index: int,
         history: list[dict[str, Any]] | None = None,
+        state: dict[str, Any] | None = None,
     ) -> list[BaseAction]:
         """
         Decide actions based on the current browser state.
@@ -134,6 +135,8 @@ class IWebAgent(ABC):
             url: Current URL
             step_index: Iteration number (0 in concurrent, increments in stateful)
             history: Optional history of previous actions
+            state: Estado opcional serializable del agente para continuidad entre pasos
+
 
         Returns:
             List of actions to execute (may be multiple for batch execution)

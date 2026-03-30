@@ -43,6 +43,7 @@ stress_test.log
 
 prompt_test_output/*
 
+benchmark-output/**
 *.webm
 .pytest_cache
 *.jsonl
