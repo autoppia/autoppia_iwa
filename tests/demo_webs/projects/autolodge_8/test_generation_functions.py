@@ -92,6 +92,9 @@ def test_generate_num_of_guests_field_value_is_bounded(monkeypatch):
     monkeypatch.setattr(gen.random, "choice", lambda seq: seq[0])
     assert gen._generate_num_of_guests_field_value(ComparisonOperator.EQUALS, 2, 4) == 2
     assert 1 <= gen._generate_num_of_guests_field_value(ComparisonOperator.NOT_EQUALS, 2, 4) <= 4
+    assert gen._generate_num_of_guests_field_value(ComparisonOperator.LESS_THAN, 2, 4) >= 2
+    assert gen._generate_num_of_guests_field_value(ComparisonOperator.GREATER_THAN, 2, 4) <= 2
+    assert gen._generate_num_of_guests_field_value(ComparisonOperator.GREATER_EQUAL, 1, 4) == 1
 
 
 @pytest.mark.asyncio
@@ -149,3 +152,30 @@ async def test_review_and_payment_method_generators(monkeypatch):
 
     assert review
     assert payment
+
+
+@pytest.mark.asyncio
+async def test_book_from_wishlist_and_faq(monkeypatch):
+    monkeypatch.setattr(gen.random, "choice", lambda seq: seq[0])
+    monkeypatch.setattr(gen.random, "randint", lambda a, b: a)
+    monkeypatch.setattr(gen.random, "sample", lambda seq, n: seq[:n])
+
+    wishlist = await gen.generate_book_from_wishlist_constraints(dataset=HOTELS)
+    faq = gen.generate_faq_opened_constraints()
+
+    assert {c["field"] for c in wishlist} == {"hotel_id", "title"}
+    assert faq[0]["field"] == "question"
+
+
+@pytest.mark.asyncio
+async def test_internal_view_and_reserve_helpers_cover_amenities(monkeypatch):
+    monkeypatch.setattr(gen.random, "choice", lambda seq: seq[0])
+    monkeypatch.setattr(gen.random, "randint", lambda a, b: a if a == b else b)
+    monkeypatch.setattr(gen.random, "sample", lambda seq, n: ["amenities", "guests", "location", "title"])
+
+    view_constraints, hotel = await gen.__generate_view_hotel_constraints(dataset=HOTELS)
+    reserve_constraints, reserve_hotel = await gen._generate_reserve_hotel_constraints(dataset=HOTELS)
+
+    assert hotel["id"] == reserve_hotel["id"] == 1
+    assert any(c["field"] == "amenities" for c in view_constraints)
+    assert any(c["field"] == "guests_set" for c in reserve_constraints)
