@@ -88,6 +88,26 @@ class TestUseCaseReplacements:
         result = uc.apply_replacements("Hello X")
         assert result == "Hello Y"
 
+    def test_apply_replacements_sync_coro_fallback_returns_original_when_loop_running(self, monkeypatch):
+        async def replace(text, **kwargs):
+            return text.replace("X", "Y")
+
+        uc = UseCase(
+            name="UC",
+            description="d",
+            event=None,
+            event_source_code="",
+            examples=[],
+            replace_func=replace,
+        )
+
+        def _raise_runtime(coro):
+            coro.close()
+            raise RuntimeError("running loop")
+
+        monkeypatch.setattr("asyncio.run", _raise_runtime)
+        assert uc.apply_replacements("Hello X") == "Hello X"
+
     @pytest.mark.asyncio
     async def test_apply_replacements_async_replace_func(self):
         async def replace(text, **kwargs):
@@ -149,6 +169,27 @@ class TestUseCaseConstraintsGeneration:
         assert "Madrid" in result
         assert captured["task_url"] == "http://localhost/?seed=5"
         assert captured["dataset"] == {"users": []}
+
+    def test_generate_constraints_sync_coro_fallback_sets_none(self, monkeypatch):
+        async def generator():
+            return [{"field": "name", "operator": "equals", "value": "Alice"}]
+
+        uc = UseCase(
+            name="UC",
+            description="d",
+            event=None,
+            event_source_code="",
+            examples=[],
+            constraints_generator=generator,
+        )
+
+        def _raise_runtime(coro):
+            coro.close()
+            raise RuntimeError("running loop")
+
+        monkeypatch.setattr("asyncio.run", _raise_runtime)
+        assert uc.generate_constraints() == ""
+        assert uc.constraints is None
 
 
 class TestUseCaseExamples:
@@ -218,6 +259,27 @@ class TestUseCaseSerialize:
 
         assert uc.event is FakeEvent
         assert uc.event_source_code == "class FakeEvent: ..."
+
+    def test_deserialize_raises_for_missing_event_name(self):
+        with pytest.raises(ValueError, match="missing"):
+            UseCase.deserialize({"name": "UC1", "description": "d", "examples": []})
+
+    def test_deserialize_raises_for_unknown_event(self, monkeypatch):
+        monkeypatch.setattr(
+            "autoppia_iwa.src.demo_webs.base_events.EventRegistry.get_event_class",
+            lambda name: (_ for _ in ()).throw(KeyError(name)),
+        )
+
+        with pytest.raises(ValueError, match="not found"):
+            UseCase.deserialize(
+                {
+                    "name": "UC1",
+                    "description": "d",
+                    "event": "MissingEvent",
+                    "event_source_code": True,
+                    "examples": [],
+                }
+            )
 
 
 class TestWebProject:

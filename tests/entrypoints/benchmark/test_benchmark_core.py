@@ -134,3 +134,47 @@ def test_aggregate_project_and_save_results_use_reporting_helpers(monkeypatch, t
     assert benchmark._project_reports[project.name] == {"project": project.id}
     assert saved["data"] == benchmark.last_run_report
     assert saved["path"].name.startswith("benchmark_")
+
+
+def test_build_terminal_report_delegates_with_results_path(monkeypatch, tmp_path):
+    benchmark = _benchmark(tmp_path)
+    benchmark.last_run_report = {"summary": {"ok": True}}
+    benchmark.last_results_path = "/tmp/report.json"
+
+    captured = {}
+
+    def _build_terminal_report(report, *, config, results_path):
+        captured["report"] = report
+        captured["config"] = config
+        captured["results_path"] = results_path
+        return "terminal report"
+
+    monkeypatch.setattr("autoppia_iwa.src.evaluation.benchmark.benchmark.build_terminal_report", _build_terminal_report)
+
+    assert benchmark.build_terminal_report() == "terminal report"
+    assert captured["report"] == {"summary": {"ok": True}}
+    assert captured["results_path"] == "/tmp/report.json"
+
+
+def test_save_results_builds_report_when_missing(monkeypatch, tmp_path):
+    benchmark = _benchmark(tmp_path)
+    benchmark._results = {"Autocinema": {"Agent One": {"passed": 1}}}
+
+    monkeypatch.setattr(
+        "autoppia_iwa.src.evaluation.benchmark.benchmark.build_run_report",
+        lambda **kwargs: {"summary": kwargs["summary"], "projects": kwargs["project_reports"]},
+    )
+
+    saved = {}
+
+    def _save_run_report(data, path):
+        saved["data"] = data
+        saved["path"] = path
+
+    monkeypatch.setattr("autoppia_iwa.src.evaluation.benchmark.benchmark.save_run_report", _save_run_report)
+
+    benchmark._save_results()
+
+    assert saved["data"] == {"summary": benchmark._results, "projects": benchmark._project_reports}
+    assert saved["path"].suffix == ".json"
+    assert benchmark.last_results_path == str(saved["path"])

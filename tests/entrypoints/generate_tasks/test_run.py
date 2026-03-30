@@ -91,3 +91,39 @@ def test_main_exits_non_zero_on_value_error(monkeypatch, capsys):
 
     assert exc.value.code == 1
     assert "bad project" in capsys.readouterr().out
+
+
+def test_parse_args_reads_multiple_projects_and_flags(monkeypatch):
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "iwa",
+            "--project",
+            "autobooks",
+            "--project",
+            "autocinema",
+            "--use-case",
+            "LOGIN",
+            "--prompts-per-use-case",
+            "3",
+            "--output",
+            "out.json",
+            "--dynamic",
+        ],
+    )
+
+    args = generate_tasks_run._parse_args()
+
+    assert args.project == ["autobooks", "autocinema"]
+    assert args.use_case == ["LOGIN"]
+    assert args.prompts_per_use_case == 3
+    assert args.output == "out.json"
+    assert args.dynamic is True
+
+
+@pytest.mark.asyncio
+async def test_main_async_returns_zero_on_success(monkeypatch):
+    args = type("Args", (), {"project": None, "use_case": None, "prompts_per_use_case": 2, "output": "tasks.json", "dynamic": False})()
+    monkeypatch.setattr(generate_tasks_run, "run", AsyncMock(return_value={"ok": True}))
+
+    assert await generate_tasks_run._main_async(args) == 0

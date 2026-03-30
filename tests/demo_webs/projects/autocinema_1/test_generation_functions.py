@@ -6,8 +6,8 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from autoppia_iwa.src.demo_webs.projects.p01_autocinema import generation_functions as gen
 from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator
+from autoppia_iwa.src.demo_webs.projects.p01_autocinema import generation_functions as gen
 
 
 class TestSyncGenerationFunctions:
@@ -95,6 +95,64 @@ class TestGenerateConstraintFromSolution:
         assert result is None or isinstance(result, dict)
 
 
+class TestGenerationHelpers:
+    @pytest.mark.asyncio
+    async def test_ensure_dataset_fetches_when_missing(self):
+        with patch.object(gen, "fetch_data", new_callable=AsyncMock, return_value={"movies": [{"name": "Inception"}]}) as mocked_fetch:
+            result = await gen._ensure_dataset(task_url="http://localhost:8000/?seed=7", dataset=None)
+
+        assert result == {"movies": [{"name": "Inception"}]}
+        mocked_fetch.assert_awaited_once_with(seed_value=7)
+
+    @pytest.mark.asyncio
+    async def test_ensure_dataset_returns_existing_dataset(self):
+        dataset = {"movies": [{"name": "Inception"}]}
+        result = await gen._ensure_dataset(task_url="http://localhost:8000/?seed=7", dataset=dataset)
+        assert result is dataset
+
+    def test_build_filter_film_dataset_flattens_genres(self):
+        rows = gen._build_filter_film_dataset(
+            [
+                {"year": 2010, "genres": ["Sci-Fi", {"name": "Action"}]},
+                {"year": 2000, "genres": []},
+            ]
+        )
+
+        assert {"genre_name": "Sci-Fi", "year": 2010} in rows
+        assert {"genre_name": "Action", "year": 2010} in rows
+
+    def test_build_filter_film_dataset_returns_fallback_when_empty(self):
+        assert gen._build_filter_film_dataset([]) == [{"genre_name": "Drama", "year": 2020}]
+
+    def test_generate_constraint_value_not_contains_list_uses_remaining_pool(self):
+        dataset = [
+            {"genres": ["Sci-Fi", "Drama"]},
+            {"genres": ["Action"]},
+        ]
+        result = gen._generate_constraint_value(
+            ComparisonOperator.NOT_CONTAINS,
+            ["Sci-Fi"],
+            "genres",
+            dataset,
+        )
+        assert result in {"Drama", "Action"}
+
+    def test_generate_constraint_value_numeric_comparisons_are_clamped_for_rating(self):
+        assert gen._generate_constraint_value(ComparisonOperator.GREATER_THAN, 0.2, "rating", []) >= 0.0
+        assert gen._generate_constraint_value(ComparisonOperator.LESS_THAN, 4.9, "rating", []) <= 5.0
+
+    def test_generate_constraint_value_in_list_and_not_in_list(self):
+        dataset = [
+            {"genres": ["Sci-Fi", "Drama"]},
+            {"genres": ["Action"]},
+        ]
+        in_list = gen._generate_constraint_value(ComparisonOperator.IN_LIST, ["Sci-Fi"], "genres", dataset)
+        not_in_list = gen._generate_constraint_value(ComparisonOperator.NOT_IN_LIST, ["Sci-Fi"], "genres", dataset)
+
+        assert "Sci-Fi" in in_list
+        assert all(value != "Sci-Fi" for value in not_in_list)
+
+
 @pytest.mark.asyncio
 class TestAsyncGenerationFunctions:
     """Async constraint generators with mocked data."""
@@ -138,6 +196,13 @@ class TestAsyncGenerationFunctions:
     async def test_generate_add_to_watchlist_constraints_with_dataset(self):
         dataset = {"movies": self._SAMPLE_FILMS}
         result = await gen.generate_add_to_watchlist_constraints(task_url=None, dataset=dataset)
+        assert isinstance(result, list)
+        fields = [c.get("field") for c in result]
+        assert "username" in fields
+
+    async def test_generate_remove_from_watchlist_constraints_with_dataset(self):
+        dataset = {"movies": self._SAMPLE_FILMS}
+        result = await gen.generate_remove_from_watchlist_constraints(task_url=None, dataset=dataset)
         assert isinstance(result, list)
         fields = [c.get("field") for c in result]
         assert "username" in fields

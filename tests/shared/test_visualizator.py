@@ -373,6 +373,14 @@ class TestPrintSummary:
         with patch.object(v.console, "print"):
             v.print_summary(results, agents)
 
+    def test_print_summary_handles_empty_scores_and_empty_project_scores(self):
+        v = SubnetVisualizer()
+        results = {"agent-1": {"global_scores": [], "projects": {"autocinema": []}}}
+        agents = [MagicMock()]
+        agents[0].id = "agent-1"
+        with patch.object(v.console, "print"):
+            v.print_summary(results, agents)
+
 
 class TestShowListOfEvaluations:
     def test_show_list_of_evaluations_minimal(self):
@@ -476,3 +484,19 @@ class TestVisualizeDecorators:
             agents[0].id = "a"
             fn(results, agents)
             print_summary.assert_called_once_with(results, agents)
+
+    @pytest.mark.asyncio
+    async def test_visualize_evaluation_without_test_results_or_feedback_attrs(self):
+        v = SubnetVisualizer()
+        with patch.object(v, "show_full_evaluation") as show:
+
+            @visualize_evaluation(v)
+            async def fn(web_project, task, task_solution, validator_id):
+                return object()
+
+            task = MagicMock()
+            task_solution = MagicMock(web_agent_id="agent-2", actions=["a1"])
+            await fn(MagicMock(), task, task_solution, "validator-id")
+            call_kw = show.call_args[1]
+            assert call_kw["test_results"] == []
+            assert call_kw["feedback"] is None
