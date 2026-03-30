@@ -8,9 +8,11 @@ task; skip when server is unavailable.
 """
 
 import base64
+import json
 import textwrap
 import urllib.error
 import urllib.request
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -33,6 +35,7 @@ from autoppia_iwa.src.execution.classes import ActionExecutionResult, BrowserSna
 from autoppia_iwa.src.web_agents.apified_iterative_agent import ApifiedWebAgent
 
 WEB_AGENT_ID = "test_agent"
+P01_TRAJECTORIES_FIXTURE = Path(__file__).with_name("fixtures") / "trajectories_p01.json"
 PROJECT = next(p for p in demo_web_projects if getattr(p, "id", None) == "autobooks")
 PROJECT_AUTOCINEMA = next(p for p in demo_web_projects if getattr(p, "id", None) == "autocinema")
 
@@ -331,6 +334,32 @@ def _real_server_search_filters_trajectory_actions(task_url: str):
     return parser._parse_actions_response(payload)
 
 
+def _load_p01_success_trajectory(use_case: str) -> dict:
+    payload = json.loads(P01_TRAJECTORIES_FIXTURE.read_text())
+    for trajectory in payload["trajectories"]:
+        if trajectory.get("use_case") == use_case and trajectory.get("has_success"):
+            return trajectory
+    raise AssertionError(f"Missing success trajectory for {use_case}")
+
+
+def _make_real_server_fixture_task(trajectory: dict) -> Task:
+    return Task(
+        id=f"task-stateful-real-{trajectory['use_case'].lower()}-fixture",
+        url=trajectory["url"],
+        prompt=trajectory["prompt"],
+        web_project_id=PROJECT_AUTOCINEMA.id,
+        is_web_real=False,
+        specifications=BrowserSpecification(),
+        tests=[CheckEventTest(**test) for test in trajectory["tests"]],
+    )
+
+
+def _fixture_trajectory_actions(trajectory: dict):
+    parser = ApifiedWebAgent(base_url="http://127.0.0.1:9999")
+    actions = [action for action in trajectory["actions"] if action.get("name") != "browser.navigate"]
+    return parser._parse_actions_response({"actions": actions, "done": False})
+
+
 @pytest.mark.asyncio
 async def test_stateful_evaluator_correct_solution():
     """Reset and step should work with a mocked runtime and real session logic."""
@@ -539,7 +568,8 @@ async def test_stateful_evaluator_real_server_film_detail_trajectories_test():
     if not available:
         _skip_if_real_server_unavailable(reason)
 
-    task = _make_real_server_search_filters_task()
+    trajectory = _load_p01_success_trajectory("FILM_DETAIL")
+    task = _make_real_server_fixture_task(trajectory)
     evaluator = AsyncStatefulEvaluator(
         task=task,
         web_agent_id=WEB_AGENT_ID,
@@ -552,7 +582,7 @@ async def test_stateful_evaluator_real_server_film_detail_trajectories_test():
         except PlaywrightError as exc:
             pytest.skip(f"Playwright browser unavailable in this environment: {exc}")
 
-        actions = _real_server_search_filters_trajectory_actions(task.url)
+        actions = _fixture_trajectory_actions(trajectory)
         for action in actions:
             await evaluator.step(action)
 

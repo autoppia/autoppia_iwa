@@ -4,6 +4,9 @@ from unittest.mock import AsyncMock
 import pytest
 
 from autoppia_iwa.src.data_generation.tasks.classes import Task
+
+pytest.importorskip("browser_use")
+
 from autoppia_iwa.src.web_agents.examples.browser_use import agent as browser_use_agent_module
 
 

@@ -915,7 +915,7 @@ def test_ensure_evaluation_level_registers_when_missing(monkeypatch):
             raise ValueError("missing level")
         return None
 
-    monkeypatch.setattr("autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.logger.level", _fake_level)
+    monkeypatch.setattr("autoppia_iwa.src.evaluation.legacy.concurrent_evaluator.logger.level", _fake_level)
     _ensure_evaluation_level()
     assert calls["n"] == 2
 
@@ -933,11 +933,11 @@ async def test_evaluate_single_task_solution_seed_extraction_error_is_handled():
 
     with (
         patch(
-            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.BackendDemoWebService",
+            "autoppia_iwa.src.evaluation.legacy.concurrent_evaluator.BackendDemoWebService",
             return_value=mock_backend,
         ),
         patch(
-            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.extract_seed_from_url",
+            "autoppia_iwa.src.evaluation.legacy.concurrent_evaluator.extract_seed_from_url",
             side_effect=RuntimeError("seed parse failed"),
         ),
     ):
@@ -967,15 +967,15 @@ async def test_group_and_evaluate_cancels_progress_tracker_when_verbose():
 
     with (
         patch(
-            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.BackendDemoWebService",
+            "autoppia_iwa.src.evaluation.legacy.concurrent_evaluator.BackendDemoWebService",
             return_value=mock_backend,
         ),
         patch(
-            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.ConcurrentEvaluator._evaluate_group_with_semaphore",
+            "autoppia_iwa.src.evaluation.legacy.concurrent_evaluator.ConcurrentEvaluator._evaluate_group_with_semaphore",
             side_effect=_fake_group_eval,
         ),
         patch(
-            "autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator.log_progress",
+            "autoppia_iwa.src.evaluation.legacy.concurrent_evaluator.log_progress",
             side_effect=_fake_log_progress,
         ) as mocked_progress,
     ):
