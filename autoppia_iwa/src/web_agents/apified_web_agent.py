@@ -10,8 +10,8 @@ from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.execution.actions.actions import BaseAction, NavigateAction
 from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
-from autoppia_iwa.src.web_agents.protocol import StepRequest, StepResponse, StepToolCall
 from autoppia_iwa.src.web_agents.classes import IWebAgent
+from autoppia_iwa.src.web_agents.protocol import StepRequest, StepResponse, StepToolCall
 
 
 class ApifiedWebAgent(IWebAgent):
@@ -98,12 +98,12 @@ class ApifiedWebAgent(IWebAgent):
                 logger.warning(f"ApifiedWebAgent.step failed: {exc}")
         return []
 
-    # Keep backward compatibility
     async def act(self, **kwargs) -> list[BaseAction]:
+        """Backward-compatible alias for local callers; HTTP contract is /step."""
         return await self.step(**kwargs)
 
     async def solve_task(self, task: Task):
-        raise NotImplementedError("ApifiedWebAgent only supports act()/step(), not solve_task().")
+        raise NotImplementedError("ApifiedWebAgent only supports step(), not solve_task().")
 
     # ------------------------------------------------------------------ #
     # Helpers
@@ -158,14 +158,7 @@ class ApifiedWebAgent(IWebAgent):
         if not actions:
             return any(key in payload for key in ("done", "protocol_version", "content", "reasoning", "error"))
         return all(
-            isinstance(item, dict)
-            and isinstance(item.get("name"), str)
-            and (
-                "arguments" not in item
-                or item.get("arguments") is None
-                or isinstance(item.get("arguments"), dict)
-            )
-            for item in actions
+            isinstance(item, dict) and isinstance(item.get("name"), str) and ("arguments" not in item or item.get("arguments") is None or isinstance(item.get("arguments"), dict)) for item in actions
         )
 
     def _parse_legacy_actions_response(self, data: dict[str, Any]) -> list[BaseAction]:

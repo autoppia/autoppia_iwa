@@ -1,12 +1,13 @@
-"""Tests for ApifiedWebAgent (iterative /act endpoint agent)."""
+"""Tests for ApifiedWebAgent (iterative /step endpoint agent)."""
+
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.execution.actions.actions import GoBackAction, NavigateAction, RequestUserInputAction, TypeAction
-from autoppia_iwa.src.web_agents.act_protocol import ActResponse
 from autoppia_iwa.src.web_agents.apified_iterative_agent import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.protocol import StepResponse
 
 
 class TestApifiedWebAgentInit:
@@ -104,7 +105,7 @@ class TestParseActionsResponse:
 
     def test_parse_actions_response_rewrites_navigate_from_browser_tool_call(self) -> None:
         agent = ApifiedWebAgent(base_url="http://127.0.0.1:5060")
-        parsed = ActResponse.from_raw(
+        parsed = StepResponse.from_raw(
             {
                 "tool_calls": [
                     {"name": "browser.navigate", "arguments": {"url": "/dashboard"}},
@@ -122,13 +123,13 @@ class TestParseActionsResponse:
 
     def test_parse_actions_response_returns_empty_when_done_true_and_no_tool_calls(self) -> None:
         agent = ApifiedWebAgent(base_url="http://127.0.0.1:5060")
-        parsed = ActResponse.from_raw({"tool_calls": [], "done": True, "reasoning": "finished"})
+        parsed = StepResponse.from_raw({"tool_calls": [], "done": True, "reasoning": "finished"})
         parsed_actions = agent._parse_actions_response(parsed)
         assert parsed_actions == []
 
     def test_parse_actions_response_returns_batch_by_default(self) -> None:
         agent = ApifiedWebAgent(base_url="http://127.0.0.1:5060")
-        parsed = ActResponse.from_raw(
+        parsed = StepResponse.from_raw(
             {
                 "tool_calls": [
                     {"name": "browser.navigate", "arguments": {"url": "/a"}},
@@ -146,7 +147,7 @@ class TestParseActionsResponse:
 
     def test_parse_actions_response_honors_max_actions_per_step(self) -> None:
         agent = ApifiedWebAgent(base_url="http://127.0.0.1:5060", max_actions_per_step=1)
-        parsed = ActResponse.from_raw(
+        parsed = StepResponse.from_raw(
             {
                 "tool_calls": [
                     {"name": "browser.navigate", "arguments": {"url": "/a"}},
@@ -164,7 +165,7 @@ class TestParseActionsResponse:
 
     def test_parse_actions_response_maps_user_request_input_tool(self) -> None:
         agent = ApifiedWebAgent(base_url="http://127.0.0.1:5060")
-        parsed = ActResponse.from_raw(
+        parsed = StepResponse.from_raw(
             {
                 "tool_calls": [{"name": "user.request_input", "arguments": {"prompt": "Need OTP"}}],
                 "done": False,
@@ -177,7 +178,7 @@ class TestParseActionsResponse:
 
     def test_parse_actions_response_supports_new_browser_use_tool_names(self) -> None:
         agent = ApifiedWebAgent(base_url="http://127.0.0.1:5060")
-        parsed = ActResponse.from_raw(
+        parsed = StepResponse.from_raw(
             {
                 "tool_calls": [
                     {"name": "browser.input", "arguments": {"text": "hello"}},
@@ -208,18 +209,19 @@ class TestParseActionsResponse:
         assert isinstance(parsed_actions[0], NavigateAction)
         assert parsed_actions[0].url == agent._rewrite_to_remote("/dashboard")
 
+
 class TestSolveTask:
     @pytest.mark.asyncio
     async def test_solve_task_raises_not_implemented(self):
         agent = ApifiedWebAgent(base_url="http://localhost:5000")
         task = Task(url="https://example.com", prompt="Do something", web_project_id="dummy")
-        with pytest.raises(NotImplementedError, match="only supports act"):
+        with pytest.raises(NotImplementedError, match="only supports step"):
             await agent.solve_task(task)
 
 
-class TestAct:
+class TestStep:
     @pytest.mark.asyncio
-    async def test_act_returns_legacy_actions_on_success(self):
+    async def test_step_returns_legacy_actions_on_success(self):
         agent = ApifiedWebAgent(base_url="http://localhost:9999", id="a1")
         task = Task(url="https://example.com", prompt="Click it", web_project_id="dummy")
         response_mock = AsyncMock()
@@ -235,7 +237,7 @@ class TestAct:
         session_mock.__aexit__ = AsyncMock(return_value=None)
 
         with patch("aiohttp.ClientSession", return_value=session_mock):
-            result = await agent.act(
+            result = await agent.step(
                 task=task,
                 html="<html></html>",
                 url="http://localhost:8000/",
@@ -243,9 +245,10 @@ class TestAct:
             )
         assert len(result) == 1
         assert result[0].type == "ClickAction"
+        assert session_mock.post.call_args.args[0] == "http://localhost:9999/step"
 
     @pytest.mark.asyncio
-    async def test_act_returns_canonical_actions_on_success(self):
+    async def test_step_returns_canonical_actions_on_success(self):
         agent = ApifiedWebAgent(base_url="http://localhost:9999", id="a1")
         task = Task(url="https://example.com", prompt="Click it", web_project_id="dummy")
         response_mock = AsyncMock()
@@ -267,7 +270,7 @@ class TestAct:
         session_mock.__aexit__ = AsyncMock(return_value=None)
 
         with patch("aiohttp.ClientSession", return_value=session_mock):
-            result = await agent.act(
+            result = await agent.step(
                 task=task,
                 html="<html></html>",
                 url="http://localhost:8000/",
@@ -278,6 +281,7 @@ class TestAct:
         assert isinstance(result[0], NavigateAction)
         assert result[0].url == agent._rewrite_to_remote("/landing")
         assert agent.last_reasoning == "go to landing"
+        assert session_mock.post.call_args.args[0] == "http://localhost:9999/step"
 
     @pytest.mark.asyncio
     async def test_step_posts_canonical_payload_with_tools_and_html(self):
@@ -354,7 +358,7 @@ class TestAct:
         assert agent.tools == []
 
     @pytest.mark.asyncio
-    async def test_act_returns_empty_when_both_endpoints_fail(self):
+    async def test_step_returns_empty_when_step_fails(self):
         agent = ApifiedWebAgent(base_url="http://localhost:9999", timeout=0.5)
         task = Task(url="https://example.com", prompt="P", web_project_id="dummy")
         session_mock = MagicMock()
@@ -362,7 +366,7 @@ class TestAct:
         session_mock.__aenter__ = AsyncMock(return_value=session_mock)
         session_mock.__aexit__ = AsyncMock(return_value=None)
         with patch("aiohttp.ClientSession", return_value=session_mock):
-            result = await agent.act(
+            result = await agent.step(
                 task=task,
                 html="",
                 url="http://localhost:8000/",
