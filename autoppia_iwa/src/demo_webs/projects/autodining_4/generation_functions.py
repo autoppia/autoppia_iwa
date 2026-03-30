@@ -22,14 +22,24 @@ from .data import (
     OPERATORS_ALLOWED_CONTACT_CARD_CLICK,
     OPERATORS_ALLOWED_COUNTRY_SELECTED,
     OPERATORS_ALLOWED_DATE_DROPDOWN_OPENED,
+    OPERATORS_ALLOWED_DATE_SELECTED,
     OPERATORS_ALLOWED_FOR_RESTAURANT,
     OPERATORS_ALLOWED_HELP_CATEGORY_SELECTED,
     OPERATORS_ALLOWED_HELP_FAQ_TOGGLED,
+    OPERATORS_ALLOWED_LOGIN,
+    OPERATORS_ALLOWED_LOGOUT,
     OPERATORS_ALLOWED_PEOPLE_DROPDOWN_OPENED,
+    OPERATORS_ALLOWED_PEOPLE_SELECTED,
+    OPERATORS_ALLOWED_REGISTER,
     OPERATORS_ALLOWED_RESERVATION_COMPLETE,
+    OPERATORS_ALLOWED_REVIEW_CREATED,
+    OPERATORS_ALLOWED_REVIEW_DELETED,
+    OPERATORS_ALLOWED_REVIEW_EDITED,
     OPERATORS_ALLOWED_SCROLL_VIEW,
     OPERATORS_ALLOWED_SEARCH_RESTAURANT,
+    OPERATORS_ALLOWED_TAG_FILTER_SELECTED,
     OPERATORS_ALLOWED_TIME_DROPDOWN_OPENED,
+    OPERATORS_ALLOWED_TIME_SELECTED,
     RESTAURANT_COUNTRIES,
     RESTAURANT_OCCASIONS,
     RESTAURANT_PEOPLE_COUNTS,
@@ -37,6 +47,7 @@ from .data import (
     SAMPLE_EMAILS,
     SCROLL_DIRECTIONS,
     SCROLL_SECTIONS_TITLES,
+    TAG_OPTIONS,
 )
 from .data_utils import fetch_data
 
@@ -232,6 +243,13 @@ async def _generate_value_for_field(field_name: str) -> Any:
         return random.choice(SCROLL_DIRECTIONS)
     elif field_name == "section" or field_name == "section_title":
         return random.choice(SCROLL_SECTIONS_TITLES)
+    elif field_name == "tag":
+        return random.choice(TAG_OPTIONS)
+    elif field_name == "action":
+        return random.choice(["add", "remove"])
+    elif field_name == "search":
+        possible_queries = await _get_restaurant_queries()
+        return random.choice(possible_queries) if possible_queries else "sushi"
     elif field_name == "desc":
         return "Enjoy a delightful experience at"
     elif field_name == "cuisine":
@@ -240,12 +258,20 @@ async def _generate_value_for_field(field_name: str) -> Any:
         return random.choice([2, 3, 4])
     elif field_name == "username":
         return random.choice(NAMES)
+    elif field_name == "source":
+        return random.choice(["modal", "navbar", "page"])
     elif field_name == "email":
         return random.choice(SAMPLE_EMAILS)
     elif field_name == "message":
         return random.choice(CONTACT_MESSAGES)
     elif field_name == "subject":
         return random.choice(CONTACT_SUBJECTS)
+    elif field_name == "review_id":
+        return f"review-{random.randint(1, 1000)}"
+    elif field_name == "restaurant_id":
+        return f"rest-{random.randint(1, 200)}"
+    elif field_name == "comment_length":
+        return random.randint(10, 220)
 
     print(f"Warning: No specific mock value generator for field '{field_name}'. Using default string.")
     return "mock_value"
@@ -292,6 +318,76 @@ async def generate_time_dropdown_opened_constraints():
 
 async def generate_people_dropdown_opened_constraints():
     return await generate_constraints_for_single_field("people", OPERATORS_ALLOWED_PEOPLE_DROPDOWN_OPENED)
+
+
+async def generate_date_selected_constraints():
+    return await generate_constraints_for_single_field("date", OPERATORS_ALLOWED_DATE_SELECTED)
+
+
+async def generate_time_selected_constraints():
+    return await generate_constraints_for_single_field("time", OPERATORS_ALLOWED_TIME_SELECTED)
+
+
+async def generate_people_selected_constraints():
+    return await generate_constraints_for_single_field("people", OPERATORS_ALLOWED_PEOPLE_SELECTED)
+
+
+async def generate_tag_filter_selected_constraints():
+    return await _generate_constraints_for_fields(
+        all_fields=["tag", "action", "search"],
+        allowed_ops=OPERATORS_ALLOWED_TAG_FILTER_SELECTED,
+        required_fields=["tag"],
+        max_optional=2,
+    )
+
+
+async def generate_login_constraints():
+    return await _generate_constraints_for_fields(
+        all_fields=["username", "source"],
+        allowed_ops=OPERATORS_ALLOWED_LOGIN,
+        required_fields=["username"],
+        max_optional=1,
+    )
+
+
+async def generate_register_constraints():
+    return await _generate_constraints_for_fields(
+        all_fields=["username", "email", "source"],
+        allowed_ops=OPERATORS_ALLOWED_REGISTER,
+        required_fields=["username", "email"],
+        max_optional=1,
+    )
+
+
+async def generate_logout_constraints():
+    return await generate_constraints_for_single_field("username", OPERATORS_ALLOWED_LOGOUT)
+
+
+async def generate_review_created_constraints():
+    return await _generate_constraints_for_fields(
+        all_fields=["review_id", "restaurant_id", "username", "rating", "comment_length"],
+        allowed_ops=OPERATORS_ALLOWED_REVIEW_CREATED,
+        required_fields=["review_id", "restaurant_id"],
+        max_optional=3,
+    )
+
+
+async def generate_review_edited_constraints():
+    return await _generate_constraints_for_fields(
+        all_fields=["review_id", "restaurant_id", "username", "rating", "comment_length"],
+        allowed_ops=OPERATORS_ALLOWED_REVIEW_EDITED,
+        required_fields=["review_id", "restaurant_id"],
+        max_optional=3,
+    )
+
+
+async def generate_review_deleted_constraints():
+    return await _generate_constraints_for_fields(
+        all_fields=["review_id", "restaurant_id", "username"],
+        allowed_ops=OPERATORS_ALLOWED_REVIEW_DELETED,
+        required_fields=["review_id", "restaurant_id"],
+        max_optional=1,
+    )
 
 
 async def generate_search_restaurant_constraints():
