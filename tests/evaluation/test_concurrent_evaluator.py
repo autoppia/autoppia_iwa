@@ -108,13 +108,19 @@ def _is_real_demo_server_available() -> tuple[bool, str]:
         host = base.split("/")[0].split(":")[0]
     port = DEMO_WEB_SERVICE_PORT
     url = f"http://{host}:{port}/health"
+    events_url = f"http://{host}:{port}/get_events/?web_url=http://localhost:8000&web_agent_id=test_agent&validator_id=test_validator"
     try:
         req = urllib.request.Request(url, method="GET")
         req.add_header("User-Agent", "IWA-Test/1.0")
         with urllib.request.urlopen(req, timeout=2) as resp:
-            if resp.status in (200, 204):
+            if resp.status not in (200, 204):
+                return False, f"Backend returned status {resp.status}"
+        events_req = urllib.request.Request(events_url, method="GET")
+        events_req.add_header("User-Agent", "IWA-Test/1.0")
+        with urllib.request.urlopen(events_req, timeout=2) as resp:
+            if resp.status == 200:
                 return True, ""
-            return False, f"Backend returned status {resp.status}"
+            return False, f"Backend get_events returned status {resp.status}"
     except urllib.error.URLError as e:
         return False, f"Demo webs backend not reachable: {e.reason}"
     except OSError as e:

@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import io
 import json
 from pathlib import Path
+from types import ModuleType
 
 import pytest
+from rich.console import Console
 
 from autoppia_iwa.entrypoints.benchmark.utils import metrics_report
 
@@ -125,3 +128,85 @@ def test_main_returns_0_when_run_report_succeeds(monkeypatch):
     monkeypatch.setattr(metrics_report.sys, "argv", ["metrics_report.py", "/tmp/file.json"])
     monkeypatch.setattr(metrics_report, "run_report", lambda **kwargs: None)
     assert metrics_report.main() == 0
+
+
+def test_render_report_warns_for_missing_or_invalid_projects():
+    for payload in ({"config_summary": {}, "projects": None}, {"config_summary": {}, "projects": []}):
+        buf = io.StringIO()
+        console = Console(file=buf, force_terminal=False, no_color=True)
+        metrics_report._render_report(payload, console)
+        text = buf.getvalue()
+        assert "Warning" in text
+
+
+def test_render_report_skips_invalid_agents_and_zero_total_entries():
+    payload = _sample_results()
+    payload["projects"]["Autocinema"]["invalid-agent"] = "skip-me"
+    payload["projects"]["Autocinema"]["Zero Agent"] = {"overall": {"total": 0}, "use_cases": {"X": {}}}
+    payload["projects"]["Broken"] = []
+
+    lines = metrics_report.print_and_collect_report(payload)
+    joined = "\n".join(lines)
+
+    assert "Agent One" in joined
+    assert "Zero Agent" not in joined
+
+
+def test_render_report_handles_project_panel_exception(monkeypatch):
+    payload = _sample_results()
+    buf = io.StringIO()
+    console = Console(file=buf, force_terminal=False, no_color=True)
+    original_print = console.print
+
+    def _boom(*args, **kwargs):
+        renderable = args[0] if args else None
+        if getattr(renderable, "title", "") == "[bold]Project: Autocinema[/bold]":
+            raise RuntimeError("boom")
+        return original_print(*args, **kwargs)
+
+    monkeypatch.setattr(console, "print", _boom)
+
+    metrics_report._render_report(payload, console)
+
+    assert "Error: boom" in buf.getvalue()
+
+
+def test_run_report_raises_when_no_results_can_be_found(tmp_path):
+    with pytest.raises(FileNotFoundError, match="No results path provided"):
+        metrics_report.run_report(output_dir=tmp_path, write_summary_file=False)
+
+
+def test_run_report_skips_summary_write_when_report_lines_are_empty(monkeypatch, tmp_path):
+    results_path = tmp_path / "benchmark_results_sample.json"
+    results_path.write_text(json.dumps(_sample_results()))
+    monkeypatch.setattr(metrics_report, "print_and_collect_report", lambda data: [])
+
+    metrics_report.run_report(results_path=results_path, write_summary_file=True)
+
+    assert not list(tmp_path.glob("metrics_summary_*.txt"))
+
+
+def test_main_returns_1_when_run_report_raises_value_error(monkeypatch):
+    monkeypatch.setattr(metrics_report.sys, "argv", ["metrics_report.py", "/tmp/file.json"])
+
+    def _boom(**kwargs):
+        raise ValueError("bad input")
+
+    monkeypatch.setattr(metrics_report, "run_report", _boom)
+    assert metrics_report.main() == 1
+
+
+def test_main_without_args_uses_configured_default_output_dir(monkeypatch, tmp_path):
+    captured = {}
+    fake_module = ModuleType("autoppia_iwa.config.config")
+    fake_module.PROJECT_BASE_DIR = tmp_path / "repo" / "autoppia_iwa"
+    monkeypatch.setattr(metrics_report.sys, "argv", ["metrics_report.py"])
+    monkeypatch.setitem(__import__("sys").modules, "autoppia_iwa.config.config", fake_module)
+
+    def _capture(**kwargs):
+        captured.update(kwargs)
+
+    monkeypatch.setattr(metrics_report, "run_report", _capture)
+
+    assert metrics_report.main() == 0
+    assert captured["output_dir"].endswith("benchmark-output/results")

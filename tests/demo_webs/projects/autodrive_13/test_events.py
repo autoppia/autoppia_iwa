@@ -20,6 +20,8 @@ from autoppia_iwa.src.demo_webs.projects.p13_autodrive.events import (
     SelectDateEvent,
     SelectTimeEvent,
     TripDetailsEvent,
+    parse_datetime,
+    parse_time,
 )
 
 from ..event_parse_helpers import assert_parse_cls_kwargs_match_model
@@ -83,6 +85,15 @@ class TestParseDateAndTime:
     def test_select_time_parse_none(self, mock_log):
         e = SelectTimeEvent.parse(_be("SELECT_TIME", {}))
         assert e.time is None
+
+    def test_parse_time_helper_variants(self, mock_log):
+        assert parse_time(TIME_ONLY) is not None
+        assert parse_time(None) is None
+        assert parse_time("not-a-time") is None
+        from datetime import time as dt_time
+
+        t = dt_time(14, 30)
+        assert parse_time(t) == t
 
     def test_next_pickup_parse(self, mock_log):
         e = NextPickupEvent.parse(_be("NEXT_PICKUP", {"date": ISO_DATE, "time": TIME_ONLY}))
@@ -197,6 +208,12 @@ class TestValidateEvents:
         e = SelectDateEvent.parse(_be("SELECT_DATE", {"date": ISO_DATE}))
         assert e.validate_criteria(None) is True
 
+    def test_select_date_and_time_validate_specific_values(self, mock_log):
+        d = SelectDateEvent.parse(_be("SELECT_DATE", {"date": ISO_DATE}))
+        t = SelectTimeEvent.parse(_be("SELECT_TIME", {"time": TIME_ONLY}))
+        assert d.validate_criteria(SelectDateEvent.ValidationCriteria(date=d.date)) is True
+        assert t.validate_criteria(SelectTimeEvent.ValidationCriteria(time=t.time)) is True
+
     def test_search_ride_validate(self, mock_log):
         e = SearchRideEvent.parse(_be("SEARCH", {"pickup": "A", "dropoff": "B", "scheduled": ISO_DATETIME}))
         criteria = SearchRideEvent.ValidationCriteria(destination="B", location="A")
@@ -235,6 +252,78 @@ class TestValidateEvents:
         )
         criteria = ReserveRideEvent.ValidationCriteria(destination="D", location="P", ride_name="R", price=15.0, seats=2)
         assert e.validate_criteria(criteria) is True
+
+    def test_trip_details_and_cancel_reservation_validate(self, mock_log):
+        payload = {
+            "pickup": "P",
+            "dropoff": "D",
+            "rideName": "R",
+            "scheduled": ISO_DATETIME,
+            "price": 10.0,
+            "seats": 1,
+        }
+        trip = TripDetailsEvent.parse(_be("TRIP_DETAILS", payload))
+        cancel = CancelReservationEvent.parse(_be("CANCEL_RESERVATION", payload))
+        criteria = TripDetailsEvent.ValidationCriteria(destination="D", location="P", ride_name="R", price=10.0, seats=1)
+        assert trip.validate_criteria(criteria) is True
+        assert cancel.validate_criteria(criteria) is True
+
+    def test_negative_validation_paths(self, mock_log):
+        search_location = SearchLocationEvent.parse(_be("SEARCH_LOCATION", {"value": "Paris"}))
+        assert search_location.validate_criteria(SearchLocationEvent.ValidationCriteria(location="Lyon")) is False
+
+        see_prices = SeePricesEvent.parse(_be("SEE_PRICES", {"location": "Paris", "destination": "Lyon"}))
+        assert see_prices.validate_criteria(SeePricesEvent.ValidationCriteria(destination="Marseille")) is False
+
+        select_date = SelectDateEvent.parse(_be("SELECT_DATE", {"date": ISO_DATE}))
+        assert select_date.validate_criteria(SelectDateEvent.ValidationCriteria(date="2026-01-01")) is False
+
+        select_time = SelectTimeEvent.parse(_be("SELECT_TIME", {"time": TIME_ONLY}))
+        assert select_time.validate_criteria(SelectTimeEvent.ValidationCriteria(time="15:30")) is False
+
+        next_pickup = NextPickupEvent.parse(_be("NEXT_PICKUP", {"date": ISO_DATE, "time": TIME_ONLY}))
+        assert next_pickup.validate_criteria(NextPickupEvent.ValidationCriteria(time="15:30")) is False
+
+        search_ride = SearchRideEvent.parse(_be("SEARCH", {"pickup": "A", "dropoff": "B", "scheduled": ISO_DATETIME}))
+        assert search_ride.validate_criteria(SearchRideEvent.ValidationCriteria(location="X")) is False
+
+        select_car = SelectCarEvent.parse(
+            _be(
+                "SELECT_CAR",
+                {
+                    "pickup": "A",
+                    "dropoff": "B",
+                    "rideName": "Eco",
+                    "scheduled": ISO_DATETIME,
+                    "price": 20.0,
+                    "seats": 3,
+                },
+            )
+        )
+        assert select_car.validate_criteria(SelectCarEvent.ValidationCriteria(ride_name="Other")) is False
+
+        reserve = ReserveRideEvent.parse(
+            _be(
+                "RESERVE_RIDE",
+                {
+                    "pickup": "P",
+                    "dropoff": "D",
+                    "rideName": "R",
+                    "scheduled": ISO_DATETIME,
+                    "price": 15.0,
+                    "seats": 2,
+                },
+            )
+        )
+        assert reserve.validate_criteria(ReserveRideEvent.ValidationCriteria(price=99.0)) is False
+
+    def test_parse_datetime_additional_paths(self, mock_log):
+        from datetime import datetime
+
+        assert parse_datetime(datetime(2025, 3, 15, 14, 30)) == datetime(2025, 3, 15, 14, 30)
+        assert parse_datetime("2025-03-15 14:30:00") is not None
+        assert parse_datetime("2025-03-15") is not None
+        assert parse_datetime("bad") is None
 
 
 @pytest.mark.parametrize(
