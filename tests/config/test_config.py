@@ -63,13 +63,28 @@ class TestConfigValidation:
     def test_raises_when_openai_provider_and_no_api_key(self):
         import autoppia_iwa.config.config as config_module
 
-        with pytest.raises(ValueError, match="OPENAI_API_KEY is required"), patch.dict(os.environ, {"OPENAI_API_KEY": "", "LLM_PROVIDER": "openai"}, clear=False):
+        # Dummy Chutes key so validation reaches the openai-provider branch (not the generic "no credentials" error).
+        with (
+            pytest.raises(ValueError, match="OPENAI_API_KEY is missing"),
+            patch.dict(
+                os.environ,
+                {"OPENAI_API_KEY": "", "LLM_PROVIDER": "openai", "CHUTES_API_KEY": "dummy-key-for-config-test"},
+                clear=False,
+            ),
+        ):
             importlib.reload(config_module)
         importlib.reload(config_module)  # restore module with normal env for other tests
 
     def test_raises_when_chutes_provider_and_no_api_key(self):
         import autoppia_iwa.config.config as config_module
 
-        with pytest.raises(ValueError, match="CHUTES_API_KEY is required"), patch.dict(os.environ, {"CHUTES_API_KEY": "", "LLM_PROVIDER": "chutes"}, clear=False):
+        with (
+            pytest.raises(ValueError, match="CHUTES_API_KEY is missing"),
+            patch.dict(
+                os.environ,
+                {"CHUTES_API_KEY": "", "LLM_PROVIDER": "chutes", "OPENAI_API_KEY": "dummy-key-for-config-test"},
+                clear=False,
+            ),
+        ):
             importlib.reload(config_module)
         importlib.reload(config_module)  # restore module with normal env for other tests

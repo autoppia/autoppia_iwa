@@ -443,7 +443,7 @@ async def generate_edit_film_constraints(task_url: str | None = None, dataset: d
     ]
     films = await _get_films_data(task_url, dataset)
     if not films:
-        return []
+        return constraints
 
     movies_name = [film.get("name", "") for film in films if film.get("name")]
     movies_director = [film.get("director", "") for film in films if film.get("director")]
