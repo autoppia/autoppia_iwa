@@ -30,8 +30,6 @@ from .data import (
 from .data_utils import fetch_data
 
 USERNAME_PLACEHOLDER = "user<web_agent_id>"
-FILM_NAME_PLACEHOLDER = "<film_name>"
-FILM_DIRECTOR_PLACEHOLDER = "<film_director>"
 
 
 async def _ensure_dataset(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None) -> dict:
@@ -351,8 +349,6 @@ async def generate_delete_film_constraints(task_url: str | None = None, dataset:
     return [
         create_constraint_dict("username", ComparisonOperator.EQUALS, USERNAME_PLACEHOLDER),
         create_constraint_dict("password", ComparisonOperator.EQUALS, DEFAULT_PASSWORD),
-        create_constraint_dict("name", ComparisonOperator.EQUALS, FILM_NAME_PLACEHOLDER),
-        create_constraint_dict("director", ComparisonOperator.EQUALS, FILM_DIRECTOR_PLACEHOLDER),
     ]
 
 
@@ -444,16 +440,18 @@ async def generate_edit_film_constraints(task_url: str | None = None, dataset: d
     constraints = [
         create_constraint_dict("username", ComparisonOperator.EQUALS, USERNAME_PLACEHOLDER),
         create_constraint_dict("password", ComparisonOperator.EQUALS, DEFAULT_PASSWORD),
-        create_constraint_dict("name", ComparisonOperator.EQUALS, FILM_NAME_PLACEHOLDER),
-        create_constraint_dict("director", ComparisonOperator.EQUALS, FILM_DIRECTOR_PLACEHOLDER),
     ]
     # Local editable-field constraints requested for EDIT_FILM.
     constraints.extend(
-        [
-            create_constraint_dict("movie_year", ComparisonOperator.EQUALS, random.randint(1950, 2030)),
-            create_constraint_dict("movie_duration", ComparisonOperator.EQUALS, random.randint(80, 180)),
-            create_constraint_dict("movie_rating", ComparisonOperator.EQUALS, choice([value / 10 for value in range(40, 100)])),
-        ]
+        random.sample(
+            [
+                create_constraint_dict("movie_year", ComparisonOperator.EQUALS, random.randint(1950, 2030)),
+                create_constraint_dict("movie_duration", ComparisonOperator.EQUALS, random.randint(80, 180)),
+                create_constraint_dict("movie_rating", ComparisonOperator.EQUALS, choice([value / 10 for value in range(40, 100)])),
+                create_constraint_dict("name", ComparisonOperator.EQUALS, choice(ALL_GENRES)),  # todo: add name and director random generation
+                create_constraint_dict("director", ComparisonOperator.EQUALS, choice(ALL_GENRES)),
+            ]
+        )
     )
     return constraints
 

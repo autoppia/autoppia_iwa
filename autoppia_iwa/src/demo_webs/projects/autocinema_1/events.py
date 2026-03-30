@@ -108,7 +108,6 @@ class FilmEvent(Event, BaseEventValidator):
 
     event_name: str = "BASE_FILM_EVENT"
 
-    movie_id: int | str
     movie_name: str
     movie_director: str | list[str] | None = None  # Can be string (single) or list (multiple directors)
     movie_year: int | None = None
@@ -126,6 +125,7 @@ class FilmEvent(Event, BaseEventValidator):
         year: int | CriterionValue | None = None
         rating: float | CriterionValue | None = None
         duration: int | CriterionValue | None = None
+        cast: list[str] | CriterionValue | None = None
 
     def _validate_film_criteria(self, criteria: ValidationCriteria | None) -> bool:
         """Validate common film-related criteria"""
@@ -144,6 +144,8 @@ class FilmEvent(Event, BaseEventValidator):
             return False
         if criteria.rating is not None and not self._validate_field(self.movie_rating, criteria.rating):
             return False
+        if criteria.cast is not None and not self._validate_field(self.movie_cast, criteria.cast):
+            return False
         return not (criteria.duration is not None and not self._validate_field(self.movie_duration, criteria.duration))
 
     @classmethod
@@ -151,7 +153,6 @@ class FilmEvent(Event, BaseEventValidator):
         """Extract common film data from backend event"""
         genres = parse_genres_from_data(data, "genres")
         return {
-            "movie_id": data.get("id", 0),
             "movie_name": data.get("name", ""),
             "movie_director": data.get("director", ""),
             "movie_year": data.get("year"),
@@ -264,16 +265,14 @@ class EditUserEvent(UserEvent):
     bio: str | None = None
     location: str | None = None
     website: str | None = None
-    profile_id: int | None = None
-    has_profile_pic: bool = False
     favorite_genres: list[str] = Field(default_factory=list)
-    previous_values: dict[str, Any] = Field(default_factory=dict)
 
     class ValidationCriteria(UserEvent.ValidationCriteria):
         """Criteria for validating edit user events"""
 
         first_name: str | CriterionValue | None = None
         last_name: str | CriterionValue | None = None
+        email: str | CriterionValue | None = None
         bio: str | CriterionValue | None = None
         location: str | CriterionValue | None = None
         website: str | CriterionValue | None = None
@@ -300,6 +299,7 @@ class EditUserEvent(UserEvent):
         field_validations = [
             (criteria.first_name, self.first_name),
             (criteria.last_name, self.last_name),
+            (criteria.email, self.email),
             (criteria.bio, self.bio),
             (criteria.location, self.location),
             (criteria.website, self.website),
@@ -349,7 +349,6 @@ class EditUserEvent(UserEvent):
             location=data.get("location"),
             website=data.get("website"),
             favorite_genres=favorite_genres,
-            previous_values=previous_values,
         )
 
 
@@ -453,6 +452,8 @@ class EditFilmEvent(FilmEvent):
         movie_year: int | CriterionValue | None = None
         movie_duration: int | CriterionValue | None = None
         movie_rating: float | CriterionValue | None = None
+        name: str | CriterionValue | None = None
+        director: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """Validate if this edit film event meets the criteria."""
@@ -475,8 +476,6 @@ class EditFilmEvent(FilmEvent):
         base_event = Event.parse(backend_event)
         data = backend_event.data
         film_data = FilmEvent._extract_film_data(data)
-        movie_id_raw = film_data.get("movie_id", 0)
-        film_data["movie_id"] = str(movie_id_raw)
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
@@ -490,8 +489,6 @@ class DeleteFilmEvent(FilmEvent):
     """Event triggered when a user deletes a film"""
 
     event_name: str = "DELETE_FILM"
-    movie_name: int | str | None = None
-    movie_director: int | str | None = None
 
     class ValidationCriteria(FilmEvent.ValidationCriteria):
         """Criteria for validating delete film events"""
@@ -517,8 +514,6 @@ class DeleteFilmEvent(FilmEvent):
         base_event = Event.parse(backend_event)
         data = backend_event.data
         film_data = FilmEvent._extract_film_data(data)
-        movie_id_raw = film_data.get("movie_id", 0)
-        film_data["movie_id"] = str(movie_id_raw)
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
@@ -565,7 +560,6 @@ class AddCommentEvent(Event):
     event_name: str = "ADD_COMMENT"
     commenter_name: str
     content: str
-    movie_id: int
     movie_name: str
 
     class ValidationCriteria(BaseModel):
@@ -573,7 +567,6 @@ class AddCommentEvent(Event):
 
         content: str | CriterionValue | None = None
         commenter_name: str | CriterionValue | None = None
-        movie_id: int | CriterionValue | None = None
         movie_name: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
@@ -584,7 +577,6 @@ class AddCommentEvent(Event):
         field_validations = [
             (criteria.content, self.content),
             (criteria.commenter_name, self.commenter_name),
-            (criteria.movie_id, self.movie_id),
             (criteria.movie_name, self.movie_name),
         ]
 
@@ -603,7 +595,6 @@ class AddCommentEvent(Event):
             user_id=base_event.user_id,
             commenter_name=data.get("name", ""),
             content=data.get("content", ""),
-            movie_id=movie_data.get("id", 0),
             movie_name=movie_data.get("name", ""),
         )
 

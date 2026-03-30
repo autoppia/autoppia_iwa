@@ -159,7 +159,7 @@ def generate_delete_book_constraints():
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = f"username equals {USERNAME_PLACEHOLDER} AND password equals {PASSWORD_PLACEHOLDER} AND book_name equals {BOOK_NAME_PLACEHOLDER} AND book_author equals {BOOK_AUTHOR_PLACEHOLDER}"
+    constraints_str = f"username equals {USERNAME_PLACEHOLDER} AND password equals {PASSWORD_PLACEHOLDER}"
 
     # Convertir el string a la estructura de datos
     return parse_constraints_str(constraints_str)
@@ -568,8 +568,6 @@ async def generate_edit_book_constraints(task_url: str | None = None, dataset: d
     constraints = [
         {"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": USERNAME_PLACEHOLDER},
         {"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": PASSWORD_PLACEHOLDER},
-        {"field": "book_name", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": BOOK_NAME_PLACEHOLDER},
-        {"field": "book_author", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": BOOK_AUTHOR_PLACEHOLDER},
     ]
     # Local editable-field constraints requested for EDIT_BOOK (autocinema parity).
     constraints.extend(
