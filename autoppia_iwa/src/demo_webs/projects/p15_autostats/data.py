@@ -10,27 +10,6 @@ from ...operators import (
     NOT_EQUALS,
 )
 
-# Subnet names from web_15 shared/constants (Root = id 0, then these)
-SUBNET_NAMES = [
-    "Root",
-    "Text Prompting",
-    "Image Generation",
-    "Data Scraping",
-    "Compute",
-    "Storage",
-    "Prediction Markets",
-    "Audio Generation",
-    "Video Generation",
-    "Translation",
-    "Code Generation",
-    "Social Media",
-    "Gaming",
-    "DeFi",
-    "NFT Marketplace",
-    "Identity",
-    "Governance",
-]
-
 STRING_OPERATORS = [EQUALS, NOT_EQUALS, CONTAINS]
 NUMERIC_OPERATORS = [EQUALS, NOT_EQUALS, GREATER_THAN, LESS_THAN, GREATER_EQUAL, LESS_EQUAL]
 
@@ -71,8 +50,6 @@ FIELD_OPERATORS_MAP_VIEW_ACCOUNT = {
     "accountType": STRING_OPERATORS,
 }
 
-ACCOUNT_TYPES = ["validator", "nominator", "miner", "regular"]
-
 FIELD_OPERATORS_MAP_EXECUTE_BUY = {
     "subnet_name": STRING_OPERATORS,
     "orderType": [EQUALS],
@@ -97,26 +74,24 @@ SELECTED_FIELDS_VIEW_VALIDATOR = ["rank", "dominance", "totalWeight", "rootStake
 SELECTED_FIELDS_VIEW_BLOCK = ["number", "epoch", "extrinsicsCount", "eventsCount"]
 SELECTED_FIELDS_VIEW_ACCOUNT = ["rank", "address", "balance", "stakedAmount", "accountType"]
 SELECTED_FIELDS_EXECUTE_BUY = ["subnet_name", "amountTAU", "amountAlpha"]
-SELECTED_FIELDS_EXECUTE_SELL = ["subnet_name", "amountAlpha", "maxDelegatedAlpha"]
+SELECTED_FIELDS_EXECUTE_SELL = ["subnet_name", "amountAlpha"]
 
 # Fields whose constraint value must be integer (match FIELD_OPERATORS_MAP keys)
 INTEGER_FIELDS_VIEW_VALIDATOR = {"rank", "nominatorCount"}
 INTEGER_FIELDS_VIEW_BLOCK = {"number", "epoch", "extrinsicsCount", "eventsCount"}
 INTEGER_FIELDS_VIEW_ACCOUNT = {"rank"}
-INTEGER_FIELDS_EXECUTE_BUY = {"amountTAU", "amountAlpha", "maxAvailableTAU"}
-INTEGER_FIELDS_EXECUTE_SELL = {"amountTAU", "amountAlpha", "maxDelegatedAlpha"}
+INTEGER_FIELDS_EXECUTE_BUY = {"amountTAU", "amountAlpha"}
+INTEGER_FIELDS_EXECUTE_SELL = {"amountTAU", "amountAlpha"}
 
 # Wallet names from web_15 WalletModal
-WALLET_NAMES = ["Polkadot.js", "Talisman", "SubWallet"]
+WALLET_NAMES = ["Talisman", "SubWallet"]
 
 FIELD_OPERATORS_MAP_CONNECT_WALLET = {
     "wallet_name": STRING_OPERATORS,
-    "address": STRING_OPERATORS,
 }
 
 FIELD_OPERATORS_MAP_DISCONNECT_WALLET = {
     "wallet_name": STRING_OPERATORS,
-    "address": STRING_OPERATORS,
 }
 
 # Transfer payload: hash, from, to, amount, block_number (event uses from_ for Python keyword)
@@ -129,14 +104,13 @@ FIELD_OPERATORS_MAP_TRANSFER_COMPLETE = {
 }
 
 FIELD_OPERATORS_MAP_FAVORITE_SUBNET = {
-    "subnet_id": NUMERIC_OPERATORS,
     "subnet_name": STRING_OPERATORS,
 }
 
-SELECTED_FIELDS_CONNECT_WALLET = ["wallet_name", "address"]
-SELECTED_FIELDS_DISCONNECT_WALLET = ["wallet_name", "address"]
+SELECTED_FIELDS_CONNECT_WALLET = ["wallet_name"]
+SELECTED_FIELDS_DISCONNECT_WALLET = ["wallet_name"]
 SELECTED_FIELDS_TRANSFER_COMPLETE = ["to", "amount", "block_number"]
-SELECTED_FIELDS_FAVORITE_SUBNET = ["subnet_name", "subnet_id"]
+SELECTED_FIELDS_FAVORITE_SUBNET = ["subnet_name"]
 
 INTEGER_FIELDS_TRANSFER_COMPLETE = {"block_number"}
-INTEGER_FIELDS_FAVORITE_SUBNET = {"subnet_id"}
+INTEGER_FIELDS_FAVORITE_SUBNET = set()

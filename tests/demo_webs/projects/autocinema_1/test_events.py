@@ -27,7 +27,7 @@ AUTOCINEMA_PARSE_PAYLOADS = [
     ("FILM_DETAIL", {"name": "Inception", "genres": []}),
     ("SEARCH_FILM", {"query": "matrix"}),
     ("ADD_FILM", {"name": "X", "genres": []}),
-    ("EDIT_FILM", {"name": "X", "genres": [], "previous_values": {}, "changed_fields": []}),
+    ("EDIT_FILM", {"name": "X", "year": 2000, "duration": 120, "rating": 4.0, "genres": [], "previous_values": {}, "changed_fields": []}),
     ("DELETE_FILM", {"name": "X", "genres": []}),
     ("ADD_COMMENT", {"name": "A", "content": "c", "movie": {"id": 1, "name": "M"}}),
     ("CONTACT", {"name": "A", "email": "e@e.com", "subject": "s", "message": "m"}),

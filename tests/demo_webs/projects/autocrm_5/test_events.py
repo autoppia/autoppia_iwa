@@ -227,3 +227,22 @@ def test_backend_event_types_parse(event_name, data):
     e = event_class.parse(_be(event_name, data))
     assert e.event_name == event_name
     assert_parse_cls_kwargs_match_model(event_class)
+
+
+@pytest.mark.parametrize("event_name,data", AUTOCRM_PARSE_PAYLOADS)
+def test_backend_event_types_validate_none_criteria(event_name, data):
+    event_class = BACKEND_EVENT_TYPES[event_name]
+    e = event_class.parse(_be(event_name, data))
+    assert e.validate_criteria(None) is True
+
+
+def test_delete_matter_validate_criteria_false_when_no_match():
+    e = DeleteMatter.parse(_be("DELETE_MATTER", {"deleted": [MATTER_DATA]}))
+    criteria = DeleteMatter.ValidationCriteria(name="OTHER")
+    assert e.validate_criteria(criteria) is False
+
+
+def test_archive_matter_validate_criteria_false_when_no_match():
+    e = ArchiveMatter.parse(_be("ARCHIVE_MATTER", {"archived": [MATTER_DATA]}))
+    criteria = ArchiveMatter.ValidationCriteria(client="OTHER")
+    assert e.validate_criteria(criteria) is False

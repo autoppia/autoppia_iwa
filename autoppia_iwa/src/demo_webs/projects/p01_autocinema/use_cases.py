@@ -627,15 +627,15 @@ ADD_FILM_USE_CASE = UseCase(
 EDIT_FILM_ADDITIONAL_PROMPT_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Begin with a login instruction using username equals <username> and password equals <password> (exact constraint values).
-2. Include ALL constraints mentioned above (field, operator, and value).
-3. Explicitly mention the field names (name, director, year, genres, rating, duration, cast). For 'genres', you can also use 'genre' in singular.
-4. Use clear operator indicators (e.g., "equals", "contains", "greater than", "less than"). DO NOT use ambiguous words like "including" for a CONTAINS operator; use "contains" instead.
-5. Include ONLY the constraints mentioned above - do not add any other criteria.
-6. Be phrased as a request to edit or modify a film (e.g., "Edit...", "Update the film...", "Modify...").
+2. Be explicitly phrased as a request to edit your movie.
+3. Include editable numeric fields in this style: "edit your movie by setting year to <year>, duration to <duration>, and rating to <rating>."
+4. Keep the same field names and operators exactly ("equals" wording) for the constraints that are explicitly mentioned.
+5. Include ONLY the constraints that should be explicit in the prompt text - do not add any other criteria.
+6. Do not ask to edit any movie other than your movie.
 7. {STRICT_COPY_INSTRUCTION}
 
-For example: "Login with username equals <username> and password equals <password>. Update the movie where name equals 'The Matrix', set the year equals 1999 and ensure the director contains 'Wachowskis'."
-ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria and mentioning the field names.
+For example: "Login with username equals <username> and password equals <password>. Edit your movie by setting year to 1987, duration to 138, and rating to 5.5."
+ALL prompts must follow this pattern exactly, each phrased slightly differently while preserving the same explicit criteria and wording requirements.
 """
 EDIT_FILM_USE_CASE = UseCase(
     name="EDIT_FILM",
@@ -647,28 +647,28 @@ EDIT_FILM_USE_CASE = UseCase(
     additional_prompt_info=EDIT_FILM_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Update the director of The Matrix to Christopher Nolan",
-            "prompt_for_task_generation": "Update the director of <movie> to Christopher Nolan",
+            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Edit your movie by setting year to 1987, duration to 138, and rating to 5.5.",
+            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Edit your movie by setting year to <year>, duration to <duration>, and rating to <rating>.",
         },
         {
-            "prompt": "Modify the release year of Pulp Fiction to 1994",
-            "prompt_for_task_generation": "Modify the release year of <movie> to 1994",
+            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Update your movie by setting year to 2004, duration to 121, and rating to 7.8.",
+            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Update your movie by setting year to <year>, duration to <duration>, and rating to <rating>.",
         },
         {
-            "prompt": "Add Sci-Fi to the genres of Inception",
-            "prompt_for_task_generation": "Add 'Sci-Fi' to the genres of <movie>",
+            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Modify your movie by setting year to 1999, duration to 167, and rating to 8.4.",
+            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Modify your movie by setting year to <year>, duration to <duration>, and rating to <rating>.",
         },
         {
-            "prompt": "Change the rating of Interstellar to 4.8",
-            "prompt_for_task_generation": "Change the rating of <movie> to 4.8",
+            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Please edit your movie by setting year to 2012, duration to 150, and rating to 9.1.",
+            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Please edit your movie by setting year to <year>, duration to <duration>, and rating to <rating>.",
         },
         {
-            "prompt": "Edit the duration of The Godfather to 175 minutes",
-            "prompt_for_task_generation": "Edit the duration of <movie> to 175 minutes",
+            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Adjust your movie by setting year to 1976, duration to 102, and rating to 6.4.",
+            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Adjust your movie by setting year to <year>, duration to <duration>, and rating to <rating>.",
         },
         {
-            "prompt": "Modify the cast of The Shawshank Redemption to include Morgan Freeman",
-            "prompt_for_task_generation": "Modify the cast of <movie> to include 'Morgan Freeman'",
+            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Edit your movie by setting year to 2020, duration to 89, and rating to 4.3.",
+            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Edit your movie by setting year to <year>, duration to <duration>, and rating to <rating>.",
         },
     ],
 )
@@ -676,17 +676,37 @@ EDIT_FILM_USE_CASE = UseCase(
 # DELETE_FILM_USE_CASE
 ###############################################################################
 DELETE_FILM_ADDITIONAL_PROMPT_INFO = f"""
-CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above (field, operator, and value).
-2. Include ONLY the constraints mentioned above - do not add any other criteria.
-3. Be phrased as a request to delete or remove a film (e.g., "Remove the film...", "Delete...", "Erase...").
-4. {STRICT_COPY_INSTRUCTION}
+CRITICAL REQUIREMENT — STRICT COMPLIANCE REQUIRED:
 
-For example, if the constraints are "year greater_than 2014 AND genres contains 'Sci-Fi'":
-- CORRECT: "Delete a film whose year is greater than 2014 and that belongs to the 'Sci-Fi' genre."
-- INCORRECT: "Delete a film from 2015 with a high rating" (wrong constraints)
+You MUST follow ALL rules below EXACTLY. Any violation makes the output invalid.
 
-ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+1. ALWAYS begin with:
+   "Login with username equals <username> and password equals <password>."
+
+2. The request MUST ONLY ask to delete your movie.
+   - Use phrasing like: "delete your movie"
+   - Do NOT reference any specific movie details.
+
+3. STRICT PROHIBITION:
+   - You MUST NOT mention ANY identifying attributes of the movie.
+   - This includes (but is not limited to): title, name, id, movie_id, director, genre, or any other property.
+   - The prompt must remain completely generic.
+
+4. DO NOT introduce ANY filters, conditions, or qualifiers.
+   - No descriptions
+   - No attributes
+   - No уточнение (clarification of which movie)
+
+5. The sentence MUST remain simple, generic, and direct.
+
+6. If you accidentally include any identifying detail, you MUST remove it and rewrite the sentence.
+
+7. {STRICT_COPY_INSTRUCTION}
+
+VALID EXAMPLE:
+"Login with username equals <username> and password equals <password>. Then, delete your movie."
+
+All generated prompts must strictly follow this structure, with only minor natural wording variations.
 """
 
 DELETE_FILM_USE_CASE = UseCase(
@@ -698,44 +718,44 @@ DELETE_FILM_USE_CASE = UseCase(
     constraints_generator=generate_delete_film_constraints,
     examples=[
         {
-            "prompt": "Remove The Matrix, a film released after 2014, from the database",
-            "prompt_for_task_generation": "Remove '<movie>' that was released after <year> from the database",
+            "prompt": "Log in with username equals user<web_agent_id> and password equals <password>. Then, delete your movie.",
+            "prompt_for_task_generation": "Log in with username equals user<web_agent_id> and password equals <password>. Then, delete your movie.",
         },
         {
-            "prompt": "Erase all records of Pulp Fiction, a film not directed by Quentin Tarantino",
-            "prompt_for_task_generation": "Erase all records of '<movie>' not directed by <director>",
+            "prompt": "After logging in with username equals user<web_agent_id> and password equals <password>, remove your movie.",
+            "prompt_for_task_generation": "After logging in with username equals user<web_agent_id> and password equals <password>, remove your movie.",
         },
         {
-            "prompt": "Permanently delete The Godfather, which has a duration greater than 175 minutes",
-            "prompt_for_task_generation": "Permanently delete '<movie>' with duration greater than <duration> minutes",
+            "prompt": "Log in with username equals user<web_agent_id> and password equals <password>, then permanently delete your movie.",
+            "prompt_for_task_generation": "Log in with username equals user<web_agent_id> and password equals <password>, then permanently delete your movie.",
         },
         {
-            "prompt": "Discard Titanic, a film with a rating less than 7.0, from the system",
-            "prompt_for_task_generation": "Discard '<movie>' with rating less than <rating>",
+            "prompt": "Sign into your account with username equals user<web_agent_id> and password equals <password>, and discard your movie.",
+            "prompt_for_task_generation": "Sign into your account with username equals user<web_agent_id> and password equals <password>, and discard your movie.",
         },
         {
-            "prompt": "Remove Airplane!, a comedy film released before 1980, from the records",
-            "prompt_for_task_generation": "Remove a <genre> film called '<movie>' released before <year>",
+            "prompt": "Initiate a session with username equals user<web_agent_id> and password equals <password>, then remove your movie.",
+            "prompt_for_task_generation": "Initiate a session with username equals user<web_agent_id> and password equals <password>, then remove your movie.",
         },
         {
-            "prompt": "Erase the horror film that is not directed by Wes Craven",
-            "prompt_for_task_generation": "Erase a <genre> film not directed by <director>",
+            "prompt": "Once logged in as username equals user<web_agent_id> and password equals <password>, delete your movie.",
+            "prompt_for_task_generation": "Once logged in as username equals user<web_agent_id> and password equals <password>, delete your movie.",
         },
         {
-            "prompt": "Permanently delete a film featuring Robert De Niro that was released after 2000",
-            "prompt_for_task_generation": "Permanently delete a film with cast containing <actor> and released after <year>",
+            "prompt": "Begin by signing in with username equals user<web_agent_id> and password equals <password>. Then, delete your movie.",
+            "prompt_for_task_generation": "Begin by signing in with username equals user<web_agent_id> and password equals <password>. Then, delete your movie.",
         },
         {
-            "prompt": "Discard Inception, a film with a rating greater than 8.0, from the system",
-            "prompt_for_task_generation": "Discard '<movie>' with rating greater than <rating>",
+            "prompt": "First, log into the system with username equals user<web_agent_id> and password equals <password>, then discard your movie.",
+            "prompt_for_task_generation": "First, log into the system with username equals user<web_agent_id> and password equals <password>, then discard your movie.",
         },
         {
-            "prompt": "Remove Gladiator, ensuring it was released before 2000",
-            "prompt_for_task_generation": "Remove '<movie>' ensuring it was released before <year>",
+            "prompt": "Authenticate yourself with username equals user<web_agent_id> and password equals <password>. Then, remove your movie.",
+            "prompt_for_task_generation": "Authenticate yourself with username equals user<web_agent_id> and password equals <password>. Then, remove your movie.",
         },
         {
-            "prompt": "Erase all records of Avatar, a film that does not belong to the Action genre",
-            "prompt_for_task_generation": "Erase all records of '<movie>' that does not belong to the <genre> genre",
+            "prompt": "Using your credentials username equals user<web_agent_id> and password equals <password>, sign in and erase your movie.",
+            "prompt_for_task_generation": "Using your credentials username equals user<web_agent_id> and password equals <password>, sign in and erase your movie.",
         },
     ],
 )

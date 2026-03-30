@@ -1,8 +1,9 @@
 """Tests for the Playwright browser executor."""
 
-import pytest
 from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, Mock
+
+import pytest
 
 from autoppia_iwa.src.data_generation.tasks.classes import BrowserSpecification
 from autoppia_iwa.src.execution import playwright_browser_executor as browser_executor

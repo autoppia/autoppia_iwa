@@ -585,10 +585,7 @@ class SimpleTaskGenerator:
         content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL | re.IGNORECASE)
 
         # Preserve credential placeholders that are part of the task contract.
-        allowed_placeholders = (
-            "username|password|email|web_agent_id|"
-            "signup_username|signup_email|signup_password"
-        )
+        allowed_placeholders = "username|password|email|web_agent_id|signup_username|signup_email|signup_password"
         content = re.sub(rf"<(?!/?(?:{allowed_placeholders})\b)[^>]+>", "", content)
 
         # Remove markdown code blocks

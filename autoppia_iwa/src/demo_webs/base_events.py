@@ -1,11 +1,15 @@
 from datetime import datetime
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from loguru import logger
 from pydantic import BaseModel
 
-from .criterion_helper import CriterionValue, validate_criterion
 from autoppia_iwa.src.web_agents.classes import replace_credential_placeholders_in_string
+
+from .criterion_helper import CriterionValue, validate_criterion
+
+if TYPE_CHECKING:
+    from autoppia_iwa.src.demo_webs.classes import BackendEvent
 
 
 class Event(BaseModel):

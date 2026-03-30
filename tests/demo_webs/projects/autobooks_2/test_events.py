@@ -3,6 +3,10 @@
 import pytest
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
+from autoppia_iwa.src.demo_webs.criterion_helper import (
+    ComparisonOperator,
+    CriterionValue,
+)
 from autoppia_iwa.src.demo_webs.projects.p02_autobooks.events import (
     BACKEND_EVENT_TYPES,
     AddBookEvent,
@@ -25,10 +29,6 @@ from autoppia_iwa.src.demo_webs.projects.p02_autobooks.events import (
     SearchBookEvent,
     ShareBookEvent,
     ViewCartBookEvent,
-)
-from autoppia_iwa.src.demo_webs.criterion_helper import (
-    ComparisonOperator,
-    CriterionValue,
 )
 
 from ..event_parse_helpers import assert_parse_cls_kwargs_match_model
@@ -164,12 +164,11 @@ class TestParseEditBookEvent:
                     "genres": [{"name": "Sci-Fi"}],
                     "rating": 4.5,
                     "previous_values": {},
-                    "changed_fields": ["year", "rating"],
                 },
             )
         )
         assert e.book_name == "Dune"
-        assert e.changed_fields == ["year", "rating"]
+        assert e.book_author == "Herbert"
 
 
 class TestParseDeleteBookEvent:
@@ -372,27 +371,31 @@ class TestValidateAddBookEvent:
 
 
 class TestValidateEditBookEvent:
-    def test_edit_book_validate_changed_field_str(self):
+    def test_edit_book_validate_book_name(self):
         e = EditBookEvent.parse(
             _be(
                 "EDIT_BOOK",
-                {"name": "Dune", "changed_fields": ["year", "rating"], "genres": []},
+                {"name": "Dune", "genres": []},
             )
         )
-        criteria = EditBookEvent.ValidationCriteria(changed_field="year")
+        criteria = EditBookEvent.ValidationCriteria(book_name="dune")
         assert e.validate_criteria(criteria) is True
-        criteria_miss = EditBookEvent.ValidationCriteria(changed_field="name")
+        criteria_miss = EditBookEvent.ValidationCriteria(book_name="foundation")
         assert e.validate_criteria(criteria_miss) is False
 
-    def test_edit_book_validate_changed_field_criterion_in_list(self):
-        e = EditBookEvent.parse(_be("EDIT_BOOK", {"name": "Dune", "changed_fields": ["rating"], "genres": []}))
-        criteria = EditBookEvent.ValidationCriteria(changed_field=CriterionValue(value=["year", "rating"], operator=ComparisonOperator.IN_LIST))
+    def test_edit_book_validate_book_author(self):
+        e = EditBookEvent.parse(_be("EDIT_BOOK", {"name": "Dune", "author": "Herbert", "genres": []}))
+        criteria = EditBookEvent.ValidationCriteria(book_author="herbert")
         assert e.validate_criteria(criteria) is True
 
-    def test_edit_book_validate_changed_field_criterion_in_list_single(self):
-        """changed_fields is list data: use IN_LIST (not EQUALS)."""
-        e = EditBookEvent.parse(_be("EDIT_BOOK", {"name": "Dune", "changed_fields": ["year"], "genres": []}))
-        criteria = EditBookEvent.ValidationCriteria(changed_field=CriterionValue(value=["year", "rating"], operator=ComparisonOperator.IN_LIST))
+    def test_edit_book_validate_book_year_with_criterion(self):
+        e = EditBookEvent.parse(_be("EDIT_BOOK", {"name": "Dune", "year": 1965, "genres": []}))
+        criteria = EditBookEvent.ValidationCriteria(book_year=CriterionValue(value=1960, operator=ComparisonOperator.GREATER_THAN))
+        assert e.validate_criteria(criteria) is True
+
+    def test_edit_book_validate_book_rating_with_criterion(self):
+        e = EditBookEvent.parse(_be("EDIT_BOOK", {"name": "Dune", "rating": 4.5, "genres": []}))
+        criteria = EditBookEvent.ValidationCriteria(book_rating=CriterionValue(value=4.0, operator=ComparisonOperator.GREATER_THAN))
         assert e.validate_criteria(criteria) is True
 
 
@@ -487,7 +490,7 @@ class TestMatchesListCriteriaBranches:
         ("BOOK_DETAIL", {"name": "X", "genres": []}),
         ("SEARCH_BOOK", {"query": "q"}),
         ("ADD_BOOK", {"author": "A", "genres": []}),
-        ("EDIT_BOOK", {"name": "X", "changed_fields": [], "genres": []}),
+        ("EDIT_BOOK", {"name": "X", "genres": []}),
         ("DELETE_BOOK", {"name": "X", "genres": []}),
         ("ADD_COMMENT_BOOK", {"name": "A", "content": "c", "book": {"name": "B"}}),
         ("CONTACT_BOOK", {"name": "A", "email": "e@e.com", "subject": "s", "message": "m"}),

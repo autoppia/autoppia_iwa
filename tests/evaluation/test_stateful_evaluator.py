@@ -23,8 +23,8 @@ from autoppia_iwa.src.data_generation.tests.classes import CheckEventTest
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.evaluation.scoring import ScoreDetails
-from autoppia_iwa.src.evaluation.stateful_evaluator import AsyncStatefulEvaluator
 from autoppia_iwa.src.evaluation.stateful_evaluator import (
+    AsyncStatefulEvaluator,
     _is_navigation_url_allowed as _orig_nav_allowed,
 )
 from autoppia_iwa.src.execution.actions.actions import ClickAction, TypeAction, WaitAction
@@ -276,9 +276,7 @@ async def test_stateful_evaluator_correct_solution():
     mock_backend = AsyncMock()
     mock_backend.reset_database = AsyncMock()
     mock_backend.close = AsyncMock()
-    mock_backend.get_backend_events = AsyncMock(
-        return_value=[BackendEvent(event_name="LOGIN_BOOK", data={"username": "user123"}, web_agent_id=WEB_AGENT_ID)]
-    )
+    mock_backend.get_backend_events = AsyncMock(return_value=[BackendEvent(event_name="LOGIN_BOOK", data={"username": "user123"}, web_agent_id=WEB_AGENT_ID)])
     step_action = TypeAction(
         selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="input"),
         text="hello",

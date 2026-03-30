@@ -2,13 +2,13 @@
 
 from autoppia_iwa.src.web_agents.protocol import (
     ACT_PROTOCOL_VERSION,
+    STEP_PROTOCOL_VERSION,
     ActAllowedTool,
     ActExecutionMode,
     ActHistoryItem,
     ActRequest,
     ActResponse,
     ActToolCall,
-    STEP_PROTOCOL_VERSION,
     StepAllowedTool,
     StepExecutionMode,
     StepHistoryItem,
@@ -19,13 +19,13 @@ from autoppia_iwa.src.web_agents.protocol import (
 
 __all__ = [
     "ACT_PROTOCOL_VERSION",
+    "STEP_PROTOCOL_VERSION",
     "ActAllowedTool",
     "ActExecutionMode",
     "ActHistoryItem",
     "ActRequest",
     "ActResponse",
     "ActToolCall",
-    "STEP_PROTOCOL_VERSION",
     "StepAllowedTool",
     "StepExecutionMode",
     "StepHistoryItem",

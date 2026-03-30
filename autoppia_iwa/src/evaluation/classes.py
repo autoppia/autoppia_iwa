@@ -85,6 +85,10 @@ class EvaluationResult(BaseModel):
     evaluation_time: float = 0.0  # Time taken to evaluate this solution
     stats: EvaluationStats | None = None
     gif_recording: str | None = Field(None, description="Base64-encoded GIF recording of the browser state after execution")
+    # Cost and usage (from agent API or solution); stored in one place for consolidated results
+    cost_usd: float | None = None
+    input_tokens: int | None = None
+    output_tokens: int | None = None
 
     def model_dump(self, *args, **kwargs):
         base_dump = super().model_dump(*args, **kwargs)

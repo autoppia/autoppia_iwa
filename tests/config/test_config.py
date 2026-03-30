@@ -5,8 +5,6 @@ import os
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
-
 
 class TestConfigValues:
     """Test config values that are set when the module is loaded (conftest sets OPENAI_API_KEY)."""
