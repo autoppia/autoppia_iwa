@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from autoppia_iwa.src.demo_webs.projects.autocinema_1 import replace_functions as repl
+from autoppia_iwa.src.demo_webs.projects.p01_autocinema import replace_functions as repl
 
 
 class TestLoginReplaceFunc:
@@ -101,7 +101,7 @@ class TestReplaceFilmPlaceholders:
         assert result == "A"
 
     async def test_fetch_data_called_when_dataset_none(self):
-        with patch("autoppia_iwa.src.demo_webs.projects.autocinema_1.replace_functions.fetch_data", new_callable=AsyncMock) as mock_fetch:
+        with patch("autoppia_iwa.src.demo_webs.projects.p01_autocinema.replace_functions.fetch_data", new_callable=AsyncMock) as mock_fetch:
             mock_fetch.return_value = self._SAMPLE_MOVIES
             result = await repl.replace_film_placeholders("Watch <movie>", seed_value=42)
             mock_fetch.assert_called_once_with(seed_value=42)

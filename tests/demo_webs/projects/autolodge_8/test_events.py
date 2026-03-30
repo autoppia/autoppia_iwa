@@ -3,7 +3,7 @@
 import pytest
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.projects.autolodge_8.events import (
+from autoppia_iwa.src.demo_webs.projects.p08_autolodge.events import (
     BACKEND_EVENT_TYPES,
     AddToWishlistEvent,
     ApplyFilterEvent,

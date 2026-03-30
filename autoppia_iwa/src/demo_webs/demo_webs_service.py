@@ -9,6 +9,7 @@ from loguru import logger
 
 from autoppia_iwa.config.config import VALIDATOR_ID
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
+from autoppia_iwa.src.shared.logging import log_event
 
 EVALUATION_LEVEL_NAME = "EVALUATION"
 EVALUATION_LEVEL_NO = 25
@@ -18,30 +19,15 @@ RESETTING_DB_CONTEXT = "RESETTING DB"
 
 
 def _log_evaluation_event(message: str, context: str = "GENERAL") -> None:
-    """Log generic evaluation events with INFO level."""
-
-    try:
-        from autoppia_iwa.entrypoints.benchmark.utils.logging import log_evaluation_event
-
-        log_evaluation_event(message, context=context)
-    except ImportError:
-        # Fallback to INFO level with EVALUATION tag
-        if context == "GENERAL":
-            logger.info(f"[EVALUATION] {message}")
-        else:
-            logger.info(f"[EVALUATION] [{context}] {message}")
+    """Log generic evaluation events."""
+    log_event("EVALUATION", message, context=None if context == "GENERAL" else context)
 
 
 def _log_backend_test(message: str, web_agent_id: str | None = None) -> None:
     """Helper function to log backend test messages with EVALUATION level."""
+    from autoppia_iwa.src.evaluation.shared.test_runner import _log_backend_test as _log_bt
 
-    agent_prefix = f"[agent={web_agent_id}] " if web_agent_id else ""
-    try:
-        from autoppia_iwa.entrypoints.benchmark.utils.logging import log_backend_test
-
-        log_backend_test(f"{agent_prefix}{message}")
-    except ImportError:
-        _log_evaluation_event(f"[GET BACKEND TEST] {agent_prefix}{message}", context="GET_BACKEND_TEST")
+    _log_bt(message, web_agent_id)
 
 
 class BackendDemoWebService:
@@ -141,13 +127,9 @@ class BackendDemoWebService:
             async with session.get(endpoint, params=params) as response:
                 response.raise_for_status()
                 events_data = await response.json(loads=self._json_parser.loads)
-                if not events_data:
-                    logger.debug("No events received.")
-                # print(events_data, [BackendEvent(**event.get("data", {})) for event in events_data])
                 return [BackendEvent(**event.get("data", {})) for event in events_data]
-
-        except Exception as e:
-            logger.warning(f"Failed to get events from API: {e}. Falling back to file cache.")
+        except (aiohttp.ClientError, TimeoutError, ValueError, TypeError) as e:
+            logger.warning(f"Failed to get backend events: {e}")
             return []
 
     async def reset_database(self, web_agent_id: str | None = None) -> bool:
@@ -176,6 +158,6 @@ class BackendDemoWebService:
                 if response.status in (200, 202):
                     _log_evaluation_event("Database reset via API successful", context=RESETTING_DB_CONTEXT)
                     return True
-        except Exception as e:
-            logger.warning(f"API reset failed: {e}. Falling back to file reset.")
+        except (aiohttp.ClientError, TimeoutError, ValueError, TypeError) as e:
+            logger.warning(f"API reset failed: {e}")
             return False

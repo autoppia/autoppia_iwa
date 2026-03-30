@@ -4,15 +4,9 @@ from autoppia_iwa.src.data_generation.tests.classes import BaseTaskTest
 
 
 def _log_backend_test(message: str, web_agent_id: str | None = None):
-    """Helper function to log backend test messages with EVALUATION level"""
+    """Log backend test messages."""
     agent_prefix = f"[agent={web_agent_id}] " if web_agent_id else ""
-    try:
-        from autoppia_iwa.entrypoints.benchmark.utils.logging import log_backend_test
-
-        log_backend_test(f"{agent_prefix}{message}")
-    except ImportError:
-        # Fallback to regular debug logging if import fails
-        logger.debug(f"[GET BACKEND TEST] {agent_prefix}{message}")
+    logger.info(f"[EVALUATION] [GET BACKEND TEST] {agent_prefix}{message}")
 
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject

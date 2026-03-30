@@ -1,16 +1,12 @@
-"""Unit tests for demo_webs_service (BackendDemoWebService, logging helpers)."""
+from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, Mock
 
+import aiohttp
 import pytest
 
 from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.demo_webs.demo_webs_service import (
-    RESETTING_DB_CONTEXT,
-    BackendDemoWebService,
-    _log_backend_test,
-    _log_evaluation_event,
-)
+from autoppia_iwa.src.demo_webs.demo_webs_service import RESETTING_DB_CONTEXT, BackendDemoWebService
 
 
 def _make_project(
@@ -29,216 +25,146 @@ def _make_project(
     )
 
 
-# -----------------------------------------------------------------------------
-# _log_evaluation_event (ImportError fallback branches)
-# -----------------------------------------------------------------------------
+class _AsyncContextManager:
+    def __init__(self, value):
+        self.value = value
+
+    async def __aenter__(self):
+        return self.value
+
+    async def __aexit__(self, exc_type, exc, tb):
+        return None
 
 
-class TestLogEvaluationEvent:
-    def test_fallback_general_context_when_benchmark_logging_missing(self):
-        with patch("autoppia_iwa.src.demo_webs.demo_webs_service.logger") as mock_logger:
-
-            def fake_import(name, *args, **kwargs):
-                if "entrypoints.benchmark.utils.logging" in (name or ""):
-                    raise ImportError("no benchmark logging")
-                return __import__(name, *args, **kwargs)
-
-            with patch("builtins.__import__", fake_import):
-                _log_evaluation_event("hello", context="GENERAL")
-            mock_logger.info.assert_called_once()
-            assert "[EVALUATION] hello" in str(mock_logger.info.call_args)
-
-    def test_fallback_non_general_context_when_benchmark_logging_missing(self):
-        with patch("autoppia_iwa.src.demo_webs.demo_webs_service.logger") as mock_logger:
-
-            def fake_import(name, *args, **kwargs):
-                if "entrypoints.benchmark.utils.logging" in (name or ""):
-                    raise ImportError("no benchmark logging")
-                return __import__(name, *args, **kwargs)
-
-            with patch("builtins.__import__", fake_import):
-                _log_evaluation_event("world", context="RESET")
-            mock_logger.info.assert_called_once()
-            assert "[EVALUATION] [RESET] world" in str(mock_logger.info.call_args)
+def test_init_uses_frontend_url_for_web_url():
+    service = BackendDemoWebService(_make_project(frontend_url="http://front:8000/"), web_agent_id="agent-1")
+    assert service.base_url == "http://localhost:8090/api/"
+    assert service.web_url == "http://front:8000/"
+    assert service.web_agent_id == "agent-1"
 
 
-# -----------------------------------------------------------------------------
-# _log_backend_test (ImportError fallback)
-# -----------------------------------------------------------------------------
+def test_get_session_reuses_open_session(monkeypatch):
+    created = []
+
+    def _make_session(**kwargs):
+        session = Mock()
+        session.closed = False
+        created.append((session, kwargs))
+        return session
+
+    monkeypatch.setattr("autoppia_iwa.src.demo_webs.demo_webs_service.aiohttp.ClientSession", _make_session)
+    service = BackendDemoWebService(_make_project())
+
+    first = service._get_session()
+    second = service._get_session()
+
+    assert first is second
+    assert len(created) == 1
+    assert "json_serialize" in created[0][1]
 
 
-class TestLogBackendTest:
-    def test_fallback_calls_log_evaluation_event_when_benchmark_logging_missing(self):
-        with patch("autoppia_iwa.src.demo_webs.demo_webs_service._log_evaluation_event") as mock_log:
-
-            def fake_import(name, *args, **kwargs):
-                if "entrypoints.benchmark.utils.logging" in (name or ""):
-                    raise ImportError("no benchmark logging")
-                return __import__(name, *args, **kwargs)
-
-            with patch("builtins.__import__", fake_import):
-                _log_backend_test("test message", web_agent_id="agent-1")
-            mock_log.assert_called_once()
-            args, kwargs = mock_log.call_args
-            assert "[GET BACKEND TEST] [agent=agent-1] test message" in args[0]
-            assert kwargs.get("context") == "GET_BACKEND_TEST"
-
-    def test_success_path_calls_benchmark_log_backend_test(self):
-        """Covers line 42: when benchmark logging is available, log_backend_test is called."""
-        with patch(
-            "autoppia_iwa.entrypoints.benchmark.utils.logging.log_backend_test",
-            MagicMock(),
-        ) as mock_log_backend_test:
-            _log_backend_test("backend check", web_agent_id="agent-99")
-            mock_log_backend_test.assert_called_once()
-            (arg,) = mock_log_backend_test.call_args[0]
-            assert "[agent=agent-99] backend check" in arg
-
-
-# -----------------------------------------------------------------------------
-# BackendDemoWebService
-# -----------------------------------------------------------------------------
-
-
-class TestBackendDemoWebServiceInit:
-    def test_sets_base_url_and_web_url_from_project(self):
-        project = _make_project(backend_url="http://api:8090/", frontend_url="http://front:8000/")
-        svc = BackendDemoWebService(web_project=project, web_agent_id="sid")
-        assert svc.base_url == "http://api:8090/"
-        assert svc.web_url == "http://front:8000/"
-
-    def test_web_url_fallback_to_backend_when_frontend_empty(self):
-        project = _make_project(frontend_url="")
-        svc = BackendDemoWebService(web_project=project)
-        assert svc.web_url == project.backend_url
-
-    def test_uses_stdlib_json_when_orjson_not_available(self):
-        project = _make_project()
-        real_import = __import__
-
-        def fake_import(name, *args, **kwargs):
-            if name == "orjson":
-                raise ImportError("orjson not installed")
-            return real_import(name, *args, **kwargs)
-
-        with patch("builtins.__import__", fake_import):
-            svc = BackendDemoWebService(web_project=project)
-        assert svc._json_parser.__name__ == "json"
-        assert svc._read_mode == "r"
-
-
-class TestBackendDemoWebServiceGetBackendEvents:
-    @pytest.mark.asyncio
-    async def test_returns_empty_when_is_web_real(self):
-        project = _make_project(is_web_real=True)
-        svc = BackendDemoWebService(web_project=project)
-        result = await svc.get_backend_events("any")
-        assert result == []
-
-    @pytest.mark.asyncio
-    async def test_returns_events_on_success(self):
-        project = _make_project()
-        events_data = [
-            {"data": {"event_name": "LOGIN", "data": {"user": "alice"}, "web_agent_id": "a1"}},
+@pytest.mark.asyncio
+async def test_get_backend_events_builds_expected_request(monkeypatch):
+    response = Mock()
+    response.raise_for_status = Mock()
+    response.json = AsyncMock(
+        return_value=[
+            {"data": {"event_name": "LOGIN", "data": {"user": "alice"}, "web_agent_id": "agent-1"}},
         ]
-        mock_response = AsyncMock()
-        mock_response.raise_for_status = MagicMock(return_value=None)
-        mock_response.json = AsyncMock(return_value=events_data)
-        mock_session = MagicMock()
-        mock_session.get = MagicMock(return_value=AsyncMock(__aenter__=AsyncMock(return_value=mock_response), __aexit__=AsyncMock(return_value=None)))
-        with patch("autoppia_iwa.src.demo_webs.demo_webs_service.aiohttp.ClientSession", return_value=mock_session):
-            svc = BackendDemoWebService(web_project=project)
-            result = await svc.get_backend_events("a1")
-        assert len(result) == 1
-        assert result[0].event_name == "LOGIN"
-        assert result[0].data == {"user": "alice"}
+    )
+    session = Mock()
+    session.closed = False
+    session.get = Mock(return_value=_AsyncContextManager(response))
 
-    @pytest.mark.asyncio
-    async def test_returns_empty_on_exception(self):
-        project = _make_project()
-        mock_session = MagicMock()
-        mock_session.get = MagicMock(side_effect=RuntimeError("network error"))
-        with patch("autoppia_iwa.src.demo_webs.demo_webs_service.aiohttp.ClientSession", return_value=mock_session):
-            svc = BackendDemoWebService(web_project=project)
-            result = await svc.get_backend_events("a1")
-        assert result == []
+    service = BackendDemoWebService(_make_project(frontend_url="http://front:8000/"), web_agent_id="agent-1", validator_id="validator-x")
+    service._session = session
 
+    events = await service.get_backend_events("agent-2")
 
-class TestBackendDemoWebServiceResetDatabase:
-    @pytest.mark.asyncio
-    async def test_returns_false_when_is_web_real(self):
-        project = _make_project(is_web_real=True)
-        svc = BackendDemoWebService(web_project=project)
-        with patch("autoppia_iwa.src.demo_webs.demo_webs_service._log_evaluation_event") as mock_log:
-            result = await svc.reset_database()
-        assert result is False
-        assert any(RESETTING_DB_CONTEXT in str(c) for c in mock_log.call_args_list)
-        assert any("real website" in str(c).lower() for c in mock_log.call_args_list)
-
-    @pytest.mark.asyncio
-    async def test_returns_true_on_200(self):
-        project = _make_project()
-        mock_response = AsyncMock()
-        mock_response.status = 200
-        mock_session = MagicMock()
-        mock_session.delete = MagicMock(
-            return_value=AsyncMock(
-                __aenter__=AsyncMock(return_value=mock_response),
-                __aexit__=AsyncMock(return_value=None),
-            )
-        )
-        with patch("autoppia_iwa.src.demo_webs.demo_webs_service.aiohttp.ClientSession", return_value=mock_session):
-            svc = BackendDemoWebService(web_project=project)
-            result = await svc.reset_database("agent-1")
-        assert result is True
-
-    @pytest.mark.asyncio
-    async def test_returns_false_on_non_2xx(self):
-        project = _make_project()
-        mock_response = AsyncMock()
-        mock_response.status = 404
-        mock_session = MagicMock()
-        mock_session.delete = MagicMock(
-            return_value=AsyncMock(
-                __aenter__=AsyncMock(return_value=mock_response),
-                __aexit__=AsyncMock(return_value=None),
-            )
-        )
-        with patch("autoppia_iwa.src.demo_webs.demo_webs_service.aiohttp.ClientSession", return_value=mock_session):
-            svc = BackendDemoWebService(web_project=project)
-            result = await svc.reset_database()
-        # Implementation returns True only for 200/202; otherwise falls through (None) or False on exception
-        assert result is not True
-
-    @pytest.mark.asyncio
-    async def test_returns_false_on_exception(self):
-        project = _make_project()
-        mock_session = MagicMock()
-        mock_session.delete = MagicMock(side_effect=RuntimeError("api down"))
-        with patch("autoppia_iwa.src.demo_webs.demo_webs_service.aiohttp.ClientSession", return_value=mock_session):
-            svc = BackendDemoWebService(web_project=project)
-            result = await svc.reset_database()
-        assert result is False
+    assert len(events) == 1
+    assert events[0].event_name == "LOGIN"
+    assert events[0].data == {"user": "alice"}
+    session.get.assert_called_once()
+    _, kwargs = session.get.call_args
+    assert kwargs["params"] == {
+        "web_url": "http://front:8000",
+        "web_agent_id": "agent-2",
+        "validator_id": "validator-x",
+    }
 
 
-class TestBackendDemoWebServiceClose:
-    @pytest.mark.asyncio
-    async def test_closes_session_and_sets_none(self):
-        project = _make_project()
-        mock_session = MagicMock()
-        mock_session.closed = False
-        mock_session.close = AsyncMock()
-        with patch("autoppia_iwa.src.demo_webs.demo_webs_service.aiohttp.ClientSession", return_value=mock_session):
-            svc = BackendDemoWebService(web_project=project)
-            svc._session = mock_session
-            await svc.close()
-        assert svc._session is None
-        mock_session.close.assert_called_once()
+@pytest.mark.asyncio
+async def test_get_backend_events_returns_empty_on_client_error(monkeypatch):
+    session = Mock()
+    session.closed = False
+    session.get = Mock(side_effect=aiohttp.ClientError("boom"))
 
-    @pytest.mark.asyncio
-    async def test_no_op_when_session_none(self):
-        project = _make_project()
-        svc = BackendDemoWebService(web_project=project)
-        svc._session = None
-        await svc.close()
-        assert svc._session is None
+    service = BackendDemoWebService(_make_project())
+    service._session = session
+
+    assert await service.get_backend_events("agent-1") == []
+
+
+@pytest.mark.asyncio
+async def test_get_backend_events_returns_empty_for_real_web():
+    service = BackendDemoWebService(_make_project(is_web_real=True))
+    assert await service.get_backend_events("agent-1") == []
+
+
+@pytest.mark.asyncio
+async def test_reset_database_uses_instance_agent_id_when_not_overridden():
+    response = Mock()
+    response.status = 202
+    session = Mock()
+    session.closed = False
+    session.delete = Mock(return_value=_AsyncContextManager(response))
+
+    service = BackendDemoWebService(_make_project(frontend_url="http://front:8000/"), web_agent_id="agent-1", validator_id="validator-x")
+    service._session = session
+
+    result = await service.reset_database()
+
+    assert result is True
+    session.delete.assert_called_once()
+    _, kwargs = session.delete.call_args
+    assert kwargs["params"] == {
+        "web_url": "http://front:8000",
+        "web_agent_id": "agent-1",
+        "validator_id": "validator-x",
+    }
+
+
+@pytest.mark.asyncio
+async def test_reset_database_returns_false_for_real_web(monkeypatch):
+    log_event = Mock()
+    monkeypatch.setattr("autoppia_iwa.src.demo_webs.demo_webs_service._log_evaluation_event", log_event)
+
+    service = BackendDemoWebService(_make_project(is_web_real=True))
+
+    assert await service.reset_database() is False
+    assert any(RESETTING_DB_CONTEXT in str(call) for call in log_event.call_args_list)
+
+
+@pytest.mark.asyncio
+async def test_reset_database_returns_false_on_client_error():
+    session = Mock()
+    session.closed = False
+    session.delete = Mock(side_effect=aiohttp.ClientError("boom"))
+
+    service = BackendDemoWebService(_make_project())
+    service._session = session
+
+    assert await service.reset_database() is False
+
+
+@pytest.mark.asyncio
+async def test_close_closes_open_session():
+    session = Mock()
+    session.close = AsyncMock()
+    service = BackendDemoWebService(_make_project())
+    service._session = session
+
+    await service.close()
+
+    session.close.assert_awaited_once()
+    assert service._session is None

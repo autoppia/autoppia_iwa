@@ -1,6 +1,6 @@
 """Tests for autohealth_14 data_utils (extract and transform helpers)."""
 
-from autoppia_iwa.src.demo_webs.projects.autohealth_14 import data_utils
+from autoppia_iwa.src.demo_webs.projects.p14_autohealth import data_utils
 
 
 class TestExtractHealthDataset:

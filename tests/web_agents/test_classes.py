@@ -53,13 +53,8 @@ def test_sanitize_snapshot_html():
 
 def test_base_agent_generate_random_web_agent_id():
     class ConcreteAgent(BaseAgent):
-        async def act(self, *, task, snapshot_html, screenshot=None, url="", step_index=0, history=None):
+        async def step(self, *, task, html, screenshot=None, url="", step_index=0, history=None):
             return []
-
-        async def solve_task(self, task):
-            from autoppia_iwa.src.web_agents.classes import TaskSolution
-
-            return TaskSolution(web_agent_id=self.id, actions=[])
 
     agent = ConcreteAgent()
     uid = agent.generate_random_web_agent_id(length=10)
@@ -69,13 +64,8 @@ def test_base_agent_generate_random_web_agent_id():
 
 def test_base_agent_init_with_id_and_name():
     class ConcreteAgent(BaseAgent):
-        async def act(self, *, task, snapshot_html, screenshot=None, url="", step_index=0, history=None):
+        async def step(self, *, task, html, screenshot=None, url="", step_index=0, history=None):
             return []
-
-        async def solve_task(self, task):
-            from autoppia_iwa.src.web_agents.classes import TaskSolution
-
-            return TaskSolution(web_agent_id=self.id, actions=[])
 
     agent = ConcreteAgent(id="custom-id", name="Custom")
     assert agent.id == "custom-id"

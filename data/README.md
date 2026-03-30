@@ -1,58 +1,23 @@
 # Data Directory
 
-This directory contains **all data** used by the system (both inputs and outputs).
+This directory is gitignored. All generated/cached data goes here, organized by the module that produces it.
 
-## 📁 Structure
+## Structure
 
 ```
 data/
-├── inputs/               # INPUT data (stable, required)
-│   ├── web_voyager/     # Reference dataset (643 tasks)
-│   └── reward_model/    # RM training data and checkpoints
-│
-└── outputs/              # OUTPUT data (generated, temporary)
-    ├── benchmark/        # Benchmark results
-    │   ├── results/
-    │   ├── per_project/
-    │   ├── logs/
-    │   ├── recordings/
-    │   └── cache/
-    └── dynamic_mutations_verification/
+├── benchmark/           # Benchmark runs (results, logs, recordings, task cache)
+├── verification/        # Web verification pipeline reports
+└── evaluation/          # Evaluator artifacts (GIFs, snapshots)
 ```
 
-## 🎯 Purpose
+All subdirectories are created automatically by their respective modules at runtime.
 
-Centralizes all data (inputs and outputs) in one location for:
-- ✅ Easier backup (tar -czf backup.tar.gz data/)
-- ✅ Simpler Docker volumes (mount only data/)
-- ✅ Clear gitignore (data/outputs/**)
-- ✅ Logical grouping
-
-## 📊 Inputs vs Outputs
-
-| Directory | Type | Changes? | Version Control? |
-|-----------|------|----------|------------------|
-| `data/inputs/` | Inputs | Rarely | ✅ Yes (or download) |
-| `data/outputs/` | Outputs | Every run | ❌ No (gitignored) |
-
-## 🧹 Cleanup
+## Cleanup
 
 ```bash
-# Clean all outputs (safe - can regenerate)
-rm -rf data/outputs/*
-
-# Keep inputs (important reference data)
-# data/inputs/ should be backed up or version controlled
+# Clean everything (safe - all data is regenerable)
+rm -rf data/benchmark data/verification data/evaluation
 ```
 
-## 🔄 Relationship
-
-```
-data/inputs/              data/outputs/
-(what system needs)  →   (what system generates)
-
-web_voyager/         →   benchmark/results/
-reward_model/ckpts/  →   benchmark/logs/
-```
-
-The system reads from `data/inputs/` and writes to `data/outputs/`.
+Note: Benchmark output is also written to `../benchmark-output/` by the benchmark entrypoint (configurable via `BenchmarkConfig.base_dir`).

@@ -49,7 +49,7 @@ async def test_all_projects_have_optimization():
             source = inspect.getsource(gen_module)
 
             has_resolve = "get_seed_from_url" in source
-            has_old_extract = "extract_seed_from_url" in source and "from autoppia_iwa.src.demo_webs.projects.data_provider import extract_seed_from_url" in source
+            has_old_extract = "extract_seed_from_url" in source and "from autoppia_iwa.src.demo_webs.data_provider import extract_seed_from_url" in source
 
             # Verificar funciones con dataset parameter
             dataset_functions = []

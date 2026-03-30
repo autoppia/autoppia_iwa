@@ -1,8 +1,8 @@
-"""Unit tests for concurrent_evaluator helper functions (_url_hostname, _is_navigation_url_allowed) and logging fallbacks."""
+"""Unit tests for legacy concurrent_evaluator helper functions and logging fallbacks."""
 
 from unittest.mock import patch
 
-from autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator import (
+from autoppia_iwa.src.evaluation.legacy.concurrent_evaluator import (
     _ensure_evaluation_level,
     _is_navigation_url_allowed,
     _log_action_execution,
@@ -92,7 +92,7 @@ class TestIsNavigationUrlAllowed:
         assert allowed is False
         assert "Task URL host" in err or "could not be determined" in err
 
-    @patch("autoppia_iwa.src.evaluation.concurrent_evaluator.evaluator._is_testing_mode", return_value=True)
+    @patch("autoppia_iwa.src.evaluation.legacy.concurrent_evaluator._is_testing_mode", return_value=True)
     def test_demo_web_subnet_testing_allows_any_host(self, mock_testing):
         allowed, err = _is_navigation_url_allowed(
             is_web_real=False,

@@ -1,9 +1,9 @@
-"""Unit tests for demo_webs.projects.shared_utils (constraints, parse_price, etc.)."""
+"""Unit tests for demo_webs.shared_utils (constraints, parse_price, etc.)."""
 
 import datetime
 
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator, CriterionValue
-from autoppia_iwa.src.demo_webs.projects.shared_utils import (
+from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator, CriterionValue
+from autoppia_iwa.src.demo_webs.shared_utils import (
     constraint_value_for_datetime_date,
     constraint_value_for_numeric,
     constraint_value_for_time,

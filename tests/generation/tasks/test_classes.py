@@ -54,7 +54,7 @@ def test_task_nested_model_dump_serializes_tests():
 
 def test_task_serialize_includes_original_prompt_and_use_case():
     """Serialize includes original_prompt and use_case with event name."""
-    from autoppia_iwa.src.demo_webs.projects.base_events import Event
+    from autoppia_iwa.src.demo_webs.base_events import Event
 
     class FakeEvent(Event):
         event_name: str = "FAKE"

@@ -3,7 +3,7 @@
 import pytest
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.projects.automail_6.events import (
+from autoppia_iwa.src.demo_webs.projects.p06_automail.events import (
     BACKEND_EVENT_TYPES,
     SearchEmailEvent,
 )

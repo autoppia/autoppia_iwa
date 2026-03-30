@@ -11,9 +11,9 @@ import pytest
 from autoppia_iwa.src.data_generation.tasks.simple.simple_task_generator import (
     SimpleTaskGenerator,
 )
+from autoppia_iwa.src.demo_webs.base_events import Event
 from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
-from autoppia_iwa.src.demo_webs.projects.base_events import Event
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
+from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator
 
 
 def _make_project(project_id: str = "dummy", frontend_url: str = "https://example.com/", use_cases: list | None = None) -> WebProject:
@@ -614,3 +614,11 @@ class TestCleanListResponseCodePaths:
         result = gen._clean_list_response(content)
         parsed = json.loads(result)
         assert parsed == ["x"]
+
+    def test_preserves_signup_placeholders(self):
+        project = _make_project()
+        gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
+        content = '["Register with <signup_username> <signup_email> <signup_password> <email> <username> <password>"]'
+        result = gen._clean_list_response(content)
+        parsed = json.loads(result)
+        assert parsed == ["Register with <signup_username> <signup_email> <signup_password> <email> <username> <password>"]

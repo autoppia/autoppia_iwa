@@ -5,7 +5,7 @@ from datetime import date
 import pytest
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.projects.autodining_4.events import (
+from autoppia_iwa.src.demo_webs.projects.p04_autodining.events import (
     BACKEND_EVENT_TYPES,
     AboutFeatureClickEvent,
     BookRestaurantEvent,
@@ -24,7 +24,7 @@ from autoppia_iwa.src.demo_webs.projects.autodining_4.events import (
     ViewFullMenuEvent,
     ViewRestaurantEvent,
 )
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator, CriterionValue
+from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator, CriterionValue
 
 from ..event_parse_helpers import assert_parse_cls_kwargs_match_model
 

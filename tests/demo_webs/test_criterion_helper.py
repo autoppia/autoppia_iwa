@@ -1,6 +1,6 @@
-"""Unit tests for demo_webs.projects.criterion_helper (validate_criterion)."""
+"""Unit tests for demo_webs.criterion_helper (validate_criterion)."""
 
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import (
+from autoppia_iwa.src.demo_webs.criterion_helper import (
     ComparisonOperator,
     CriterionValue,
     validate_criterion,

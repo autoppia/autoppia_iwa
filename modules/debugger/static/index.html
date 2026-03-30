@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IWA Debugger</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1f50d;</text></svg>">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="bg-decor" aria-hidden="true"></div>
+  <div class="app-shell">
+
+    <!-- ── Topbar ──────────────────────────────────────── -->
+    <header class="topbar panel">
+      <div class="topbar-title">
+        <div class="topbar-logo" aria-hidden="true"></div>
+        <h1>Operator Inspector</h1>
+        <div class="trace-row">
+          <p id="traceDirText">No trace loaded</p>
+          <button id="copyTraceDirBtn" class="btn tiny" title="Copy full trace dir">Copy</button>
+        </div>
+      </div>
+      <div class="topbar-controls">
+        <label class="field">
+          <span>Trace</span>
+          <select id="tracePicker"></select>
+        </label>
+        <button id="loadTraceBtn" class="btn btn-primary">Load</button>
+        <button id="refreshBtn" class="btn btn-icon" title="Refresh data">&#x21bb;</button>
+      </div>
+    </header>
+
+    <!-- ── Run metrics ─────────────────────────────────── -->
+    <section id="runSummary" class="panel summary-strip"></section>
+
+    <!-- ── Three-pane workspace ────────────────────────── -->
+    <main class="workspace">
+
+      <!-- Left: Episodes -->
+      <aside class="pane pane-left panel relative" id="episodesPane">
+        <h2>Episodes</h2>
+
+        <!-- Segmented control for status -->
+        <div class="segmented-control" id="statusSegmented">
+          <button class="active" data-value="">All</button>
+          <button data-value="success">Pass</button>
+          <button data-value="failure">Fail</button>
+        </div>
+
+        <!-- Filter popover for use-case and failure category -->
+        <div class="filter-row">
+          <div class="filter-popover-wrap">
+            <button class="btn tiny" id="filterToggleBtn">Filter</button>
+            <div class="filter-popover" id="filterPopover">
+              <label class="field compact">
+                <span>Use Case</span>
+                <select id="filterUseCase"></select>
+              </label>
+              <label class="field compact">
+                <span>Failure Cat.</span>
+                <select id="filterFailureCategory"></select>
+              </label>
+            </div>
+          </div>
+          <span id="filterActiveCount" class="muted" style="font-size:10px;"></span>
+        </div>
+
+        <!-- Hidden select to keep filterStatus logic working -->
+        <select id="filterStatus" class="hidden">
+          <option value="">All</option>
+          <option value="success">Success</option>
+          <option value="failure">Failure</option>
+        </select>
+
+        <div id="episodes" class="list"></div>
+      </aside>
+
+      <!-- Center: Step timeline -->
+      <section class="pane pane-center panel relative" id="stepsPane">
+        <div class="pane-header">
+          <h2>Steps</h2>
+          <div class="shortcut-hint">j/k step &middot; J/K episode &middot; 1-7 tabs</div>
+        </div>
+        <div id="episodeSummary" class="episode-summary"></div>
+        <div class="step-nav">
+          <button id="prevStepBtn" class="btn btn-icon" title="Previous step (k)">&larr;</button>
+          <div id="stepPosition" class="step-pos">Step - / -</div>
+          <button id="nextStepBtn" class="btn btn-icon" title="Next step (j)">&rarr;</button>
+        </div>
+        <div id="steps" class="list timeline"></div>
+      </section>
+
+      <!-- Right: Inspector detail (tabs) -->
+      <section class="pane pane-right panel" id="inspectorPane">
+        <div id="stepHeadline" class="step-headline"></div>
+
+        <!-- Tab bar replaces quick-sections + accordions -->
+        <nav class="tab-bar" id="tabBar"></nav>
+
+        <!-- Tab panels -->
+        <div class="tab-panel" id="panelReasoning">
+          <div class="section-grid two">
+            <article>
+              <h3>Reasoning</h3>
+              <div class="code-wrap"><pre id="reasoningPre"></pre></div>
+            </article>
+            <article>
+              <h3>Agent Metrics</h3>
+              <div class="code-wrap"><pre id="metricsPre"></pre></div>
+            </article>
+            <article>
+              <h3>State In</h3>
+              <div class="code-wrap"><pre id="stateInPre"></pre></div>
+            </article>
+            <article>
+              <h3>State Out</h3>
+              <div class="code-wrap"><pre id="stateOutPre"></pre></div>
+            </article>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panelActions">
+          <div class="section-grid two">
+            <article>
+              <h3>Actions</h3>
+              <div class="code-wrap"><pre id="actionsPre"></pre></div>
+            </article>
+            <article>
+              <h3>Execution</h3>
+              <div class="code-wrap"><pre id="executionPre"></pre></div>
+            </article>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panelAct">
+          <div class="section-grid two">
+            <article>
+              <div class="article-head">
+                <h3>Request</h3>
+              </div>
+              <div class="code-wrap"><pre id="actRequestPre"></pre></div>
+            </article>
+            <article>
+              <div class="article-head">
+                <h3>Response</h3>
+              </div>
+              <div class="code-wrap"><pre id="actResponsePre"></pre></div>
+            </article>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panelDiffs">
+          <div class="section-grid two">
+            <article>
+              <h3>State Diff</h3>
+              <div class="code-wrap"><pre id="stateDiffPre"></pre></div>
+            </article>
+            <article>
+              <h3>HTML Diff</h3>
+              <div class="code-wrap"><pre id="htmlDiffPre"></pre></div>
+            </article>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panelHtml">
+          <div class="section-grid two sticky-compare">
+            <article>
+              <h3>Before HTML</h3>
+              <textarea id="htmlBeforeText" readonly></textarea>
+              <iframe id="htmlBeforeFrame" sandbox="allow-same-origin"></iframe>
+            </article>
+            <article>
+              <h3>After HTML</h3>
+              <textarea id="htmlAfterText" readonly></textarea>
+              <iframe id="htmlAfterFrame" sandbox="allow-same-origin"></iframe>
+            </article>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panelShots">
+          <div class="section-grid two sticky-compare">
+            <article class="screenshot-section">
+              <div class="screenshot-label">Before</div>
+              <img id="shotBefore" alt="before screenshot">
+              <div id="shotBeforeEmpty" class="empty">
+                <span class="empty-icon">&#x1f4f7;</span>
+                No screenshot in trace.
+              </div>
+            </article>
+            <article class="screenshot-section">
+              <div class="screenshot-label">After</div>
+              <img id="shotAfter" alt="after screenshot">
+              <div id="shotAfterEmpty" class="empty">
+                <span class="empty-icon">&#x1f4f7;</span>
+                No screenshot in trace.
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panelReplay">
+          <div class="replay-controls">
+            <button class="btn btn-primary" id="replayStartBtn">Play</button>
+            <button class="btn" id="replayPauseBtn">Pause</button>
+            <button class="btn" id="replayResumeBtn">Resume</button>
+            <button class="btn" id="replayStepBtn">Step</button>
+            <button class="btn" id="replayResetBtn">Reset</button>
+          </div>
+          <div class="code-wrap"><pre id="replayStatusPre"></pre></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Toast container for notifications -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

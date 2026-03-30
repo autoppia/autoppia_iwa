@@ -8,7 +8,7 @@ from autoppia_iwa.src.demo_webs.classes import (
     UseCase,
     WebProject,
 )
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
+from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator
 
 
 class TestUseCaseConstraintsToStr:
