@@ -414,11 +414,14 @@ async def generate_document_renamed_constraints(task_url: str | None = None, dat
     constraints: list[dict[str, Any]] = []
     docs = await _get_crm_entity_list(task_url, dataset, "files")
     new_names_as_dataset = [{"new_name": name} for name in NEW_DOCUMENT_NAMES]
+    previous_names_as_dataset = [{"previous_name": d.get("name")} for d in docs if d.get("name")]
 
     if docs:
         doc = random.choice(docs)
         for field in ["new_name", "previous_name"]:
             allowed_ops = FIELD_OPERATORS_MAP_DOCUMENT_RENAME.get(field, [])
+            if field == "previous_name" and not allowed_ops:
+                allowed_ops = FIELD_OPERATORS_MAP_DOCUMENT_RENAME.get("name", [])
             if not allowed_ops:
                 continue
             operator = ComparisonOperator(random.choice(allowed_ops))
@@ -428,7 +431,7 @@ async def generate_document_renamed_constraints(task_url: str | None = None, dat
                 if value is not None:
                     constraints.append(create_constraint_dict(field, operator, value))
             elif field == "previous_name":
-                value = _generate_constraint_value(operator, doc.get("name", "Document"), field, docs)
+                value = _generate_constraint_value(operator, doc.get("name", "Document"), field, previous_names_as_dataset)
                 if value is not None:
                     constraints.append(create_constraint_dict(field, operator, value))
     return constraints
