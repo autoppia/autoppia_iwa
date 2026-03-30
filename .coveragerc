@@ -28,6 +28,8 @@ omit =
     autoppia_iwa/entrypoints/test_task.py
     autoppia_iwa/entrypoints/test_your_agent/**
     autoppia_iwa/entrypoints/web_verification/**
+    autoppia_iwa/src/demo_webs/web_verification/**
+    autoppia_iwa/src/web_agents/examples/**
     autoppia_iwa/src/demo_webs/projects/autobooks_2/generation_functions.py
     autoppia_iwa/src/demo_webs/projects/autobooks_2/replace_functions.py
     autoppia_iwa/src/demo_webs/projects/autozone_3/generation_functions.py

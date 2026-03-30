@@ -33,6 +33,8 @@ omit =
     autoppia_iwa/entrypoints/test_task.py
     autoppia_iwa/entrypoints/test_your_agent/**
     autoppia_iwa/entrypoints/web_verification/**
+    autoppia_iwa/src/demo_webs/web_verification/**
+    autoppia_iwa/src/web_agents/examples/**
 
     # Demo_webs project generation/data layers (not gated)
     autoppia_iwa/src/demo_webs/projects/autobooks_2/generation_functions.py
