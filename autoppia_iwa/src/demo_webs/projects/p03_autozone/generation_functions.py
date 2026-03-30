@@ -219,9 +219,12 @@ async def generate_search_query_constraints(task_url: str | None = None, dataset
         ComparisonOperator.CONTAINS,
     ]
 
+    data_items = await _ensure_products_dataset(task_url, dataset)
+    if not data_items:
+        return [create_constraint_dict("query", ComparisonOperator.CONTAINS, "products")]
+
     op = random.choice(query_operators)
     # Pass a mock product_data_source even if not directly used, as generate_constraint_value expects it
-    data_items = await _ensure_products_dataset(task_url, dataset)
     product = random.choice(data_items)
     constraint_value = generate_constraint_value("query", op, product, all_products_data=data_items)
     if constraint_value is not None:
