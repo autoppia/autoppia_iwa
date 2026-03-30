@@ -72,6 +72,13 @@ def test_generate_constraint_value_numeric_special_case_and_datetime_paths(monke
     assert dated > base_date
 
 
+def test_substring_and_random_string_helpers(monkeypatch):
+    monkeypatch.setattr(gen.random, "randint", lambda a, b: a)
+    monkeypatch.setattr(gen.random, "choice", lambda seq: seq[0])
+    assert gen._substring("Italian") == "I"
+    assert gen._random_string_not_in("hello", length=3) != "hello"
+
+
 @pytest.mark.asyncio
 async def test_generate_value_for_field_covers_query_name_and_defaults(monkeypatch):
     monkeypatch.setattr(gen, "_get_restaurant_queries", AsyncMock(return_value=["pizza"]))
@@ -171,6 +178,67 @@ async def test_book_restaurant_and_country_selected_include_booking_fields(monke
 
     assert [c["field"] for c in booked] == ["name", "people"]
     assert [c["field"] for c in country] == ["name", "people"]
+
+
+@pytest.mark.asyncio
+async def test_other_booking_generators_include_restaurant_and_booking_fields(monkeypatch):
+    monkeypatch.setattr(gen, "_get_restaurants_dataset", AsyncMock(return_value=RESTAURANTS))
+    monkeypatch.setattr(gen, "generate_restaurant_constraints", lambda **kwargs: [{"field": "name", "operator": ComparisonOperator.EQUALS, "value": "Casa Mia"}])
+    monkeypatch.setattr(
+        gen,
+        "_generate_constraints_for_fields",
+        AsyncMock(return_value=[{"field": "occasion", "operator": ComparisonOperator.EQUALS, "value": "Birthday"}]),
+    )
+
+    occasion = await gen.generate_occasion_selected_constraints(dataset=RESTAURANTS)
+    reservation = await gen.generate_reservation_complete_constraints(dataset=RESTAURANTS)
+
+    assert [c["field"] for c in occasion] == ["name", "occasion"]
+    assert [c["field"] for c in reservation] == ["name", "occasion"]
+
+
+@pytest.mark.asyncio
+async def test_single_field_opened_generators(monkeypatch):
+    monkeypatch.setattr(gen, "generate_constraints_for_single_field", AsyncMock(return_value=[{"field": "x", "operator": ComparisonOperator.EQUALS, "value": "y"}]))
+
+    assert await gen.generate_date_dropdown_opened_constraints()
+    assert await gen.generate_time_dropdown_opened_constraints()
+    assert await gen.generate_people_dropdown_opened_constraints()
+    assert await gen.generate_search_restaurant_constraints()
+    assert await gen.generate_scroll_view_constraints()
+
+
+def test_generate_restaurant_constraints_operator_branches(monkeypatch):
+    monkeypatch.setattr(gen.random, "choice", lambda seq: seq[0])
+    monkeypatch.setattr(gen.random, "randint", lambda a, b: 1)
+    monkeypatch.setattr(gen.random, "sample", lambda seq, n: seq[:n])
+
+    result = gen.generate_restaurant_constraints(
+        dataset={"restaurants": RESTAURANTS},
+        fields=["name", "rating"],
+        allowed_ops={"name": [ComparisonOperator.NOT_CONTAINS], "rating": [ComparisonOperator.LESS_THAN]},
+        max_constraints=2,
+    )
+
+    assert result[0]["field"] == "name"
+    assert result[0]["value"] != "Casa Mia"
+
+
+@pytest.mark.asyncio
+async def test_generate_constraints_for_fields_handles_missing_allowed_ops(monkeypatch):
+    monkeypatch.setattr(gen.random, "choice", lambda seq: seq[0])
+    monkeypatch.setattr(gen.random, "sample", lambda seq, n: seq[:n])
+    monkeypatch.setattr(gen, "_generate_value_for_field", AsyncMock(return_value="Casa Mia"))
+    monkeypatch.setattr(gen, "_generate_constraint_value", lambda op, default_value, field, dataset: default_value)
+
+    result = await gen._generate_constraints_for_fields(
+        all_fields=["name", "missing"],
+        allowed_ops={"name": [ComparisonOperator.EQUALS]},
+        required_fields=["name", "missing"],
+        dataset=RESTAURANTS,
+    )
+
+    assert result == [{"field": "name", "operator": ComparisonOperator.EQUALS, "value": "Casa Mia"}]
 
 
 @pytest.mark.asyncio

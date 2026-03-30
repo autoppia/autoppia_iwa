@@ -1,5 +1,10 @@
 """Tests for autohealth_14 data_utils (extract and transform helpers)."""
 
+import json
+from unittest.mock import AsyncMock, patch
+
+import pytest
+
 from autoppia_iwa.src.demo_webs.projects.p14_autohealth import data_utils
 
 
@@ -101,3 +106,69 @@ class TestTransformMedicalRecordsToModified:
         assert result[0]["record_date"] == "2025-01-01"
         assert result[0]["record_type"] == "note"
         assert result[0]["doctor_name"] == "Dr. D"
+
+
+class TestFallbackLoading:
+    def test_get_initial_data_dir_from_env(self, tmp_path, monkeypatch):
+        data_dir = tmp_path / "webs_server" / "initial_data" / "web_14_autohealth" / "data"
+        data_dir.mkdir(parents=True)
+        monkeypatch.setenv("WEBS_DEMO_PATH", str(tmp_path))
+        assert data_utils._get_initial_data_dir() == data_dir
+
+    def test_load_initial_data_fallback_unknown_entity(self):
+        assert data_utils._load_initial_data_fallback("unknown") == []
+
+    def test_load_initial_data_fallback_reads_json(self, tmp_path, monkeypatch):
+        data_dir = tmp_path / "webs_server" / "initial_data" / "web_14_autohealth" / "data"
+        data_dir.mkdir(parents=True)
+        monkeypatch.setenv("WEBS_DEMO_PATH", str(tmp_path))
+        file_path = data_dir / "appointments_1.json"
+        file_path.write_text(json.dumps([{"id": 1}, {"id": 2}]), encoding="utf-8")
+
+        assert data_utils._load_initial_data_fallback("appointments", count=1) == [{"id": 1}]
+
+    def test_load_initial_data_fallback_handles_invalid_json(self, tmp_path, monkeypatch):
+        data_dir = tmp_path / "webs_server" / "initial_data" / "web_14_autohealth" / "data"
+        data_dir.mkdir(parents=True)
+        monkeypatch.setenv("WEBS_DEMO_PATH", str(tmp_path))
+        (data_dir / "appointments_1.json").write_text("{bad", encoding="utf-8")
+
+        assert data_utils._load_initial_data_fallback("appointments") == []
+
+
+class TestFetchData:
+    @pytest.mark.asyncio
+    async def test_fetch_data_returns_backend_items(self):
+        with patch.object(data_utils, "load_dataset_data", new_callable=AsyncMock, return_value=[{"id": 1}]) as load:
+            result = await data_utils.fetch_data("appointments", seed_value=7, count=3, method="select", filter_key="doctor")
+
+        assert result == [{"id": 1}]
+        assert load.await_count == 1
+
+    @pytest.mark.asyncio
+    async def test_fetch_data_uses_fallback_when_backend_empty(self):
+        with (
+            patch.object(data_utils, "load_dataset_data", new_callable=AsyncMock, return_value=[]),
+            patch.object(
+                data_utils,
+                "_load_initial_data_fallback",
+                return_value=[{"id": 9}],
+            ),
+        ):
+            result = await data_utils.fetch_data("appointments", count=2)
+
+        assert result == [{"id": 9}]
+
+
+class TestTransformDoctorsExtraBranches:
+    def test_invalid_rating_is_preserved(self):
+        result = data_utils.transform_doctors_to_modified([{"rating": "oops"}])
+        assert result[0]["rating"] == "oops"
+
+    def test_rating_clamps_lower_bound(self):
+        result = data_utils.transform_doctors_to_modified([{"rating": -1}])
+        assert result[0]["rating"] == 0.0
+
+    def test_rating_clamps_upper_bound(self):
+        result = data_utils.transform_doctors_to_modified([{"rating": 9}])
+        assert result[0]["rating"] == 5.0

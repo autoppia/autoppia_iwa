@@ -8,6 +8,8 @@ import pytest
 
 from autoppia_iwa.src.shared.visualizator import (
     SubnetVisualizer,
+    test_multiple_evaluations,
+    test_visualization,
     visualize_evaluation,
     visualize_list_of_evaluations,
     visualize_summary,
@@ -95,6 +97,24 @@ class TestFormatActionDetails:
         result = v._format_action_details(action)
         assert isinstance(result, str)
 
+    def test_action_with_empty_model_dump_values(self):
+        v = SubnetVisualizer()
+        action = MagicMock()
+        action.model_dump.return_value = {"type": "click", "x": 0, "text": "", "selector": None}
+        assert v._format_action_details(action) == ""
+
+    def test_action_with_private_attrs_ignored(self):
+        v = SubnetVisualizer()
+
+        class SimpleAction:
+            def __init__(self) -> None:
+                self._secret = "x"
+                self.label = "visible"
+
+        result = v._format_action_details(SimpleAction())
+        assert "_secret" not in result
+        assert "label='visible'" in result
+
 
 class TestGetDetailedTestDescriptionAndAttributes:
     """Tests for _get_detailed_test_description_and_attributes."""
@@ -156,6 +176,64 @@ class TestGetDetailedTestDescriptionAndAttributes:
         desc, attrs = v._get_detailed_test_description_and_attributes(test)
         assert "FILM_DETAIL" in desc
         assert "event_name" in attrs
+
+    def test_check_url_test_with_expected_url(self):
+        v = SubnetVisualizer()
+        test = MagicMock()
+        test.__class__.__name__ = "CheckUrlTest"
+        del test.url
+        test.expected_url = "/expected"
+        test.url_pattern = None
+        desc, attrs = v._get_detailed_test_description_and_attributes(test)
+        assert "/expected" in desc
+        assert "expected" in attrs
+
+    def test_check_url_test_with_url_pattern(self):
+        v = SubnetVisualizer()
+        test = MagicMock()
+        test.__class__.__name__ = "CheckUrlTest"
+        del test.url
+        del test.expected_url
+        test.url_pattern = r"/items/\\d+"
+        desc, attrs = v._get_detailed_test_description_and_attributes(test)
+        assert "pattern" in desc.lower()
+        assert "items" in attrs
+
+    def test_html_test_query_branch(self):
+        v = SubnetVisualizer()
+        test = MagicMock()
+        test.__class__.__name__ = "JudgeBaseOnHTML"
+        del test.success_criteria
+        test.query = "find a confirmation"
+        desc, attrs = v._get_detailed_test_description_and_attributes(test)
+        assert "confirmation" in desc
+        assert "confirmation" in attrs
+
+    def test_priority_attribute_fallback(self):
+        v = SubnetVisualizer()
+
+        class SelectorTest:
+            def __init__(self) -> None:
+                self.selector = "#submit"
+
+        desc, _ = v._get_detailed_test_description_and_attributes(SelectorTest())
+        assert "#submit" in desc
+
+    def test_all_attrs_fallback_and_empty_default(self):
+        v = SubnetVisualizer()
+
+        class AttrTest:
+            def __init__(self) -> None:
+                self.foo = "bar"
+                self.type = "ignored"
+
+        class EmptyTest:
+            pass
+
+        desc_attrs, _ = v._get_detailed_test_description_and_attributes(AttrTest())
+        desc_empty, _ = v._get_detailed_test_description_and_attributes(EmptyTest())
+        assert "foo='bar'" in desc_attrs
+        assert desc_empty == "Test type EmptyTest"
 
 
 class TestShowTaskWithTests:
@@ -232,6 +310,17 @@ class TestShowTaskWithTests:
 
         with patch.object(v.console, "print"):
             v.show_task_with_tests(task)
+
+    def test_show_task_with_tests_uses_defaults_when_task_attrs_missing(self):
+        v = SubnetVisualizer()
+
+        class BareTask:
+            def __init__(self) -> None:
+                self.tests = []
+
+        with patch.object(v.console, "print") as console_print:
+            v.show_task_with_tests(BareTask())
+            assert console_print.call_count > 0
 
 
 class TestShowFullEvaluation:
@@ -397,6 +486,16 @@ class TestShowListOfEvaluations:
         sol2.evaluation_result = MagicMock(test_results=[], feedback=None, final_score=0.0)
         with patch.object(v.console, "print"):
             v.show_list_of_evaluations(task, [sol1, sol2], [sol1.evaluation_result, sol2.evaluation_result], "validator")
+
+
+class TestExampleFunctions:
+    def test_test_visualization_demo_runs(self):
+        with patch("autoppia_iwa.src.shared.visualizator.Console.print"):
+            test_visualization()
+
+    def test_test_multiple_evaluations_demo_runs(self):
+        with patch("autoppia_iwa.src.shared.visualizator.Console.print"):
+            test_multiple_evaluations()
 
 
 class TestVisualizeDecorators:

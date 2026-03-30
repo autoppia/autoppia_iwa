@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
-from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.base_events import BaseEventValidator, Event
+from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.criterion_helper import CriterionValue
 
 
@@ -760,9 +760,6 @@ class DeliveryPrioritySelectedEvent(Event, BaseEventValidator):
 
         # Validate event-level fields (priority, name)
         if criteria.priority is not None and not self._validate_field(self.priority, criteria.priority):
-            return False
-
-        if criteria.name is not None and not self._validate_field(self.name, criteria.name):
             return False
 
         if len(self.items) == 0:

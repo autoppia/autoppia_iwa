@@ -2,8 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.base_events import BaseEventValidator, Event
+from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator, CriterionValue
 from autoppia_iwa.src.demo_webs.shared_utils import parse_datetime, validate_date_field
 
@@ -100,6 +100,10 @@ class HotelInfo(BaseModel):
         beds: int | CriterionValue | None = None
         host_name: str | CriterionValue | None = None
         amenities: str | list | CriterionValue | None = None
+
+    @staticmethod
+    def _validate_field(value, criterion) -> bool:
+        return BaseEventValidator._validate_field(value, criterion)
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -384,7 +388,6 @@ class SubmitHotelReviewEvent(Event, BaseEventValidator, HotelInfo):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             comment=data.get("comment"),
-            rating=data.get("rating"),
             name=data.get("name"),
             **hotel_info.model_dump(),
         )
@@ -546,6 +549,47 @@ class ConfirmAndPayEvent(Event, BaseEventValidator, HotelInfo):
             ]
         )
 
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "ConfirmAndPayEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        hotel_info = HotelInfo.parse(
+            {
+                "hotel": {
+                    "title": data.get("title"),
+                    "location": data.get("location"),
+                    "price": data.get("price"),
+                    "rating": data.get("rating"),
+                    "reviews": data.get("reviews"),
+                    "guests": data.get("guests"),
+                    "maxGuests": data.get("maxGuests"),
+                    "datesFrom": data.get("datesFrom") or (data.get("dates") or {}).get("from"),
+                    "datesTo": data.get("datesTo") or (data.get("dates") or {}).get("to"),
+                    "baths": data.get("baths", 0),
+                    "bedrooms": data.get("bedrooms", 0),
+                    "beds": data.get("beds", 0),
+                    "host": {"name": data.get("host_name", "")},
+                    "amenities": data.get("amenities", []),
+                }
+            }
+        )
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            nights=data.get("nights", 0),
+            price_subtotal=data.get("priceSubtotal", 0),
+            total=data.get("total", 0),
+            card_number=data.get("cardNumber", ""),
+            expiration=data.get("expiration", ""),
+            cvv=data.get("cvv", ""),
+            country=data.get("country", ""),
+            guests_set=data.get("guests_set"),
+            zipcode=data.get("zipcode"),
+            **hotel_info.model_dump(),
+        )
+
 
 class PaymentMethodSelectedEvent(Event, BaseEventValidator, HotelInfo):
     """Event when user selects payment method."""
@@ -563,7 +607,6 @@ class PaymentMethodSelectedEvent(Event, BaseEventValidator, HotelInfo):
             [
                 HotelInfo._validate_criteria(self, criteria),
                 self._validate_field(self.method, criteria.method),
-                self._validate_field(self.hotel_id, criteria.hotel_id),
                 self._validate_field(self.title, criteria.title),
             ]
         )

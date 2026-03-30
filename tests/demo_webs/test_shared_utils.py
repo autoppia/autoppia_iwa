@@ -137,6 +137,11 @@ class TestConstraintValueForDatetimeDate:
         result = constraint_value_for_datetime_date(ComparisonOperator.EQUALS, d)
         assert result == d
 
+    def test_not_equals_returns_different_date(self):
+        d = datetime.date(2025, 6, 15)
+        result = constraint_value_for_datetime_date(ComparisonOperator.NOT_EQUALS, d)
+        assert result != d
+
 
 class TestConstraintValueForNumeric:
     def test_greater_than_returns_less_than_value(self):
@@ -155,6 +160,12 @@ class TestConstraintValueForNumeric:
         result = constraint_value_for_numeric(ComparisonOperator.LESS_THAN, 10.0, round_digits=2)
         assert isinstance(result, float)
         assert len(str(result).split(".")[-1]) <= 2 or result == int(result)
+
+    def test_less_equal_returns_value(self):
+        assert constraint_value_for_numeric(ComparisonOperator.LESS_EQUAL, 8) == 8
+
+    def test_unsupported_operator_returns_none(self):
+        assert constraint_value_for_numeric(ComparisonOperator.EQUALS, 8) is None
 
 
 class TestParseDatetime:
@@ -178,6 +189,15 @@ class TestParseDatetime:
         now = datetime.datetime.now(datetime.UTC)
         assert parse_datetime(now) == now
 
+    def test_space_separated_datetime(self):
+        dt = parse_datetime("2025-06-15 10:30:00")
+        assert dt is not None
+        assert dt.hour == 10
+
+    def test_invalid_value_returns_none(self):
+        assert parse_datetime("not-a-date") is None
+        assert parse_datetime(123) is None
+
 
 class TestValidateDateField:
     def test_equals_string_date(self):
@@ -192,6 +212,21 @@ class TestValidateDateField:
         criterion = CriterionValue(value=d, operator=ComparisonOperator.EQUALS)
         assert validate_date_field(d, criterion) is True
 
+    def test_relational_operator(self):
+        criterion = CriterionValue(value="2025-06-15", operator=ComparisonOperator.GREATER_THAN)
+        assert validate_date_field("2025-06-16", criterion) is True
+        assert validate_date_field("2025-06-14", criterion) is False
+
+    def test_invalid_date_inputs_return_false(self):
+        criterion = CriterionValue(value="bad-date", operator=ComparisonOperator.EQUALS)
+        assert validate_date_field("2025-06-15", criterion) is False
+
+    def test_datetime_and_date_cross_compare(self):
+        d = datetime.date(2025, 6, 15)
+        dt = datetime.datetime(2025, 6, 15, 10, 0, 0)
+        assert validate_date_field(dt, d) is True
+        assert validate_date_field(d, dt) is True
+
 
 class TestValidateTimeField:
     def test_equals_time_string(self):
@@ -204,6 +239,21 @@ class TestValidateTimeField:
         t = time(14, 30, 0)
         criterion = CriterionValue(value=t, operator=ComparisonOperator.EQUALS)
         assert validate_time_field(t, criterion) is True
+
+    def test_relational_operator(self):
+        criterion = CriterionValue(value="14:30:00", operator=ComparisonOperator.LESS_THAN)
+        assert validate_time_field("14:00:00", criterion) is True
+        assert validate_time_field("15:00:00", criterion) is False
+
+    def test_invalid_time_inputs_return_false(self):
+        criterion = CriterionValue(value="bad-time", operator=ComparisonOperator.EQUALS)
+        assert validate_time_field("14:00:00", criterion) is False
+
+    def test_datetime_and_time_cross_compare(self):
+        t = datetime.time(14, 30, 0)
+        dt = datetime.datetime(2025, 6, 15, 14, 30, 0)
+        assert validate_time_field(dt, t) is True
+        assert validate_time_field(t, dt) is True
 
 
 class TestGenerateMockDates:
@@ -237,3 +287,19 @@ class TestConstraintValueForTime:
         dataset = [{"slot": time(10, 0)}, {"slot": time(14, 0)}]
         result = constraint_value_for_time(ComparisonOperator.GREATER_THAN, t, "slot", dataset)
         assert result is not None
+
+    def test_not_equals_uses_dataset_or_fallback(self):
+        from datetime import time
+
+        t = time(12, 0, 0)
+        dataset = [{"slot": time(10, 0)}, {"slot": time(12, 0)}]
+        result = constraint_value_for_time(ComparisonOperator.NOT_EQUALS, t, "slot", dataset)
+        assert result != t
+
+    def test_less_equal_returns_same_time(self):
+        from datetime import time
+
+        t = time(12, 0, 0)
+        dataset = [{"slot": time(10, 0)}]
+        result = constraint_value_for_time(ComparisonOperator.LESS_EQUAL, t, "slot", dataset)
+        assert result == t
