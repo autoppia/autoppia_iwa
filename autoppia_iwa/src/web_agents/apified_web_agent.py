@@ -10,8 +10,8 @@ from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.execution.actions.actions import BaseAction, NavigateAction
 from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
-from autoppia_iwa.src.web_agents.protocol import StepRequest, StepResponse, StepToolCall
 from autoppia_iwa.src.web_agents.classes import IWebAgent
+from autoppia_iwa.src.web_agents.protocol import StepRequest, StepResponse, StepToolCall
 
 
 class ApifiedWebAgent(IWebAgent):
@@ -85,17 +85,32 @@ class ApifiedWebAgent(IWebAgent):
             tools=self.tools,
             include_reasoning=self.request_reasoning,
         )
-        payload = request.model_dump(mode="json", exclude_none=True)
+        canonical_payload = request.model_dump(mode="json", exclude_none=True)
+        legacy_payload = self._build_legacy_act_payload(
+            task=task,
+            html=html,
+            screenshot=screenshot,
+            url=url,
+            step_index=step_index,
+            history=history,
+        )
 
         timeout = aiohttp.ClientTimeout(total=self.timeout)
         async with aiohttp.ClientSession(timeout=timeout) as session:
             try:
-                async with session.post(f"{self.base_url}/step", json=payload) as response:
+                async with session.post(f"{self.base_url}/step", json=canonical_payload) as response:
                     response.raise_for_status()
                     data = await response.json()
                     return self._parse_actions_response(data if isinstance(data, dict) else {})
             except Exception as exc:
-                logger.warning(f"ApifiedWebAgent.step failed: {exc}")
+                logger.warning(f"ApifiedWebAgent.step failed, falling back to /act: {exc}")
+            try:
+                async with session.post(f"{self.base_url}/act", json=legacy_payload) as response:
+                    response.raise_for_status()
+                    data = await response.json()
+                    return self._parse_actions_response(data if isinstance(data, dict) else {})
+            except Exception as exc:
+                logger.warning(f"ApifiedWebAgent.act fallback failed: {exc}")
         return []
 
     # Keep backward compatibility
@@ -143,6 +158,33 @@ class ApifiedWebAgent(IWebAgent):
 
         return actions
 
+    def _build_legacy_act_payload(
+        self,
+        *,
+        task: Task,
+        html: str,
+        screenshot: str | bytes | None,
+        url: str,
+        step_index: int,
+        history: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "task_id": getattr(task, "id", None),
+            "prompt": getattr(task, "prompt", None),
+            "url": self._force_localhost(url),
+            "snapshot_html": html,
+            "screenshot": screenshot,
+            "step_index": int(step_index),
+            "web_project_id": getattr(task, "web_project_id", None),
+        }
+        if history is not None:
+            payload["history"] = history
+        if self.tools:
+            payload["allowed_tools"] = self.tools
+        if self.request_reasoning:
+            payload["include_reasoning"] = True
+        return payload
+
     def _parse_canonical_response(self, payload: dict[str, Any]) -> StepResponse | None:
         if not self._looks_like_canonical_response(payload):
             return None
@@ -158,14 +200,7 @@ class ApifiedWebAgent(IWebAgent):
         if not actions:
             return any(key in payload for key in ("done", "protocol_version", "content", "reasoning", "error"))
         return all(
-            isinstance(item, dict)
-            and isinstance(item.get("name"), str)
-            and (
-                "arguments" not in item
-                or item.get("arguments") is None
-                or isinstance(item.get("arguments"), dict)
-            )
-            for item in actions
+            isinstance(item, dict) and isinstance(item.get("name"), str) and ("arguments" not in item or item.get("arguments") is None or isinstance(item.get("arguments"), dict)) for item in actions
         )
 
     def _parse_legacy_actions_response(self, data: dict[str, Any]) -> list[BaseAction]:

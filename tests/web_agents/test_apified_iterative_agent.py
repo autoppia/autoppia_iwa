@@ -1,4 +1,5 @@
 """Tests for ApifiedWebAgent (iterative /act endpoint agent)."""
+
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -208,6 +209,7 @@ class TestParseActionsResponse:
         assert isinstance(parsed_actions[0], NavigateAction)
         assert parsed_actions[0].url == agent._rewrite_to_remote("/dashboard")
 
+
 class TestSolveTask:
     @pytest.mark.asyncio
     async def test_solve_task_raises_not_implemented(self):
@@ -323,6 +325,56 @@ class TestAct:
         assert "tools" in payload
         assert isinstance(payload["tools"], list)
         assert all(isinstance(item, dict) for item in payload["tools"])
+
+    @pytest.mark.asyncio
+    async def test_step_falls_back_to_legacy_act_payload_when_step_fails(self):
+        agent = ApifiedWebAgent(
+            base_url="http://localhost:9999",
+            id="a1",
+            request_reasoning=True,
+            send_allowed_tools=True,
+        )
+        task = Task(url="https://example.com", prompt="Click it", web_project_id="dummy")
+
+        step_post_mock = MagicMock()
+        step_post_mock.__aenter__ = AsyncMock(side_effect=Exception("step endpoint down"))
+        step_post_mock.__aexit__ = AsyncMock(return_value=None)
+
+        act_response_mock = AsyncMock()
+        act_response_mock.raise_for_status = MagicMock()
+        act_response_mock.json = AsyncMock(return_value={"actions": [{"type": "ClickAction", "x": 10, "y": 20}]})
+        act_post_mock = MagicMock()
+        act_post_mock.__aenter__ = AsyncMock(return_value=act_response_mock)
+        act_post_mock.__aexit__ = AsyncMock(return_value=None)
+
+        session_mock = MagicMock()
+        session_mock.post = MagicMock(side_effect=[step_post_mock, act_post_mock])
+        session_mock.__aenter__ = AsyncMock(return_value=session_mock)
+        session_mock.__aexit__ = AsyncMock(return_value=None)
+
+        with patch("aiohttp.ClientSession", return_value=session_mock):
+            result = await agent.step(
+                task=task,
+                html="<main>hello</main>",
+                screenshot=b"raw-shot",
+                url="http://example.com:8000/page",
+                step_index=3,
+                history=[{"action": "click"}],
+            )
+
+        assert len(result) == 1
+        first_call = session_mock.post.call_args_list[0]
+        second_call = session_mock.post.call_args_list[1]
+        assert first_call.args[0] == "http://localhost:9999/step"
+        assert second_call.args[0] == "http://localhost:9999/act"
+        legacy_payload = second_call.kwargs["json"]
+        assert legacy_payload["snapshot_html"] == "<main>hello</main>"
+        assert legacy_payload["url"] == "http://localhost:8000/page"
+        assert legacy_payload["step_index"] == 3
+        assert legacy_payload["history"] == [{"action": "click"}]
+        assert legacy_payload["include_reasoning"] is True
+        assert "allowed_tools" in legacy_payload
+        assert isinstance(legacy_payload["allowed_tools"], list)
 
     @pytest.mark.asyncio
     async def test_step_uses_snapshot_html_alias_when_provided(self):
