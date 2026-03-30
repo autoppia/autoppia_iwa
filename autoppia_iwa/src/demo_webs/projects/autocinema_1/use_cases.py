@@ -629,11 +629,10 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Begin with a login instruction using username equals <username> and password equals <password> (exact constraint values).
 2. Be explicitly phrased as a request to edit your movie.
 3. Include editable numeric fields in this style: "edit your movie by setting year to <year>, duration to <duration>, and rating to <rating>."
-4. Do NOT mention identity constraints in the prompt text (do NOT mention name, movie_id/id, or director).
-5. Keep the same field names and operators exactly ("equals" wording) for the constraints that are explicitly mentioned.
-6. Include ONLY the constraints that should be explicit in the prompt text - do not add any other criteria.
-7. Do not ask to edit any movie other than your movie.
-8. {STRICT_COPY_INSTRUCTION}
+4. Keep the same field names and operators exactly ("equals" wording) for the constraints that are explicitly mentioned.
+5. Include ONLY the constraints that should be explicit in the prompt text - do not add any other criteria.
+6. Do not ask to edit any movie other than your movie.
+7. {STRICT_COPY_INSTRUCTION}
 
 For example: "Login with username equals <username> and password equals <password>. Edit your movie by setting year to 1987, duration to 138, and rating to 5.5."
 ALL prompts must follow this pattern exactly, each phrased slightly differently while preserving the same explicit criteria and wording requirements.

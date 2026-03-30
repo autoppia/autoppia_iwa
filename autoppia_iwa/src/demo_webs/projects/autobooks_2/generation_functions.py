@@ -569,13 +569,25 @@ async def generate_edit_book_constraints(task_url: str | None = None, dataset: d
         {"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": USERNAME_PLACEHOLDER},
         {"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": PASSWORD_PLACEHOLDER},
     ]
+
+    dataset, books = await _get_books_from_task_or_dataset(task_url, dataset)
+    if not books:
+        return []
+
+    books_name = [book.get("name", "") for book in books if book.get("name")]
+    books_author = [book.get("author", "") for book in books if book.get("author")]
     # Local editable-field constraints requested for EDIT_BOOK (autocinema parity).
     constraints.extend(
-        [
-            {"field": "book_year", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": randint(1950, 2030)},
-            {"field": "book_pages", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": randint(80, 180)},
-            {"field": "book_rating", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": choice([value / 10 for value in range(40, 100)])},
-        ]
+        random.sample(
+            [
+                {"field": "book_year", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": randint(1950, 2030)},
+                {"field": "book_pages", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": randint(80, 180)},
+                {"field": "book_rating", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": choice([value / 10 for value in range(40, 100)])},
+                {"field": "book_name", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": choice(books_name)},
+                {"field": "book_author", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": choice(books_author)},
+            ],
+            k=2,
+        )
     )
     return constraints
 

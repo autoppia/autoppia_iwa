@@ -441,6 +441,12 @@ async def generate_edit_film_constraints(task_url: str | None = None, dataset: d
         create_constraint_dict("username", ComparisonOperator.EQUALS, USERNAME_PLACEHOLDER),
         create_constraint_dict("password", ComparisonOperator.EQUALS, DEFAULT_PASSWORD),
     ]
+    films = await _get_films_data(task_url, dataset)
+    if not films:
+        return []
+
+    movies_name = [film.get("name", "") for film in films if film.get("name")]
+    movies_director = [film.get("director", "") for film in films if film.get("director")]
     # Local editable-field constraints requested for EDIT_FILM.
     constraints.extend(
         random.sample(
@@ -448,9 +454,10 @@ async def generate_edit_film_constraints(task_url: str | None = None, dataset: d
                 create_constraint_dict("movie_year", ComparisonOperator.EQUALS, random.randint(1950, 2030)),
                 create_constraint_dict("movie_duration", ComparisonOperator.EQUALS, random.randint(80, 180)),
                 create_constraint_dict("movie_rating", ComparisonOperator.EQUALS, choice([value / 10 for value in range(40, 100)])),
-                create_constraint_dict("name", ComparisonOperator.EQUALS, choice(ALL_GENRES)),  # todo: add name and director random generation
-                create_constraint_dict("director", ComparisonOperator.EQUALS, choice(ALL_GENRES)),
-            ]
+                create_constraint_dict("name", ComparisonOperator.EQUALS, choice(movies_name)),
+                create_constraint_dict("director", ComparisonOperator.EQUALS, choice(movies_director)),
+            ],
+            k=2,
         )
     )
     return constraints
