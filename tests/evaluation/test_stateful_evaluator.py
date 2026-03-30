@@ -30,6 +30,7 @@ from autoppia_iwa.src.evaluation.stateful_evaluator import (
 from autoppia_iwa.src.execution.actions.actions import ClickAction, TypeAction, WaitAction
 from autoppia_iwa.src.execution.actions.base import Selector, SelectorType
 from autoppia_iwa.src.execution.classes import ActionExecutionResult, BrowserSnapshot as ExecutionBrowserSnapshot
+from autoppia_iwa.src.web_agents.apified_iterative_agent import ApifiedWebAgent
 
 WEB_AGENT_ID = "test_agent"
 PROJECT = next(p for p in demo_web_projects if getattr(p, "id", None) == "autobooks")
@@ -267,6 +268,69 @@ def _real_server_step2_actions():
     ]
 
 
+def _make_real_server_search_filters_task():
+    """Task for real-server trajectory test: open a Sci-Fi 2010 film detail from Search page filters."""
+    base_url = (PROJECT_AUTOCINEMA.frontend_url or "").rstrip("/") or f"{DEMO_WEBS_ENDPOINT.rstrip('/')}:8000"
+    return Task(
+        id="task-stateful-real-film-detail-search-filters",
+        url=base_url,
+        prompt="Navigate to a movie details page that matches requested year/genre constraints using the Search page filters.",
+        web_project_id=PROJECT_AUTOCINEMA.id,
+        is_web_real=False,
+        specifications=BrowserSpecification(),
+        tests=[
+            CheckEventTest(
+                type="CheckEventTest",
+                event_name="FILM_DETAIL",
+                event_criteria={"name": "Inception"},
+                description="User must view the Inception film detail page",
+            )
+        ],
+    )
+
+
+def _real_server_search_filters_trajectory_actions(task_url: str):
+    parser = ApifiedWebAgent(base_url="http://127.0.0.1:9999")
+    payload = {
+        "actions": [
+            {"name": "browser.navigate", "arguments": {"url": f"{task_url.rstrip('/')}/search"}},
+            {
+                "name": "browser.select_dropdown",
+                "arguments": {
+                    "selector": {
+                        "type": "xpathSelector",
+                        "value": "//select[.//option[contains(normalize-space(.), 'All genres')]]",
+                    },
+                    "text": "Sci-Fi",
+                },
+            },
+            {
+                "name": "browser.select_dropdown",
+                "arguments": {
+                    "selector": {
+                        "type": "xpathSelector",
+                        "value": "//select[.//option[contains(normalize-space(.), 'All years')]]",
+                    },
+                    "text": "2010",
+                },
+            },
+            {
+                "name": "browser.click",
+                "arguments": {
+                    "selector": {
+                        "type": "tagContainsSelector",
+                        "value": "View Details",
+                        "case_sensitive": False,
+                    }
+                },
+            },
+            {"name": "browser.wait", "arguments": {"time_seconds": 1}},
+        ],
+        "done": False,
+    }
+    return parser._parse_actions_response(payload)
+
+
 @pytest.mark.asyncio
 async def test_stateful_evaluator_correct_solution():
     """Reset and step should work with a mocked runtime and real session logic."""
@@ -460,5 +524,42 @@ async def test_stateful_evaluator_real_server_film_detail_fails_wrong_criteria()
         assert details.tests_passed == 0
         assert details.raw_score == 0.0
         assert details.success is False
+    finally:
+        await evaluator.close()
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_stateful_evaluator_real_server_film_detail_trajectories_test():
+    """
+    Real browser, real demo server, and a fixed trajectory expressed as /step tool calls.
+    This simulates a miner returning a known-good action list and verifies evaluator scoring.
+    """
+    available, reason = _is_real_demo_server_available()
+    if not available:
+        _skip_if_real_server_unavailable(reason)
+
+    task = _make_real_server_search_filters_task()
+    evaluator = AsyncStatefulEvaluator(
+        task=task,
+        web_agent_id=WEB_AGENT_ID,
+        should_record_gif=False,
+        capture_screenshot=False,
+    )
+    try:
+        try:
+            await evaluator.reset()
+        except PlaywrightError as exc:
+            pytest.skip(f"Playwright browser unavailable in this environment: {exc}")
+
+        actions = _real_server_search_filters_trajectory_actions(task.url)
+        for action in actions:
+            await evaluator.step(action)
+
+        details = await evaluator.get_score_details()
+        assert details.total_tests >= 1
+        assert details.tests_passed >= 1
+        assert details.raw_score > 0
+        assert details.success is True
     finally:
         await evaluator.close()

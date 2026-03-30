@@ -12,9 +12,9 @@ from loguru import logger
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.data_generation.tests.classes import CheckEventTest
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
-from autoppia_iwa.src.demo_webs.projects.autobooks_2.data_utils import fetch_data as fetch_books_data
-from autoppia_iwa.src.demo_webs.projects.autocinema_1.data_utils import fetch_data as fetch_movies_data
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.p01_autocinema.data_utils import fetch_data as fetch_movies_data
+from autoppia_iwa.src.demo_webs.projects.p02_autobooks.data_utils import fetch_data as fetch_books_data
 from autoppia_iwa.src.evaluation.classes import EvaluationStats, Feedback, TestResult
 from autoppia_iwa.src.evaluation.shared.feedback_generator import FeedbackGenerator
 from autoppia_iwa.src.evaluation.shared.test_runner import TestRunner
