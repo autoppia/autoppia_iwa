@@ -22,6 +22,7 @@ from .events import (
 )
 from .generation_functions import (
     generate_add_event_constraints,
+    generate_add_new_calendar_constraints,
     generate_cell_clicked_constraints,
     generate_create_calendar_constraints,
     generate_event_attendee_constraints,
@@ -176,13 +177,43 @@ CRITICAL REQUIREMENT:
 2. Do not include any other actions or details about calendar creation.
 """
 
+ADD_NEW_CALENDAR_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which is the calendar names in the add new calendar context.
+
+Use natural language only. Do NOT include any other fields, since no question fields are provided.
+
+Do NOT start the question with imperative phrasing like "Add..." or "Change...".
+
+Always end the question naturally with "so I can add a new calendar."
+
+Format the question naturally to ask for the profile name.
+- "Can you tell me the calendar names, so I can add a new calendar?"
+
+If the verify field is 'calendar_count', format the question naturally:
+- "Can you tell me how many calendars does the web have, so I can add a new calendar?"
+
+Examples:
+- "Can you tell me the calendar names, so I can add a new calendar?"
+- "Can you tell me names of the calendars, so I can add a new calendar?"
+- "Can you tell me how many calendars does the web have, so I can add a new calendar?"
+
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Do not add any other fields or values, since there are none.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 ADD_NEW_CALENDAR_USE_CASE = UseCase(
     name="ADD_NEW_CALENDAR",
     description="Triggered when the user opens the modal to add a new calendar.",
     event=AddNewCalendarEvent,
     event_source_code=AddNewCalendarEvent.get_source_code_of_class(),
-    constraints_generator=False,
+    constraints_generator=generate_add_new_calendar_constraints,
     additional_prompt_info=ADD_NEW_CALENDAR_INFO,
+    additional_prompt_info_for_data_extraction_task=ADD_NEW_CALENDAR_DATA_EXTRACTION_PROMPT_INFO,
+    supports_data_extraction=True,
     examples=[
         {"prompt": "Click the add calendar button.", "prompt_for_task_generation": "Click add calendar."},
         {"prompt": "Press the button to add a calendar.", "prompt_for_task_generation": "Click add calendar button."},
@@ -202,6 +233,33 @@ CRITICAL REQUIREMENT:
 2. Start your request with "Create a new calendar" or similar phrases.
 """
 
+CREATE_NEW_CALENDAR_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which is the calendar names in the create new calendar context.
+
+Use natural language only. Do NOT include any other fields, since no question fields are provided.
+
+Do NOT start the question with imperative phrasing like "Create..." or "Change...".
+
+Always end the question naturally with "so I can create a new calendar."
+
+Format the question naturally to ask for the profile name.
+- "Can you tell me the calendar names, so I can create a new calendar?"
+
+If the verify field is 'calendar_count', format the question naturally:
+- "Can you tell me how many calendars does the web have, so I can create a new calendar?"
+
+Examples:
+- "Can you tell me the calendar names, so I can create a new calendar?"
+- "Can you tell me names of the calendars, so I can create a new calendar?"
+- "Can you tell me how many calendars does the web have, so I can create a new calendar?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Do not add any other fields or values, since there are none.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 CREATE_CALENDAR_USE_CASE = UseCase(
     name="CREATE_CALENDAR",
     description="Triggered when the user completes creation of a new calendar with details.",
@@ -209,6 +267,8 @@ CREATE_CALENDAR_USE_CASE = UseCase(
     event_source_code=CreateCalendarEvent.get_source_code_of_class(),
     constraints_generator=generate_create_calendar_constraints,
     additional_prompt_info=CREATE_CALENDAR_INFO,
+    additional_prompt_info_for_data_extraction_task=CREATE_NEW_CALENDAR_DATA_EXTRACTION_PROMPT_INFO,
+    supports_data_extraction=True,
     examples=[
         {
             "prompt": "Create a 'Projects' calendar for my job-related events.",
@@ -250,6 +310,33 @@ CRITICAL REQUIREMENTS:
    Incorrect: "Unselect the calendar 've' name, but first create it if it doesn't exist." (constraint not mentioned)
 """
 
+UNSELECT_CALENDAR_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which is the calendar names in the unselect calendar context.
+
+Use natural language only. Do NOT include any other fields, since no question fields are provided.
+
+Do NOT start the question with imperative phrasing like "Select..." or "Change...".
+
+Always end the question naturally with "so I can unselect calendar from them."
+
+Format the question naturally to ask for the calendar names.
+- "Can you tell me the calendar names, so I can unselect calendar from them?"
+
+If the verify field is 'calendar_count', format the question naturally:
+- "Can you tell me how many calendars does the web have?"
+
+Examples:
+- "Can you tell me the calendar names, so I can unselect calendar from them?"
+- "Can you tell me names of the calendars, so I can unselect calendar from them?"
+- "Can you tell me how many calendars does the web have?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Do not add any other fields or values, since there are none.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 UNSELECT_CALENDAR_USE_CASE = UseCase(
     name="UNSELECT_CALENDAR",
     description="Triggered when the user deselects a calendar from the sidebar.",
@@ -257,6 +344,8 @@ UNSELECT_CALENDAR_USE_CASE = UseCase(
     event_source_code=UnselectCalendarEvent.get_source_code_of_class(),
     constraints_generator=generate_unselect_calendar_constraints,
     additional_prompt_info=UNSELECT_CALENDAR_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=UNSELECT_CALENDAR_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Hide the Personal calendar.", "prompt_for_task_generation": "Unselect the Personal calendar."},
         {"prompt": "I don't want to see the Fitness calendar right now.", "prompt_for_task_generation": "Hide the Fitness calendar."},
@@ -286,6 +375,34 @@ CRITICAL REQUIREMENTS:
    Incorrect: "Select the calendar 've' name, but first create it if it doesn't exist." (constraint not mentioned)
 """
 
+
+SELECT_CALENDAR_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which is the calendar names in the unselect calendar context.
+
+Use natural language only. Do NOT include any other fields, since no question fields are provided.
+
+Do NOT start the question with imperative phrasing like "Unselect..." or "Change...".
+
+Always end the question naturally with "so I can unselect calendar from them."
+
+Format the question naturally to ask for the calendar names.
+- "Can you tell me the calendar names, so I can unselect calendar from them?"
+
+If the verify field is 'calendar_count', format the question naturally:
+- "Can you tell me how many calendars does the web have?"
+
+Examples:
+- "Can you tell me the calendar names, so I can unselect calendar from them?"
+- "Can you tell me names of the calendars, so I can unselect calendar from them?"
+- "Can you tell me how many calendars does the web have?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Do not add any other fields or values, since there are none.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 SELECT_CALENDAR_USE_CASE = UseCase(
     name="SELECT_CALENDAR",
     description="Triggered when the user deselects a calendar from the sidebar.",
@@ -293,6 +410,8 @@ SELECT_CALENDAR_USE_CASE = UseCase(
     event_source_code=SelectCalendarEvent.get_source_code_of_class(),
     constraints_generator=generate_unselect_calendar_constraints,
     additional_prompt_info=SELECT_CALENDAR_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=SELECT_CALENDAR_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Show the Personal calendar.", "prompt_for_task_generation": "Select the Personal calendar."},
         {"prompt": "I want to see the Fitness calendar right now.", "prompt_for_task_generation": "Show the Fitness calendar."},
@@ -496,6 +615,36 @@ CORRECT: 'Delete an added event whose title not equals "Team Meeting" and calend
 INCORRECT: 'Delete an added event "Team Meeting" to the "Work" calendar for tomorrow at 10:00 AM, ending at 11:00 AM.'
 """.strip()
 
+DELETE_ADDED_EVENT_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of an event in the delete added event context (e.g., date, start time, end time, calendar, title, location, description).
+
+Use natural language only. Do NOT use schema-style field names such as "date", "start_time", "end_time", "calendar", "title", "location", "description" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., date, start time, end time, calendar, event title, location, description).
+
+Include all question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Delete...", "Remove...", or "Cancel...".
+
+Always end the question naturally with "so I can delete it."
+
+For example, if the verify field is 'location', format the question naturally:
+- "Can you tell me the location of the event whose title 'Team Meeting', date is 2026/3/10, start time is 10:00 AM, end time is 11:00 AM, calendar is 'Work', and description is 'Weekly sync-up', so I can delete it?"
+
+Examples:
+- "Can you tell me the date of the event whose title 'Project Kickoff', start time is 9:00 AM, end time is 10:30 AM, calendar is 'Office', location is 'Conference Room A', and description is 'Initial meeting', so I can delete it?"
+- "Can you tell me the start time of the event whose title 'Client Call', date is '2025/12/31', end time is 3:00 PM, calendar is 'Meetings', location is 'Zoom', and description is 'Discuss requirements', so I can delete it?"
+- "Can you tell me the description of the event whose title 'Yoga Class', date is '2026/1/18', start time is 7:00 AM, end time is 8:00 AM, calendar is 'Health', and location is 'Gym', so I can delete it?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
+
 DELETE_ADDED_EVENT_USE_CASE = UseCase(
     name="DELETE_ADDED_EVENT",
     description="Triggered when the user deletes an existing calendar event.",
@@ -503,6 +652,8 @@ DELETE_ADDED_EVENT_USE_CASE = UseCase(
     event_source_code=DeleteAddedEventEvent.get_source_code_of_class(),
     constraints_generator=generate_add_event_constraints,
     additional_prompt_info=DELETE_ADDED_EVENT_INFO,
+    additional_prompt_info_for_data_extraction_task=DELETE_ADDED_EVENT_DATA_EXTRACTION_PROMPT_INFO,
+    supports_data_extraction=True,
     examples=[
         {
             "prompt": "Delete an added event whose title equals 'Team Meeting' and calendar equals 'Work' and date equals '2025-09-20' and start_time equals '10:00' and end_time equals '11:00'.",
@@ -537,6 +688,35 @@ CRITICAL REQUIREMENT:
 2. Do not mention submitting or saving the event. The focus is on opening the wizard.
 """
 
+EVENT_WIZARD_OPEN_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of an event in the event wizard open context (e.g., date, time duration, title, location).
+
+Use natural language only. Do NOT use schema-style field names such as "date", "time_duration", "title", "location" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., date, time duration, event title, location).
+
+Include all question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Open...", "Create...", or "Launch...".
+
+Always end the question naturally with "so I can open its wizard."
+
+For example, if the verify field is 'location', format the question naturally:
+- "Can you tell me the location of the event whose title 'Team Meeting', whose date is March 10 and whose time duration is '1 hour', so I can open its wizard?"
+
+Examples:
+- "Can you tell me the date of the event whose title 'Project Kickoff', time duration is '9:00 am - 10:00 am' and location is 'Conference Room A', so I can open its wizard?"
+- "Can you tell me the time duration of the event whose title 'Client Call', date is '2026-1-15' and location is 'Zoom', so I can open its wizard?"
+- "Can you tell me the location of the event whose title 'Yoga Class', date is '2025-12-31' and time duration is '8:00 pm - 9:30 pm', so I can open its wizard?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 EVENT_WIZARD_OPEN_USE_CASE = UseCase(
     name="EVENT_WIZARD_OPEN",
     description="Triggered when the user opens the event creation or editing wizard.",
@@ -544,6 +724,8 @@ EVENT_WIZARD_OPEN_USE_CASE = UseCase(
     event_source_code=EventWizardOpenEvent.get_source_code_of_class(),
     constraints_generator=generate_event_wizard_open_constraints,
     additional_prompt_info=EVENT_WIZARD_OPEN_INFO,
+    additional_prompt_info_for_data_extraction_task=EVENT_WIZARD_OPEN_DATA_EXTRACTION_PROMPT_INFO,
+    supports_data_extraction=True,
     examples=[
         {"prompt": "Open the form to add a new event.", "prompt_for_task_generation": "Open the new event wizard."},
         {"prompt": "I want to edit the 'Team Meeting' event.", "prompt_for_task_generation": "Open the event wizard to edit 'Team Meeting'."},
@@ -563,6 +745,36 @@ CRITICAL REQUIREMENT:
 2. Include the search query in the prompt.
 """
 
+SEARCH_SUBMIT_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of an event in the search submit context (e.g., date, start time, end time, calendar, title, location, description, attendees, recurrence).
+
+Use natural language only. Do NOT use schema-style field names such as "date", "start_time", "end_time", "calendar", "title", "location", "description", "attendees", "recurrence" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., date, start time, end time, calendar, event title, location, description, attendees, recurrence).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Search...", "Find...", or "Look up...".
+
+Do NOT add any purpose-based suffix like "so I can...". The question should be direct and complete on its own.
+
+For example, if the verify field is 'location', format the question naturally:
+- "Can you tell me the location of the event whose title 'Team Meeting', date is 2026/2/21, start time is 10:00 AM, end time is 11:00 AM, calendar is 'Work', description is 'Weekly sync-up', attendees are 'John, Alice', and recurrence is 'Daily'?"
+
+Examples:
+- "Can you tell me the date of the event whose title 'Project Kickoff', start time is 9:00 AM, end time is 10:30 AM, calendar is 'Office', location is 'Conference Room A', description is 'Initial meeting', attendees are 'michael.rodriguez@company.com, emily.patel@company.com', and recurrence is 'Weekly'?"
+- "Can you tell me the start time of the event whose title 'Client Call', date is 2025/12/15, end time is 3:00 PM, calendar is 'Meetings', location is 'Zoom', description is 'Discuss requirements', attendees are 'david.kim@company.com, lisa.anderson@company.com', and recurrence is 'Monthly'?"
+- "Can you tell me the recurrence of the event whose title 'Yoga Class', date is 2025/1/19, start time is 7:00 AM, end time is 8:00 AM, calendar is 'Health', location is 'Gym', description is 'Morning workout', and attendees are 'michael.rodriguez@company.com, emily.patel@company.com'?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
+
 SEARCH_SUBMIT_USE_CASE = UseCase(
     name="SEARCH_SUBMIT",
     description="Triggered when the user submits a search query.",
@@ -570,6 +782,8 @@ SEARCH_SUBMIT_USE_CASE = UseCase(
     event_source_code=SearchSubmitEvent.get_source_code_of_class(),
     constraints_generator=generate_search_submit_constraints,
     additional_prompt_info=SEARCH_SUBMIT_INFO,
+    additional_prompt_info_for_data_extraction_task=SEARCH_SUBMIT_DATA_EXTRACTION_PROMPT_INFO,
+    supports_data_extraction=True,
     examples=[
         {"prompt": "Search for 'work'", "prompt_for_task_generation": "Search for 'work'"},
         {"prompt": "Find events with 'meeting'", "prompt_for_task_generation": "Search for 'meeting'"},
@@ -596,6 +810,35 @@ CORRECT: "Please add a reminder to the event for 1 hour in advance."
 INCORRECT: "Please add a reminder to the event for 1 hour in advance where the time in minutes is greater than 59."
 """
 
+EVENT_ADD_REMINDER_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which is the reminders of an event in the add reminder context.
+
+Use natural language only. Do NOT use schema-style field names such as "date", "title", "start_time", "end_time", "location", "description", "reminders" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., date, event title, start time, end time, location, description, reminders).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the reminders.
+
+Do NOT start questions with imperative phrasing like "Add...", "Set...", or "Create...".
+
+Always end the question naturally with "so I can add a new reminder for it."
+
+For example, format the question naturally like:
+- "Can you tell me the reminders set for the event whose title 'Team Meeting', date is March 10, start time is 10:00 AM, end time is 11:00 AM, location is 'Conference Room A', and description is 'Weekly sync-up', so I can add a new reminder for it?"
+
+Examples:
+- "Can you tell me the reminders set for the event whose title 'Project Kickoff', date is 2026/2/19, start time is 9:00 AM, end time is 10:30 AM, location is 'Office', and description is 'Initial meeting', so I can add a new reminder for it?"
+- "Can you tell me the reminders set for the event whose title 'Client Call', date is 2025/2/9, start time is 2:00 PM, end time is 3:00 PM, location is 'Zoom', and description is 'Discuss requirements', so I can add a new reminder for it?"
+- "Can you tell me the reminders set for the event whose title 'Yoga Class', date is 2025/11/19, start time is 7:00 AM, end time is 8:00 AM, location is 'Gym', and description is 'Morning workout', so I can add a new reminder for it?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value (reminders) itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the reminders.
+""".strip()
+
 EVENT_ADD_REMINDER_USE_CASE = UseCase(
     name="EVENT_ADD_REMINDER",
     description="Triggered when a reminder is added to an event.",
@@ -603,6 +846,8 @@ EVENT_ADD_REMINDER_USE_CASE = UseCase(
     event_source_code=EventAddReminderEvent.get_source_code_of_class(),
     constraints_generator=generate_event_reminder_constraints,
     additional_prompt_info=EVENT_ADD_REMINDER_INFO,
+    additional_prompt_info_for_data_extraction_task=EVENT_ADD_REMINDER_DATA_EXTRACTION_PROMPT_INFO,
+    supports_data_extraction=True,
     examples=[
         {"prompt": "Add a 30-minute reminder to the event.", "prompt_for_task_generation": "Add a 30-minute reminder."},
         {"prompt": "Set a reminder for 10 minutes before.", "prompt_for_task_generation": "Add a 10-minute reminder."},
@@ -630,6 +875,35 @@ CORRECT: "Please remove the 1-hour reminder from the event. If it does not exist
 INCORRECT: "Please remove the 1-hour reminder from the event where the time in minutes is greater than 59."
 """
 
+EVENT_REMOVE_REMINDER_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which is the reminders of an event in the remove reminder context.
+
+Use natural language only. Do NOT use schema-style field names such as "date", "title", "start_time", "end_time", "location", "description", "reminders", "attendees", "recurrence" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., date, event title, start time, end time, location, description, attendees, recurrence, reminders).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the reminders.
+
+Do NOT start questions with imperative phrasing like "Remove...", "Delete...", or "Cancel...".
+
+Always end the question naturally with "so I can remove the reminder from it."
+
+For example, format the question naturally like:
+- "Can you tell me the reminders for the event whose title 'Team Meeting', date is 2025/03/10, start time is 10:00 AM, end time is 11:00 AM, location is 'Conference Room A', description is 'Weekly sync-up', attendees are 'david.kim@company.com, lisa.anderson@company.com', and recurrence is 'Weekly', so I can remove the reminder from it?"
+
+Examples:
+- "Can you tell me the reminders set for the event whose title 'Project Kickoff', date is 2025/01/10, start time is 9:00 AM, end time is 10:30 AM, location is 'Office', description is 'Initial meeting', attendees are 'michael.rodriguez@company.com, emily.patel@company.com', and recurrence is 'Weekly', so I can remove the reminder from it?"
+- "Can you tell me the reminders set for the event whose title 'Client Call', date is 2025/03/19, start time is 2:00 PM, end time is 3:00 PM, location is 'Zoom', description is 'Discuss requirements', attendees are 'david.kim@company.com, lisa.anderson@company.com', and recurrence is 'Daily', so I can remove the reminder from it?"
+- "Can you tell me the reminders set for the event whose title 'Yoga Class', date is 2025/08/20, start time is 7:00 AM, end time is 8:00 AM, location is 'Gym', description is 'Morning workout', attendees are 'michael.rodriguez@company.com, emily.patel@company.com', and recurrence is 'Daily', so I can remove the reminder from it?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value (reminders) itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the reminders.
+""".strip()
+
 EVENT_REMOVE_REMINDER_USE_CASE = UseCase(
     name="EVENT_REMOVE_REMINDER",
     description="Triggered when a reminder is removed from an event.",
@@ -637,6 +911,8 @@ EVENT_REMOVE_REMINDER_USE_CASE = UseCase(
     event_source_code=EventRemoveReminderEvent.get_source_code_of_class(),
     constraints_generator=generate_event_reminder_constraints,
     additional_prompt_info=EVENT_REMOVE_REMINDER_INFO,
+    additional_prompt_info_for_data_extraction_task=EVENT_REMOVE_REMINDER_DATA_EXTRACTION_PROMPT_INFO,
+    supports_data_extraction=True,
     examples=[
         {
             "prompt": "Remove the 30-minute reminder. If it's not there, add it first, then remove it.",
@@ -671,6 +947,36 @@ CRITICAL REQUIREMENT:
 2. Specify the email address of the attendee to be added.
 """
 
+EVENT_ADD_ATTENDEE_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which is the attendees of an event in the add attendee context.
+
+Use natural language only. Do NOT use schema-style field names such as "date", "start_time", "end_time", "calendar", "title", "location", "description", "attendees", "recurrence" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., date, start time, end time, calendar, event title, location, description, recurrence, attendees).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the attendees.
+
+Do NOT start questions with imperative phrasing like "Add...", "Invite...", or "Include...".
+
+Always end the question naturally with "so I can add attendees to it."
+
+For example, format the question naturally like:
+- "Can you tell me the attendees of the event whose title 'Team Meeting', date is 2025/03/10, start time is 10:00 AM, end time is 11:00 AM, calendar is 'Work', location is 'Conference Room A', description is 'Weekly sync-up', and recurrence is 'Weekly', so I can add attendees to it?"
+
+Examples:
+- "Can you tell me the attendees of the event whose title 'Project Kickoff', date is 2025/08/20, start time is 9:00 AM, end time is 10:30 AM, calendar is 'Office', location is 'Conference Room B', description is 'Initial meeting', and recurrence is 'Daily', so I can add attendees to it?"
+- "Can you tell me the attendees of the event whose title 'Client Call', date is 2025/12/09, start time is 2:00 PM, end time is 3:00 PM, calendar is 'Meetings', whose location is 'Zoom', description is 'Discuss requirements', and recurrence is 'Monthly', so I can add attendees to it?"
+- "Can you tell me the attendees of the event whose title 'Yoga Class', date is 2026/03/15, start time is 7:00 AM, end time is 8:00 AM, calendar is 'Health', location is 'Gym', description is 'Morning workout', and recurrence is 'Daily', so I can add attendees to it?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value (attendees) itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the attendees.
+""".strip()
+
+
 EVENT_ADD_ATTENDEE_USE_CASE = UseCase(
     name="EVENT_ADD_ATTENDEE",
     description="Triggered when an attendee is added to an event.",
@@ -678,6 +984,8 @@ EVENT_ADD_ATTENDEE_USE_CASE = UseCase(
     event_source_code=EventAddAttendeeEvent.get_source_code_of_class(),
     constraints_generator=generate_event_attendee_constraints,
     additional_prompt_info=EVENT_ADD_ATTENDEE_INFO,
+    additional_prompt_info_for_data_extraction_task=EVENT_ADD_ATTENDEE_DATA_EXTRACTION_PROMPT_INFO,
+    supports_data_extraction=True,
     examples=[
         {"prompt": "Add 'test@example.com' as an attendee.", "prompt_for_task_generation": "Add attendee 'test@example.com'."},
         {"prompt": "Invite 'user1@work.com' to this event.", "prompt_for_task_generation": "Add attendee 'user1@work.com'."},
@@ -697,6 +1005,35 @@ CRITICAL REQUIREMENT:
 2. Specify the email address of the attendee to be removed.
 """
 
+EVENT_REMOVE_ATTENDEE_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which is the attendees of an event in the remove attendee context.
+
+Use natural language only. Do NOT use schema-style field names such as "date", "start_time", "end_time", "calendar", "title", "location", "description", "attendees", "recurrence" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., date, start time, end time, calendar, event title, location, description, recurrence, attendees).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the attendees.
+
+Do NOT start questions with imperative phrasing like "Remove...", "Cancel...", or "Conclude...".
+
+Always end the question naturally with "so I can remove attendee from it."
+
+For example, format the question naturally like:
+- "Can you tell me the attendees of the event whose title 'Team Meeting', date is 2025/03/10, start time is 10:00 AM, end time is 11:00 AM, calendar is 'Work', location is 'Conference Room A', description is 'Weekly sync-up', and recurrence is 'Weekly', so I can remove attendee from it?"
+
+Examples:
+- "Can you tell me the attendees of the event whose title 'Project Kickoff', date is 2025/08/20, start time is 9:00 AM, end time is 10:30 AM, calendar is 'Office', location is 'Conference Room B', description is 'Initial meeting', and recurrence is 'Daily', so I can remove attendee from it?"
+- "Can you tell me the attendees of the event whose title 'Client Call', date is 2025/12/09, start time is 2:00 PM, end time is 3:00 PM, calendar is 'Meetings', whose location is 'Zoom', description is 'Discuss requirements', and recurrence is 'Monthly', so I can add attendee from it?"
+- "Can you tell me the attendees of the event whose title 'Yoga Class', date is 2026/03/15, start time is 7:00 AM, end time is 8:00 AM, calendar is 'Health', location is 'Gym', description is 'Morning workout', and recurrence is 'Daily', so I can add attendee from it?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value (attendees) itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the attendees.
+""".strip()
+
 EVENT_REMOVE_ATTENDEE_USE_CASE = UseCase(
     name="EVENT_REMOVE_ATTENDEE",
     description="Triggered when an attendee is removed from an event.",
@@ -704,6 +1041,8 @@ EVENT_REMOVE_ATTENDEE_USE_CASE = UseCase(
     event_source_code=EventRemoveAttendeeEvent.get_source_code_of_class(),
     constraints_generator=generate_event_attendee_constraints,
     additional_prompt_info=EVENT_REMOVE_ATTENDEE_INFO,
+    additional_prompt_info_for_data_extraction_task=EVENT_REMOVE_ATTENDEE_DATA_EXTRACTION_PROMPT_INFO,
+    supports_data_extraction=True,
     examples=[
         {"prompt": "Remove 'test@example.com' from the attendees.", "prompt_for_task_generation": "Remove attendee 'test@example.com'."},
         {"prompt": "Uninvite 'user1@work.com' from this event.", "prompt_for_task_generation": "Remove attendee 'user1@work.com'."},

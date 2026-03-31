@@ -50,6 +50,103 @@ async def _ensure_event_dataset(task_url: str | None = None, dataset: dict[str, 
     return []
 
 
+def _format_ui_time(hm: Any) -> str | None:
+    if not isinstance(hm, list) or len(hm) < 2:
+        return None
+    try:
+        hour = int(hm[0])
+        minute = int(hm[1])
+    except (TypeError, ValueError):
+        return None
+    if hour < 0 or hour > 23 or minute < 0 or minute > 59:
+        return None
+    suffix = "AM" if hour < 12 else "PM"
+    display_hour = hour % 12
+    if display_hour == 0:
+        display_hour = 12
+    return f"{display_hour}:{minute:02d} {suffix}"
+
+
+def _format_ui_reminders(values: Any) -> list[str] | None:
+    if not isinstance(values, list):
+        return None
+    out: list[str] = []
+    for v in values:
+        try:
+            m = int(v)
+        except (TypeError, ValueError):
+            continue
+        if m >= 60:
+            out.append(f"{round(m / 60)}h before")
+        else:
+            out.append(f"{m}m before")
+    return out if out else None
+
+
+def _build_data_extraction_result(
+    selected_item: dict[str, Any],
+    visible_fields: list[str],
+    *,
+    verify_field: str | None = None,
+    question_fields_override: list[str] | None = None,
+) -> dict[str, Any] | None:
+    """Build constraints + question_fields_and_values for data_extraction_only; returns None on validation failure."""
+    available_fields = [f for f in visible_fields if selected_item.get(f) is not None]
+    if len(available_fields) < 2:
+        return None
+
+    question_fields: list[str]
+    chosen_verify_field: str
+
+    if question_fields_override:
+        question_fields = [f for f in question_fields_override if f in available_fields and selected_item.get(f) is not None]
+        if question_fields:
+            remaining = [f for f in available_fields if f not in question_fields]
+            if not remaining:
+                return None
+            chosen_verify_field = verify_field if verify_field is not None and verify_field in remaining else random.choice(remaining)
+            # chosen_verify_field = "company"
+            remaining_for_extra = [f for f in available_fields if f != chosen_verify_field and f not in question_fields]
+            if len(remaining_for_extra) >= 2:
+                num_extra = random.randint(1, len(remaining_for_extra))
+                question_fields = question_fields + random.sample(remaining_for_extra, num_extra)
+        else:
+            question_fields = []
+            chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+    else:
+        chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+        question_fields = []
+
+    if chosen_verify_field not in available_fields:
+        return None
+    verify_value = selected_item.get(chosen_verify_field)
+    if verify_value is None:
+        return None
+
+    if question_fields:
+        question_candidates = question_fields
+    else:
+        question_candidates = [f for f in available_fields if f != chosen_verify_field]
+        if not question_candidates:
+            return None
+        num_question_fields = 1 if len(question_candidates) == 1 else 2
+        question_candidates = random.sample(question_candidates, num_question_fields)
+
+    question_fields_and_values: dict[str, Any] = {}
+    for qf in question_candidates:
+        val = selected_item.get(qf)
+        if val is not None:
+            question_fields_and_values[qf] = val
+    if not question_fields_and_values:
+        return None
+
+    constraints = [create_constraint_dict(chosen_verify_field, ComparisonOperator.EQUALS, verify_value)]
+    return {
+        "constraints": constraints,
+        "question_fields_and_values": question_fields_and_values,
+    }
+
+
 def _generate_constraint_value(
     operator: ComparisonOperator,
     field_value: Any,
@@ -178,8 +275,22 @@ def _handle_time_constraints(context: dict) -> list[dict[str, Any]]:
     return [start_constraint, end_constraint]
 
 
-def generate_create_calendar_constraints() -> list[dict[str, Any]]:
+async def generate_create_calendar_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for creating a calendar."""
+    if test_types == "data_extraction_only":
+        calendar_names = ["Personal", "Work", "Friends", "Wellness", "Family"]
+        calendar_count = 5
+        return {
+            "constraints": random.sample(
+                [create_constraint_dict("calendar_names", ComparisonOperator.EQUALS, calendar_names), create_constraint_dict("calendar_count", ComparisonOperator.EQUALS, calendar_count)],
+                1,  # select only one item
+            )
+        }
+
     field_map = {
         "name": {"values": CALENDAR_NAMES},
         "description": {"values": DESCRIPTIONS},
@@ -187,9 +298,41 @@ def generate_create_calendar_constraints() -> list[dict[str, Any]]:
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_CREATE_CALENDAR_MAP)
 
 
-def generate_unselect_calendar_constraints() -> list[dict[str, Any]]:
+async def generate_unselect_calendar_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for selecting/deselecting a calendar."""
+    if test_types == "data_extraction_only":
+        calendar_names = ["Personal", "Work", "Friends", "Wellness", "Family"]
+        calendar_count = 5
+        return {
+            "constraints": random.sample(
+                [create_constraint_dict("calendar_names", ComparisonOperator.EQUALS, calendar_names), create_constraint_dict("calendar_count", ComparisonOperator.EQUALS, calendar_count)],
+                1,  # select only one item
+            )
+        }
+
     return _generate_constraints_from_single_field("calendar_name", CALENDAR_NAMES, FIELD_OPERATORS_UNSELECT_CALENDAR_MAP)
+
+
+async def generate_add_new_calendar_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    """Data extraction support for add-new-calendar modal use case."""
+    if test_types == "data_extraction_only":
+        calendar_names = ["Personal", "Work", "Friends", "Wellness", "Family"]
+        calendar_count = 5
+        return {
+            "constraints": random.sample(
+                [create_constraint_dict("calendar_names", ComparisonOperator.EQUALS, calendar_names), create_constraint_dict("calendar_count", ComparisonOperator.EQUALS, calendar_count)],
+                1,  # select only one item
+            )
+        }
+    return []
 
 
 def generate_cell_clicked_constraints() -> list[dict[str, Any]]:
@@ -274,8 +417,19 @@ def generate_cell_clicked_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_add_event_constraints() -> list[dict[str, Any]]:
+async def generate_add_event_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for adding a calendar event."""
+    if test_types == "data_extraction_only":
+        return await generate_search_submit_constraints(
+            task_url=task_url,
+            dataset=dataset,
+            test_types=test_types,
+        )
+
     field_map = {
         "title": {"values": EVENT_TITLES},
         "calendar": {"values": EXISTING_CALENDAR_NAMES},
@@ -303,8 +457,33 @@ def generate_add_event_constraints() -> list[dict[str, Any]]:
     return _generate_constraints_for_event(reduced_field_map, FIELD_OPERATORS_ADD_EVENT_MAP, {"time": _handle_time_constraints})
 
 
-async def generate_event_wizard_open_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_event_wizard_open_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     event_data = await _ensure_event_dataset(task_url, dataset)
+    if test_types == "data_extraction_only":
+        if not event_data:
+            return []
+        selected = random.choice(event_data)
+        if not isinstance(selected, dict):
+            return []
+
+        event_date = selected.get("date")
+        start_time = _format_ui_time(selected.get("startTime"))
+        end_time = _format_ui_time(selected.get("endTime"))
+        time_duration = f"{start_time} - {end_time}" if start_time and end_time else None
+
+        selected_item = {
+            "title": selected.get("label"),
+            "date": event_date,
+            "time_duration": time_duration,
+            "location": selected.get("location"),
+        }
+        visible_fields = ["date", "time_duration", "title", "location"]
+        return _build_data_extraction_result(selected_item, visible_fields, question_fields_override=["title"]) or []
+
     constraints_list = []
     if not event_data:
         logger.error("No event data provided")
@@ -337,16 +516,177 @@ async def generate_event_wizard_open_constraints(task_url: str | None = None, da
     return constraints_list
 
 
-def generate_search_submit_constraints() -> list[dict[str, Any]]:
+async def generate_search_submit_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for submitting a search query."""
+    if test_types == "data_extraction_only":
+        event_data = await _ensure_event_dataset(task_url, dataset)
+        if not event_data:
+            return []
+        selected = random.choice(event_data)
+        if not isinstance(selected, dict):
+            return []
+
+        start_time_raw = selected.get("startTime")
+        end_time_raw = selected.get("endTime")
+        start_time = _format_ui_time(start_time_raw)
+        end_time = _format_ui_time(end_time_raw)
+        raw_date = selected.get("date")
+        ui_date = raw_date.replace("-", "/") if isinstance(raw_date, str) else None
+        recurrence_raw = selected.get("recurrence")
+        recurrence = recurrence_raw.strip().capitalize() if isinstance(recurrence_raw, str) and recurrence_raw.strip() else None
+        attendees = selected.get("attendees")
+
+        selected_item = {
+            "date": ui_date,
+            "start_time": start_time,
+            "end_time": end_time,
+            "calendar": selected.get("calendar"),
+            "title": selected.get("label"),
+            "location": selected.get("location"),
+            "description": selected.get("description"),
+        }
+        visible_fields = [
+            "date",
+            "start_time",
+            "end_time",
+            "calendar",
+            "title",
+            "location",
+            "description",
+        ]
+        if attendees is not None and attendees != []:
+            selected_item["attendees"] = attendees
+            visible_fields.append("attendees")
+        if recurrence is not None and recurrence != "None":
+            selected_item["recurrence"] = recurrence
+            visible_fields.append("recurrence")
+        return _build_data_extraction_result(selected_item, visible_fields, question_fields_override=["title"]) or []
+
     return _generate_constraints_from_single_field("query", CALENDAR_NAMES, FIELD_OPERATORS_SEARCH_SUBMIT_MAP)
 
 
-def generate_event_reminder_constraints() -> list[dict[str, Any]]:
+async def generate_event_reminder_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for adding an event reminder."""
+    if test_types == "data_extraction_only":
+        event_data = await _ensure_event_dataset(task_url, dataset)
+        if not event_data:
+            return []
+        selected = random.choice(event_data)
+        if not isinstance(selected, dict):
+            return []
+
+        start_time = _format_ui_time(selected.get("startTime"))
+        end_time = _format_ui_time(selected.get("endTime"))
+        raw_date = selected.get("date")
+        ui_date = raw_date.replace("-", "/") if isinstance(raw_date, str) else None
+        recurrence_raw = selected.get("recurrence")
+        recurrence = recurrence_raw.strip().capitalize() if isinstance(recurrence_raw, str) and recurrence_raw.strip() else None
+        attendees = selected.get("attendees")
+        raw_reminders = selected.get("reminders")
+        reminders_ui = _format_ui_reminders(raw_reminders)
+        if reminders_ui is None:
+            return []
+
+        selected_item = {
+            "date": ui_date,
+            "start_time": start_time,
+            "end_time": end_time,
+            "title": selected.get("label"),
+            "location": selected.get("location"),
+            "description": selected.get("description"),
+            "reminders": reminders_ui,
+        }
+        visible_fields = [
+            "date",
+            "title",
+            "start_time",
+            "end_time",
+            "location",
+            "description",
+            "reminders",
+        ]
+        if attendees is not None and attendees != []:
+            selected_item["attendees"] = attendees
+            visible_fields.append("attendees")
+        if recurrence is not None and recurrence != "None":
+            selected_item["recurrence"] = recurrence
+            visible_fields.append("recurrence")
+
+        return (
+            _build_data_extraction_result(
+                selected_item,
+                visible_fields,
+                verify_field="reminders",
+                question_fields_override=["title"],
+            )
+            or []
+        )
     return _generate_constraints_from_single_field("minutes", REMINDER_MINUTES, FIELD_OPERATORS_EVENT_REMINDER_MAP)
 
 
-def generate_event_attendee_constraints() -> list[dict[str, Any]]:
+async def generate_event_attendee_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for adding an event attendee."""
+    if test_types == "data_extraction_only":
+        event_data = await _ensure_event_dataset(task_url, dataset)
+        if not event_data:
+            return []
+
+        eligible_events = [event for event in event_data if isinstance(event, dict) and isinstance(event.get("attendees"), list) and len(event.get("attendees")) > 0]
+        if not eligible_events:
+            return []
+
+        selected = random.choice(eligible_events)
+        start_time = _format_ui_time(selected.get("startTime"))
+        end_time = _format_ui_time(selected.get("endTime"))
+        raw_date = selected.get("date")
+        ui_date = raw_date.replace("-", "/") if isinstance(raw_date, str) else None
+        recurrence_raw = selected.get("recurrence")
+        recurrence = recurrence_raw.strip().capitalize() if isinstance(recurrence_raw, str) and recurrence_raw.strip() else None
+        attendees = selected.get("attendees")
+
+        selected_item = {
+            "date": ui_date,
+            "start_time": start_time,
+            "end_time": end_time,
+            "calendar": selected.get("calendar"),
+            "title": selected.get("label"),
+            "location": selected.get("location"),
+            "description": selected.get("description"),
+            "attendees": attendees,
+        }
+        visible_fields = [
+            "date",
+            "start_time",
+            "end_time",
+            "calendar",
+            "title",
+            "location",
+            "description",
+            "attendees",
+        ]
+        if recurrence is not None and recurrence != "None":
+            selected_item["recurrence"] = recurrence
+            visible_fields.append("recurrence")
+
+        return (
+            _build_data_extraction_result(
+                selected_item,
+                visible_fields,
+                verify_field="attendees",
+                question_fields_override=["title"],
+            )
+            or []
+        )
     return _generate_constraints_from_single_field("email", ATTENDEE_EMAILS, FIELD_OPERATORS_EVENT_ATTENDEE_MAP)

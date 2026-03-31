@@ -42,7 +42,7 @@ async def fetch_data(seed_value: int | None = None, count: int = 50) -> list[dic
     items = await load_dataset_data(
         backend_url=autocalendar_project.backend_url,
         project_key=project_key,
-        entity_type="events",
+        entity_type="calendar_events",
         seed_value=seed_value if seed_value is not None else 1,
         limit=count,
         method="shuffle",

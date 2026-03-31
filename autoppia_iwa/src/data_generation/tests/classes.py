@@ -449,14 +449,17 @@ class DataExtractionTest(BaseTaskTest):
 
     @staticmethod
     def _normalize_to_canonical_list(value: Any) -> list[str]:
-        """Normalize value to a canonical list of strings for list comparison (Option B)."""
         if value is None:
             return []
         if isinstance(value, list):
             return [str(x).strip().lower() for x in value if x is not None]
+
         if isinstance(value, str):
-            parts = re.split(r"[,\s]+", value)  # split by comma OR spaces
-            return [p.strip().lower() for p in parts if p.strip()]
+            # Remove standalone connectors between items
+            cleaned = re.sub(r"\b(and|or)\b|&", ",", value, flags=re.IGNORECASE)
+            parts = [p.strip().lower() for p in cleaned.split(",")]
+            return [p for p in parts if p]
+
         return [str(value).strip().lower()]
 
     def _check_expected_answer(self, extracted_data: Any | None) -> bool:
