@@ -211,6 +211,28 @@ class TestEntityTypeHelpers:
         assert gen._get_entity_type_for_project("autocinema_1") == "movies"
         assert gen._get_entity_type_for_project("autobooks_2") == "books"
 
+    def test_get_entity_type_for_p_prefixed_package_dir(self):
+        project = _make_project()
+        gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
+        assert gen._get_entity_type_for_project("p01_autocinema") == "movies"
+        assert gen._get_entity_type_for_project("p14_autohealth") == "appointments"
+
+    def test_get_entity_types_for_p_prefixed_package_dir(self):
+        project = _make_project()
+        gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
+        assert gen._get_entity_types_for_project("p05_autocrm") == ["matters", "clients", "logs", "events", "files"]
+        assert gen._get_entity_types_for_project("p14_autohealth") == [
+            "appointments",
+            "doctors",
+            "prescriptions",
+            "medical-records",
+        ]
+
+    def test_p_package_dir_to_legacy_map_key(self):
+        assert SimpleTaskGenerator._p_package_dir_to_legacy_map_key("p14_autohealth") == "autohealth_14"
+        assert SimpleTaskGenerator._p_package_dir_to_legacy_map_key("p01_autocinema") == "autocinema_1"
+        assert SimpleTaskGenerator._p_package_dir_to_legacy_map_key("autocinema_1") is None
+
     def test_get_entity_type_for_project_unknown_returns_none(self):
         project = _make_project()
         gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
@@ -241,6 +263,18 @@ class TestGetProjectModuleName:
         with patch.object(Path, "iterdir", side_effect=OSError("read error")):
             result = gen._get_project_module_name()
         assert result is None
+
+    def test_resolves_p_prefixed_disk_package_for_autohealth(self):
+        from autoppia_iwa.src.demo_webs.projects.p14_autohealth.main import health_project
+
+        gen = SimpleTaskGenerator(web_project=health_project, llm_service=MagicMock())
+        assert gen._get_project_module_name() == "p14_autohealth"
+
+    def test_resolves_p_prefixed_disk_package_for_autocinema(self):
+        from autoppia_iwa.src.demo_webs.projects.p01_autocinema.main import autocinema_project
+
+        gen = SimpleTaskGenerator(web_project=autocinema_project, llm_service=MagicMock())
+        assert gen._get_project_module_name() == "p01_autocinema"
 
 
 # -----------------------------------------------------------------------------
@@ -402,7 +436,7 @@ class TestLoadDataset:
         project = _make_project(project_id="dummy")
         gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
         mock_module = MagicMock(spec=[])
-        with patch.object(gen, "_get_project_module_name", return_value="autocinema_1"), patch("importlib.import_module", return_value=mock_module):
+        with patch.object(gen, "_get_project_module_name", return_value="p01_autocinema"), patch("importlib.import_module", return_value=mock_module):
             result = await gen._load_dataset(1)
         assert result is None
 
@@ -431,7 +465,7 @@ class TestLoadDataset:
         mock_module.fetch_data = _fetch_data
 
         with (
-            patch.object(gen, "_get_project_module_name", return_value="autocrm_5"),
+            patch.object(gen, "_get_project_module_name", return_value="p05_autocrm"),
             patch("importlib.import_module", return_value=mock_module),
         ):
             result = await gen._load_dataset(7)
@@ -581,7 +615,7 @@ class TestUpdateUseCasesPromptInfo:
     async def test_returns_early_when_use_cases_module_import_fails(self):
         project = _make_project(project_id="dummy")
         gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
-        with patch.object(gen, "_get_project_module_name", return_value="autocinema_1"), patch("importlib.import_module", side_effect=ImportError("no module")):
+        with patch.object(gen, "_get_project_module_name", return_value="p01_autocinema"), patch("importlib.import_module", side_effect=ImportError("no module")):
             await gen._update_use_cases_prompt_info("https://example.com/")
         # No exception
 
@@ -589,7 +623,7 @@ class TestUpdateUseCasesPromptInfo:
     async def test_returns_early_when_use_cases_module_has_no_update_hook(self):
         project = _make_project(project_id="dummy")
         gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
-        with patch.object(gen, "_get_project_module_name", return_value="autocinema_1"), patch("importlib.import_module", return_value=MagicMock(spec=[])):
+        with patch.object(gen, "_get_project_module_name", return_value="p01_autocinema"), patch("importlib.import_module", return_value=MagicMock(spec=[])):
             await gen._update_use_cases_prompt_info("https://example.com/")
 
     @pytest.mark.asyncio
@@ -600,7 +634,7 @@ class TestUpdateUseCasesPromptInfo:
         use_cases_module.update_use_cases_prompt_info = AsyncMock()
 
         with (
-            patch.object(gen, "_get_project_module_name", return_value="autocinema_1"),
+            patch.object(gen, "_get_project_module_name", return_value="p01_autocinema"),
             patch("importlib.import_module", return_value=use_cases_module),
             patch.object(gen, "_load_dataset_for_module", AsyncMock(return_value=[{"id": 1}, {"id": 2}])),
         ):
