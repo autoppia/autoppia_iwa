@@ -14,7 +14,7 @@ from autoppia_iwa.src.demo_webs.data_provider import load_dataset_data
 def _get_initial_data_dir() -> Path | None:
     """Resolve path to webs_server initial_data for web_14_autohealth."""
     p = Path(__file__).resolve()
-    # data_utils is at .../autoppia_iwa/autoppia_iwa/src/demo_webs/projects/autohealth_14/
+    # Package dir: demo_webs/projects/p14_autohealth/
     # parents[6] = workspace root (sibling to autoppia_iwa and autoppia_webs_demo)
     workspace = p.parents[6]
     data_dir = workspace / "autoppia_webs_demo" / "webs_server" / "initial_data" / "web_14_autohealth" / "data"

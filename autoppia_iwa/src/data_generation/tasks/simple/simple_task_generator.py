@@ -16,6 +16,7 @@ from loguru import logger
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
 from autoppia_iwa.src.demo_webs.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.project_package_registry import resolve_demo_project_package_dir
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.interfaces import ILLM
 
@@ -366,6 +367,15 @@ class SimpleTaskGenerator:
             logger.debug(f"Could not load dataset for {self.web_project.id}: {e}")
             return None
 
+    @staticmethod
+    def _p_package_dir_to_legacy_map_key(project_dir: str) -> str | None:
+        """Map on-disk package ``p14_autohealth`` to legacy dict key ``autohealth_14``."""
+        m = re.fullmatch(r"p(\d+)_(.+)", project_dir)
+        if not m:
+            return None
+        num_s, slug = m.group(1), m.group(2)
+        return f"{slug}_{int(num_s)}"
+
     def _get_entity_type_for_project(self, project_dir: str) -> str | None:
         """Get the primary entity type for a single-entity project."""
         # Map project directories to their entity types
@@ -384,6 +394,11 @@ class SimpleTaskGenerator:
             "autodrive_13": "places",  # Primary entity, but has multiple
             "autohealth_14": "appointments",  # Primary entity, but has multiple
         }
+        legacy_key = self._p_package_dir_to_legacy_map_key(project_dir)
+        if legacy_key is not None:
+            hit = entity_type_map.get(legacy_key)
+            if hit is not None:
+                return hit
         return entity_type_map.get(project_dir)
 
     def _get_entity_types_for_project(self, project_dir: str) -> list[str] | None:
@@ -395,34 +410,23 @@ class SimpleTaskGenerator:
             "autowork_10": ["jobs", "experts", "hires", "skills"],
             "autodrive_13": ["places", "rides"],
             "autohealth_14": ["appointments", "doctors", "prescriptions", "medical-records"],
+            "autostats_15": ["validators", "subnets", "blocks", "accounts", "transfers"],
         }
+        legacy_key = self._p_package_dir_to_legacy_map_key(project_dir)
+        if legacy_key is not None:
+            hit = entity_types_map.get(legacy_key)
+            if hit is not None:
+                return hit
         return entity_types_map.get(project_dir)
 
     def _get_project_module_name(self) -> str | None:
-        """Auto-detect project module name from filesystem.
+        """Resolve the package directory under ``demo_webs/projects/`` (see ``project_package_registry``)."""
 
-        Finds the directory in src/demo_webs/projects/ that starts with project.id.
-        Example: "autocinema" → finds "autocinema_1"
-        """
-
-        project_id = self.web_project.id
         projects_dir = Path(__file__).resolve().parents[3] / "demo_webs" / "projects"
-
         try:
-            # Find directories starting with project_id
-            matches = [d.name for d in projects_dir.iterdir() if d.is_dir() and d.name.startswith(f"{project_id}_")]
-            if matches:
-                return matches[0]
-
-            # Fallback: try exact match
-            exact_match = projects_dir / project_id
-            if exact_match.is_dir():
-                return project_id
-
+            return resolve_demo_project_package_dir(self.web_project.id, projects_root=projects_dir)
         except Exception:
-            pass
-
-        return None
+            return None
 
     # ============================================================================
     # URL AND SEED UTILITIES
