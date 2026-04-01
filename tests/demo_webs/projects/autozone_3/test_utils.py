@@ -2,8 +2,8 @@
 
 from unittest.mock import patch
 
-from autoppia_iwa.src.demo_webs.projects.p03_autozone import utils as autozone_utils
 from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator
+from autoppia_iwa.src.demo_webs.projects.p03_autozone import utils as autozone_utils
 
 
 class TestBuildConstraintsInfo:

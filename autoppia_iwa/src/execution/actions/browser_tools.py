@@ -22,11 +22,13 @@ def all_tools() -> list[dict]:
         if tool_name in {"done", "evaluate"}:
             continue
         namespaced = "user.request_input" if tool_name == "request_user_input" else f"browser.{tool_name}"
-        tools.append({
-            "name": namespaced,
-            "description": action_cls.tool_description(),
-            "parameters": action_cls.tool_parameters_schema(),
-        })
+        tools.append(
+            {
+                "name": namespaced,
+                "description": action_cls.tool_description(),
+                "parameters": action_cls.tool_parameters_schema(),
+            }
+        )
     return tools
 
 

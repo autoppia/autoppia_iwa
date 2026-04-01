@@ -12,7 +12,7 @@ agent decision (actions, reasoning, done), and execution result.
 """
 
 import json
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -86,33 +86,35 @@ class EpisodeTrace:
         exec_ok: bool = True,
         error: str | None = None,
     ) -> None:
-        self._steps.append({
-            "step_index": step_index,
-            "before": {
-                "url": before_url,
-                "score": before_score,
-                "success": before_success,
-                "html": before_html,
-                "screenshot": before_screenshot,
-            },
-            "after": {
-                "url": after_url,
-                "score": after_score,
-                "success": after_success,
-                "html": after_html,
-                "screenshot": after_screenshot,
-            },
-            "agent": {
-                "done": done,
-                "reasoning": reasoning,
-            },
-            "actions": actions or [],
-            "execution": {
-                "executed": True,
-                "exec_ok": exec_ok,
-                "error": error,
-            },
-        })
+        self._steps.append(
+            {
+                "step_index": step_index,
+                "before": {
+                    "url": before_url,
+                    "score": before_score,
+                    "success": before_success,
+                    "html": before_html,
+                    "screenshot": before_screenshot,
+                },
+                "after": {
+                    "url": after_url,
+                    "score": after_score,
+                    "success": after_success,
+                    "html": after_html,
+                    "screenshot": after_screenshot,
+                },
+                "agent": {
+                    "done": done,
+                    "reasoning": reasoning,
+                },
+                "actions": actions or [],
+                "execution": {
+                    "executed": True,
+                    "exec_ok": exec_ok,
+                    "error": error,
+                },
+            }
+        )
 
     def close(self, *, success: bool, score: float, total_steps: int, evaluation_time: float = 0.0, **extra_meta) -> None:
         """Write episode JSON and register in the trace index."""
@@ -134,12 +136,14 @@ class EpisodeTrace:
         path = self._writer.episodes_dir / filename
         path.write_text(json.dumps(episode_data, indent=2, ensure_ascii=False, default=str))
 
-        self._writer._register_episode({
-            "episode_task_id": self.episode_task_id,
-            "task_id": self.task_id,
-            "use_case": self.use_case,
-            "success": success,
-            "score": score,
-            "steps": total_steps,
-            "file": f"episodes/{filename}",
-        })
+        self._writer._register_episode(
+            {
+                "episode_task_id": self.episode_task_id,
+                "task_id": self.task_id,
+                "use_case": self.use_case,
+                "success": success,
+                "score": score,
+                "steps": total_steps,
+                "file": f"episodes/{filename}",
+            }
+        )

@@ -15,8 +15,6 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
 from autoppia_iwa.src.di_container import DIContainer
-
-
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.llms.interfaces import ILLM
 

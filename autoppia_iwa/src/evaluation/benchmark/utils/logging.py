@@ -1,13 +1,17 @@
 from loguru import logger
+
 from autoppia_iwa.src.shared.logging import log_event, setup_iwa_logging
+
 
 def evaluation_level(record):
     """Custom level for evaluation logs"""
     return record["level"].name == "EVALUATION"
 
+
 # ==================================
 # ======= LOGGING SETUP ============
 # ==================================
+
 
 def setup_logging(log_file: str, console_level: str = "INFO"):
     """Benchmark wrapper around the shared IWA logger configuration."""

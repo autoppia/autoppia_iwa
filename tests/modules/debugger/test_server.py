@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
+from fastapi import HTTPException
 
 from modules.debugger import server
 
@@ -24,8 +23,9 @@ def test_resolve_trace_dir_requires_index(tmp_path):
     trace_dir = tmp_path / "trace"
     trace_dir.mkdir()
 
-    with pytest.raises(Exception):
+    with pytest.raises(HTTPException) as exc_info:
         server._resolve_trace_dir(str(trace_dir))
+    assert exc_info.value.status_code == 404
 
 
 def test_main_sets_trace_dir_and_runs_uvicorn(monkeypatch):

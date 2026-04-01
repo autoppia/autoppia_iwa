@@ -8,9 +8,9 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from autoppia_iwa.src.evaluation.benchmark.utils import task_generation
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.evaluation.benchmark.utils import task_generation
 
 
 def _make_project(pid: str = "p1", name: str = "Project 1") -> WebProject:

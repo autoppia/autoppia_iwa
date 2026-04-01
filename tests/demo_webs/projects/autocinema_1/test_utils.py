@@ -2,8 +2,8 @@
 
 from unittest.mock import patch
 
-from autoppia_iwa.src.demo_webs.projects.p01_autocinema import utils as autocinema_utils
 from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator
+from autoppia_iwa.src.demo_webs.projects.p01_autocinema import utils as autocinema_utils
 
 
 class TestParseConstraintsStr:

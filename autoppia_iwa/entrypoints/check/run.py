@@ -23,26 +23,25 @@ async def _check_health(url: str) -> dict | None:
     """Hit /health on backend, return response dict or None on failure."""
     health_url = url.rstrip("/") + "/health"
     try:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
-            async with session.get(health_url) as resp:
-                if resp.status == 200:
-                    return await resp.json()
-                return None
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session, session.get(health_url) as resp:
+            if resp.status == 200:
+                return await resp.json()
+            return None
     except Exception:
         return None
 
 
 async def _check_frontend(url: str) -> bool:
     try:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
-            async with session.get(url) as resp:
-                return resp.status < 500
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session, session.get(url) as resp:
+            return resp.status < 500
     except Exception:
         return False
 
 
 async def run(project_id: str | None = None):
     from autoppia_iwa.config.env import init_env
+
     init_env()
     from autoppia_iwa.src.demo_webs.config import demo_web_projects
 
@@ -84,7 +83,6 @@ async def run(project_id: str | None = None):
 
 def main():
     args = _parse_args()
-    import sys
 
     try:
         success = asyncio.run(run(project_id=args.project))

@@ -2,7 +2,7 @@
 LLM interfaces and services.
 """
 
-from .interfaces import ILLM, LLMConfig
 from .factory import LLMFactory
+from .interfaces import ILLM, LLMConfig
 
 __all__ = ["ILLM", "LLMConfig", "LLMFactory"]

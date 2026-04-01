@@ -56,8 +56,7 @@ def test_compute_statistics_single_value():
 
 
 def test_entrypoint_metrics_module_re_exports_canonical_objects():
-    from autoppia_iwa.entrypoints.benchmark.utils.metrics import TimingMetrics as EntryTimingMetrics
-    from autoppia_iwa.entrypoints.benchmark.utils.metrics import compute_statistics as entry_compute_statistics
+    from autoppia_iwa.entrypoints.benchmark.utils.metrics import TimingMetrics as EntryTimingMetrics, compute_statistics as entry_compute_statistics
 
     assert EntryTimingMetrics is TimingMetrics
     assert entry_compute_statistics is compute_statistics

@@ -19,11 +19,10 @@ import difflib
 import json
 import os
 import time
-from datetime import datetime, UTC
 from pathlib import Path
 from typing import Any
 
-from fastapi import Body, FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -43,6 +42,7 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 
 # ── Helpers ─────────────────────────────────────────────────────────────
+
 
 def _jsonable(value: Any) -> Any:
     if isinstance(value, Path):
@@ -79,13 +79,18 @@ def _pretty_json(value: Any) -> str:
 
 
 def _unified_diff(before: str, after: str, *, from_label: str, to_label: str, limit: int = 400) -> str:
-    lines = list(difflib.unified_diff(
-        str(before or "").splitlines(),
-        str(after or "").splitlines(),
-        fromfile=from_label, tofile=to_label, lineterm="", n=2,
-    ))
+    lines = list(
+        difflib.unified_diff(
+            str(before or "").splitlines(),
+            str(after or "").splitlines(),
+            fromfile=from_label,
+            tofile=to_label,
+            lineterm="",
+            n=2,
+        )
+    )
     if len(lines) > limit:
-        lines = lines[:limit] + [f"... truncated ({len(lines) - limit} more lines)"]
+        lines = [*lines[:limit], f"... truncated ({len(lines) - limit} more lines)"]
     return "\n".join(lines)
 
 
@@ -106,19 +111,22 @@ def _scan_trace_dirs() -> list[dict[str, Any]]:
             with contextlib.suppress(Exception):
                 idx = _load_json(idx_path)
                 episodes = idx.get("episodes") if isinstance(idx.get("episodes"), list) else []
-                items.append({
-                    "trace_dir": str(trace_dir),
-                    "name": trace_dir.name,
-                    "project": str(idx.get("project") or idx.get("web_project_id") or ""),
-                    "model": str(idx.get("model") or ""),
-                    "created_at_utc": str(idx.get("created_at_utc") or ""),
-                    "episodes": len(episodes),
-                })
+                items.append(
+                    {
+                        "trace_dir": str(trace_dir),
+                        "name": trace_dir.name,
+                        "project": str(idx.get("project") or idx.get("web_project_id") or ""),
+                        "model": str(idx.get("model") or ""),
+                        "created_at_utc": str(idx.get("created_at_utc") or ""),
+                        "episodes": len(episodes),
+                    }
+                )
     items.sort(key=lambda x: x.get("created_at_utc", ""), reverse=True)
     return items
 
 
 # ── Trace loading ───────────────────────────────────────────────────────
+
 
 def _load_trace_bundle(trace_dir: Path) -> dict[str, Any]:
     idx = _load_json(trace_dir / "trace_index.json")
@@ -170,7 +178,7 @@ def _compact_step(step: dict[str, Any]) -> dict[str, Any]:
 def _annotate_step(step: dict[str, Any]) -> dict[str, Any]:
     before = step.get("before") or {}
     after = step.get("after") or {}
-    agent = step.get("agent") or {}
+    step.get("agent") or {}
     out = dict(step)
     out["before"] = dict(before)
     out["after"] = dict(after)
@@ -200,6 +208,7 @@ def _load_episode(trace_dir: Path, episode_task_id: str) -> dict[str, Any]:
 
 # ── Replay manager ──────────────────────────────────────────────────────
 
+
 class ReplayManager:
     def __init__(self) -> None:
         self._lock = asyncio.Lock()
@@ -218,7 +227,7 @@ class ReplayManager:
                 raise HTTPException(status_code=409, detail="replay_already_running")
             self._paused = False
             self._step_tokens = 0
-            self._status = {"state": "starting", "episode_task_id": str(((episode_payload.get("episode") or {}).get("episode_task_id") or ""))}
+            self._status = {"state": "starting", "episode_task_id": str((episode_payload.get("episode") or {}).get("episode_task_id") or "")}
             self._task = asyncio.create_task(self._run(trace_dir=trace_dir, episode_payload=episode_payload))
             return self.status()
 
@@ -286,7 +295,7 @@ class ReplayManager:
                 actions = step.get("actions") if isinstance(step, dict) else []
                 self._status.update({"current_step": idx, "state": "running"})
 
-                for action_item in (actions if isinstance(actions, list) else []):
+                for action_item in actions if isinstance(actions, list) else []:
                     await self._wait_turn()
                     raw = (action_item.get("raw") if isinstance(action_item, dict) else None) or action_item
                     action = BaseAction.create_action(raw) if isinstance(raw, dict) else None
@@ -313,6 +322,7 @@ REPLAY = ReplayManager()
 
 
 # ── Routes ──────────────────────────────────────────────────────────────
+
 
 @app.get("/health")
 def health():
@@ -345,8 +355,13 @@ def api_replay_status():
 
 
 @app.post("/api/replay/start")
-async def api_replay_start(payload: dict[str, Any] = Body(default_factory=dict), trace_dir: str | None = Query(default=None)):
+async def api_replay_start(request: Request, trace_dir: str | None = Query(default=None)):
     path = _resolve_trace_dir(trace_dir)
+    try:
+        raw = await request.json()
+    except json.JSONDecodeError:
+        raw = {}
+    payload = raw if isinstance(raw, dict) else {}
     eid = str(payload.get("episode_task_id") or "").strip()
     if not eid:
         raise HTTPException(status_code=400, detail="episode_task_id_required")
@@ -376,8 +391,10 @@ async def api_replay_reset():
 
 # ── CLI ─────────────────────────────────────────────────────────────────
 
+
 def main():
     import argparse
+
     import uvicorn
 
     parser = argparse.ArgumentParser(prog="iwa debug", description="IWA Debugger — inspect benchmark traces")

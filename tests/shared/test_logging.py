@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
 from unittest.mock import Mock
 
 from autoppia_iwa.src.shared import logging as shared_logging
