@@ -16,6 +16,7 @@ from .events import (
     TeamRoleAssignedEvent,
 )
 from .generation_functions import (
+    generate_add_task_clicked_constraints,
     generate_select_date_for_task_constraints,
     generate_select_task_priority_constraints,
     generate_task_constraints,
@@ -35,13 +36,52 @@ Use phrases like "add a task", "create a new task", or "new task".
 2. The prompt should NOT contain any details or constraints about the task itself (e.g., name, description, date, priority). This use case is solely for clicking the button to open the task creation form.
 """
 
+ADD_TASK_CLICKED_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a task list in the add task context (e.g., name, description, due date, priority, number of completed tasks, number of pending tasks).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "description", "due_date", "priority", "completed_task", "pending_task" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., task list name, description, due date, priority number, number of completed tasks, number of pending tasks).
+
+Include all question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Add...", "Create...", or "Insert...".
+
+Always end the question naturally with "so I can open a modal to add a new task."
+
+SPECIAL RULES:
+- If the verify field is completed_task or pending_task, ask only for the number of completed or pending tasks.
+- Do NOT include completed tasks or pending tasks in examples for other verify fields.
+
+For example, if the verify field is 'completed_task', format the question naturally:
+- "Can you tell me the number of completed tasks, so I can open a modal to add a new task?"
+
+For example, if the verify field is 'pending_task', format the question naturally:
+- "Can you tell me the number of pending tasks, so I can open a modal to add a new task?"
+
+Examples:
+- "Can you tell me the description of the task whose name 'Shopping List', due date is '20 Jan 2025' and priority number is '4', so I can open a modal to add a new task?"
+- "Can you tell me the due date of the task whose name 'Project Tasks', description is 'Complete project modules' and priority number is '2', so I can open a modal to add a new task?"
+- "Can you tell me the priority number of the task whose name 'Fitness Plan', description is 'Workout schedule' and due date is '20 Jan 2025', so I can open a modal to add a new task?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only non-verify fields for identification.
+- Always include all question fields with values in the question for precise identification.
+- Do not include completed_task or pending_task in identification when they are not the verify field.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 ADD_TASK_CLICKED_USE_CASE = UseCase(
     name="AUTOLIST_ADD_TASK_CLICKED",
     description="Triggered when the user clicks the button to add a new task.",
     event=AddTaskClickedEvent,
     event_source_code=AddTaskClickedEvent.get_source_code_of_class(),
-    constraints_generator=False,
+    constraints_generator=generate_add_task_clicked_constraints,
     additional_prompt_info=ADD_TASK_CLICKED_INFO,
+    additional_prompt_info_for_data_extraction_task=ADD_TASK_CLICKED_DATA_EXTRACTION_PROMPT_INFO,
+    supports_data_extraction=True,
     examples=[
         {"prompt": "Click on the Add Task button to start.", "prompt_for_task_generation": "Click on the Add Task button to start."},
         {"prompt": "Please click the Add Task button.", "prompt_for_task_generation": "Please click the Add Task button."},
@@ -60,6 +100,35 @@ CRITICAL REQUIREMENT: The prompt must focus on selecting or changing a date for 
 Use phrases like "set the date to", "pick a date", or "schedule it for".
 """
 
+SELECT_DATE_FOR_TASK_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a task in the select date for task context (e.g., name, description, due date, priority).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "description", "due_date", "priority" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., task name, description, due date, priority number).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Select...", "Choose...", or "Pick...".
+
+Always end the question naturally with "so I can edit its due date."
+
+For example, if the verify field is 'due_date', format the question naturally:
+- "Can you tell me the due date of the task whose name is 'Shopping List' and priority number is '4', so I can edit its due date?"
+
+Examples:
+- "Can you tell me the description of the task whose name is 'Shopping List', due date is '20 Jan 2025' and priority is '4', so I can edit its due date?"
+- "Can you tell me the due date of the task whose name is 'Project Tasks', description is 'Complete project modules' and priority is '2', so I can edit its due date?"
+- "Can you tell me the priority number of the task whose name is 'Fitness Plan', description is 'Workout schedule' and due date is '20 Jan 2025', so I can edit its due date?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 SELECT_DATE_FOR_TASK_USE_CASE = UseCase(
     name="AUTOLIST_SELECT_DATE_FOR_TASK",
     description="Triggered when the user selects a date for a task.",
@@ -67,6 +136,8 @@ SELECT_DATE_FOR_TASK_USE_CASE = UseCase(
     event_source_code=SelectDateForTaskEvent.get_source_code_of_class(),
     constraints_generator=generate_select_date_for_task_constraints,
     additional_prompt_info=SELECT_DATE_FOR_TASK_INFO,
+    additional_prompt_info_for_data_extraction_task=SELECT_DATE_FOR_TASK_DATA_EXTRACTION_PROMPT_INFO,
+    supports_data_extraction=True,
     examples=[
         {"prompt": "Set the date for this task to tomorrow.", "prompt_for_task_generation": "Set the date for this task to tomorrow."},
         {"prompt": "I need to schedule this for June 5th.", "prompt_for_task_generation": "I need to schedule this for June 5th."},
@@ -90,6 +161,35 @@ CORRECT: "Change the priority to 'Low'."
 INCORRECT: "Change the priority to 'Low' where the label is equal to 'Low'."
 """.strip()
 
+SELECT_TASK_PRIORITY_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which is the priority of a task in the select task priority context.
+
+Use natural language only. Do NOT use schema-style field names such as "name", "description", "due_date", "priority" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., task name, description, due date, priority number).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the priority.
+
+Do NOT start questions with imperative phrasing like "Select...", "Choose...", or "Pick...".
+
+Always end the question naturally with "so I can give the task an appropriate priority."
+
+For example, format the question naturally:
+- "Can you tell me the priority number of the task whose name is 'Shopping List', description is 'Buy groceries', and due date is '20 Jan 2025', so I can give the task an appropriate priority?"
+
+Examples:
+- "Can you tell me the priority number of the task whose name is 'Shopping List', description is 'Buy groceries', and due date is '20 Jan 2025', so I can give the task an appropriate priority?"
+- "Can you tell me the priority number of the task whose name is 'Project Tasks', description is 'Complete project modules', and due date is '15 Feb 2025', so I can give the task an appropriate priority?"
+- "Can you tell me the priority number of the task whose name is 'Fitness Plan', description is 'Workout schedule', and due date is '10 Mar 2025', so I can give the task an appropriate priority?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value (priority) itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the priority.
+""".strip()
+
 SELECT_TASK_PRIORITY_USE_CASE = UseCase(
     name="AUTOLIST_SELECT_TASK_PRIORITY",
     description="Triggered when the user selects a priority for a task.",
@@ -97,6 +197,8 @@ SELECT_TASK_PRIORITY_USE_CASE = UseCase(
     event_source_code=SelectTaskPriorityEvent.get_source_code_of_class(),
     constraints_generator=generate_select_task_priority_constraints,
     additional_prompt_info=SELECT_TASK_PRIORITY_INFO,
+    additional_prompt_info_for_data_extraction_task=SELECT_TASK_PRIORITY_DATA_EXTRACTION_PROMPT_INFO,
+    supports_data_extraction=True,
     examples=[
         {"prompt": "Set the priority to high.", "prompt_for_task_generation": "Set the priority to high."},
         {"prompt": "Make this a low priority task.", "prompt_for_task_generation": "Make this a low priority task."},
@@ -214,6 +316,35 @@ CORRECT: 'Edit task modal open whose name equals 'Build CI/CD pipeline' and desc
 INCORRECT: 'Edit task modal open name "Build CI/CD pipeline", date '2025-09-27'.'
 """.strip()
 
+EDIT_TASK_MODAL_OPENED_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a task in the edit task modal context (e.g., name, description, due date, priority).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "description", "due_date", "priority" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., task name, description, due date, priority number).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Edit...", "Update...", or "Modify...".
+
+Always end the question naturally with "so I can edit it."
+
+For example, if the verify field is 'description', format the question naturally:
+- "Can you tell me the description of the task whose name is 'Shopping List', due date is '20 Jan 2025' and priority number is '4', so I can edit it?"
+
+Examples:
+- "Can you tell me the description of the task whose name is 'Project Tasks', due date is '15 Feb 2025' and priority is '2', so I can edit it?"
+- "Can you tell me the due date of the task whose name is 'Fitness Plan', description is 'Workout schedule' and priority is '3', so I can edit it?"
+- "Can you tell me the priority number of the task whose name is 'Daily Routine', description is 'Morning tasks' and due date is '10 Mar 2025', so I can edit it?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 
 EDIT_TASK_MODAL_OPENED_USE_CASE = UseCase(
     name="AUTOLIST_EDIT_TASK_MODAL_OPENED",
@@ -222,6 +353,8 @@ EDIT_TASK_MODAL_OPENED_USE_CASE = UseCase(
     event_source_code=EditTaskModalOpenedEvent.get_source_code_of_class(),
     constraints_generator=generate_task_constraints,
     additional_prompt_info=EDIT_TASK_MODAL_OPENED_INFO,
+    additional_prompt_info_for_data_extraction_task=EDIT_TASK_MODAL_OPENED_DATA_EXTRACTION_PROMPT_INFO,
+    supports_data_extraction=True,
     examples=[
         {"prompt": "Edit task modal open whose name equals 'Design new homepage mockup'.", "prompt_for_task_generation": "Edit task modal open whose name equals 'Design new homepage mockup'."},
         {
@@ -267,6 +400,35 @@ CORRECT: 'Complete task whose name equals 'Build CI/CD pipeline' and description
 INCORRECT: 'Complete task name "Build CI/CD pipeline", date '2025-09-27'.'
 """.strip()
 
+COMPLETE_TASK_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a task in the complete task context (e.g., name, description, due date, priority).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "description", "due_date", "priority" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., task name, description, due date, priority number).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Complete...", "Mark...", or "Finish...".
+
+Always end the question naturally with "so I can mark the task as completed."
+
+For example, if the verify field is 'description', format the question naturally:
+- "Can you tell me the description of the task whose name is 'Shopping List', due date is '20 Jan 2025' and priority number is '4', so I can mark the task as completed?"
+
+Examples:
+- "Can you tell me the description of the task whose name is 'Project Tasks', due date is '15 Feb 2025' and priority number is '2', so I can mark the task as completed?"
+- "Can you tell me the due date of the task whose name is 'Fitness Plan', description is 'Workout schedule' and priority number is '3', so I can mark the task as completed?"
+- "Can you tell me the priority number of the task whose name is 'Daily Routine', description is 'Morning tasks' and due date is '10 Mar 2025', so I can mark the task as completed?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 
 COMPLETE_TASK_USE_CASE = UseCase(
     name="AUTOLIST_COMPLETE_TASK",
@@ -275,6 +437,8 @@ COMPLETE_TASK_USE_CASE = UseCase(
     event_source_code=CompleteTaskEvent.get_source_code_of_class(),
     constraints_generator=generate_task_constraints,
     additional_prompt_info=COMPLETE_TASK_INFO,
+    additional_prompt_info_for_data_extraction_task=COMPLETE_TASK_DATA_EXTRACTION_PROMPT_INFO,
+    supports_data_extraction=True,
     examples=[
         {"prompt": "Complete task whose name equals 'Implement user authentication'.", "prompt_for_task_generation": "Complete task whose name equals 'Implement user authentication'."},
         {
@@ -320,6 +484,35 @@ CORRECT: 'Delete task whose name equals 'Build CI/CD pipeline' and description e
 INCORRECT: 'Delete task name "Build CI/CD pipeline", date '2025-09-27'.'
 """.strip()
 
+DELETE_TASK_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a task in the delete task context (e.g., name, description, due date, priority).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "description", "due_date", "priority" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., task name, description, due date, priority number).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Delete...", "Remove...", or "Clear...".
+
+Always end the question naturally with "so I can delete the task."
+
+For example, if the verify field is 'description', format the question naturally:
+- "Can you tell me the description of the task whose name is 'Shopping List', due date is '20 Jan 2025' and priority number is '4', so I can delete the task?"
+
+Examples:
+- "Can you tell me the description of the task whose name is 'Project Tasks', due date is '15 Feb 2025' and priority number is '2', so I can delete the task?"
+- "Can you tell me the due date of the task whose name is 'Fitness Plan', description is 'Workout schedule' and priority number is '3', so I can delete the task?"
+- "Can you tell me the priority number of the task whose name is 'Daily Routine', description is 'Morning tasks' and due date is '10 Mar 2025', so I can delete the task?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 
 DELETE_TASK_USE_CASE = UseCase(
     name="AUTOLIST_DELETE_TASK",
@@ -328,6 +521,8 @@ DELETE_TASK_USE_CASE = UseCase(
     event_source_code=DeleteTaskEvent.get_source_code_of_class(),
     constraints_generator=generate_task_constraints,
     additional_prompt_info=DELETE_TASK_INFO,
+    additional_prompt_info_for_data_extraction_task=DELETE_TASK_DATA_EXTRACTION_PROMPT_INFO,
+    supports_data_extraction=True,
     examples=[
         {"prompt": "Delete task whose name equals 'Fix login page CSS bug' from my list.", "prompt_for_task_generation": "Delete task whose name equals 'Fix login page CSS bug' from my list."},
         {"prompt": "Delete task whose name not equals 'Finish report' from my list.", "prompt_for_task_generation": "Delete task whose name not equals 'Finish report' from my list."},
