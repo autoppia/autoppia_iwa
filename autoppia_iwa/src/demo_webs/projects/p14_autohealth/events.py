@@ -448,7 +448,6 @@ class ViewDoctorProfileEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "ViewDoctorProfileEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") if isinstance(data, dict) else data
         doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
         langs = data.get("languages") if data.get("languages") is not None else doctor.get("languages")
         return cls(
@@ -465,18 +464,13 @@ class ViewDoctorProfileEvent(Event, BaseEventValidator):
 
 
 class ViewDoctorEducationEvent(Event, BaseEventValidator):
-    """Evento que la web dispara cuando se abre la pestaña Education (lo que Playwright provoca al ejecutar acciones)."""
-
-    # Tipo de evento: en el paso 5 del evaluation flow se filtran los backend_events por este event_name (igual al del test de la Task).
     event_name: str = "VIEW_DOCTOR_EDUCATION"
-    # Datos del evento: lo que la web envió al backend cuando disparó este evento (evidencia de lo que hizo el agente en Playwright).
     doctor_name: str | None = None
     speciality: str | None = None
     rating: float | None = None
     consultation_fee: float | None = None
     languages: list[str] | None = None
 
-    # Plantilla de lo que puede pedir el test de la Task: event_criteria = constraints (campo, operador, valor).
     class ValidationCriteria(BaseModel):
         doctor_name: str | CriterionValue | None = None
         speciality: str | CriterionValue | None = None
@@ -485,15 +479,11 @@ class ViewDoctorEducationEvent(Event, BaseEventValidator):
         language: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        """Paso 5 evaluación: compara los datos de este evento (lo que guardó el backend) con lo que pide el test de la Task (event_criteria). Si todo coincide → True; si falta una → False."""
-        # Si el test no tiene criterios, damos el test por pasado.
         if not criteria:
             return True
-        # Criterio idioma: por defecto OK; si el test pide idioma, hay que comprobarlo.
         lang_ok = True
         if criteria.language is not None:
             lang_ok = any(self._validate_field(lang, criteria.language) for lang in self.languages) if self.languages else False
-        # Todas las condiciones del test deben cumplirse: valor del evento vs valor que pide el test, campo a campo.
         return all(
             [
                 self._validate_field(self.doctor_name, criteria.doctor_name),
@@ -506,16 +496,9 @@ class ViewDoctorEducationEvent(Event, BaseEventValidator):
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "ViewDoctorEducationEvent":
-        """Paso 5 evaluación: convierte un evento crudo (de get_backend_events) en este objeto con doctor_name, speciality, etc., para poder compararlo con las event_criteria del test."""
-        # Campos base del evento (tipo, timestamp, web_agent_id).
         base_event = Event.parse(backend_event)
-        # Payload que guardó el backend cuando la web disparó el evento (tras las acciones de Playwright).
         data = backend_event.data
-        data = data.get("data") if isinstance(data, dict) else {}
-        data = data or {}
-        # Si el payload trae objeto doctor, usarlo para rellenar campos.
         doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
-        # Construir el evento con los datos que luego se compararán con las constraints del test.
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
