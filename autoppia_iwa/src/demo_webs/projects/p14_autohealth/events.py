@@ -654,53 +654,70 @@ class OpenContactDoctorFormEvent(Event, BaseEventValidator):
 
 
 class ContactDoctorEvent(Event, BaseEventValidator):
-    """Payload has doctor; event stores same fields as map so validation checks what we store."""
-
     event_name: str = "CONTACT_DOCTOR"
     doctor_name: str | None = None
+    message: str | None = None
+    patient_email: str | None = None
+    patient_name: str | None = None
+    patient_phone: str | None = None
+    preferred_contact_method: str | None = None
     speciality: str | None = None
-    rating: float | None = None
-    consultation_fee: float | None = None
-    languages: list[str] | None = None
+    subject: str | None = None
+    urgency: str | None = None
+    appointment_request: bool | None = None
 
     class ValidationCriteria(BaseModel):
         doctor_name: str | CriterionValue | None = None
-        rating: float | CriterionValue | None = None
+        message: str | CriterionValue | None = None
+        patient_email: str | CriterionValue | None = None
+        patient_name: str | CriterionValue | None = None
+        patient_phone: str | CriterionValue | None = None
+        preferred_contact_method: str | CriterionValue | None = None
         speciality: str | CriterionValue | None = None
-        consultation_fee: float | CriterionValue | None = None
-        language: str | CriterionValue | None = None
+        subject: str | CriterionValue | None = None
+        urgency: str | CriterionValue | None = None
+        appointment_request: bool | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        lang_ok = True
-        if criteria.language is not None:
-            lang_ok = bool(self.languages and any(self._validate_field(lang, criteria.language) for lang in self.languages))
         return all(
             [
                 self._validate_field(self.doctor_name, criteria.doctor_name),
-                self._validate_field(self.rating, criteria.rating),
+                self._validate_field(self.message, criteria.message),
+                self._validate_field(self.patient_email, criteria.patient_email),
+                self._validate_field(self.patient_name, criteria.patient_name),
+                self._validate_field(self.patient_phone, criteria.patient_phone),
+                self._validate_field(self.preferred_contact_method, criteria.preferred_contact_method),
                 self._validate_field(self.speciality, criteria.speciality),
-                self._validate_field(self.consultation_fee, criteria.consultation_fee),
-                lang_ok,
+                self._validate_field(self.subject, criteria.subject),
+                self._validate_field(self.urgency, criteria.urgency),
+                self._validate_field(self.appointment_request, criteria.appointment_request),
             ]
         )
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "ContactDoctorEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data
+        raw = backend_event.data or {}
+        nested = raw.get("data")
+        data = nested if isinstance(nested, dict) else raw
         doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
         return cls(
             event_name=base_event.event_name,
-            timestamp=base_event.timestamp,
-            user_id=base_event.user_id,
             web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            timestamp=base_event.timestamp,
             doctor_name=data.get("doctorName") or doctor.get("name"),
-            rating=data.get("rating") if data.get("rating") is not None else doctor.get("rating"),
+            message=data.get("message"),
+            patient_email=data.get("patientEmail"),
+            patient_name=data.get("patientName"),
+            patient_phone=data.get("patientPhone"),
+            preferred_contact_method=data.get("preferredContactMethod"),
             speciality=data.get("specialty") or doctor.get("specialty"),
-            consultation_fee=data.get("consultationFee") if data.get("consultationFee") is not None else doctor.get("consultationFee"),
-            languages=data.get("languages") if data.get("languages") is not None else doctor.get("languages"),
+            subject=data.get("subject"),
+            urgency=data.get("urgency"),
+            appointment_request=data.get("appointmentRequest"),
         )
 
 
@@ -750,20 +767,22 @@ class DoctorContactedSuccessfullyEvent(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "DoctorContactedSuccessfullyEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data
-        data = data.get("data")
+        raw = backend_event.data or {}
+        nested = raw.get("data")
+        data = nested if isinstance(nested, dict) else raw
+        doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
         return cls(
             event_name=base_event.event_name,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             timestamp=base_event.timestamp,
-            doctor_name=data.get("doctorName"),
+            doctor_name=data.get("doctorName") or doctor.get("name"),
             message=data.get("message"),
             patient_email=data.get("patientEmail"),
             patient_name=data.get("patientName"),
             patient_phone=data.get("patientPhone"),
             preferred_contact_method=data.get("preferredContactMethod"),
-            speciality=data.get("specialty"),
+            speciality=data.get("specialty") or doctor.get("specialty"),
             subject=data.get("subject"),
             urgency=data.get("urgency"),
             appointment_request=data.get("appointmentRequest"),

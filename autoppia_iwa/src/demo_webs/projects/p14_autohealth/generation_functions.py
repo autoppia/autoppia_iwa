@@ -569,7 +569,7 @@ async def generate_open_contact_doctor_form_constraints(task_url: str | None = N
 
 
 async def generate_contact_doctor_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    """Generate constraints for CONTACT_DOCTOR: doctor_name, speciality, rating, consultation_fee, language from doctors (DB first)."""
+    """Generate constraints for CONTACT_DOCTOR: doctor_name, speciality, rating, etc. from doctors (DB first)."""
     return await _generate_from_entity(
         task_url,
         dataset,
