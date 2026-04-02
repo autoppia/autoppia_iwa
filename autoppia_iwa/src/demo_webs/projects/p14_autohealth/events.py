@@ -239,15 +239,13 @@ class SearchPrescriptionEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "SearchPrescriptionEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") or {}
-        prescription = data.get("prescription") if isinstance(data.get("prescription"), dict) else {}
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            medicine_name=data.get("medicine") or prescription.get("medicineName"),
-            doctor_name=data.get("doctor") or prescription.get("doctorName"),
+            medicine_name=data.get("medicine"),
+            doctor_name=data.get("doctor"),
         )
 
 
@@ -625,9 +623,6 @@ class SearchDoctorsEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "SearchDoctorsEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") if isinstance(data, dict) else {}
-        data = data or {}
-        # Frontend sends searchTerm (doctor name searched); map to doctor_name for consistency
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
