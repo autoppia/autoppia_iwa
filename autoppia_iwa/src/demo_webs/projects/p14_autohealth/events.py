@@ -108,7 +108,6 @@ class AppointmentBookedSuccessfullyEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "AppointmentBookedSuccessfullyEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") or {}
         appointment = data.get("appointment") if isinstance(data.get("appointment"), dict) else {}
         return cls(
             event_name=base_event.event_name,
@@ -339,14 +338,10 @@ class SearchMedicalAnalysisEvent(Event, BaseEventValidator):
     event_name: str = "SEARCH_MEDICAL_ANALYSIS"
     record_title: str | None = None
     doctor_name: str | None = None
-    source: str | None = None
-    action: str | None = None
 
     class ValidationCriteria(BaseModel):
         record_title: str | CriterionValue | None = None
         doctor_name: str | CriterionValue | None = None
-        source: str | CriterionValue | None = None
-        action: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if criteria is None:
@@ -355,8 +350,6 @@ class SearchMedicalAnalysisEvent(Event, BaseEventValidator):
             [
                 self._validate_field(self.record_title, criteria.record_title),
                 self._validate_field(self.doctor_name, criteria.doctor_name),
-                self._validate_field(self.source, criteria.source),
-                self._validate_field(self.action, criteria.action),
             ]
         )
 
@@ -364,7 +357,6 @@ class SearchMedicalAnalysisEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "SearchMedicalAnalysisEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") or {}
         record = data.get("record") if isinstance(data.get("record"), dict) else {}
         return cls(
             event_name=base_event.event_name,
@@ -373,8 +365,6 @@ class SearchMedicalAnalysisEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             record_title=data.get("title") or record.get("title"),
             doctor_name=data.get("doctor") or record.get("doctorName"),
-            source=data.get("source"),
-            action=data.get("action"),
         )
 
 
@@ -409,7 +399,7 @@ class ViewMedicalAnalysisEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "ViewMedicalAnalysisEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") or {}
+        data = data.get("data") or data
         record = data.get("record") if isinstance(data.get("record"), dict) else {}
         return cls(
             event_name=base_event.event_name,
@@ -669,7 +659,6 @@ class OpenContactDoctorFormEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "OpenContactDoctorFormEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") or {}
         doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
         return cls(
             event_name=base_event.event_name,
@@ -721,7 +710,6 @@ class ContactDoctorEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "ContactDoctorEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") or {}
         doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
         return cls(
             event_name=base_event.event_name,
@@ -833,7 +821,6 @@ class FilterDoctorReviewsEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "FilterDoctorReviewsEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") or {}
         doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
         return cls(
             event_name=base_event.event_name,
