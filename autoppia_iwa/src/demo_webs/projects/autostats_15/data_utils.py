@@ -65,11 +65,10 @@ def _normalize_account(raw: dict[str, Any]) -> dict[str, Any]:
 
 
 def _normalize_transfer(raw: dict[str, Any]) -> dict[str, Any]:
-    """Normalize transfer: block_number from blockNumber; amount as τ + B/M/K like UI. hash, from, to as-is."""
+    """Normalize transfer: add block_number from blockNumber for constraint fields."""
     out = copy.deepcopy(raw)
     if "blockNumber" in raw and "block_number" not in out:
         out["block_number"] = raw["blockNumber"]
-    out["amount"] = _scale_large_number(float(out.get("amount") or 0))
     return out
 
 
@@ -77,35 +76,8 @@ def _normalize_transfer(raw: dict[str, Any]) -> dict[str, Any]:
 _EMISSION_DIVISOR_M = 1_000_000
 
 
-def _scale_large_number(value: float) -> str:
-    """Scale value like UI formatLargeNumber; always 2 decimals (e.g. 6.70K) to match formatNumber(value, 2)."""
-    if value >= 1_000_000_000:
-        return f"{value / 1_000_000_000:.2f}B"
-    if value >= 1_000_000:
-        return f"{value / 1_000_000:.2f}M"
-    if value >= 1_000:
-        return f"{value / 1_000:.2f}K"
-    return f"{value:.2f}"
-
-
-def _normalize_validator(raw: dict[str, Any]) -> dict[str, Any]:
-    """Convert validator fields to match UI display (formatLargeNumber for weight/stake, 2 decimals for %)."""
-    out = copy.deepcopy(raw)
-    if out.get("totalWeight") is not None:
-        out["totalWeight"] = f"τ{_scale_large_number(float(out['totalWeight']))}"
-    if out.get("rootStake") is not None:
-        out["rootStake"] = f"τ{_scale_large_number(float(out['rootStake']))}"
-    if out.get("alphaStake") is not None:
-        out["alphaStake"] = f"τ{_scale_large_number(float(out['alphaStake']))}"
-    if out.get("dominance") is not None:
-        out["dominance"] = f"{round(float(out['dominance']), 2)}%"
-    if out.get("commission") is not None:
-        out["commission"] = f"{round(float(out['commission']), 2)}%"
-    return out
-
-
 def _add_trends_to_subnets(subnets: list[dict[str, Any]], seed: int) -> list[dict[str, Any]]:
-    """Add price, marketCap, volume24h, trendData, subnet_name; emission/cap/vol scaled like UI, 2 decimals."""
+    """Add price, marketCap, volume24h, trendData and subnet_name (from name) for constraints."""
     result: list[dict[str, Any]] = []
     for subnet in subnets:
         trend_seed = seed + subnet.get("id", 0)
@@ -119,11 +91,9 @@ def _add_trends_to_subnets(subnets: list[dict[str, Any]], seed: int) -> list[dic
         row = copy.deepcopy(subnet)
         row["subnet_name"] = subnet.get("name", "")
         row["subnet_id"] = subnet.get("id", 0)
-        row["price"] = f"{round(price, 4)}τ"
-        # Emission: always M (UI); marketCap/volume24h: B/M/K by magnitude (formatLargeNumber), 2 decimals
-        row["emission"] = f"{round((row.get('emission') or 0) / _EMISSION_DIVISOR_M, 2)}M"
-        row["marketCap"] = _scale_large_number(market_cap)
-        row["volume24h"] = _scale_large_number(volume24h)
+        row["price"] = price
+        row["marketCap"] = market_cap
+        row["volume24h"] = volume24h
         row["priceChange1h"] = (rng() - 0.5) * 5
         row["priceChange24h"] = price_change_24h
         row["priceChange1w"] = (rng() - 0.5) * 30
@@ -144,7 +114,7 @@ def _block_to_block_with_details(block: dict[str, Any]) -> dict[str, Any]:
 
 
 def _account_to_account_with_details(account: dict[str, Any], index: int) -> dict[str, Any]:
-    """Add rank, stakingRatio, accountType, balanceTrend, etc.; format balance/staked like UI; address as-is."""
+    """Add rank, stakingRatio, accountType, balanceTrend, etc. (matches UI accountToAccountWithDetails)."""
     balance = account.get("balance") or 0
     staked = account.get("stakedAmount") or 0
     total_value = balance + staked
@@ -161,13 +131,10 @@ def _account_to_account_with_details(account: dict[str, Any], index: int) -> dic
     out = copy.deepcopy(account)
     out["rank"] = index + 1
     out["totalValue"] = total_value
-    # UI display format: τ + B/M/K for balance and stakedAmount; % for ratio and 24h; address unchanged
-    out["balance"] = f"τ{_scale_large_number(float(balance))}"
-    out["stakedAmount"] = f"τ{_scale_large_number(float(staked))}"
-    out["stakingRatio"] = f"{round(staking_ratio, 1)}%"
+    out["stakingRatio"] = staking_ratio
     out["delegationCount"] = len(delegations)
     out["transactionCount"] = len(transactions)
-    out["balanceChange24h"] = "0.00%"
+    out["balanceChange24h"] = 0
     out["firstSeen"] = first_ts
     out["lastActive"] = first_ts
     out["accountType"] = account_type
@@ -219,7 +186,8 @@ async def fetch_data(
         return []
 
     if entity_type == "validators":
-        return [_normalize_validator(v) for v in raw]
+        # Return server data as-is; VIEW_VALIDATOR event uses only server fields (no performanceTrend/subnetPerformance).
+        return raw
     if entity_type == "subnets":
         return _add_trends_to_subnets(raw, seed_value)
     if entity_type == "blocks":

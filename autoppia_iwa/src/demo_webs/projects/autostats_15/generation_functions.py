@@ -44,6 +44,20 @@ from .data import (
     WALLET_NAMES,
 )
 
+# UI display: emission always in M; marketCap/volume24h use formatLargeNumber (B/M/K by magnitude).
+_EMISSION_DIVISOR_M = 1_000_000
+
+
+def _scale_large_number(value: float) -> str:
+    """Scale value like UI formatLargeNumber; always 2 decimals (e.g. 6.70K) to match formatNumber(value, 2)."""
+    if value >= 1_000_000_000:
+        return f"{value / 1_000_000_000:.2f}B"
+    if value >= 1_000_000:
+        return f"{value / 1_000_000:.2f}M"
+    if value >= 1_000:
+        return f"{value / 1_000:.2f}K"
+    return f"{value:.2f}"
+
 
 async def _ensure_autostats_dataset(
     task_url: str | None,
@@ -225,6 +239,15 @@ async def generate_view_subnet_constraints(task_url: str | None = None, dataset:
         return []
     if test_types == "data_extraction_only":
         selected_item = random.choice(data)
+        price = selected_item.get("price")
+        emission = selected_item.get("emission")
+        market_cap = selected_item.get("marketCap")
+        volume24h = selected_item.get("volume24h")
+        selected_item["price"] = f"τ{round(price, 4)}"
+        # Emission: always M (UI); marketCap/volume24h: B/M/K by magnitude (formatLargeNumber), 2 decimals
+        selected_item["emission"] = f"{round((emission or 0) / _EMISSION_DIVISOR_M, 2)}M"
+        selected_item["marketCap"] = _scale_large_number(market_cap)
+        selected_item["volume24h"] = _scale_large_number(volume24h)
         result = _build_data_extraction_result(
             selected_item,
             VISIBLE_FIELD_VIEW_SUBNET,
@@ -243,6 +266,16 @@ async def generate_view_validator_constraints(
         return []
     if test_types == "data_extraction_only":
         selected_item = random.choice(data)
+        if selected_item.get("totalWeight") is not None:
+            selected_item["totalWeight"] = f"τ{_scale_large_number(float(selected_item['totalWeight']))}"
+        if selected_item.get("rootStake") is not None:
+            selected_item["rootStake"] = f"τ{_scale_large_number(float(selected_item['rootStake']))}"
+        if selected_item.get("alphaStake") is not None:
+            selected_item["alphaStake"] = f"τ{_scale_large_number(float(selected_item['alphaStake']))}"
+        if selected_item.get("dominance") is not None:
+            selected_item["dominance"] = f"{round(float(selected_item['dominance']), 2)}%"
+        if selected_item.get("commission") is not None:
+            selected_item["commission"] = f"{round(float(selected_item['commission']), 2)}%"
         result = _build_data_extraction_result(
             selected_item,
             VISIBLE_FIELD_OPERATORS_MAP_VIEW_VALIDATOR,
@@ -295,6 +328,13 @@ async def generate_view_account_constraints(
 
     if test_types == "data_extraction_only":
         selected_item = random.choice(data)
+        # UI display format: τ + B/M/K for balance and stakedAmount; % for ratio and 24h; address unchanged
+        balance = selected_item.get("balance")
+        staked = selected_item.get("stakedAmount")
+        staking_ratio = selected_item.get("stakingRatio")
+        selected_item["balance"] = f"τ{_scale_large_number(float(balance))}"
+        selected_item["stakedAmount"] = f"τ{_scale_large_number(float(staked))}"
+        selected_item["stakingRatio"] = f"{round(staking_ratio, 1)}%"
         result = _build_data_extraction_result(
             selected_item,
             VISIBLE_FIELD_VIEW_ACCOUNT,
@@ -388,6 +428,7 @@ async def generate_transfer_complete_constraints(
         return []
     if test_types == "data_extraction_only":
         selected_item = random.choice(data)
+        selected_item["amount"] = _scale_large_number(float(selected_item.get("amount") or 0))
         result = _build_data_extraction_result(
             selected_item,
             VISIBLE_FIELDS_TRANSFER_COMPLETE,
