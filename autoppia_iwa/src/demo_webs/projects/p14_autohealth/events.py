@@ -284,7 +284,6 @@ class ViewPrescriptionEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "ViewPrescriptionEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") or {}
         prescription = data.get("prescription") if isinstance(data.get("prescription"), dict) else {}
         return cls(
             event_name=base_event.event_name,
@@ -323,7 +322,6 @@ class RefillRequestEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "RefillRequestEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") or {}
         prescription = data.get("prescription") if isinstance(data.get("prescription"), dict) else {}
         return cls(
             event_name=base_event.event_name,
