@@ -549,8 +549,6 @@ class ViewDoctorAvailabilityEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "ViewDoctorAvailabilityEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") if isinstance(data, dict) else {}
-        data = data or {}
         doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
         return cls(
             event_name=base_event.event_name,
