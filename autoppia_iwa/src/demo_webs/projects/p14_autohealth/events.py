@@ -34,8 +34,9 @@ class OpenAppointmentFormEvent(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "OpenAppointmentFormEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data
-        data = data.get("data") or {}
+        raw = backend_event.data or {}
+        nested = raw.get("data")
+        data = nested if isinstance(nested, dict) else raw
         doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
         appointment = data.get("appointment") if isinstance(data.get("appointment"), dict) else {}
         return cls(
@@ -178,13 +179,11 @@ class SearchAppointmentEvent(Event, BaseEventValidator):
     """Fired when user clicks Search on the Appointments page (applies doctor/speciality/date filters)."""
 
     event_name: str = "SEARCH_APPOINTMENT"
-    filter_type: str | None = None
     doctor_name: str | None = None
     speciality: str | None = None
     date: str | None = None
 
     class ValidationCriteria(BaseModel):
-        filter_type: str | CriterionValue | None = None
         doctor_name: str | CriterionValue | None = None
         speciality: str | CriterionValue | None = None
         date: str | CriterionValue | None = None
@@ -194,7 +193,6 @@ class SearchAppointmentEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.filter_type, criteria.filter_type),
                 self._validate_field(self.doctor_name, criteria.doctor_name),
                 self._validate_field(self.speciality, criteria.speciality),
                 self._validate_field(self.date, criteria.date),
@@ -205,18 +203,14 @@ class SearchAppointmentEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "SearchAppointmentEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") if isinstance(data, dict) else {}
-        data = data or {}
-        doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            filter_type=data.get("filterType"),
-            doctor_name=data.get("doctorName") or doctor.get("name"),
-            speciality=data.get("specialty") or doctor.get("specialty"),
-            date=data.get("date"),
+            doctor_name=data.get("doctorName", ""),
+            speciality=data.get("specialty", ""),
+            date=data.get("date", ""),
         )
 
 
