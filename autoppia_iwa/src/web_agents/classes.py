@@ -119,13 +119,16 @@ class IWebAgent(ABC):
         url: str,
         step_index: int,
         history: list[dict[str, Any]] | None = None,
-    ) -> list[BaseAction]:
+    ) -> list[BaseAction] | dict[str, Any]:
         """
         Decide actions based on the current browser state.
 
         This method is used in both concurrent and stateful mode:
         - Concurrent: Called ONCE with initial snapshot, returns ALL actions
         - Stateful: Called ITERATIVELY, returns actions for the next step
+
+        Implementations may return a dict ``{"actions": [...], "extracted_data": ...}`` for
+        DataExtractionTest (stateful / one-shot); otherwise a plain list of actions.
 
         Args:
             task: The task to solve

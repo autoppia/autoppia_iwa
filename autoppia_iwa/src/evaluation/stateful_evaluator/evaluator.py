@@ -150,9 +150,12 @@ class AsyncStatefulEvaluator(AsyncWebAgentSession):
         self._project: WebProject | None = None
         self._executor: PlaywrightBrowserExecutor | None = None
         self._history: list[ActionExecutionResult] = []
+        # Latest agent-reported answer for DataExtractionTest (partial tests); updated by benchmark per /act response.
+        self.latest_extracted_data: Any | None = None
 
     async def reset(self) -> StepResult:
         logger.info("[AsyncStatefulEvaluator] reset start")
+        self.latest_extracted_data = None
         await self._close_async()
         await self._init_async()
 
@@ -344,7 +347,12 @@ class AsyncStatefulEvaluator(AsyncWebAgentSession):
     async def _score_async(self) -> ScoreDetails:
         if not self._project:
             return ScoreDetails()
-        matrix = await run_partial_tests(self._project, self.task, self._history)
+        matrix = await run_partial_tests(
+            self._project,
+            self.task,
+            self._history,
+            extracted_data=self.latest_extracted_data,
+        )
         if not matrix:
             return ScoreDetails()
         last = matrix[-1] if matrix else []
@@ -426,6 +434,14 @@ class StatefulEvaluator(SyncWebAgentSession):
             config=config,
         )
         self._loop: asyncio.AbstractEventLoop | None = None
+
+    @property
+    def latest_extracted_data(self) -> Any | None:
+        return self._async.latest_extracted_data
+
+    @latest_extracted_data.setter
+    def latest_extracted_data(self, value: Any | None) -> None:
+        self._async.latest_extracted_data = value
 
     def __enter__(self) -> StatefulEvaluator:
         return self

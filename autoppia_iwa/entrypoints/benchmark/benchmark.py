@@ -108,7 +108,7 @@ class Benchmark:
 
         El agente debe estar corriendo en un servidor HTTP y responder en:
         POST /act con: {task, snapshot_html, url, step_index}
-        Responde: {actions: [...]}
+        Responde: {actions: [...]} o, para DataExtractionTest, puede incluir extracted_data (ver _solve_task_with_agent).
         """
         # Verificar que el agente tenga método act()
         if not hasattr(agent, "act") or not callable(getattr(agent, "act", None)):
@@ -149,7 +149,7 @@ class Benchmark:
 
                 try:
                     # ✅ Llamar al endpoint /act del agente HTTP (IGUAL que la subnet con miners)
-                    actions = await agent.act(
+                    act_result = await agent.act(
                         task=task,
                         snapshot_html=html,
                         url=current_url,
@@ -157,7 +157,14 @@ class Benchmark:
                     )
                 except Exception as exc:
                     logger.warning(f"[stateful_eval] agent {agent.name} /act failed: {exc}")
-                    actions = []
+                    act_result = []
+
+                if isinstance(act_result, dict):
+                    actions = act_result.get("actions", [])
+                    if "extracted_data" in act_result:
+                        evaluator.latest_extracted_data = act_result["extracted_data"]
+                else:
+                    actions = act_result
 
                 if not actions:
                     # Sin acciones = agente terminó o error

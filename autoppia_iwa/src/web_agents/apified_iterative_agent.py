@@ -54,9 +54,12 @@ class ApifiedWebAgent(IWebAgent):
         url: str,
         step_index: int,
         history: list[dict[str, Any]] | None = None,
-    ) -> list[BaseAction]:
+    ) -> list[BaseAction] | dict[str, Any]:
         """
         Call the remote /act endpoint and translate the response into BaseAction instances.
+
+        If the JSON body includes an ``extracted_data`` key (DataExtractionTest), returns
+        ``{"actions": [...], "extracted_data": ...}``; otherwise returns a plain list of actions.
         """
         payload: dict[str, Any] = {
             "task_id": getattr(task, "id", None),
@@ -78,7 +81,7 @@ class ApifiedWebAgent(IWebAgent):
                     async with session.post(f"{self.base_url}{path}", json=payload) as response:
                         response.raise_for_status()
                         data = await response.json()
-                        return self._parse_actions_response(data)
+                        return self._parse_act_response(data)
                 except Exception:
                     continue
         # If all calls fail, return a NOOP (no actions) so the caller can decide.
@@ -149,6 +152,12 @@ class ApifiedWebAgent(IWebAgent):
                 actions.append(action)
             except Exception:
                 continue
+        return actions
+
+    def _parse_act_response(self, data: dict[str, Any]) -> list[BaseAction] | dict[str, Any]:
+        actions = self._parse_actions_response(data)
+        if isinstance(data, dict) and "extracted_data" in data:
+            return {"actions": actions, "extracted_data": data.get("extracted_data")}
         return actions
 
     @staticmethod
