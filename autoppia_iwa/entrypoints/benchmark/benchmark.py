@@ -19,6 +19,7 @@ from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStats, EvaluatorConfig
 from autoppia_iwa.src.evaluation.concurrent_evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.evaluation.stateful_evaluator import AsyncStatefulEvaluator
+from autoppia_iwa.src.evaluation.stateful_evaluator.evaluator import BrowserSnapshot, StepResult
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer
 from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution, sanitize_snapshot_html
 
@@ -109,6 +110,10 @@ class Benchmark:
         El agente debe estar corriendo en un servidor HTTP y responder en:
         POST /act con: {task, snapshot_html, url, step_index}
         Responde: {actions: [...]} o, para DataExtractionTest, puede incluir extracted_data (ver _solve_task_with_agent).
+
+        Con test_types='data_extraction_only': si actions está vacío pero el dict incluye extracted_data,
+        se re-evalúa vía get_score_details() (run_partial_tests) sin step; si falla, se llama act() de nuevo.
+        Con 'event_only': sin acciones se termina como antes (break).
         """
         # Verificar que el agente tenga método act()
         if not hasattr(agent, "act") or not callable(getattr(agent, "act", None)):
@@ -167,7 +172,27 @@ class Benchmark:
                     actions = act_result
 
                 if not actions:
-                    # Sin acciones = agente terminó o error
+                    if self.config.test_types == "data_extraction_only" and isinstance(act_result, dict) and "extracted_data" in act_result:
+                        score_details = await evaluator.get_score_details()
+                        final_score = score_details.raw_score
+                        tests_passed = score_details.tests_passed
+                        total_tests = score_details.total_tests
+                        snap = step_result.snapshot
+                        page = evaluator.page
+                        if page:
+                            with contextlib.suppress(Exception):
+                                snap = BrowserSnapshot(
+                                    html=await page.content() or "",
+                                    url=page.url or task.url,
+                                    screenshot=None,
+                                )
+                        step_result = StepResult(score=score_details, snapshot=snap, action_result=None)
+                        logger.debug(f"[stateful_eval] agent {agent.name} no actions, data_extraction re-score raw={final_score} success={score_details.success}")
+                        if score_details.success:
+                            logger.info(f"[stateful_eval] agent {agent.name} completed task (data extraction)!")
+                            break
+                        step_index += 1
+                        continue
                     logger.debug(f"[stateful_eval] agent {agent.name} returned no actions, terminating")
                     break
 
