@@ -38,6 +38,9 @@ def setup_iwa_logging(log_file: str, console_level: str = "INFO") -> None:
         with suppress(ValueError):
             logger.remove(_file_handler_id)
 
+    if not _logging_initialized:
+        logger.remove()
+
     _console_handler_id = logger.add(
         sys.stderr,
         level=console_level,
