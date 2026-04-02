@@ -448,8 +448,7 @@ class ViewDoctorProfileEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "ViewDoctorProfileEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") if isinstance(data, dict) else {}
-        data = data or {}
+        data = data.get("data") if isinstance(data, dict) else data
         doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
         langs = data.get("languages") if data.get("languages") is not None else doctor.get("languages")
         return cls(
