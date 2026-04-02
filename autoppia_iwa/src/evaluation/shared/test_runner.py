@@ -20,6 +20,17 @@ from autoppia_iwa.src.evaluation.classes import TestResult
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 
 
+def _criteria_for_log(test: BaseTaskTest) -> object:
+    """Human-readable criteria for logs (DataExtractionTest uses expected_answer, not answer_criteria)."""
+    if getattr(test, "type", None) == "DataExtractionTest":
+        info: dict[str, object] = {"expected_answer": getattr(test, "expected_answer", None)}
+        ac = getattr(test, "answer_criteria", None)
+        if ac is not None:
+            info["answer_criteria"] = ac
+        return info
+    return getattr(test, "event_criteria", "N/A")
+
+
 class TestRunner:
     def __init__(self, tests: list[BaseTaskTest]):
         self.tests = tests
@@ -54,9 +65,7 @@ class TestRunner:
 
             logger.info(f"  🧪 Running Test {test_idx}/{len(self.tests)}: {test.type}")
             logger.info(f"     Description: {test.description}")
-            # DataExtractionTest uses expected_answer/answer_criteria; CheckEventTest uses event_criteria
-            criteria_info = {"answer_criteria": getattr(test, "answer_criteria", None)} if getattr(test, "type", None) == "DataExtractionTest" else getattr(test, "event_criteria", "N/A")
-            logger.info(f"     Criteria: {criteria_info}")
+            logger.info(f"     Criteria: {_criteria_for_log(test)}")
 
             success = await test.execute_test(
                 web_project=web_project,
@@ -99,12 +108,10 @@ class TestRunner:
 
         snapshot_results = []  # Store results for this snapshot
         for test_idx, test in enumerate(self.tests, 1):
-            test_name = getattr(test, "event_name", "Unknown")
-            # DataExtractionTest uses expected_answer/answer_criteria; CheckEventTest uses event_criteria
-            test_criteria = {"answer_criteria": getattr(test, "answer_criteria", None)} if getattr(test, "type", None) == "DataExtractionTest" else getattr(test, "event_criteria", {})
+            test_name = getattr(test, "event_name", None) or getattr(test, "type", "Unknown")
 
             _log_backend_test(f"   🧪 Test {test_idx}/{len(self.tests)}: {test_name}", web_agent_id=web_agent_id)
-            _log_backend_test(f"      - Criteria: {test_criteria}", web_agent_id=web_agent_id)
+            _log_backend_test(f"      - Criteria: {_criteria_for_log(test)}", web_agent_id=web_agent_id)
             _log_backend_test(f"      - Test type: {type(test).__name__}", web_agent_id=web_agent_id)
             _log_backend_test(f"      - Test description: {getattr(test, 'description', 'No description')}", web_agent_id=web_agent_id)
 
