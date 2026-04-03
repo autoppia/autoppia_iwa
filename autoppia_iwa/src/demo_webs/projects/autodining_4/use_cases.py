@@ -84,8 +84,8 @@ Examples:
 
 The output must be a single question asking only for the date value.
 """.strip()
-DATE_DROPDOWN_OPENED_USE_CASE = UseCase(
-    name="DATE_DROPDOWN_OPENED",
+DATE_SELECTED_USE_CASE = UseCase(
+    name="DATE_SELECTED",
     description="User interacts with (opens or focuses on) a date selection dropdown/input, which is often pre-filled.",
     event=DateSelectedEvent,
     event_source_code=DateSelectedEvent.get_source_code_of_class(),

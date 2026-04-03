@@ -127,7 +127,7 @@ def _generate_constraint_value(
                     all_vals.append(x.get("name", x) if isinstance(x, dict) else x)
             elif v is not None:
                 all_vals.append(v.get("name", v) if isinstance(v, dict) else v)
-        field_set = {x.get("name", x) if isinstance(x, dict) else x for x in field_value}
+        field_set = [x.get("name", x) if isinstance(x, dict) else x for x in field_value]
         remaining = [v for v in all_vals if v not in field_set]
         return choice(remaining) if remaining else None
 
@@ -430,14 +430,6 @@ async def generate_watch_trailer_constraints(
     return _generate_constraints(films, FIELD_OPERATORS_MAP_FILM, num_constraints=num_constraints, selected_fields=FILM_CORE_FIELDS)
 
 
-async def generate_delete_film_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
-    """Generate constraints for DELETE_FILM using fixed placeholders (autobooks parity)."""
-    _ = task_url  # Unused parameter kept for backward compatibility
-    _ = dataset  # Unused parameter kept for backward compatibility
-    return [
-        create_constraint_dict("username", ComparisonOperator.EQUALS, USERNAME_PLACEHOLDER),
-        create_constraint_dict("password", ComparisonOperator.EQUALS, DEFAULT_PASSWORD),
-    ]
 async def generate_delete_film_constraints(
     task_url: str | None = None,
     dataset: dict[str, list[dict]] | None = None,

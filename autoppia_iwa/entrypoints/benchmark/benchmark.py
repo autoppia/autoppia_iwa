@@ -200,7 +200,6 @@ class Benchmark:
 
                 try:
                     # Call the agent's HTTP /act endpoint (same as the subnet with miners)
-                    actions = await agent.act(
                     # ✅ Llamar al endpoint /act del agente HTTP (IGUAL que la subnet con miners)
                     act_result = await agent.act(
                         task=task,
