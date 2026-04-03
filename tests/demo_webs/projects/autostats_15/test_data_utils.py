@@ -12,11 +12,10 @@ from autoppia_iwa.src.demo_webs.projects.autostats_15.data_utils import (
     _normalize_account,
     _normalize_block,
     _normalize_transfer,
-    _normalize_validator,
-    _scale_large_number,
     _seed_random,
     fetch_data,
 )
+from autoppia_iwa.src.demo_webs.projects.autostats_15.generation_functions import _scale_large_number
 
 
 class TestSeedRandom:
@@ -197,31 +196,6 @@ class TestAddTrendsToSubnets:
         b = _add_trends_to_subnets(subnets, 7)
         assert a[0]["price"] == b[0]["price"]
         assert a[0]["trendData"] == b[0]["trendData"]
-
-
-class TestNormalizeValidator:
-    def test_scales_weight_stake_rounds_dominance_commission(self):
-        raw = {"hotkey": "0x1", "rank": 1, "totalWeight": 859221, "rootStake": 500_000, "alphaStake": 2_500_000_000, "dominance": 3.4567, "commission": 5.123}
-        out = _normalize_validator(raw)
-        assert out["totalWeight"] == "τ859.22K"
-        assert out["rootStake"] == "τ500.00K"
-        assert out["alphaStake"] == "τ2.50B"
-        assert out["dominance"] == "3.46%"
-        assert out["commission"] == "5.12%"
-        assert out["rank"] == 1
-        assert out["hotkey"] == "0x1"
-
-    def test_leaves_rank_nominator_count_unchanged(self):
-        raw = {"hotkey": "0x2", "rank": 5, "nominatorCount": 100}
-        out = _normalize_validator(raw)
-        assert out["rank"] == 5
-        assert out["nominatorCount"] == 100
-
-    def test_handles_missing_fields(self):
-        raw = {"hotkey": "0x3"}
-        out = _normalize_validator(raw)
-        assert out["hotkey"] == "0x3"
-        assert "totalWeight" not in out or out.get("totalWeight") is None
 
 
 class TestBlockToBlockWithDetails:
