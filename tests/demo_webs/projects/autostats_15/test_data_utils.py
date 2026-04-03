@@ -15,7 +15,6 @@ from autoppia_iwa.src.demo_webs.projects.autostats_15.data_utils import (
     _seed_random,
     fetch_data,
 )
-from autoppia_iwa.src.demo_webs.projects.autostats_15.generation_functions import _scale_large_number
 
 
 class TestSeedRandom:
@@ -120,10 +119,17 @@ class TestNormalizeTransfer:
         out = _normalize_transfer(raw)
         assert "block_number" not in out
 
-    def test_amount_formatted_like_ui(self):
-        raw = {"hash": "0x1", "from": "5B2svMMjjH48G2jPYFNhsqWqJdHtP3m9rqs4J33Sb3gN9dSM", "to": "5xaNYwAgxf7oXBhsjx9zsMYqkWCWvsF3RcwuZHnZ6TcRanuZ", "amount": 1399.4479, "blockNumber": 1000000}
+    def test_preserves_amount_and_formats_block_number_only(self):
+        """Structural normalize: block_number from blockNumber; amounts stay raw (UI formatting is elsewhere)."""
+        raw = {
+            "hash": "0x1",
+            "from": "5B2svMMjjH48G2jPYFNhsqWqJdHtP3m9rqs4J33Sb3gN9dSM",
+            "to": "5xaNYwAgxf7oXBhsjx9zsMYqkWCWvsF3RcwuZHnZ6TcRanuZ",
+            "amount": 1399.4479,
+            "blockNumber": 1000000,
+        }
         out = _normalize_transfer(raw)
-        assert out["amount"] == "τ1.40K"
+        assert out["amount"] == 1399.4479
         assert out["hash"] == "0x1"
         assert out["from"] == "5B2svMMjjH48G2jPYFNhsqWqJdHtP3m9rqs4J33Sb3gN9dSM"
         assert out["to"] == "5xaNYwAgxf7oXBhsjx9zsMYqkWCWvsF3RcwuZHnZ6TcRanuZ"
@@ -162,33 +168,23 @@ class TestAddTrendsToSubnets:
         assert "trendData" in out[0]
         assert len(out[0]["trendData"]) == 7
 
-    def test_scale_large_number_b_m_k(self):
-        """_scale_large_number matches UI: >=1e9→B, >=1e6→M, >=1e3→K, else as-is; always 2 decimals."""
-        assert _scale_large_number(2_500_000_000) == "2.50B"
-        assert _scale_large_number(1_000_000_000) == "1.00B"
-        assert _scale_large_number(50_000_000) == "50.00M"
-        assert _scale_large_number(1_500_000) == "1.50M"
-        assert _scale_large_number(5_000) == "5.00K"
-        assert _scale_large_number(999) == "999.00"
-        assert _scale_large_number(100.5) == "100.50"
-
-    def test_m_normalized_fields_match_ui_two_decimals(self):
-        """emission always M; marketCap/volume24h use B/M/K by magnitude; all 2 decimals."""
+    def test_emission_preserved_when_present(self):
+        """Subnet row is deep-copied; emission is not rescaled in data_utils."""
         subnets = [
             {"id": 0, "name": "Root", "emission": 38_551.84},
             {"id": 3, "name": "Compute", "emission": 950_725.02},
         ]
         out = _add_trends_to_subnets(subnets, 99)
         assert len(out) == 2
-        assert out[0]["emission"] == 0.04
-        assert out[1]["emission"] == 0.95
-        assert out[0]["marketCap"] == round(out[0]["marketCap"], 2)
-        assert out[0]["volume24h"] == round(out[0]["volume24h"], 2)
+        assert out[0]["emission"] == 38_551.84
+        assert out[1]["emission"] == 950_725.02
+        assert isinstance(out[0]["marketCap"], (int, float))
+        assert isinstance(out[0]["volume24h"], (int, float))
 
-    def test_emission_zero_when_missing(self):
+    def test_emission_absent_when_not_in_input(self):
         subnets = [{"id": 1, "name": "NoEmission"}]
         out = _add_trends_to_subnets(subnets, 0)
-        assert out[0]["emission"] == 0.0
+        assert "emission" not in out[0]
 
     def test_deterministic_for_same_seed(self):
         subnets = [{"id": 3, "name": "X"}]
@@ -246,13 +242,13 @@ class TestAccountToAccountWithDetails:
     def test_staking_ratio(self):
         account = {"balance": 100, "stakedAmount": 100}
         out = _account_to_account_with_details(account, 0)
-        assert out["stakingRatio"] == "50.0%"
+        assert out["stakingRatio"] == 50.0
         assert out["totalValue"] == 200
 
     def test_staking_ratio_zero_when_no_value(self):
         account = {"balance": 0, "stakedAmount": 0}
         out = _account_to_account_with_details(account, 0)
-        assert out["stakingRatio"] == "0.0%"
+        assert out["stakingRatio"] == 0.0
 
     def test_first_seen_last_active_from_transactions(self):
         account = {
@@ -267,7 +263,7 @@ class TestAccountToAccountWithDetails:
     def test_balance_change_24h_zero(self):
         account = {"balance": 0, "stakedAmount": 0}
         out = _account_to_account_with_details(account, 0)
-        assert out["balanceChange24h"] == "0.00%"
+        assert out["balanceChange24h"] == 0
 
     def test_balance_trend_present(self):
         account = {"balance": 0, "stakedAmount": 0}
@@ -275,11 +271,11 @@ class TestAccountToAccountWithDetails:
         assert "balanceTrend" in out
         assert len(out["balanceTrend"]) == 30
 
-    def test_balance_staked_formatted_like_ui(self):
+    def test_balance_staked_numeric_raw(self):
         account = {"address": "5PDQkfbnQa6ffdoziyeHsfd9ZLavP28Yq3QLSdWGsou8YE6v", "balance": 65952.5175, "stakedAmount": 22817.6268}
         out = _account_to_account_with_details(account, 0)
-        assert out["balance"] == "τ65.95K"
-        assert out["stakedAmount"] == "τ22.82K"
+        assert out["balance"] == 65952.5175
+        assert out["stakedAmount"] == 22817.6268
         assert out["address"] == "5PDQkfbnQa6ffdoziyeHsfd9ZLavP28Yq3QLSdWGsou8YE6v"
 
 
@@ -298,7 +294,7 @@ class TestFetchData:
         assert result[0]["hotkey"] == "0xabc"
         assert result[0]["rank"] == 1
 
-    async def test_validators_normalize_weight_stake_dominance_commission(self):
+    async def test_validators_return_server_rows_unchanged(self):
         raw = [
             {
                 "hotkey": "0xdef",
@@ -313,11 +309,11 @@ class TestFetchData:
         with patch(f"{_MODULE}.get_backend_service_url", return_value="http://test/"), patch(f"{_MODULE}.load_dataset_data", new_callable=AsyncMock, return_value=raw):
             result = await fetch_data("validators", 1, count=10)
         assert len(result) == 1
-        assert result[0]["totalWeight"] == "τ859.22K"
-        assert result[0]["rootStake"] == "τ500.00K"
-        assert result[0]["alphaStake"] == "τ2.50B"
-        assert result[0]["dominance"] == "3.46%"
-        assert result[0]["commission"] == "5.12%"
+        assert result[0]["totalWeight"] == 859_221
+        assert result[0]["rootStake"] == 500_000
+        assert result[0]["alphaStake"] == 2_500_000_000
+        assert result[0]["dominance"] == 3.4567
+        assert result[0]["commission"] == 5.123
 
     async def test_subnets_returns_with_trends(self):
         raw = [{"id": 1, "name": "Sub1"}]
