@@ -23,6 +23,7 @@ from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.evaluation.stateful_evaluator import AsyncStatefulEvaluator
 from autoppia_iwa.src.evaluation.stateful_evaluator.evaluator import (
     _is_navigation_url_allowed as _orig_nav_allowed,
+    _url_hostname,
 )
 from autoppia_iwa.src.execution.actions.actions import ClickAction, TypeAction, WaitAction
 from autoppia_iwa.src.execution.actions.base import Selector, SelectorType
@@ -75,6 +76,77 @@ def _make_task(url: str):
             )
         ],
     )
+
+
+class TestUrlHostnameAndNavigationAllowed:
+    def test_url_hostname_none(self):
+        assert _url_hostname(None) is None
+
+    def test_url_hostname_lowercases(self):
+        assert _url_hostname("http://EXAMPLE.com/some") == "example.com"
+
+    def test_navigation_allowed_candidate_url_none(self):
+        ok, reason = _orig_nav_allowed(is_web_real=False, task_url="http://example.com", candidate_url=None)
+        assert ok is True
+        assert reason is None
+
+    def test_navigation_blocks_non_http_scheme(self):
+        ok, reason = _orig_nav_allowed(is_web_real=False, task_url="http://example.com", candidate_url="javascript:alert(1)")
+        assert ok is False
+        assert "scheme 'javascript'" in (reason or "")
+
+    def test_navigation_relative_url_is_allowed(self):
+        ok, reason = _orig_nav_allowed(is_web_real=False, task_url="http://example.com", candidate_url="/relative/path")
+        assert ok is True
+        assert reason is None
+
+    def test_navigation_demo_webs_allows_localhost(self):
+        ok, reason = _orig_nav_allowed(is_web_real=False, task_url="http://example.com", candidate_url="http://localhost:1234/app")
+        assert ok is True
+        assert reason is None
+
+    def test_navigation_demo_webs_allows_task_host(self):
+        ok, reason = _orig_nav_allowed(is_web_real=False, task_url="http://example.com/app", candidate_url="https://example.com/other")
+        assert ok is True
+        assert reason is None
+
+    def test_navigation_demo_webs_blocks_mismatched_host(self):
+        ok, reason = _orig_nav_allowed(
+            is_web_real=False,
+            task_url="http://example.com/app",
+            candidate_url="https://other.com/other",
+        )
+        assert ok is False
+        assert "not allowed for demo webs" in (reason or "")
+
+    def test_navigation_real_webs_requires_task_host(self):
+        ok, reason = _orig_nav_allowed(
+            is_web_real=True,
+            task_url="invalid-url-without-host",
+            candidate_url="https://example.com/other",
+        )
+        assert ok is False
+        assert "could not be determined" in (reason or "")
+
+    def test_navigation_real_webs_blocks_mismatched_host(self):
+        ok, reason = _orig_nav_allowed(
+            is_web_real=True,
+            task_url="https://example.com/task",
+            candidate_url="https://other.com/other",
+        )
+        assert ok is False
+        assert "does not match task host" in (reason or "")
+
+    def test_navigation_demo_webs_allows_any_host_in_testing_mode(self):
+        # When SUBNET_TESTING=True, demo webs should allow navigation even if host mismatch.
+        with patch("autoppia_iwa.src.evaluation.stateful_evaluator.evaluator.SUBNET_TESTING", True):
+            ok, reason = _orig_nav_allowed(
+                is_web_real=False,
+                task_url="http://example.com/app",
+                candidate_url="https://other.com/other",
+            )
+        assert ok is True
+        assert reason is None
 
 
 # -----------------------------------------------------------------------------

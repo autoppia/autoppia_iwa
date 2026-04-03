@@ -19,7 +19,7 @@ from urllib.parse import urlparse
 
 try:
     from autoppia_web_agents_subnet.validator.config import TESTING as SUBNET_TESTING
-except Exception:
+except ImportError:
     SUBNET_TESTING = False
 
 from loguru import logger
@@ -107,7 +107,6 @@ def _is_navigation_url_allowed(*, is_web_real: bool, task_url: str | None, candi
             return True, None
         if target_host in {"localhost", "127.0.0.1", "::1"}:
             return True, None
-        # Allow the task URL's host so remote demo webs (e.g. DEMO_WEBS_ENDPOINT on another machine) work
         allowed_host = _url_hostname(task_url)
         if allowed_host and target_host == allowed_host:
             return True, None
@@ -130,6 +129,8 @@ class AsyncStatefulEvaluator(AsyncWebAgentSession):
         self,
         task: Task,
         web_agent_id: str = "autoppia-rl-env",
+        validator_id: str | None = None,
+        enable_score_cheating: bool = False,
         should_record_gif: bool = False,
         capture_screenshot: bool = False,
         config: EvaluatorConfig | None = None,
@@ -137,6 +138,8 @@ class AsyncStatefulEvaluator(AsyncWebAgentSession):
     ) -> None:
         self.task = task
         self.web_agent_id = web_agent_id
+        self.validator_id = str(validator_id or VALIDATOR_ID or os.getenv("VALIDATOR_ID", "validator_001")).strip() or "validator_001"
+        self.enable_score_cheating = bool(enable_score_cheating)
         self.should_record_gif = should_record_gif
         self.capture_screenshot = capture_screenshot
         self.config = config or EvaluatorConfig()
@@ -150,6 +153,7 @@ class AsyncStatefulEvaluator(AsyncWebAgentSession):
         self._project: WebProject | None = None
         self._executor: PlaywrightBrowserExecutor | None = None
         self._history: list[ActionExecutionResult] = []
+        self._last_score = ScoreDetails()
         # Latest agent-reported answer for DataExtractionTest (partial tests); updated by benchmark per /act response.
         self.latest_extracted_data: Any | None = None
 
@@ -217,7 +221,11 @@ class AsyncStatefulEvaluator(AsyncWebAgentSession):
             raise RuntimeError("AsyncStatefulEvaluator: could not resolve WebProject from Task")
         self._project = project
 
-        self._backend = BackendDemoWebService(web_project=project, web_agent_id=self.web_agent_id)
+        self._backend = BackendDemoWebService(
+            web_project=project,
+            web_agent_id=self.web_agent_id,
+            validator_id=self.validator_id,
+        )
         logger.info("[AsyncStatefulEvaluator] reset backend")
         await self._backend.reset_database()
         logger.info("[AsyncStatefulEvaluator] backend ok")
@@ -230,12 +238,11 @@ class AsyncStatefulEvaluator(AsyncWebAgentSession):
             headless=headless,
             args=[f"--window-size={specs.screen_width},{specs.screen_height}"],
         )
-        validator_id = VALIDATOR_ID or os.getenv("VALIDATOR_ID", "validator_001")
         self._context = await self._browser.new_context(
             no_viewport=True,
             extra_http_headers={
                 "X-WebAgent-Id": self.web_agent_id,
-                "X-Validator-Id": validator_id,
+                "X-Validator-Id": self.validator_id,
             },
         )
         # Demo websites derive attribution ids from localStorage. Relying on URL
@@ -248,7 +255,7 @@ class AsyncStatefulEvaluator(AsyncWebAgentSession):
 (() => {{
   try {{
     localStorage.setItem("web_agent_id", {json.dumps(self.web_agent_id)});
-    localStorage.setItem("validator_id", {json.dumps(validator_id)});
+    localStorage.setItem("validator_id", {json.dumps(self.validator_id)});
   }} catch (e) {{}}
 }})();
 """
@@ -346,7 +353,8 @@ class AsyncStatefulEvaluator(AsyncWebAgentSession):
 
     async def _score_async(self) -> ScoreDetails:
         if not self._project:
-            return ScoreDetails()
+            self._last_score = ScoreDetails()
+            return self._last_score
         matrix = await run_partial_tests(
             self._project,
             self.task,
@@ -354,17 +362,19 @@ class AsyncStatefulEvaluator(AsyncWebAgentSession):
             extracted_data=self.latest_extracted_data,
         )
         if not matrix:
-            return ScoreDetails()
+            self._last_score = ScoreDetails()
+            return self._last_score
         last = matrix[-1] if matrix else []
         passed = sum(1 for r in last if getattr(r, "success", False))
         total = len(last)
         raw = (passed / total) if total > 0 else 0.0
-        return ScoreDetails(
+        self._last_score = ScoreDetails(
             raw_score=raw,
             tests_passed=passed,
             total_tests=total,
             success=(total > 0 and passed == total),
         )
+        return self._last_score
 
     async def _snapshot_async(self) -> BrowserSnapshot:
         if not self._page:
@@ -422,6 +432,8 @@ class StatefulEvaluator(SyncWebAgentSession):
         self,
         task: Task,
         web_agent_id: str = "autoppia-rl-env",
+        validator_id: str | None = None,
+        enable_score_cheating: bool = False,
         should_record_gif: bool = False,
         capture_screenshot: bool = False,
         config: EvaluatorConfig | None = None,
@@ -429,6 +441,8 @@ class StatefulEvaluator(SyncWebAgentSession):
         self._async = AsyncStatefulEvaluator(
             task=task,
             web_agent_id=web_agent_id,
+            validator_id=validator_id,
+            enable_score_cheating=enable_score_cheating,
             should_record_gif=should_record_gif,
             capture_screenshot=capture_screenshot,
             config=config,

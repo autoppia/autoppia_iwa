@@ -55,11 +55,12 @@ class BackendDemoWebService:
     - Support for both real and demo web projects
     """
 
-    # ============================================================================
-    # INITIALIZATION
-    # ============================================================================
-
-    def __init__(self, web_project: WebProject, web_agent_id: str = "unknown_agent") -> None:
+    def __init__(
+        self,
+        web_project: WebProject,
+        web_agent_id: str = "unknown_agent",
+        validator_id: str | None = None,
+    ) -> None:
         self._session: aiohttp.ClientSession | None = None
         self.web_project = web_project
         self.base_url = web_project.backend_url
@@ -67,7 +68,7 @@ class BackendDemoWebService:
         self.web_url = web_project.frontend_url or web_project.backend_url
         self.web_agent_id = web_agent_id
         # Allow environment overrides for validator id to ease local testing
-        self.validator_id = os.getenv("VALIDATOR_ID", VALIDATOR_ID or "validator_001")
+        self.validator_id = str(validator_id or os.getenv("VALIDATOR_ID", VALIDATOR_ID or "validator_001")).strip() or "validator_001"
 
         # Configure JSON parser (prefer orjson for performance)
         self._configure_json_parser()
@@ -132,7 +133,7 @@ class BackendDemoWebService:
             params = {
                 "web_url": (self.web_url or self.base_url).rstrip("/"),
                 "web_agent_id": web_agent_id,
-                "validator_id": VALIDATOR_ID,
+                "validator_id": self.validator_id,
             }
 
             session = self._get_session()
@@ -141,7 +142,7 @@ class BackendDemoWebService:
                 response.raise_for_status()
                 events_data = await response.json(loads=self._json_parser.loads)
                 if not events_data:
-                    print("No events received.")
+                    logger.debug("No events received.")
                 # print(events_data, [BackendEvent(**event.get("data", {})) for event in events_data])
                 return [BackendEvent(**event.get("data", {})) for event in events_data]
 
@@ -167,7 +168,7 @@ class BackendDemoWebService:
             params = {
                 "web_url": (self.web_url or self.base_url).rstrip("/"),
                 "web_agent_id": web_agent_id or self.web_agent_id,
-                "validator_id": VALIDATOR_ID,
+                "validator_id": self.validator_id,
             }
             session = self._get_session()
 

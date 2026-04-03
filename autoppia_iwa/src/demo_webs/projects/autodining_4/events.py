@@ -172,6 +172,374 @@ class PeopleDropdownOpenedEvent(Event, BaseEventValidator):
         )
 
 
+class DateSelectedEvent(Event, BaseEventValidator):
+    """Event triggered when a date is selected."""
+
+    event_name: str = "DATE_SELECTED"
+    date: datetime | date | None = None
+
+    class ValidationCriteria(BaseModel):
+        date: datetime | date | CriterionValue | None = None
+
+        class Config:
+            title = "Date Selected Validation"
+            description = "Validates that a date was selected with a specific value."
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria or not criteria.date:
+            return True
+
+        if isinstance(criteria.date, CriterionValue):
+            raw_value = criteria.date.value
+            if isinstance(raw_value, str):
+                criteria_dt = isoparse(raw_value).date()
+            elif isinstance(raw_value, datetime):
+                criteria_dt = raw_value.date()
+            elif isinstance(raw_value, date):
+                criteria_dt = raw_value
+            else:
+                return False
+        elif isinstance(criteria.date, datetime):
+            criteria_dt = criteria.date.date()
+        elif isinstance(criteria.date, date):
+            criteria_dt = criteria.date
+        else:
+            return False
+
+        event_date = None
+        if isinstance(self.date, datetime):
+            event_date = self.date.date()
+        elif isinstance(self.date, date):
+            event_date = self.date
+
+        if event_date is None:
+            return False
+
+        op = getattr(criteria.date, "operator", ComparisonOperator.EQUALS)
+        if op == ComparisonOperator.EQUALS:
+            return event_date == criteria_dt
+        elif op == ComparisonOperator.GREATER_THAN:
+            return event_date > criteria_dt
+        elif op == ComparisonOperator.LESS_THAN:
+            return event_date < criteria_dt
+        elif op == ComparisonOperator.GREATER_EQUAL:
+            return event_date >= criteria_dt
+        elif op == ComparisonOperator.LESS_EQUAL:
+            return event_date <= criteria_dt
+        return False
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "DateSelectedEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        selected_date_str = data.get("date")
+        parsed_date = None
+        if selected_date_str:
+            parsed_date = isoparse(selected_date_str).date()
+
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            date=parsed_date,
+        )
+
+
+class TimeSelectedEvent(Event, BaseEventValidator):
+    """Event triggered when a time is selected."""
+
+    event_name: str = "TIME_SELECTED"
+    time: str
+
+    class ValidationCriteria(BaseModel):
+        time: str | CriterionValue | None = None
+
+        class Config:
+            title = "Time Selected Validation"
+            description = "Validates that a time was selected with a specific value."
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return self._validate_field(self.time, criteria.time)
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "TimeSelectedEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            time=data.get("time", ""),
+        )
+
+
+class PeopleSelectedEvent(Event, BaseEventValidator):
+    """Event triggered when a people count is selected."""
+
+    event_name: str = "PEOPLE_SELECTED"
+    people: int
+
+    class ValidationCriteria(BaseModel):
+        people: int | CriterionValue | None = None
+
+        class Config:
+            title = "People Selected Validation"
+            description = "Validates that a people count was selected."
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return self._validate_field(self.people, criteria.people)
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "PeopleSelectedEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            people=int(data.get("people", 0)),
+        )
+
+
+class TagFilterSelectedEvent(Event, BaseEventValidator):
+    """Event triggered when a tag filter is selected or removed."""
+
+    event_name: str = "TAG_FILTER_SELECTED"
+    tag: str | None = None
+    action: str | None = None
+    search: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        tag: str | CriterionValue | None = None
+        action: str | CriterionValue | None = None
+        search: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.tag, criteria.tag),
+                self._validate_field(self.action, criteria.action),
+                self._validate_field(self.search, criteria.search),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "TagFilterSelectedEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            tag=data.get("tag"),
+            action=data.get("action"),
+            search=data.get("search"),
+        )
+
+
+class LoginEvent(Event, BaseEventValidator):
+    """Event triggered when a user logs in."""
+
+    event_name: str = "LOGIN"
+    username: str | None = None
+    source: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        username: str | CriterionValue | None = None
+        source: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.username, criteria.username),
+                self._validate_field(self.source, criteria.source),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "LoginEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            username=data.get("username"),
+            source=data.get("source"),
+        )
+
+
+class RegisterEvent(Event, BaseEventValidator):
+    """Event triggered when a user registers."""
+
+    event_name: str = "REGISTER"
+    username: str | None = None
+    email: str | None = None
+    source: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        username: str | CriterionValue | None = None
+        email: str | CriterionValue | None = None
+        source: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.username, criteria.username),
+                self._validate_field(self.email, criteria.email),
+                self._validate_field(self.source, criteria.source),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "RegisterEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            username=data.get("username"),
+            email=data.get("email"),
+            source=data.get("source"),
+        )
+
+
+class LogoutEvent(Event, BaseEventValidator):
+    """Event triggered when a user logs out."""
+
+    event_name: str = "LOGOUT"
+    username: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        username: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return self._validate_field(self.username, criteria.username)
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "LogoutEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            username=data.get("username"),
+        )
+
+
+class ReviewCreatedEvent(Event, BaseEventValidator):
+    """Event triggered when a review is created."""
+
+    event_name: str = "REVIEW_CREATED"
+    review_id: str | None = None
+    restaurant_id: str | None = None
+    username: str | None = None
+    rating: int | None = None
+    comment_length: int | None = None
+
+    class ValidationCriteria(BaseModel):
+        review_id: str | CriterionValue | None = None
+        restaurant_id: str | CriterionValue | None = None
+        username: str | CriterionValue | None = None
+        rating: int | CriterionValue | None = None
+        comment_length: int | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.review_id, criteria.review_id),
+                self._validate_field(self.restaurant_id, criteria.restaurant_id),
+                self._validate_field(self.username, criteria.username),
+                self._validate_field(self.rating, criteria.rating),
+                self._validate_field(self.comment_length, criteria.comment_length),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "ReviewCreatedEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            review_id=data.get("review_id") or data.get("reviewId"),
+            restaurant_id=data.get("restaurant_id") or data.get("restaurantId"),
+            username=data.get("username"),
+            rating=data.get("rating"),
+            comment_length=data.get("comment_length") or data.get("commentLength"),
+        )
+
+
+class ReviewEditedEvent(ReviewCreatedEvent):
+    """Event triggered when a review is edited."""
+
+    event_name: str = "REVIEW_EDITED"
+
+
+class ReviewDeletedEvent(Event, BaseEventValidator):
+    """Event triggered when a review is deleted."""
+
+    event_name: str = "REVIEW_DELETED"
+    review_id: str | None = None
+    restaurant_id: str | None = None
+    username: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        review_id: str | CriterionValue | None = None
+        restaurant_id: str | CriterionValue | None = None
+        username: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.review_id, criteria.review_id),
+                self._validate_field(self.restaurant_id, criteria.restaurant_id),
+                self._validate_field(self.username, criteria.username),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "ReviewDeletedEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            review_id=data.get("review_id") or data.get("reviewId"),
+            restaurant_id=data.get("restaurant_id") or data.get("restaurantId"),
+            username=data.get("username"),
+        )
+
+
 class SearchRestaurantEvent(Event, BaseEventValidator):
     """Event triggered when a user searches for a restaurant."""
 
@@ -958,9 +1326,16 @@ class ContactCardClickEvent(Event, BaseEventValidator):
 # =============================================================================
 
 EVENTS = [
-    DateDropdownOpenedEvent,
-    TimeDropdownOpenedEvent,
-    PeopleDropdownOpenedEvent,
+    DateSelectedEvent,
+    TimeSelectedEvent,
+    PeopleSelectedEvent,
+    TagFilterSelectedEvent,
+    LoginEvent,
+    RegisterEvent,
+    LogoutEvent,
+    ReviewCreatedEvent,
+    ReviewEditedEvent,
+    ReviewDeletedEvent,
     SearchRestaurantEvent,  # Restaurant search
     ViewRestaurantEvent,
     ViewFullMenuEvent,
@@ -981,9 +1356,16 @@ EVENTS = [
 ]
 
 BACKEND_EVENT_TYPES = {
-    "DATE_DROPDOWN_OPENED": DateDropdownOpenedEvent,
-    "TIME_DROPDOWN_OPENED": TimeDropdownOpenedEvent,
-    "PEOPLE_DROPDOWN_OPENED": PeopleDropdownOpenedEvent,
+    "DATE_SELECTED": DateSelectedEvent,
+    "TIME_SELECTED": TimeSelectedEvent,
+    "PEOPLE_SELECTED": PeopleSelectedEvent,
+    "TAG_FILTER_SELECTED": TagFilterSelectedEvent,
+    "LOGIN": LoginEvent,
+    "REGISTER": RegisterEvent,
+    "LOGOUT": LogoutEvent,
+    "REVIEW_CREATED": ReviewCreatedEvent,
+    "REVIEW_EDITED": ReviewEditedEvent,
+    "REVIEW_DELETED": ReviewDeletedEvent,
     "SEARCH_RESTAURANT": SearchRestaurantEvent,
     "VIEW_RESTAURANT": ViewRestaurantEvent,
     "VIEW_FULL_MENU": ViewFullMenuEvent,
