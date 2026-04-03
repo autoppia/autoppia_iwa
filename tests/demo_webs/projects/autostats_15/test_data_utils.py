@@ -178,8 +178,8 @@ class TestAddTrendsToSubnets:
         assert len(out) == 2
         assert out[0]["emission"] == 38_551.84
         assert out[1]["emission"] == 950_725.02
-        assert isinstance(out[0]["marketCap"], (int, float))
-        assert isinstance(out[0]["volume24h"], (int, float))
+        assert isinstance(out[0]["marketCap"], int | float)
+        assert isinstance(out[0]["volume24h"], int | float)
 
     def test_emission_absent_when_not_in_input(self):
         subnets = [{"id": 1, "name": "NoEmission"}]
