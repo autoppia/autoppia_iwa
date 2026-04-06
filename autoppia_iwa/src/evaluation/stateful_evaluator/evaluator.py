@@ -71,6 +71,39 @@ class EvaluatorConfig:
     page_default_timeout_ms: int = 10_000
 
 
+def _event_timestamp_utc(event: Any) -> datetime | None:
+    raw_ts = None
+    raw_ts = event.get("timestamp") or (event.get("data") or {}).get("timestamp") if isinstance(event, dict) else getattr(event, "timestamp", None)
+
+    if isinstance(raw_ts, datetime):
+        return raw_ts.astimezone(UTC) if raw_ts.tzinfo else raw_ts.replace(tzinfo=UTC)
+    if isinstance(raw_ts, int | float):
+        return datetime.fromtimestamp(float(raw_ts), tz=UTC)
+    if isinstance(raw_ts, str) and raw_ts.strip():
+        ts = raw_ts.strip()
+        if ts.endswith("Z"):
+            ts = ts[:-1] + "+00:00"
+        with contextlib.suppress(Exception):
+            parsed = datetime.fromisoformat(ts)
+            return parsed.astimezone(UTC) if parsed.tzinfo else parsed.replace(tzinfo=UTC)
+    return None
+
+
+def _event_identity(event: Any) -> str:
+    if isinstance(event, dict):
+        payload = event
+    else:
+        payload = {
+            "event_name": getattr(event, "event_name", None),
+            "timestamp": getattr(event, "timestamp", None),
+            "data": getattr(event, "data", None),
+            "web_agent_id": getattr(event, "web_agent_id", None),
+        }
+    with contextlib.suppress(Exception):
+        return json.dumps(payload, sort_keys=True, default=str, ensure_ascii=False)
+    return str(payload)
+
+
 def _url_hostname(url: str | None) -> str | None:
     if not url:
         return None
@@ -153,12 +186,15 @@ class AsyncStatefulEvaluator(AsyncWebAgentSession):
         self._project: WebProject | None = None
         self._executor: PlaywrightBrowserExecutor | None = None
         self._history: list[ActionExecutionResult] = []
+        self._session_start_utc: datetime | None = None
         self._last_score = ScoreDetails()
 
     async def reset(self) -> StepResult:
         logger.info("[AsyncStatefulEvaluator] reset start")
         await self._close_async()
         await self._init_async()
+        self._session_start_utc = datetime.now(UTC)
+        self._last_score = ScoreDetails()
 
         # Guardrail: do not allow demo tasks to navigate off loopback.
         is_allowed, reason = _is_navigation_url_allowed(
@@ -352,6 +388,39 @@ class AsyncStatefulEvaluator(AsyncWebAgentSession):
         if not self._project:
             self._last_score = ScoreDetails()
             return self._last_score
+        # Some frontends log events asynchronously after the UI action.
+        # Merge backend events for the current evaluator session and ignore
+        # stale events from previous runs.
+        with contextlib.suppress(Exception):
+            if self._backend and self._history:
+                latest_events = await self._backend.get_backend_events(self.web_agent_id)
+                if latest_events:
+                    last_snapshot = getattr(self._history[-1], "browser_snapshot", None)
+                    if last_snapshot is not None:
+                        baseline_events = list(getattr(last_snapshot, "backend_events", []) or [])
+                        session_floor = self._session_start_utc
+
+                        merged: list[Any] = []
+                        seen_ids: set[str] = set()
+                        for event in baseline_events:
+                            event_dt = _event_timestamp_utc(event)
+                            if session_floor is not None and event_dt is not None and event_dt < session_floor:
+                                continue
+                            event_id = _event_identity(event)
+                            if event_id in seen_ids:
+                                continue
+                            seen_ids.add(event_id)
+                            merged.append(event)
+                        for event in latest_events:
+                            event_dt = _event_timestamp_utc(event)
+                            if session_floor is not None and event_dt is not None and event_dt < session_floor:
+                                continue
+                            event_id = _event_identity(event)
+                            if event_id in seen_ids:
+                                continue
+                            seen_ids.add(event_id)
+                            merged.append(event)
+                        last_snapshot.backend_events = merged
         matrix = await run_partial_tests(self._project, self.task, self._history)
         if not matrix:
             self._last_score = ScoreDetails()
