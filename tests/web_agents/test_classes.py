@@ -98,6 +98,18 @@ def test_task_solution_replace_web_agent_id():
     assert sol.actions[0].text == "agent-99"
 
 
+def test_task_solution_replace_web_agent_id_noop_without_agent_id():
+    action = TypeAction(
+        type="TypeAction",
+        text="<web_agent_id>",
+        selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="x"),
+    )
+    sol = TaskSolution(web_agent_id=None, actions=[action])
+    out = sol.replace_web_agent_id()
+    assert out is sol.actions
+    assert sol.actions[0].text == "<web_agent_id>"
+
+
 def test_task_solution_replace_credentials():
     action = TypeAction(
         type="TypeAction",

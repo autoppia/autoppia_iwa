@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from autoppia_iwa.src.web_agents.act_protocol import ActRequest, ActResponse
+from autoppia_iwa.src.web_agents.act_protocol import ActRequest, ActResponse, ActToolCall
 
 
 def test_act_response_accepts_canonical_tool_calls() -> None:
@@ -73,3 +73,28 @@ def test_act_response_rejects_legacy_actions_shape_with_type_payload() -> None:
                 "state_out": {},
             }
         )
+
+
+def test_act_tool_call_rejects_empty_name() -> None:
+    with pytest.raises(ValidationError):
+        ActToolCall(name="", arguments={})
+
+
+def test_act_tool_call_normalizes_arguments_none() -> None:
+    tc = ActToolCall(name="browser.click", arguments=None)  # type: ignore[arg-type]
+    assert tc.arguments == {}
+
+
+def test_act_tool_call_rejects_non_object_arguments() -> None:
+    with pytest.raises(ValidationError):
+        ActToolCall(name="browser.click", arguments="not-a-dict")  # type: ignore[arg-type]
+
+
+def test_act_response_normalize_root_non_dict_passes_through_validator() -> None:
+    with pytest.raises(ValidationError):
+        ActResponse.from_raw([])  # type: ignore[arg-type]
+
+
+def test_act_response_rejects_non_object_state_out() -> None:
+    with pytest.raises(ValidationError):
+        ActResponse.from_raw({"tool_calls": [], "done": True, "state_out": "bad"})

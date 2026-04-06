@@ -6,8 +6,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from autoppia_iwa.src.data_generation.tasks.classes import Task
-from autoppia_iwa.src.execution.actions.actions import GoBackAction, NavigateAction, RequestUserInputAction, TypeAction
-from autoppia_iwa.src.web_agents.act_protocol import ActResponse
+from autoppia_iwa.src.execution.actions.actions import BaseAction, GoBackAction, NavigateAction, RequestUserInputAction, TypeAction
+from autoppia_iwa.src.web_agents.act_protocol import ActResponse, ActToolCall
 from autoppia_iwa.src.web_agents.apified_iterative_agent import ApifiedWebAgent
 
 
@@ -324,6 +324,135 @@ class TestAct:
         session_mock.post = MagicMock(side_effect=Exception("connection refused"))
         session_mock.__aenter__ = AsyncMock(return_value=session_mock)
         session_mock.__aexit__ = AsyncMock(return_value=None)
+        with patch("aiohttp.ClientSession", return_value=session_mock):
+            result = await agent.act(
+                task=task,
+                snapshot_html="",
+                url="http://localhost:8000/",
+                step_index=0,
+            )
+        assert result == []
+
+
+class TestApifiedWebAgentHelpers:
+    def test_act_sync_runs_async_act(self) -> None:
+        agent = ApifiedWebAgent(base_url="http://localhost:5000")
+        nav = NavigateAction(type="NavigateAction", url="/x")
+
+        async def fake_act(**_kwargs):
+            return [nav]
+
+        with patch.object(agent, "act", side_effect=fake_act):
+            out = agent.act_sync(
+                task=Task(url="https://example.com", prompt="p", web_project_id="w"),
+                snapshot_html="<html/>",
+                url="http://localhost:8000/",
+                step_index=0,
+            )
+        assert len(out) == 1
+        assert isinstance(out[0], NavigateAction)
+
+    def test_get_last_usage_returns_cached_fields(self) -> None:
+        agent = ApifiedWebAgent(base_url="http://localhost:5000")
+        agent.last_input_tokens = 10
+        agent.last_output_tokens = 20
+        agent.last_cost_usd = 0.5
+        assert agent.get_last_usage() == {"input_tokens": 10, "output_tokens": 20, "cost_usd": 0.5}
+
+    def test_cache_parsed_response_skips_state_when_not_dict(self) -> None:
+        agent = ApifiedWebAgent(base_url="http://localhost:5000")
+        agent._task_state = {"keep": True}
+        parsed = MagicMock(spec=ActResponse)
+        parsed.model_dump = MagicMock(return_value={"tool_calls": []})
+        parsed.reasoning = None
+        parsed.content = "   "
+        parsed.done = False
+        parsed.state_out = []
+        parsed.input_tokens = None
+        parsed.output_tokens = None
+        parsed.cost_usd = None
+        agent._cache_parsed_response(parsed)
+        assert agent._task_state == {"keep": True}
+        assert agent.last_content is None
+
+    def test_normalize_state_blob_non_dict(self) -> None:
+        assert ApifiedWebAgent._normalize_state_blob("x") == {}
+
+    def test_tool_call_payload_invalid_browser_suffix_raises(self) -> None:
+        agent = ApifiedWebAgent(base_url="http://localhost:5000")
+        with pytest.raises(ValueError, match="Invalid browser tool call name"):
+            agent._tool_call_to_action_payload(ActToolCall(name="browser.", arguments={}))
+
+    def test_tool_call_payload_unsupported_name_raises(self) -> None:
+        agent = ApifiedWebAgent(base_url="http://localhost:5000")
+        with pytest.raises(ValueError, match="Unsupported tool call name"):
+            agent._tool_call_to_action_payload(ActToolCall(name="other.navigate", arguments={}))
+
+    def test_build_allowed_tools_skips_when_not_callable(self) -> None:
+        with patch.object(BaseAction, "all_function_definitions", new=None):
+            assert ApifiedWebAgent._build_allowed_tools() == []
+
+    def test_build_allowed_tools_handles_exception_and_malformed_entries(self) -> None:
+        defs = [
+            {"function": {"name": "click", "description": "c", "parameters": {"type": "object"}}},
+            {"function": {"name": "done", "description": "", "parameters": {}}},
+            {"function": {"name": "request_user_input", "description": "u", "parameters": {}}},
+            {"function": {"name": "", "description": "", "parameters": {}}},
+            "bad",
+            {"function": "not-a-dict"},
+        ]
+        with patch.object(BaseAction, "all_function_definitions", return_value=defs):
+            tools = ApifiedWebAgent._build_allowed_tools()
+        names = {t["name"] for t in tools}
+        assert "browser.click" in names
+        assert "user.request_input" in names
+        assert "browser.done" not in names
+
+    def test_build_allowed_tools_swallows_defs_exception(self) -> None:
+        with patch.object(BaseAction, "all_function_definitions", side_effect=RuntimeError("boom")):
+            assert ApifiedWebAgent._build_allowed_tools() == []
+
+    def test_parse_legacy_actions_skips_row_on_create_failure(self) -> None:
+        agent = ApifiedWebAgent(base_url="http://localhost:5000")
+        data = {"actions": [{"type": "NavigateAction", "url": None}]}
+        with patch.object(agent, "_rewrite_to_remote", side_effect=lambda x: x), patch.object(BaseAction, "create_action", side_effect=ValueError("bad")):
+            assert agent._parse_legacy_actions_response(data) == []
+
+    def test_build_action_from_tool_call_swallows_errors(self) -> None:
+        agent = ApifiedWebAgent(base_url="http://localhost:5000")
+        tc = ActToolCall(name="browser.navigate", arguments={"url": "/x"})
+        with patch.object(BaseAction, "create_action", side_effect=RuntimeError("nope")):
+            assert agent._build_action_from_tool_call(tc) is None
+
+    def test_build_action_from_tool_call_returns_none_when_factory_returns_none(self) -> None:
+        agent = ApifiedWebAgent(base_url="http://localhost:5000")
+        tc = ActToolCall(name="browser.__not_a_registered_action_type__", arguments={})
+        assert agent._build_action_from_tool_call(tc) is None
+
+    def test_parse_legacy_skips_action_when_factory_returns_none(self) -> None:
+        agent = ApifiedWebAgent(base_url="http://localhost:5000")
+        data = {"actions": [{"type": "__not_a_registered_action_type__", "x": 1}]}
+        with patch.object(agent, "_rewrite_to_remote", side_effect=lambda x: x):
+            assert agent._parse_legacy_actions_response(data) == []
+
+
+class TestActJsonPayload:
+    @pytest.mark.asyncio
+    async def test_act_treats_non_dict_json_as_empty_payload(self) -> None:
+        agent = ApifiedWebAgent(base_url="http://localhost:9999", id="a1")
+        task = Task(url="https://example.com", prompt="P", web_project_id="dummy")
+        response_mock = AsyncMock()
+        response_mock.status = 200
+        response_mock.raise_for_status = MagicMock()
+        response_mock.json = AsyncMock(return_value=["unexpected"])
+        post_mock = MagicMock()
+        post_mock.__aenter__ = AsyncMock(return_value=response_mock)
+        post_mock.__aexit__ = AsyncMock(return_value=None)
+        session_mock = MagicMock()
+        session_mock.post = MagicMock(return_value=post_mock)
+        session_mock.__aenter__ = AsyncMock(return_value=session_mock)
+        session_mock.__aexit__ = AsyncMock(return_value=None)
+
         with patch("aiohttp.ClientSession", return_value=session_mock):
             result = await agent.act(
                 task=task,
