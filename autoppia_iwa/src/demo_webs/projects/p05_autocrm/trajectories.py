@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import re
-from typing import Any
-
 PROJECT_NUMBER = 5
 WEB_PROJECT_ID = "autocrm"
 
@@ -660,132 +657,192 @@ ACTIONS = [
 ]
 
 
-def _normalize_field_name(raw_field: str) -> str:
-    field = raw_field.strip().lower().replace(" ", "_")
-    aliases = {
-        "movie_name": "name",
-        "film_name": "name",
-    }
-    return aliases.get(field, field)
+# CheckEventTest payloads aligned with autocrm_tasks.json (per use_case.name).
+_RAW_TESTS: dict[str, list[dict]] = {
+    "ADD_NEW_MATTER": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "ADD_NEW_MATTER",
+            "event_criteria": {
+                "name": {"operator": "not_equals", "value": "Litigation 2025"},
+                "client": {"operator": "contains", "value": "Emma"},
+                "status": {"operator": "contains", "value": "On hold"},
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "VIEW_MATTER_DETAILS": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "VIEW_MATTER_DETAILS",
+            "event_criteria": {"status": {"operator": "not_contains", "value": "Archived"}, "name": "Contract Review"},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "DELETE_MATTER": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "DELETE_MATTER",
+            "event_criteria": {"name": {"operator": "not_contains", "value": "Contract Review"}, "status": {"operator": "not_equals", "value": "Archived"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "ARCHIVE_MATTER": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "ARCHIVE_MATTER",
+            "event_criteria": {"name": {"operator": "not_contains", "value": "Litigation Support"}, "status": {"operator": "contains", "value": "Pe"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "VIEW_CLIENT_DETAILS": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "VIEW_CLIENT_DETAILS",
+            "event_criteria": {"matters": {"operator": "greater_than", "value": 4.64}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "SEARCH_CLIENT": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "SEARCH_CLIENT",
+            "event_criteria": {"query": {"operator": "not_equals", "value": "Commercial Legal"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "DOCUMENT_DELETED": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "DOCUMENT_DELETED",
+            "event_criteria": {"version": {"operator": "not_equals", "value": "v5"}, "size": {"operator": "less_equal", "value": "1351 KB"}, "name": "Complaint-5725.xlsx"},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "NEW_CALENDAR_EVENT_ADDED": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "NEW_CALENDAR_EVENT_ADDED",
+            "event_criteria": {
+                "label": {"operator": "not_contains", "value": "Monthly Sales Review"},
+                "time": {"operator": "greater_than", "value": "9:30am"},
+                "date": {"operator": "less_than", "value": "2026-05-18"},
+                "event_type": "Matter/Event",
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "NEW_LOG_ADDED": [{"type": "CheckEventTest", "event_name": "NEW_LOG_ADDED", "event_criteria": {"hours": 3.6}, "description": "Check if specific event was triggered"}],
+    "LOG_DELETE": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "LOG_DELETE",
+            "event_criteria": {
+                "hours": {"operator": "not_equals", "value": 6.0},
+                "matter": {"operator": "not_contains", "value": "Franchise Agreement"},
+                "status": {"operator": "contains", "value": "Bill"},
+                "client": {"operator": "not_equals", "value": "Strategic Partners"},
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "CHANGE_USER_NAME": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "CHANGE_USER_NAME",
+            "event_criteria": {"name": {"operator": "not_contains", "value": "Builder"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "SEARCH_MATTER": [
+        {"type": "CheckEventTest", "event_name": "SEARCH_MATTER", "event_criteria": {"query": {"operator": "contains", "value": "Data"}}, "description": "Check if specific event was triggered"}
+    ],
+    "ADD_CLIENT": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "ADD_CLIENT",
+            "event_criteria": {
+                "name": {"operator": "not_equals", "value": "United Legal"},
+                "email": {"operator": "not_equals", "value": "unitedlegal@enterprises.com"},
+                "matters": {"operator": "less_than", "value": 3},
+                "status": "Active",
+                "last": {"operator": "not_equals", "value": "1mo ago"},
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "DELETE_CLIENT": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "DELETE_CLIENT",
+            "event_criteria": {
+                "name": {"operator": "not_equals", "value": "Nicole Miller"},
+                "email": {"operator": "not_contains", "value": "nicolemiller@services.com"},
+                "matters": {"operator": "not_equals", "value": 8},
+                "status": "Inactive",
+                "last": {"operator": "contains", "value": "Today"},
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "FILTER_CLIENTS": [{"type": "CheckEventTest", "event_name": "FILTER_CLIENTS", "event_criteria": {"status": "Active", "matters": "5+"}, "description": "Check if specific event was triggered"}],
+    "FILTER_MATTER_STATUS": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "FILTER_MATTER_STATUS",
+            "event_criteria": {"status": {"operator": "not_equals", "value": "Archived"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "SORT_MATTER_BY_CREATED_AT": [
+        {"type": "CheckEventTest", "event_name": "SORT_MATTER_BY_CREATED_AT", "event_criteria": {"direction": "asc"}, "description": "Check if specific event was triggered"}
+    ],
+    "UPDATE_MATTER": [{"type": "CheckEventTest", "event_name": "UPDATE_MATTER", "event_criteria": {"updated": "1mo ago"}, "description": "Check if specific event was triggered"}],
+    "VIEW_PENDING_EVENTS": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "VIEW_PENDING_EVENTS",
+            "event_criteria": {"earliest": {"operator": "not_equals", "value": "2025-12-12"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "DOCUMENT_RENAMED": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "DOCUMENT_RENAMED",
+            "event_criteria": {"new_name": {"operator": "not_equals", "value": "Agreement-337.docx"}, "previous_name": {"operator": "not_equals", "value": "Complaint-2574.xlsx"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "LOG_EDITED": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "LOG_EDITED",
+            "event_criteria": {
+                "client": {"operator": "contains", "value": "itta"},
+                "status": {"operator": "contains", "value": "B"},
+                "matter": {"operator": "not_contains", "value": "Corporate Formation"},
+                "hours": {"operator": "greater_equal", "value": 1.2},
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "BILLING_SEARCH": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "BILLING_SEARCH",
+            "event_criteria": {"query": "Regulatory Approval", "date_filter": {"operator": "contains", "value": "Previous 2 weeks"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "HELP_VIEWED": [{"type": "CheckEventTest", "event_name": "HELP_VIEWED", "event_criteria": {}, "description": "Check if specific event was triggered"}],
+}
 
-
-def _parse_value_token(raw_value: str) -> Any:
-    value = raw_value.strip().strip(".")
-    if (value.startswith("'") and value.endswith("'")) or (value.startswith('"') and value.endswith('"')):
-        return value[1:-1]
-    try:
-        if "." in value:
-            return float(value)
-        return int(value)
-    except ValueError:
-        return value
-
-
-def _maybe_add_operator_criterion(criteria: dict[str, Any], field: str, operator: str, raw_value: str) -> None:
-    criteria[_normalize_field_name(field)] = {
-        "operator": operator,
-        "value": _parse_value_token(raw_value),
-    }
-
-
-def _extract_event_criteria_from_prompt(prompt: str) -> dict[str, Any]:
-    # Conservative parser: if prompt looks complex/ambiguous, return empty criteria.
-    lowered = prompt.lower()
-    tricky_markers = (" one of ", " or ", " either ", " directly ", " then ")
-    if any(marker in lowered for marker in tricky_markers):
-        return {}
-
-    criteria: dict[str, Any] = {}
-
-    not_equals_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+is\s+not\s+'([^']+)'",
-        r"\b([a-zA-Z_ ]+?)\s+not\s+'([^']+)'",
-    ]
-    contains_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+contains\s+'([^']+)'",
-    ]
-    not_contains_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+does\s+not\s+contain\s+'([^']+)'",
-        r"\b([a-zA-Z_ ]+?)\s+not\s+contain\s+'([^']+)'",
-    ]
-    equals_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+equals\s+'([^']+)'",
-    ]
-    less_equal_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+less\s+equal\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-        r"\b([a-zA-Z_ ]+?)\s+less\s+than\s+or\s+equal\s+to\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-    greater_equal_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+greater\s+equal\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-        r"\b([a-zA-Z_ ]+?)\s+greater\s+than\s+or\s+equal\s+to\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-    less_than_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+less\s+than\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-    greater_than_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+greater\s+than\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-
-    for pattern in not_contains_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "not_contains", value)
-
-    for pattern in contains_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "contains", value)
-
-    for pattern in not_equals_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "not_equals", value)
-
-    for pattern in equals_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            criteria[_normalize_field_name(field)] = _parse_value_token(value)
-
-    for pattern in less_equal_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "less_equal", value)
-
-    for pattern in greater_equal_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "greater_equal", value)
-
-    for pattern in less_than_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "less_than", value)
-
-    for pattern in greater_than_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "greater_than", value)
-
-    return criteria
-
-
-def _build_raw_tests_from_actions(actions_data: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
-    raw_tests: dict[str, list[dict[str, Any]]] = {}
-    for item in actions_data:
-        use_case = str(item.get("use_case", "")).strip()
-        if not use_case:
-            continue
-        prompt = str(item.get("prompt", ""))
-        criteria = _extract_event_criteria_from_prompt(prompt)
-        raw_tests[use_case] = [
-            {
-                "type": "CheckEventTest",
-                "event_name": use_case,
-                "event_criteria": criteria,
-                "description": "Check if specific event was triggered",
-            }
-        ]
-    return raw_tests
-
-
-_RAW_TESTS: dict[str, list[dict[str, Any]]] = _build_raw_tests_from_actions(ACTIONS)
 _TESTS: dict[str, list[BaseTaskTest]] = {uc: [BaseTaskTest.deserialize(p) for p in pl] for uc, pl in _RAW_TESTS.items()}
 
 
 def _uc(use_case: str, prompt: str, actions: list[BaseAction]) -> Trajectory:
-    return Trajectory(name=use_case, prompt=prompt, actions=actions, tests=_TESTS.get(use_case, []))
+    return Trajectory(name=use_case, prompt=prompt, actions=actions, tests=_TESTS[use_case])
 
 
 def _xp(expr: str) -> Selector:
@@ -798,7 +855,7 @@ def _id(element_id: str) -> Selector:
 
 FILTER_MATTER_STATUS = _uc(
     "FILTER_MATTER_STATUS",
-    prompt="Filter matters to only show those with status 'Active'.",
+    prompt="Filter matters to exclude those with status 'Archived'",
     actions=[
         NavigateAction(url="http://localhost:8004/?seed=1"),
         ClickAction(selector=_id("matters-nav-link")),
@@ -808,7 +865,7 @@ FILTER_MATTER_STATUS = _uc(
 
 SORT_MATTER_BY_CREATED_AT = _uc(
     "SORT_MATTER_BY_CREATED_AT",
-    prompt="Sort matters by latest first.",
+    prompt="Sort matters by created date in 'asc' order.",
     actions=[
         NavigateAction(url="http://localhost:8004/?seed=1"),
         ClickAction(
@@ -833,7 +890,7 @@ SORT_MATTER_BY_CREATED_AT = _uc(
 
 UPDATE_MATTER = _uc(
     "UPDATE_MATTER",
-    prompt="Edit the matter 'Estate Planning' to change status to 'On Hold'.",
+    prompt="Update any matter where the updated date equals '1mo ago'.",
     actions=[
         NavigateAction(url="http://localhost:8004/?seed=1"),
         ClickAction(selector=_id("matters-nav-link")),
@@ -847,7 +904,7 @@ UPDATE_MATTER = _uc(
 
 VIEW_PENDING_EVENTS = _uc(
     "VIEW_PENDING_EVENTS",
-    prompt="Open the pending events list on the calendar page.",
+    prompt="Show me the pending events on the calendar where the earliest date is NOT '2025-12-12'.",
     actions=[
         NavigateAction(url="http://localhost:8004/?seed=1"),
         ClickAction(selector=_id("calendar-nav-link")),
@@ -857,7 +914,7 @@ VIEW_PENDING_EVENTS = _uc(
 
 NEW_CALENDAR_EVENT_ADDED = _uc(
     "NEW_CALENDAR_EVENT_ADDED",
-    prompt="Add a new calendar event on 2025-05-13 at 9:00am called 'Team Sync' with a Filing type.",
+    prompt="Add a new calendar event where the label does NOT contain 'Monthly Sales Review', the time is GREATER than '9:30am', the date is LESS than '2026-05-18', and the event_type equals 'Matter/Event'.",
     actions=[
         NavigateAction(url="http://localhost:8004/?seed=1"),
         ClickAction(selector=_id("calendar-nav-link")),
@@ -871,7 +928,7 @@ NEW_CALENDAR_EVENT_ADDED = _uc(
 
 SEARCH_MATTER = _uc(
     "SEARCH_MATTER",
-    prompt="Search for matters that include 'Estate' in the title.",
+    prompt="Search for matters where the query contains 'Data'.",
     actions=[
         NavigateAction(url="http://localhost:8004/?seed=1"),
     ],
@@ -879,7 +936,7 @@ SEARCH_MATTER = _uc(
 
 ADD_NEW_MATTER = _uc(
     "ADD_NEW_MATTER",
-    prompt="Create a matter named 'New Matter', with client 'Acme Co.' and status 'Active'.",
+    prompt="Create a matter with the name that is NOT 'Litigation 2025', with client that contains 'Emma', and status that contains 'On hold'.",
     actions=[
         NavigateAction(url="http://localhost:8004/?seed=1"),
     ],
@@ -887,7 +944,7 @@ ADD_NEW_MATTER = _uc(
 
 VIEW_MATTER_DETAILS = _uc(
     "VIEW_MATTER_DETAILS",
-    prompt="Go to the Matters page and click on 'Estate Planning' to view the details of that particular matter.",
+    prompt="Retrieve details of the matter where the status does NOT contain 'Archived' and the name equals 'Contract Review'",
     actions=[
         NavigateAction(url="http://localhost:8004/?seed=1"),
     ],
@@ -895,7 +952,7 @@ VIEW_MATTER_DETAILS = _uc(
 
 ARCHIVE_MATTER = _uc(
     "ARCHIVE_MATTER",
-    prompt="Archive the matter whose status is set to 'Active'.",
+    prompt="Archive the matter where the name does NOT contain 'Litigation Support' and the status contains 'Pe'.",
     actions=[
         NavigateAction(url="http://localhost:8004/?seed=1"),
     ],
@@ -903,7 +960,7 @@ ARCHIVE_MATTER = _uc(
 
 DELETE_MATTER = _uc(
     "DELETE_MATTER",
-    prompt="Delete the matter where status is set to 'Active'.",
+    prompt="Delete the matter where the name does NOT contain 'Contract Review' and the status is NOT 'Archived'",
     actions=[
         NavigateAction(url="http://localhost:8004/?seed=1"),
     ],
@@ -911,7 +968,7 @@ DELETE_MATTER = _uc(
 
 VIEW_CLIENT_DETAILS = _uc(
     "VIEW_CLIENT_DETAILS",
-    prompt="View details of client, whose client name is 'Jessica Taylor' and email is 'jtaylor@samplemail.com'.",
+    prompt="View details of clients where the matters are greater than '4.64'",
     actions=[
         NavigateAction(url="http://localhost:8004/?seed=1"),
     ],
@@ -919,7 +976,7 @@ VIEW_CLIENT_DETAILS = _uc(
 
 SEARCH_CLIENT = _uc(
     "SEARCH_CLIENT",
-    prompt="Search for clients named 'Smith'.",
+    prompt="Search for clients where the query is NOT 'Commercial Legal'.",
     actions=[
         NavigateAction(url="http://localhost:8004/?seed=1"),
     ],
@@ -927,7 +984,7 @@ SEARCH_CLIENT = _uc(
 
 ADD_CLIENT = _uc(
     "ADD_CLIENT",
-    prompt="Add a new client named 'Nova Labs' with status Active.",
+    prompt="Add a new client named 'Nova Labs' with email not equals 'unitedlegal@enterprises.com', matters less than 3, status equals 'Active', and last not equals '1mo ago'.",
     actions=[
         NavigateAction(url="http://localhost:8004/?seed=1"),
     ],
@@ -935,7 +992,7 @@ ADD_CLIENT = _uc(
 
 DELETE_CLIENT = _uc(
     "DELETE_CLIENT",
-    prompt="Delete the client named not equals 'Orion Tech Solutions'.",
+    prompt="Delete the client whose name is NOT 'Nicole Miller', email does NOT contain 'nicolemiller@services.com', matters is NOT '8', status equals 'Inactive', and last contains 'Today'.",
     actions=[
         NavigateAction(url="http://localhost:8004/?seed=1"),
     ],
@@ -943,7 +1000,7 @@ DELETE_CLIENT = _uc(
 
 FILTER_CLIENTS = _uc(
     "FILTER_CLIENTS",
-    prompt="Filter clients to status Active with 3-4 matters.",
+    prompt="Retrieve details of clients where the status equals 'Active' and the matters equals '5+'",
     actions=[
         NavigateAction(url="http://localhost:8004/?seed=1"),
     ],
@@ -951,7 +1008,7 @@ FILTER_CLIENTS = _uc(
 
 DOCUMENT_RENAMED = _uc(
     "DOCUMENT_RENAMED",
-    prompt="Rename the document 'Retainer-Agreement-6908.pdf' to 'Retainer-Agreement-final.pdf'.",
+    prompt="Rename the document 'Retainer-Agreement.pdf' to 'Retainer-Agreement-final.pdf' where the new_name is NOT 'Agreement-337.docx' and the previous_name is NOT 'Complaint-2574.xlsx'.",
     actions=[
         NavigateAction(url="http://localhost:8004/?seed=1"),
     ],
@@ -959,7 +1016,7 @@ DOCUMENT_RENAMED = _uc(
 
 DOCUMENT_DELETED = _uc(
     "DOCUMENT_DELETED",
-    prompt="Delete the document named 'Retainer-Agreement-6908.pdf'.",
+    prompt="Please delete the document with name equals 'Complaint-5725.xlsx' that has a version NOT equal to 'v5' and a size less than or equal to '1351 KB'.",
     actions=[
         NavigateAction(url="http://localhost:8004/?seed=1"),
     ],
@@ -967,7 +1024,7 @@ DOCUMENT_DELETED = _uc(
 
 NEW_LOG_ADDED = _uc(
     "NEW_LOG_ADDED",
-    prompt="Add log with matter 'Trademark Filing', description 'Prepare documents', and hours '2.5'.",
+    prompt="Add log entry with hours equals '3.6'",
     actions=[
         NavigateAction(url="http://localhost:8004/?seed=1"),
     ],
@@ -975,7 +1032,7 @@ NEW_LOG_ADDED = _uc(
 
 LOG_EDITED = _uc(
     "LOG_EDITED",
-    prompt="Edit the time log for 'Estate Planning' to change hours to 2.5.",
+    prompt="Edit log entry where client contains 'itta', status contains 'B', matter does not contain 'Corporate Formation', and hours are greater than or equal to 1.2",
     actions=[
         NavigateAction(url="http://localhost:8004/?seed=1"),
     ],
@@ -983,7 +1040,7 @@ LOG_EDITED = _uc(
 
 LOG_DELETE = _uc(
     "LOG_DELETE",
-    prompt="Delete the time log for 'Estate Planning' that recorded 2 hours.",
+    prompt="Delete the time log where hours is NOT equal to '6.0', matter does NOT CONTAIN 'Franchise Agreement', status CONTAINS 'Bill', and client is NOT equal to 'Strategic Partners'.",
     actions=[
         NavigateAction(url="http://localhost:8004/?seed=1"),
     ],
@@ -991,7 +1048,7 @@ LOG_DELETE = _uc(
 
 BILLING_SEARCH = _uc(
     "BILLING_SEARCH",
-    prompt="Search billing entries for 'contract' from this week.",
+    prompt="Retrieve billing entries where the query equals 'Regulatory Approval' and the date_filter contains 'Previous 2 weeks'",
     actions=[
         NavigateAction(url="http://localhost:8004/?seed=1"),
     ],
@@ -999,7 +1056,7 @@ BILLING_SEARCH = _uc(
 
 CHANGE_USER_NAME = _uc(
     "CHANGE_USER_NAME",
-    prompt="Change user name to 'Muhammad Ali'.",
+    prompt="Change user name to 'John Smith' that does NOT contain 'Builder'",
     actions=[
         NavigateAction(url="http://localhost:8004/?seed=1"),
     ],
@@ -1007,7 +1064,7 @@ CHANGE_USER_NAME = _uc(
 
 HELP_VIEWED = _uc(
     "HELP_VIEWED",
-    prompt="Open the help center.",
+    prompt="Open the help/FAQ page.",
     actions=[
         NavigateAction(url="http://localhost:8004/?seed=1"),
     ],

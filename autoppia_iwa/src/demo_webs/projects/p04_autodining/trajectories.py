@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import re
-from typing import Any
-
 PROJECT_NUMBER = 4
 WEB_PROJECT_ID = "autodining"
 
@@ -1366,132 +1363,154 @@ ACTIONS = [
 ]
 
 
-def _normalize_field_name(raw_field: str) -> str:
-    field = raw_field.strip().lower().replace(" ", "_")
-    aliases = {
-        "movie_name": "name",
-        "film_name": "name",
-    }
-    return aliases.get(field, field)
+# CheckEventTest payloads aligned with autodining_tasks.json (per use_case.name).
+_RAW_TESTS: dict[str, list[dict]] = {
+    "VIEW_RESTAURANT": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "VIEW_RESTAURANT",
+            "event_criteria": {
+                "rating": 4.5,
+                "bookings": {"operator": "less_than", "value": 613},
+                "name": {"operator": "not_equals", "value": "lvarcw"},
+                "reviews": {"operator": "less_equal", "value": 1568},
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "VIEW_FULL_MENU": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "VIEW_FULL_MENU",
+            "event_criteria": {"reviews": {"operator": "not_equals", "value": 5679}, "cuisine": "Indian"},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "COLLAPSE_MENU": [
+        {"type": "CheckEventTest", "event_name": "COLLAPSE_MENU", "event_criteria": {"cuisine": {"operator": "not_equals", "value": "mhydqx"}}, "description": "Check if specific event was triggered"}
+    ],
+    "DATE_DROPDOWN_OPENED": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "DATE_DROPDOWN_OPENED",
+            "event_criteria": {"date": {"operator": "less_equal", "value": "2026-04-16T19:00:00+00:00"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "TIME_DROPDOWN_OPENED": [{"type": "CheckEventTest", "event_name": "TIME_DROPDOWN_OPENED", "event_criteria": {"time": "12:00 PM"}, "description": "Check if specific event was triggered"}],
+    "PEOPLE_DROPDOWN_OPENED": [{"type": "CheckEventTest", "event_name": "PEOPLE_DROPDOWN_OPENED", "event_criteria": {"people": 7}, "description": "Check if specific event was triggered"}],
+    "SEARCH_RESTAURANT": [
+        {"type": "CheckEventTest", "event_name": "SEARCH_RESTAURANT", "event_criteria": {"query": {"operator": "contains", "value": "Jay Fai"}}, "description": "Check if specific event was triggered"}
+    ],
+    "SCROLL_VIEW": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "SCROLL_VIEW",
+            "event_criteria": {"section": {"operator": "contains", "value": "Introducing OpenDinning Icons"}, "direction": "right"},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "BOOK_RESTAURANT": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "BOOK_RESTAURANT",
+            "event_criteria": {"bookings": {"operator": "less_equal", "value": 893}, "people": 5, "date": {"operator": "less_equal", "value": "2026-04-08T19:00:00+00:00"}, "time": "2:00 PM"},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "COUNTRY_SELECTED": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "COUNTRY_SELECTED",
+            "event_criteria": {
+                "cuisine": {"operator": "not_equals", "value": "qddqol"},
+                "reviews": {"operator": "greater_equal", "value": 986},
+                "name": {"operator": "not_contains", "value": "fjoewn"},
+                "country": {"operator": "not_equals", "value": "Japan"},
+                "people": {"operator": "greater_equal", "value": 8},
+                "date": {"operator": "less_equal", "value": "2026-04-10T19:00:00+00:00"},
+                "time": "2:00 PM",
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "OCCASION_SELECTED": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "OCCASION_SELECTED",
+            "event_criteria": {
+                "name": "Astrid y Gastón",
+                "bookings": {"operator": "less_than", "value": 346},
+                "people": {"operator": "greater_equal", "value": 5},
+                "date": {"operator": "less_equal", "value": "2026-04-07T19:00:00+00:00"},
+                "time": "12:30 PM",
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "RESERVATION_COMPLETE": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "RESERVATION_COMPLETE",
+            "event_criteria": {
+                "rating": {"operator": "greater_than", "value": 3.5},
+                "reviews": {"operator": "greater_than", "value": 1122},
+                "occasion": "anniversary",
+                "code": {"operator": "not_equals", "value": "US"},
+                "date": {"operator": "greater_equal", "value": "2026-04-12T19:00:00+00:00"},
+                "people": 8,
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "CONTACT_FORM_SUBMIT": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "CONTACT_FORM_SUBMIT",
+            "event_criteria": {
+                "message": {"operator": "not_contains", "value": "Can you share details about your recent updates or new features?"},
+                "email": {"operator": "not_equals", "value": "james.wilson@example.com"},
+                "subject": "Website Issue Report",
+                "username": {"operator": "contains", "value": "ni"},
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "ABOUT_PAGE_VIEW": [{"type": "CheckEventTest", "event_name": "ABOUT_PAGE_VIEW", "event_criteria": {}, "description": "Check if specific event was triggered"}],
+    "HELP_PAGE_VIEW": [{"type": "CheckEventTest", "event_name": "HELP_PAGE_VIEW", "event_criteria": {}, "description": "Check if specific event was triggered"}],
+    "ABOUT_FEATURE_CLICK": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "ABOUT_FEATURE_CLICK",
+            "event_criteria": {"feature": {"operator": "not_contains", "value": "Live availability"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "CONTACT_PAGE_VIEW": [{"type": "CheckEventTest", "event_name": "CONTACT_PAGE_VIEW", "event_criteria": {}, "description": "Check if specific event was triggered"}],
+    "CONTACT_CARD_CLICK": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "CONTACT_CARD_CLICK",
+            "event_criteria": {"card_type": {"operator": "not_contains", "value": "Phone"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "HELP_CATEGORY_SELECTED": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "HELP_CATEGORY_SELECTED",
+            "event_criteria": {"category": {"operator": "not_equals", "value": "Account"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "HELP_FAQ_TOGGLED": [{"type": "CheckEventTest", "event_name": "HELP_FAQ_TOGGLED", "event_criteria": {"question": "Can I get a refund?"}, "description": "Check if specific event was triggered"}],
+}
 
-
-def _parse_value_token(raw_value: str) -> Any:
-    value = raw_value.strip().strip(".")
-    if (value.startswith("'") and value.endswith("'")) or (value.startswith('"') and value.endswith('"')):
-        return value[1:-1]
-    try:
-        if "." in value:
-            return float(value)
-        return int(value)
-    except ValueError:
-        return value
-
-
-def _maybe_add_operator_criterion(criteria: dict[str, Any], field: str, operator: str, raw_value: str) -> None:
-    criteria[_normalize_field_name(field)] = {
-        "operator": operator,
-        "value": _parse_value_token(raw_value),
-    }
-
-
-def _extract_event_criteria_from_prompt(prompt: str) -> dict[str, Any]:
-    # Conservative parser: if prompt looks complex/ambiguous, return empty criteria.
-    lowered = prompt.lower()
-    tricky_markers = (" one of ", " or ", " either ", " directly ", " then ")
-    if any(marker in lowered for marker in tricky_markers):
-        return {}
-
-    criteria: dict[str, Any] = {}
-
-    not_equals_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+is\s+not\s+'([^']+)'",
-        r"\b([a-zA-Z_ ]+?)\s+not\s+'([^']+)'",
-    ]
-    contains_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+contains\s+'([^']+)'",
-    ]
-    not_contains_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+does\s+not\s+contain\s+'([^']+)'",
-        r"\b([a-zA-Z_ ]+?)\s+not\s+contain\s+'([^']+)'",
-    ]
-    equals_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+equals\s+'([^']+)'",
-    ]
-    less_equal_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+less\s+equal\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-        r"\b([a-zA-Z_ ]+?)\s+less\s+than\s+or\s+equal\s+to\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-    greater_equal_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+greater\s+equal\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-        r"\b([a-zA-Z_ ]+?)\s+greater\s+than\s+or\s+equal\s+to\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-    less_than_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+less\s+than\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-    greater_than_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+greater\s+than\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-
-    for pattern in not_contains_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "not_contains", value)
-
-    for pattern in contains_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "contains", value)
-
-    for pattern in not_equals_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "not_equals", value)
-
-    for pattern in equals_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            criteria[_normalize_field_name(field)] = _parse_value_token(value)
-
-    for pattern in less_equal_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "less_equal", value)
-
-    for pattern in greater_equal_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "greater_equal", value)
-
-    for pattern in less_than_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "less_than", value)
-
-    for pattern in greater_than_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "greater_than", value)
-
-    return criteria
-
-
-def _build_raw_tests_from_actions(actions_data: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
-    raw_tests: dict[str, list[dict[str, Any]]] = {}
-    for item in actions_data:
-        use_case = str(item.get("use_case", "")).strip()
-        if not use_case:
-            continue
-        prompt = str(item.get("prompt", ""))
-        criteria = _extract_event_criteria_from_prompt(prompt)
-        raw_tests[use_case] = [
-            {
-                "type": "CheckEventTest",
-                "event_name": use_case,
-                "event_criteria": criteria,
-                "description": "Check if specific event was triggered",
-            }
-        ]
-    return raw_tests
-
-
-_RAW_TESTS: dict[str, list[dict[str, Any]]] = _build_raw_tests_from_actions(ACTIONS)
 _TESTS: dict[str, list[BaseTaskTest]] = {uc: [BaseTaskTest.deserialize(p) for p in pl] for uc, pl in _RAW_TESTS.items()}
 
 
 def _uc(use_case: str, prompt: str, actions: list[BaseAction]) -> Trajectory:
-    return Trajectory(name=use_case, prompt=prompt, actions=actions, tests=_TESTS.get(use_case, []))
+    return Trajectory(name=use_case, prompt=prompt, actions=actions, tests=_TESTS[use_case])
 
 
 def _xp(expr: str) -> Selector:
@@ -1504,7 +1523,7 @@ def _id(element_id: str) -> Selector:
 
 VIEW_RESTAURANT = _uc(
     "VIEW_RESTAURANT",
-    prompt="Show me details for 'Thai Garden'",
+    prompt="Show details for a restaurant where the rating equals '4.5', bookings are less than '613', name is NOT 'lvarcw', and reviews are less than or equal to '1568'.",
     actions=[
         NavigateAction(url="http://localhost:8003/?seed=1"),
         ClickAction(
@@ -1528,7 +1547,7 @@ VIEW_RESTAURANT = _uc(
 
 VIEW_FULL_MENU = _uc(
     "VIEW_FULL_MENU",
-    prompt="Show the full menu for 'Thai Garden' for 2 people for dinner on July 18.",
+    prompt="Show me the full menu for a restaurant with cuisine equals 'Indian' that does NOT have '5679' reviews.",
     actions=[
         NavigateAction(url="http://localhost:8003/restaurant/7?seed=1"),
         ClickAction(
@@ -1541,7 +1560,7 @@ VIEW_FULL_MENU = _uc(
 
 COLLAPSE_MENU = _uc(
     "COLLAPSE_MENU",
-    prompt="Hide the menu for 'Thai Garden'.",
+    prompt="Please collapse the menu for the restaurant where the cuisine is NOT 'mhydqx'.",
     actions=[
         NavigateAction(url="http://localhost:8003/restaurant/7?seed=1"),
         ClickAction(
@@ -1559,7 +1578,7 @@ COLLAPSE_MENU = _uc(
 
 DATE_DROPDOWN_OPENED = _uc(
     "DATE_DROPDOWN_OPENED",
-    prompt="Open the date selector and select the date '2026-02-23'.",
+    prompt="Open the date selector and select the date less equal '2026-04-16T19:00:00+00:00'.",
     actions=[
         NavigateAction(url="http://localhost:8003/?seed=1"),
         ClickAction(
@@ -1575,7 +1594,7 @@ DATE_DROPDOWN_OPENED = _uc(
 
 TIME_DROPDOWN_OPENED = _uc(
     "TIME_DROPDOWN_OPENED",
-    prompt="Open the time dropdown and select the time equals '2:30 PM'.",
+    prompt="Open the time dropdown and select the time equals '12:00 PM'.",
     actions=[
         NavigateAction(url="http://localhost:8003/?seed=1"),
         ClickAction(
@@ -1589,7 +1608,7 @@ TIME_DROPDOWN_OPENED = _uc(
 
 PEOPLE_DROPDOWN_OPENED = _uc(
     "PEOPLE_DROPDOWN_OPENED",
-    prompt="Open the guest selector dropdown and select people equals 4.",
+    prompt="Open the guest selector dropdown and select people equals '7'.",
     actions=[
         NavigateAction(url="http://localhost:8003/?seed=1"),
         ClickAction(
@@ -1603,7 +1622,7 @@ PEOPLE_DROPDOWN_OPENED = _uc(
 
 SEARCH_RESTAURANT = _uc(
     "SEARCH_RESTAURANT",
-    prompt="Search for 'Thai Garden'",
+    prompt="Search for restaurants where the query contains 'Jay Fai'",
     actions=[
         NavigateAction(url="http://localhost:8003/?seed=1"),
         ClickAction(
@@ -1622,7 +1641,7 @@ SEARCH_RESTAURANT = _uc(
 
 SCROLL_VIEW = _uc(
     "SCROLL_VIEW",
-    prompt="Scroll in the direction 'right' where section equals 'Featured Products'.",
+    prompt="Scroll in the direction 'right' where section contains 'Introducing OpenDinning Icons'",
     actions=[
         NavigateAction(url="http://localhost:8003/?seed=1"),
         ClickAction(
@@ -1635,7 +1654,7 @@ SCROLL_VIEW = _uc(
 
 BOOK_RESTAURANT = _uc(
     "BOOK_RESTAURANT",
-    prompt="I'd like to book a table at the restaurant which name 'Thai Garden' for 2 people on 2026-04-03 at 12:00 PM.",
+    prompt="Please book a table for 5 people at a restaurant where the bookings are less than or equal to '893' on '2026-04-08T19:00:00+00:00' at '2:00 PM'.",
     actions=[
         NavigateAction(url="http://localhost:8003/?seed=1"),
         ClickAction(
@@ -1678,7 +1697,7 @@ BOOK_RESTAURANT = _uc(
 
 COUNTRY_SELECTED = _uc(
     "COUNTRY_SELECTED",
-    prompt="Select a country where code equals 'IN'.",
+    prompt="Please select a country from the dropdown that is NOT 'Japan' for your reservation, ensuring the cuisine is NOT 'qddqol', the reviews are GREATER THAN or EQUAL to 986, the name does NOT CONTAIN 'fjoewn', the number of people is GREATER THAN or EQUAL to 8, the date is LESS THAN or EQUAL to '2026-04-10T19:00:00+00:00', and the time is '2:00 PM'.",
     actions=[
         NavigateAction(url="http://localhost:8003/booking/7/12%3A00%20PM?seed=1&people=2&date=2026-04-03"),
         ClickAction(
@@ -1696,7 +1715,7 @@ COUNTRY_SELECTED = _uc(
 
 OCCASION_SELECTED = _uc(
     "OCCASION_SELECTED",
-    prompt="This reservation is for a 'birthday'.",
+    prompt="Please select a special occasion for a booking at a restaurant where the name equals 'Astrid y Gast\u00f3n', the bookings are less than 346, the number of people is greater than or equal to 5, the date is less than or equal to '2026-04-07T19:00:00+00:00', and the time equals '12:30 PM'.",
     actions=[
         NavigateAction(url="http://localhost:8003/booking/7/12%3A00%20PM?seed=1&people=2&date=2026-04-03"),
         ClickAction(
@@ -1714,7 +1733,7 @@ OCCASION_SELECTED = _uc(
 
 RESERVATION_COMPLETE = _uc(
     "RESERVATION_COMPLETE",
-    prompt="Complete my reservation for 'Thai Garden' on 2026-04-03 at 12:00 PM for 2 people. My phone is 666777888, it's for an anniversary, and special request is 'delicious'.",
+    prompt="Please finalize and complete the restaurant reservation for 8 people for an occasion that is 'anniversary' at a restaurant with a rating greater than 3.5, with more than 1122 reviews, where the code is NOT 'US', on or after '2026-04-12T19:00:00+00:00'.",
     actions=[
         NavigateAction(url="http://localhost:8003/booking/7/12%3A00%20PM?seed=1&people=2&date=2026-04-03"),
         ClickAction(
@@ -1781,7 +1800,7 @@ RESERVATION_COMPLETE = _uc(
 
 CONTACT_FORM_SUBMIT = _uc(
     "CONTACT_FORM_SUBMIT",
-    prompt="Contact where name equals 'James'.",
+    prompt="Contact support where message does NOT contain 'Can you share details about your recent updates or new features?' and email does NOT equal 'james.wilson@example.com' and subject equals 'Website Issue Report' and username contains 'ni'",
     actions=[
         NavigateAction(url="http://localhost:8003/?seed=1"),
         ClickAction(
@@ -1843,7 +1862,7 @@ CONTACT_FORM_SUBMIT = _uc(
 
 ABOUT_PAGE_VIEW = _uc(
     "ABOUT_PAGE_VIEW",
-    prompt="Navigate to the About page to read about the company's mission and values.",
+    prompt="Navigate to the About page to view company information.",
     actions=[
         NavigateAction(url="http://localhost:8003/?seed=1"),
         ClickAction(
@@ -1856,7 +1875,7 @@ ABOUT_PAGE_VIEW = _uc(
 
 HELP_PAGE_VIEW = _uc(
     "HELP_PAGE_VIEW",
-    prompt="Navigate to the Help page to view frequently asked questions and support guides.",
+    prompt="Navigate to the Help page to find guidance, FAQs, or troubleshooting information.",
     actions=[
         NavigateAction(url="http://localhost:8003/?seed=1"),
         ClickAction(
@@ -1869,7 +1888,7 @@ HELP_PAGE_VIEW = _uc(
 
 ABOUT_FEATURE_CLICK = _uc(
     "ABOUT_FEATURE_CLICK",
-    prompt="Click the Trending Spots feature on the About page.",
+    prompt="Click on the highlighted feature on the About page that does NOT contain 'Live availability'.",
     actions=[
         NavigateAction(url="http://localhost:8003/?seed=1"),
         ClickAction(
@@ -1896,7 +1915,7 @@ CONTACT_PAGE_VIEW = _uc(
 
 CONTACT_CARD_CLICK = _uc(
     "CONTACT_CARD_CLICK",
-    prompt="Click the phone contact card on the contact page.",
+    prompt="Click the contact card where the card_type does NOT contain 'Phone'.",
     actions=[
         NavigateAction(url="http://localhost:8003/?seed=1"),
         ClickAction(
@@ -1910,7 +1929,7 @@ CONTACT_CARD_CLICK = _uc(
 
 HELP_CATEGORY_SELECTED = _uc(
     "HELP_CATEGORY_SELECTED",
-    prompt="Select the Payments category in Help.",
+    prompt="Select a help category that is NOT 'Account'",
     actions=[
         NavigateAction(url="http://localhost:8003/?seed=1"),
         ClickAction(
@@ -1928,7 +1947,7 @@ HELP_CATEGORY_SELECTED = _uc(
 
 HELP_FAQ_TOGGLED = _uc(
     "HELP_FAQ_TOGGLED",
-    prompt="Expand the refund FAQ.",
+    prompt="Expand the FAQ item where the question equals 'Can I get a refund?'",
     actions=[
         NavigateAction(url="http://localhost:8003/?seed=1"),
         ClickAction(

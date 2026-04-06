@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import re
-from typing import Any
-
 PROJECT_NUMBER = 7
 WEB_PROJECT_ID = "autodelivery"
 
@@ -1074,132 +1071,199 @@ ACTIONS = [
 ]
 
 
-def _normalize_field_name(raw_field: str) -> str:
-    field = raw_field.strip().lower().replace(" ", "_")
-    aliases = {
-        "movie_name": "name",
-        "film_name": "name",
-    }
-    return aliases.get(field, field)
+# CheckEventTest payloads aligned with autodelivery_tasks.json (per use_case.name).
+_RAW_TESTS: dict[str, list[dict]] = {
+    "SEARCH_DELIVERY_RESTAURANT": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "SEARCH_DELIVERY_RESTAURANT",
+            "event_criteria": {"query": {"operator": "not_equals", "value": "Casa Saltshaker"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "VIEW_DELIVERY_RESTAURANT": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "VIEW_DELIVERY_RESTAURANT",
+            "event_criteria": {"rating": {"operator": "less_equal", "value": 4.7}, "cuisine": {"operator": "not_contains", "value": "Asian"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "RESTAURANT_FILTER": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "RESTAURANT_FILTER",
+            "event_criteria": {"rating": {"operator": "less_than", "value": 4.7}, "cuisine": {"operator": "not_contains", "value": "Austrian"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "VIEW_ALL_RESTAURANTS": [{"type": "CheckEventTest", "event_name": "VIEW_ALL_RESTAURANTS", "event_criteria": {}, "description": "Check if specific event was triggered"}],
+    "DELETE_REVIEW": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "DELETE_REVIEW",
+            "event_criteria": {"cuisine": "Healthy", "rating": {"operator": "not_equals", "value": 4.8}, "author": {"operator": "not_equals", "value": "Olivia M."}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "BACK_TO_ALL_RESTAURANTS": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "BACK_TO_ALL_RESTAURANTS",
+            "event_criteria": {"name": {"operator": "not_contains", "value": "Nobu"}, "cuisine": {"operator": "not_equals", "value": "Desserts"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "ADD_TO_CART_MODAL_OPEN": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "ADD_TO_CART_MODAL_OPEN",
+            "event_criteria": {"price": 33.98, "restaurant": {"operator": "contains", "value": "ggan"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "ITEM_INCREMENTED": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "ITEM_INCREMENTED",
+            "event_criteria": {
+                "quantity": {"operator": "less_equal", "value": 7},
+                "item": {"operator": "contains", "value": "hef's Special"},
+                "restaurant": {"operator": "not_equals", "value": "Cedar Middle Eastern Cafe"},
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "ADD_TO_CART_MENU_ITEM": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "ADD_TO_CART_MENU_ITEM",
+            "event_criteria": {
+                "preferences": {"operator": "not_in_list", "value": ["vegetarian", "mild"]},
+                "quantity": {"operator": "less_equal", "value": 8},
+                "price": {"operator": "not_equals", "value": 25.98},
+                "restaurant": "Waffle Works",
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "EDIT_CART_ITEM": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "EDIT_CART_ITEM",
+            "event_criteria": {"item": "Hummus", "restaurant": {"operator": "not_contains", "value": "Beirut Express"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "QUICK_ORDER_STARTED": [{"type": "CheckEventTest", "event_name": "QUICK_ORDER_STARTED", "event_criteria": {}, "description": "Check if specific event was triggered"}],
+    "QUICK_REORDER": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "QUICK_REORDER",
+            "event_criteria": {"item": {"operator": "not_contains", "value": "Wagyu Beef"}, "restaurant": {"operator": "not_contains", "value": "Horváth"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "OPEN_CHECKOUT_PAGE": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "OPEN_CHECKOUT_PAGE",
+            "event_criteria": {
+                "preferences": {"operator": "contains", "value": "peanut-fre"},
+                "size": {"operator": "not_contains", "value": "small"},
+                "quantity": {"operator": "less_equal", "value": 3},
+                "item": "Chef's Special",
+                "restaurant": {"operator": "contains", "value": "ik"},
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "DROPOFF_PREFERENCE": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "DROPOFF_PREFERENCE",
+            "event_criteria": {
+                "quantity": {"operator": "greater_than", "value": 3},
+                "price": {"operator": "less_equal", "value": 65.98},
+                "item": {"operator": "contains", "value": "aisse"},
+                "restaurant": "Gordon Ramsay",
+                "delivery_preference": "Meet in the lobby",
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "ADDRESS_ADDED": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "ADDRESS_ADDED",
+            "event_criteria": {
+                "address": "404 Walnut Blvd, Brookside",
+                "size": {"operator": "contains", "value": "al"},
+                "preferences": {"operator": "contains", "value": "o-oni"},
+                "quantity": 3,
+                "price": {"operator": "not_equals", "value": 13.48},
+                "restaurant": {"operator": "contains", "value": "Ba"},
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "EMPTY_CART": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "EMPTY_CART",
+            "event_criteria": {"quantity": {"operator": "greater_than", "value": 9}, "item": "Wagyu Beef", "price": 91.98, "restaurant": {"operator": "contains", "value": "suya's"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "PLACE_ORDER": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "PLACE_ORDER",
+            "event_criteria": {
+                "address": "202 Birch Lane, Lakeview",
+                "username": "George Kim",
+                "mode": {"operator": "not_equals", "value": "delivery"},
+                "phone": "+1-555-456-7890",
+                "size": {"operator": "not_contains", "value": "large"},
+                "preferences": {"operator": "not_in_list", "value": ["peanut-free", "organic"]},
+                "quantity": {"operator": "not_equals", "value": 9},
+                "item": "German Fried Potatoes",
+                "restaurant": "Peter Luger Steak House",
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "RESTAURANT_NEXT_PAGE": [{"type": "CheckEventTest", "event_name": "RESTAURANT_NEXT_PAGE", "event_criteria": {}, "description": "Check if specific event was triggered"}],
+    "RESTAURANT_PREV_PAGE": [{"type": "CheckEventTest", "event_name": "RESTAURANT_PREV_PAGE", "event_criteria": {}, "description": "Check if specific event was triggered"}],
+    "REVIEW_SUBMITTED": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "REVIEW_SUBMITTED",
+            "event_criteria": {"comment": {"operator": "not_contains", "value": "Super friendly staff and delicious food at the hotel restaurant."}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "DELIVERY_PRIORITY_SELECTED": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "DELIVERY_PRIORITY_SELECTED",
+            "event_criteria": {
+                "preferences": {"operator": "not_contains", "value": "paleo"},
+                "quantity": {"operator": "less_equal", "value": 7},
+                "price": {"operator": "greater_than", "value": 15.45},
+                "restaurant": {"operator": "contains", "value": "Taco Fiesta"},
+                "priority": {"operator": "not_equals", "value": "normal"},
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+}
 
-
-def _parse_value_token(raw_value: str) -> Any:
-    value = raw_value.strip().strip(".")
-    if (value.startswith("'") and value.endswith("'")) or (value.startswith('"') and value.endswith('"')):
-        return value[1:-1]
-    try:
-        if "." in value:
-            return float(value)
-        return int(value)
-    except ValueError:
-        return value
-
-
-def _maybe_add_operator_criterion(criteria: dict[str, Any], field: str, operator: str, raw_value: str) -> None:
-    criteria[_normalize_field_name(field)] = {
-        "operator": operator,
-        "value": _parse_value_token(raw_value),
-    }
-
-
-def _extract_event_criteria_from_prompt(prompt: str) -> dict[str, Any]:
-    # Conservative parser: if prompt looks complex/ambiguous, return empty criteria.
-    lowered = prompt.lower()
-    tricky_markers = (" one of ", " or ", " either ", " directly ", " then ")
-    if any(marker in lowered for marker in tricky_markers):
-        return {}
-
-    criteria: dict[str, Any] = {}
-
-    not_equals_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+is\s+not\s+'([^']+)'",
-        r"\b([a-zA-Z_ ]+?)\s+not\s+'([^']+)'",
-    ]
-    contains_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+contains\s+'([^']+)'",
-    ]
-    not_contains_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+does\s+not\s+contain\s+'([^']+)'",
-        r"\b([a-zA-Z_ ]+?)\s+not\s+contain\s+'([^']+)'",
-    ]
-    equals_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+equals\s+'([^']+)'",
-    ]
-    less_equal_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+less\s+equal\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-        r"\b([a-zA-Z_ ]+?)\s+less\s+than\s+or\s+equal\s+to\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-    greater_equal_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+greater\s+equal\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-        r"\b([a-zA-Z_ ]+?)\s+greater\s+than\s+or\s+equal\s+to\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-    less_than_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+less\s+than\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-    greater_than_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+greater\s+than\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-
-    for pattern in not_contains_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "not_contains", value)
-
-    for pattern in contains_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "contains", value)
-
-    for pattern in not_equals_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "not_equals", value)
-
-    for pattern in equals_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            criteria[_normalize_field_name(field)] = _parse_value_token(value)
-
-    for pattern in less_equal_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "less_equal", value)
-
-    for pattern in greater_equal_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "greater_equal", value)
-
-    for pattern in less_than_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "less_than", value)
-
-    for pattern in greater_than_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "greater_than", value)
-
-    return criteria
-
-
-def _build_raw_tests_from_actions(actions_data: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
-    raw_tests: dict[str, list[dict[str, Any]]] = {}
-    for item in actions_data:
-        use_case = str(item.get("use_case", "")).strip()
-        if not use_case:
-            continue
-        prompt = str(item.get("prompt", ""))
-        criteria = _extract_event_criteria_from_prompt(prompt)
-        raw_tests[use_case] = [
-            {
-                "type": "CheckEventTest",
-                "event_name": use_case,
-                "event_criteria": criteria,
-                "description": "Check if specific event was triggered",
-            }
-        ]
-    return raw_tests
-
-
-_RAW_TESTS: dict[str, list[dict[str, Any]]] = _build_raw_tests_from_actions(ACTIONS)
 _TESTS: dict[str, list[BaseTaskTest]] = {uc: [BaseTaskTest.deserialize(p) for p in pl] for uc, pl in _RAW_TESTS.items()}
 
 
 def _uc(use_case: str, prompt: str, actions: list[BaseAction]) -> Trajectory:
-    return Trajectory(name=use_case, prompt=prompt, actions=actions, tests=_TESTS.get(use_case, []))
+    return Trajectory(name=use_case, prompt=prompt, actions=actions, tests=_TESTS[use_case])
 
 
 def _xp(expr: str) -> Selector:
@@ -1212,7 +1276,7 @@ def _id(element_id: str) -> Selector:
 
 SEARCH_DELIVERY_RESTAURANT = _uc(
     "SEARCH_DELIVERY_RESTAURANT",
-    prompt="Search for restaurants named 'Bella Vista'.",
+    prompt="Search for restaurants where the query is NOT 'Casa Saltshaker'.",
     actions=[
         NavigateAction(url="http://localhost:8006/?seed=1"),
         ClickAction(selector=_id("search-input")),
@@ -1223,7 +1287,7 @@ SEARCH_DELIVERY_RESTAURANT = _uc(
 
 VIEW_DELIVERY_RESTAURANT = _uc(
     "VIEW_DELIVERY_RESTAURANT",
-    prompt="View details for the restaurant named 'Bella Vista'.",
+    prompt="Show me the details of a restaurant where the rating is less equal to '4.7' and the cuisine does not contain 'Asian'.",
     actions=[
         NavigateAction(url="http://localhost:8006/?seed=1"),
         ClickAction(selector=_id("search-input")),
@@ -1234,7 +1298,7 @@ VIEW_DELIVERY_RESTAURANT = _uc(
 
 RESTAURANT_FILTER = _uc(
     "RESTAURANT_FILTER",
-    prompt="Filter restaurants to show only Italian cuisine.",
+    prompt="Show me restaurants with a rating LESS THAN 4.7 that do NOT have a cuisine that CONTAINS 'Austrian'",
     actions=[
         NavigateAction(url="http://localhost:8006/?seed=1"),
         ClickAction(selector=_xp("//*[@id='search-filters']/div[3]/button[2]")),
@@ -1245,7 +1309,7 @@ RESTAURANT_FILTER = _uc(
 
 VIEW_ALL_RESTAURANTS = _uc(
     "VIEW_ALL_RESTAURANTS",
-    prompt="Return to the full restaurant list.",
+    prompt="Show me all restaurants.",
     actions=[
         NavigateAction(url="http://localhost:8006/?seed=1"),
         ClickAction(
@@ -1263,7 +1327,7 @@ VIEW_ALL_RESTAURANTS = _uc(
 
 BACK_TO_ALL_RESTAURANTS = _uc(
     "BACK_TO_ALL_RESTAURANTS",
-    prompt="Return to all restaurants after viewing 'Bella Vista'.",
+    prompt="Return to all restaurants where the name does NOT contain 'Nobu' and the cuisine does NOT equal 'Desserts'",
     actions=[
         NavigateAction(url="http://localhost:8006/?seed=1"),
         ClickAction(selector=_id("search-input")),
@@ -1283,7 +1347,7 @@ BACK_TO_ALL_RESTAURANTS = _uc(
 
 ADD_TO_CART_MODAL_OPEN = _uc(
     "ADD_TO_CART_MODAL_OPEN",
-    prompt="Open the add-to-cart modal for 'Pepperoni Classic' at 'Pizza Paradise'.",
+    prompt="Open the add-to-cart modal where price equals '33.98' and restaurant contains 'ggan'.",
     actions=[
         NavigateAction(url="http://localhost:8006/restaurants?seed=1"),
         ClickAction(selector=_id("search-input")),
@@ -1303,7 +1367,7 @@ ADD_TO_CART_MODAL_OPEN = _uc(
 
 ADD_TO_CART_MENU_ITEM = _uc(
     "ADD_TO_CART_MENU_ITEM",
-    prompt="Add 'Pepperoni Classic' to cart from 'Pizza Paradise'.",
+    prompt="Add a menu item to my cart where preferences is NOT one of ['vegetarian', 'mild'] and quantity is less equal '8' and price is NOT '25.98' and restaurant equals 'Waffle Works'.",
     actions=[
         NavigateAction(url="http://localhost:8006/?seed=1"),
         ClickAction(selector=_id("search-input")),
@@ -1341,7 +1405,7 @@ QUICK_ORDER_STARTED = _uc(
 
 OPEN_CHECKOUT_PAGE = _uc(
     "OPEN_CHECKOUT_PAGE",
-    prompt="Go to the checkout page.",
+    prompt="Go to the checkout page where preferences contains 'peanut-fre' and size not contains 'small' and quantity less equal '3' and item equals 'Chef's Special' and restaurant contains 'ik'.",
     actions=[
         NavigateAction(url="http://localhost:8006/?seed=1"),
         ClickAction(selector=_xp("(//*[@id='restaurant-grid-item-0']//div[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'])[1]")),
@@ -1357,7 +1421,7 @@ OPEN_CHECKOUT_PAGE = _uc(
 
 RESTAURANT_NEXT_PAGE = _uc(
     "RESTAURANT_NEXT_PAGE",
-    prompt="Show me the next page of restaurants.",
+    prompt="Show me the next set of restaurants.",
     actions=[
         NavigateAction(url="http://localhost:8006/?seed=1"),
         ClickAction(
@@ -1370,7 +1434,7 @@ RESTAURANT_NEXT_PAGE = _uc(
 
 RESTAURANT_PREV_PAGE = _uc(
     "RESTAURANT_PREV_PAGE",
-    prompt="Show me the previous page of restaurants.",
+    prompt="Go back to the previous page of restaurants.",
     actions=[
         NavigateAction(url="http://localhost:8006/?seed=1"),
         ClickAction(
@@ -1388,7 +1452,7 @@ RESTAURANT_PREV_PAGE = _uc(
 
 REVIEW_SUBMITTED = _uc(
     "REVIEW_SUBMITTED",
-    prompt="Submit a review with name 'Agente' and comment 'good'.",
+    prompt="Submit a review for a restaurant where the comment does NOT contain 'Super friendly staff and delicious food at the hotel restaurant.'",
     actions=[
         NavigateAction(url="http://localhost:8006/?seed=1"),
         ClickAction(selector=_xp("(//*[@id='restaurant-grid-item-0']//div[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'])[1]")),
@@ -1402,7 +1466,7 @@ REVIEW_SUBMITTED = _uc(
 
 DELETE_REVIEW = _uc(
     "DELETE_REVIEW",
-    prompt="Delete the review for the restaurant with name 'Bella Vista' where the author contains 'ria', the comment contains 'ood!', the rating is NOT '4.5', the cuisine does NOT contain 'Japanese', and the review_rating is NOT '4.5'.",
+    prompt="Delete the review for the restaurant with cuisine equals 'Healthy' where the rating is NOT '4.8' and the author is NOT 'Olivia M.'",
     actions=[
         NavigateAction(url="http://localhost:8006/?seed=1"),
         ClickAction(selector=_xp("(//*[@id='restaurant-grid-item-0']//div[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'])[1]")),
@@ -1416,7 +1480,7 @@ DELETE_REVIEW = _uc(
 
 EMPTY_CART = _uc(
     "EMPTY_CART",
-    prompt="Empty my cart where the quantity is less than or equal to 8 and the price equals '14.99'.",
+    prompt="Clear my shopping cart of items where the quantity is greater than 9, the item equals 'Wagyu Beef', the price equals '91.98', and the restaurant contains 'suya's'.",
     actions=[
         NavigateAction(url="http://localhost:8006/?seed=1"),
         ClickAction(selector=_xp("(//*[@id='restaurant-grid-item-0']//div[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'])[1]")),
@@ -1437,7 +1501,7 @@ EMPTY_CART = _uc(
 
 DROPOFF_PREFERENCE = _uc(
     "DROPOFF_PREFERENCE",
-    prompt="Set dropoff preference where quantity greater equal 2 and item equals 'Picanha' and price less equal 26.99 and restaurant equals 'Carnaval Grill' and delivery_preference equals 'Hand it to me'.",
+    prompt="Set dropoff preference where quantity greater than 3 and price less equal 65.98 and item contains 'aisse' and restaurant equals 'Gordon Ramsay' and delivery_preference equals 'Meet in the lobby'.",
     actions=[
         NavigateAction(url="http://localhost:8006/?seed=1"),
         ClickAction(selector=_id("search-input")),
@@ -1470,7 +1534,7 @@ DROPOFF_PREFERENCE = _uc(
 
 ADDRESS_ADDED = _uc(
     "ADDRESS_ADDED",
-    prompt="Add an address where quantity greater equal 2 and item equals 'Picanha' and price less equal 26.99 and restaurant equals 'Carnaval Grill' and address equals '505 Cherry Circle, Fairview'.",
+    prompt="Add an address that equals '404 Walnut Blvd, Brookside' with a size that contains 'al', preferences that contains 'o-oni', quantity equals '3', and price not equals '13.48' at a restaurant that contains 'Ba'.",
     actions=[
         NavigateAction(url="http://localhost:8006/?seed=1"),
         ClickAction(selector=_id("search-input")),
@@ -1505,7 +1569,7 @@ ADDRESS_ADDED = _uc(
 
 PLACE_ORDER = _uc(
     "PLACE_ORDER",
-    prompt="Place an order where address not contains '101 Elm Drive, Centerville' and phone not equals '+1-555-901-2345' and mode not contains 'delivery' and preferences not contains 'soy-free' and size not contains 'medium' and quantity less than '2' and price equals '14.3' and restaurant equals 'Tokyo Sushi House'.",
+    prompt="Place an order where address equals '202 Birch Lane, Lakeview' and username equals 'George Kim' and mode not equals 'delivery' and phone equals '+1-555-456-7890' and size not contains 'large' and preferences is not one of ['peanut-free', 'organic'] and quantity not equals '9' and item equals 'German Fried Potatoes' and restaurant equals 'Peter Luger Steak House'.",
     actions=[
         NavigateAction(url="http://localhost:8006/?seed=1"),
         ClickAction(selector=_id("search-input")),
@@ -1537,7 +1601,7 @@ PLACE_ORDER = _uc(
 
 EDIT_CART_ITEM = _uc(
     "EDIT_CART_ITEM",
-    prompt="Edit the cart item 'Margherita Pizza' from Sushi Zen where the item does NOT contain 'Egg & Cheese Sandwich' and the restaurant is NOT 'Waffle Works'.",
+    prompt="Edit the cart item 'Hummus' from a restaurant that does NOT contain 'Beirut Express'.",
     actions=[
         NavigateAction(url="http://localhost:8006/?seed=1"),
         ClickAction(selector=_xp("(//*[@id='restaurant-grid-item-0']//div[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'])[1]")),
@@ -1554,7 +1618,7 @@ EDIT_CART_ITEM = _uc(
 
 DELIVERY_PRIORITY_SELECTED = _uc(
     "DELIVERY_PRIORITY_SELECTED",
-    prompt="Select a delivery priority that is 'normal' for an item with size that CONTAINS 'll', a quantity of at least 2, an item that CONTAINS 'eek', a price greater than 9.17, and a restaurant that CONTAINS 'Table'.",
+    prompt="Select a delivery priority for my order that is NOT 'normal', with a quantity of items that is less than or equal to 7, a price that is greater than 15.45, and from a restaurant that contains 'Taco Fiesta', ensuring that my preferences do NOT contain 'paleo'.",
     actions=[
         NavigateAction(url="http://localhost:8006/?seed=1"),
         ClickAction(selector=_id("search-input")),
@@ -1587,7 +1651,7 @@ DELIVERY_PRIORITY_SELECTED = _uc(
 
 ITEM_INCREMENTED = _uc(
     "ITEM_INCREMENTED",
-    prompt="Increase the quantity of 'Pepperoni Classic' to 2 at 'Pizza Paradise'.",
+    prompt="Increase the quantity of 'hef's Special' to 7 where the restaurant is NOT 'Cedar Middle Eastern Cafe'.",
     actions=[
         NavigateAction(url="http://localhost:8006/?seed=1"),
         ClickAction(selector=_id("search-input")),

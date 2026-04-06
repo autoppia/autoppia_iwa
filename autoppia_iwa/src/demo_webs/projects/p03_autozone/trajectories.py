@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import re
-from typing import Any
-
 PROJECT_NUMBER = 3
 WEB_PROJECT_ID = "autozone"
 
@@ -1134,132 +1131,82 @@ ACTIONS = [
 ]
 
 
-def _normalize_field_name(raw_field: str) -> str:
-    field = raw_field.strip().lower().replace(" ", "_")
-    aliases = {
-        "movie_name": "name",
-        "film_name": "name",
-    }
-    return aliases.get(field, field)
+# CheckEventTest payloads aligned with autozone_tasks.json (per use_case.name).
+_RAW_TESTS: dict[str, list[dict]] = {
+    "VIEW_DETAIL": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "VIEW_DETAIL",
+            "event_criteria": {"rating": {"operator": "less_equal", "value": 4.3}, "category": {"operator": "contains", "value": "en"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "DETAILS_TOGGLE": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "DETAILS_TOGGLE",
+            "event_criteria": {"rating": 4.4, "category": {"operator": "contains", "value": "Home"}, "title": "Drybar Buttercup Hair Dryer"},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "SHARE_PRODUCT": [
+        {"type": "CheckEventTest", "event_name": "SHARE_PRODUCT", "event_criteria": {"category": {"operator": "not_equals", "value": "Home"}}, "description": "Check if specific event was triggered"}
+    ],
+    "SEARCH_PRODUCT": [{"type": "CheckEventTest", "event_name": "SEARCH_PRODUCT", "event_criteria": {"query": "Ninja Foodi 8-in-1"}, "description": "Check if specific event was triggered"}],
+    "CATEGORY_FILTER": [{"type": "CheckEventTest", "event_name": "CATEGORY_FILTER", "event_criteria": {"category": "electronics"}, "description": "Check if specific event was triggered"}],
+    "ADD_TO_CART": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "ADD_TO_CART",
+            "event_criteria": {"price": {"operator": "greater_equal", "value": 99.99}, "brand": {"operator": "not_equals", "value": "Arlo"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "ADD_TO_WISHLIST": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "ADD_TO_WISHLIST",
+            "event_criteria": {"brand": {"operator": "not_contains", "value": "NinjaXYZ184"}, "rating": 4.6, "price": {"operator": "not_equals", "value": 92.0}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "VIEW_CART": [{"type": "CheckEventTest", "event_name": "VIEW_CART", "event_criteria": {}, "description": "Check if specific event was triggered"}],
+    "VIEW_WISHLIST": [{"type": "CheckEventTest", "event_name": "VIEW_WISHLIST", "event_criteria": {}, "description": "Check if specific event was triggered"}],
+    "CAROUSEL_SCROLL": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "CAROUSEL_SCROLL",
+            "event_criteria": {"title": "Top Sellers In Fitness", "direction": {"operator": "not_equals", "value": "RIGHT"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "QUANTITY_CHANGED": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "QUANTITY_CHANGED",
+            "event_criteria": {"title": "Instant Pot Duo Plus", "new_quantity": {"operator": "less_equal", "value": 6}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "PROCEED_TO_CHECKOUT": [{"type": "CheckEventTest", "event_name": "PROCEED_TO_CHECKOUT", "event_criteria": {"total_amount": 189.99}, "description": "Check if specific event was triggered"}],
+    "CHECKOUT_STARTED": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "CHECKOUT_STARTED",
+            "event_criteria": {"total_amount": {"operator": "less_equal", "value": 349.0}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "ORDER_COMPLETED": [
+        {"type": "CheckEventTest", "event_name": "ORDER_COMPLETED", "event_criteria": {"title": {"operator": "contains", "value": "ple"}}, "description": "Check if specific event was triggered"}
+    ],
+}
 
-
-def _parse_value_token(raw_value: str) -> Any:
-    value = raw_value.strip().strip(".")
-    if (value.startswith("'") and value.endswith("'")) or (value.startswith('"') and value.endswith('"')):
-        return value[1:-1]
-    try:
-        if "." in value:
-            return float(value)
-        return int(value)
-    except ValueError:
-        return value
-
-
-def _maybe_add_operator_criterion(criteria: dict[str, Any], field: str, operator: str, raw_value: str) -> None:
-    criteria[_normalize_field_name(field)] = {
-        "operator": operator,
-        "value": _parse_value_token(raw_value),
-    }
-
-
-def _extract_event_criteria_from_prompt(prompt: str) -> dict[str, Any]:
-    # Conservative parser: if prompt looks complex/ambiguous, return empty criteria.
-    lowered = prompt.lower()
-    tricky_markers = (" one of ", " or ", " either ", " directly ", " then ")
-    if any(marker in lowered for marker in tricky_markers):
-        return {}
-
-    criteria: dict[str, Any] = {}
-
-    not_equals_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+is\s+not\s+'([^']+)'",
-        r"\b([a-zA-Z_ ]+?)\s+not\s+'([^']+)'",
-    ]
-    contains_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+contains\s+'([^']+)'",
-    ]
-    not_contains_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+does\s+not\s+contain\s+'([^']+)'",
-        r"\b([a-zA-Z_ ]+?)\s+not\s+contain\s+'([^']+)'",
-    ]
-    equals_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+equals\s+'([^']+)'",
-    ]
-    less_equal_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+less\s+equal\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-        r"\b([a-zA-Z_ ]+?)\s+less\s+than\s+or\s+equal\s+to\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-    greater_equal_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+greater\s+equal\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-        r"\b([a-zA-Z_ ]+?)\s+greater\s+than\s+or\s+equal\s+to\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-    less_than_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+less\s+than\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-    greater_than_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+greater\s+than\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-
-    for pattern in not_contains_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "not_contains", value)
-
-    for pattern in contains_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "contains", value)
-
-    for pattern in not_equals_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "not_equals", value)
-
-    for pattern in equals_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            criteria[_normalize_field_name(field)] = _parse_value_token(value)
-
-    for pattern in less_equal_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "less_equal", value)
-
-    for pattern in greater_equal_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "greater_equal", value)
-
-    for pattern in less_than_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "less_than", value)
-
-    for pattern in greater_than_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "greater_than", value)
-
-    return criteria
-
-
-def _build_raw_tests_from_actions(actions_data: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
-    raw_tests: dict[str, list[dict[str, Any]]] = {}
-    for item in actions_data:
-        use_case = str(item.get("use_case", "")).strip()
-        if not use_case:
-            continue
-        prompt = str(item.get("prompt", ""))
-        criteria = _extract_event_criteria_from_prompt(prompt)
-        raw_tests[use_case] = [
-            {
-                "type": "CheckEventTest",
-                "event_name": use_case,
-                "event_criteria": criteria,
-                "description": "Check if specific event was triggered",
-            }
-        ]
-    return raw_tests
-
-
-_RAW_TESTS: dict[str, list[dict[str, Any]]] = _build_raw_tests_from_actions(ACTIONS)
 _TESTS: dict[str, list[BaseTaskTest]] = {uc: [BaseTaskTest.deserialize(p) for p in pl] for uc, pl in _RAW_TESTS.items()}
 
 
 def _uc(use_case: str, prompt: str, actions: list[BaseAction]) -> Trajectory:
-    return Trajectory(name=use_case, prompt=prompt, actions=actions, tests=_TESTS.get(use_case, []))
+    return Trajectory(name=use_case, prompt=prompt, actions=actions, tests=_TESTS[use_case])
 
 
 def _xp(expr: str) -> Selector:
@@ -1272,7 +1219,7 @@ def _id(element_id: str) -> Selector:
 
 VIEW_DETAIL = _uc(
     "VIEW_DETAIL",
-    prompt="Show me details for the Premium Drone",
+    prompt="Show details for a product with a rating of 4.3 or less and a category that contains 'en'",
     actions=[
         NavigateAction(url="http://localhost:8002/?seed=18"),
         ClickAction(
@@ -1301,7 +1248,7 @@ VIEW_DETAIL = _uc(
 
 DETAILS_TOGGLE = _uc(
     "DETAILS_TOGGLE",
-    prompt="Expand the Explore further section for the Premium Drone page.",
+    prompt="Expand the details section for the product with title 'Drybar Buttercup Hair Dryer' that has a rating of 4.4 and belongs to the category that contains 'Home'.",
     actions=[
         NavigateAction(url="http://localhost:8002/?seed=18"),
         ClickAction(
@@ -1335,7 +1282,7 @@ DETAILS_TOGGLE = _uc(
 
 SEARCH_PRODUCT = _uc(
     "SEARCH_PRODUCT",
-    prompt="Search for products that contain 'Premium Drone'",
+    prompt="Search for products with query equals 'Ninja Foodi 8-in-1'",
     actions=[
         NavigateAction(url="http://localhost:8002/?seed=15"),
         ClickAction(
@@ -1359,7 +1306,7 @@ SEARCH_PRODUCT = _uc(
 
 CATEGORY_FILTER = _uc(
     "CATEGORY_FILTER",
-    prompt="Filter results to Technology products.",
+    prompt="Filter to show only products in the category 'electronics'.",
     actions=[
         NavigateAction(url="http://localhost:8002/?seed=15"),
         ClickAction(
@@ -1377,7 +1324,7 @@ CATEGORY_FILTER = _uc(
 
 ADD_TO_CART = _uc(
     "ADD_TO_CART",
-    prompt="Add the Premium Drone to my cart.",
+    prompt="Add 1 item to cart where the price is GREATER THAN or EQUAL to '99.99' and the brand is NOT 'Arlo'",
     actions=[
         NavigateAction(url="http://localhost:8002/?seed=15"),
         ClickAction(
@@ -1406,7 +1353,7 @@ ADD_TO_CART = _uc(
 
 ADD_TO_WISHLIST = _uc(
     "ADD_TO_WISHLIST",
-    prompt="Add the Premium Drone to my wishlist.",
+    prompt="Add to wishlist an item where the brand does NOT CONTAIN 'NinjaXYZ184', the rating equals '4.6', and the price is NOT '92.0'",
     actions=[
         NavigateAction(url="http://localhost:8002/?seed=15"),
         ClickAction(
@@ -1436,7 +1383,7 @@ ADD_TO_WISHLIST = _uc(
 
 VIEW_WISHLIST = _uc(
     "VIEW_WISHLIST",
-    prompt="Open my wishlist page.",
+    prompt="Open my wishlist from the home wishlist preview.",
     actions=[
         NavigateAction(url="http://localhost:8002/?seed=15"),
         ClickAction(
@@ -1449,7 +1396,7 @@ VIEW_WISHLIST = _uc(
 
 VIEW_CART = _uc(
     "VIEW_CART",
-    prompt="Open my cart page.",
+    prompt="Show me the contents of my shopping cart",
     actions=[
         NavigateAction(url="http://localhost:8002/?seed=15"),
         ClickAction(
@@ -1462,7 +1409,7 @@ VIEW_CART = _uc(
 
 QUANTITY_CHANGED = _uc(
     "QUANTITY_CHANGED",
-    prompt="On Premium Drone details, change quantity from 1 to 2.",
+    prompt="Update quantity of item with title 'Instant Pot Duo Plus' in my cart to 6",
     actions=[
         NavigateAction(url="http://localhost:8002/?seed=15"),
         ClickAction(
@@ -1498,7 +1445,7 @@ QUANTITY_CHANGED = _uc(
 
 PROCEED_TO_CHECKOUT = _uc(
     "PROCEED_TO_CHECKOUT",
-    prompt="From cart, proceed to checkout with the Premium Drone.",
+    prompt="Proceed to checkout with a total amount of '189.99'",
     actions=[
         NavigateAction(url="http://localhost:8002/?seed=15"),
         ClickAction(
@@ -1537,7 +1484,7 @@ PROCEED_TO_CHECKOUT = _uc(
 
 CHECKOUT_STARTED = _uc(
     "CHECKOUT_STARTED",
-    prompt="Start checkout from the Premium Drone detail page.",
+    prompt="Click on Buy now to initiate the checkout process with a total amount less equal to '349.0'.",
     actions=[
         NavigateAction(url="http://localhost:8002/?seed=15"),
         ClickAction(
@@ -1571,7 +1518,7 @@ CHECKOUT_STARTED = _uc(
 
 SHARE_PRODUCT = _uc(
     "SHARE_PRODUCT",
-    prompt="Share the Premium Drone product page.",
+    prompt="Share the product link for an item where the category is NOT 'Home'.",
     actions=[
         NavigateAction(url="http://localhost:8002/?seed=15"),
         ClickAction(
@@ -1605,7 +1552,7 @@ SHARE_PRODUCT = _uc(
 
 CAROUSEL_SCROLL = _uc(
     "CAROUSEL_SCROLL",
-    prompt="Scroll right in the Featured Products carousel.",
+    prompt="Scroll through the carousel titled 'Top Sellers In Fitness' where the direction is NOT 'RIGHT'",
     actions=[
         NavigateAction(url="http://localhost:8002/?seed=15"),
         ClickAction(
@@ -1618,7 +1565,7 @@ CAROUSEL_SCROLL = _uc(
 
 ORDER_COMPLETED = _uc(
     "ORDER_COMPLETED",
-    prompt="Complete an order for the Premium Drone.",
+    prompt="Complete my order with a title that CONTAINS 'ple'",
     actions=[
         NavigateAction(url="http://localhost:8002/?seed=15"),
         ClickAction(

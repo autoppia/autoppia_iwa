@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import re
-from typing import Any
-
 PROJECT_NUMBER = 2
 WEB_PROJECT_ID = "autobooks"
 
@@ -2936,132 +2933,159 @@ ACTIONS = [
 ]
 
 
-def _normalize_field_name(raw_field: str) -> str:
-    field = raw_field.strip().lower().replace(" ", "_")
-    aliases = {
-        "movie_name": "name",
-        "film_name": "name",
-    }
-    return aliases.get(field, field)
+# CheckEventTest payloads aligned with autobook_tasks.json (per use_case.name).
+_RAW_TESTS: dict[str, list[dict]] = {
+    "REGISTRATION_BOOK": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "REGISTRATION_BOOK",
+            "event_criteria": {"username": "<signup_username>", "email": "<signup_email>", "password": "<signup_password>"},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "SEARCH_BOOK": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "SEARCH_BOOK",
+            "event_criteria": {"query": {"operator": "not_equals", "value": "The Silent Patient"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "FILTER_BOOK": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "FILTER_BOOK",
+            "event_criteria": {"genres": "Drama", "year": {"operator": "less_equal", "value": 1605}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "CONTACT_BOOK": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "CONTACT_BOOK",
+            "event_criteria": {"subject": {"operator": "not_contains", "value": "Complaint"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "LOGIN_BOOK": [
+        {"type": "CheckEventTest", "event_name": "LOGIN_BOOK", "event_criteria": {"username": "<username>", "password": "<password>"}, "description": "Check if specific event was triggered"}
+    ],
+    "LOGOUT_BOOK": [
+        {"type": "CheckEventTest", "event_name": "LOGOUT_BOOK", "event_criteria": {"username": "<username>", "password": "<password>"}, "description": "Check if specific event was triggered"}
+    ],
+    "DELETE_BOOK": [
+        {"type": "CheckEventTest", "event_name": "DELETE_BOOK", "event_criteria": {"username": "<username>", "password": "<password>"}, "description": "Check if specific event was triggered"}
+    ],
+    "ADD_BOOK": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "ADD_BOOK",
+            "event_criteria": {"username": "<username>", "password": "<password>", "year": 2012, "rating": {"operator": "greater_equal", "value": 2.5}, "page_count": 1059},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "ADD_COMMENT_BOOK": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "ADD_COMMENT_BOOK",
+            "event_criteria": {"content": "a true literary experience", "commenter_name": {"operator": "not_contains", "value": "Emily"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "EDIT_USER_BOOK": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "EDIT_USER_BOOK",
+            "event_criteria": {"username": "<username>", "password": "<password>", "first_name": {"operator": "contains", "value": "book"}, "website": {"operator": "contains", "value": "blue"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "BOOK_DETAIL": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "BOOK_DETAIL",
+            "event_criteria": {"genres": {"operator": "not_contains", "value": "Postmodern"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "EDIT_BOOK": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "EDIT_BOOK",
+            "event_criteria": {"username": "<username>", "password": "<password>", "book_author": "Franz Kafka", "book_year": 1975},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "PURCHASE_BOOK": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "PURCHASE_BOOK",
+            "event_criteria": {"name": {"operator": "not_equals", "value": "The Stand"}, "username": "<username>", "password": "<password>"},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "SHARE_BOOK": [
+        {"type": "CheckEventTest", "event_name": "SHARE_BOOK", "event_criteria": {"rating": {"operator": "not_equals", "value": 4.7}}, "description": "Check if specific event was triggered"}
+    ],
+    "OPEN_PREVIEW": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "OPEN_PREVIEW",
+            "event_criteria": {"price": 12.99, "name": {"operator": "contains", "value": "icide"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "ADD_TO_READING_LIST": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "ADD_TO_READING_LIST",
+            "event_criteria": {
+                "genres": {"operator": "not_in_list", "value": ["Fantasy", "Thriller"]},
+                "rating": {"operator": "greater_equal", "value": 4.7},
+                "username": "<username>",
+                "password": "<password>",
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "REMOVE_FROM_READING_LIST": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "REMOVE_FROM_READING_LIST",
+            "event_criteria": {"name": {"operator": "contains", "value": "yr"}, "page_count": {"operator": "not_equals", "value": 417}, "username": "<username>", "password": "<password>"},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "VIEW_CART_BOOK": [{"type": "CheckEventTest", "event_name": "VIEW_CART_BOOK", "event_criteria": {}, "description": "Check if specific event was triggered"}],
+    "ADD_TO_CART_BOOK": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "ADD_TO_CART_BOOK",
+            "event_criteria": {"genres": {"operator": "not_in_list", "value": ["War", "Classic"]}, "username": "<username>", "password": "<password>"},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "REMOVE_FROM_CART_BOOK": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "REMOVE_FROM_CART_BOOK",
+            "event_criteria": {
+                "author": {"operator": "not_equals", "value": "Kathryn Stockett"},
+                "rating": 4.4,
+                "year": {"operator": "not_equals", "value": 2019},
+                "username": "<username>",
+                "password": "<password>",
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+}
 
-
-def _parse_value_token(raw_value: str) -> Any:
-    value = raw_value.strip().strip(".")
-    if (value.startswith("'") and value.endswith("'")) or (value.startswith('"') and value.endswith('"')):
-        return value[1:-1]
-    try:
-        if "." in value:
-            return float(value)
-        return int(value)
-    except ValueError:
-        return value
-
-
-def _maybe_add_operator_criterion(criteria: dict[str, Any], field: str, operator: str, raw_value: str) -> None:
-    criteria[_normalize_field_name(field)] = {
-        "operator": operator,
-        "value": _parse_value_token(raw_value),
-    }
-
-
-def _extract_event_criteria_from_prompt(prompt: str) -> dict[str, Any]:
-    # Conservative parser: if prompt looks complex/ambiguous, return empty criteria.
-    lowered = prompt.lower()
-    tricky_markers = (" one of ", " or ", " either ", " directly ", " then ")
-    if any(marker in lowered for marker in tricky_markers):
-        return {}
-
-    criteria: dict[str, Any] = {}
-
-    not_equals_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+is\s+not\s+'([^']+)'",
-        r"\b([a-zA-Z_ ]+?)\s+not\s+'([^']+)'",
-    ]
-    contains_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+contains\s+'([^']+)'",
-    ]
-    not_contains_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+does\s+not\s+contain\s+'([^']+)'",
-        r"\b([a-zA-Z_ ]+?)\s+not\s+contain\s+'([^']+)'",
-    ]
-    equals_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+equals\s+'([^']+)'",
-    ]
-    less_equal_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+less\s+equal\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-        r"\b([a-zA-Z_ ]+?)\s+less\s+than\s+or\s+equal\s+to\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-    greater_equal_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+greater\s+equal\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-        r"\b([a-zA-Z_ ]+?)\s+greater\s+than\s+or\s+equal\s+to\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-    less_than_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+less\s+than\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-    greater_than_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+greater\s+than\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-
-    for pattern in not_contains_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "not_contains", value)
-
-    for pattern in contains_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "contains", value)
-
-    for pattern in not_equals_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "not_equals", value)
-
-    for pattern in equals_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            criteria[_normalize_field_name(field)] = _parse_value_token(value)
-
-    for pattern in less_equal_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "less_equal", value)
-
-    for pattern in greater_equal_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "greater_equal", value)
-
-    for pattern in less_than_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "less_than", value)
-
-    for pattern in greater_than_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "greater_than", value)
-
-    return criteria
-
-
-def _build_raw_tests_from_actions(actions_data: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
-    raw_tests: dict[str, list[dict[str, Any]]] = {}
-    for item in actions_data:
-        use_case = str(item.get("use_case", "")).strip()
-        if not use_case:
-            continue
-        prompt = str(item.get("prompt", ""))
-        criteria = _extract_event_criteria_from_prompt(prompt)
-        raw_tests[use_case] = [
-            {
-                "type": "CheckEventTest",
-                "event_name": use_case,
-                "event_criteria": criteria,
-                "description": "Check if specific event was triggered",
-            }
-        ]
-    return raw_tests
-
-
-_RAW_TESTS: dict[str, list[dict[str, Any]]] = _build_raw_tests_from_actions(ACTIONS)
 _TESTS: dict[str, list[BaseTaskTest]] = {uc: [BaseTaskTest.deserialize(p) for p in pl] for uc, pl in _RAW_TESTS.items()}
 
 
 def _uc(use_case: str, prompt: str, actions: list[BaseAction]) -> Trajectory:
-    return Trajectory(name=use_case, prompt=prompt, actions=actions, tests=_TESTS.get(use_case, []))
+    return Trajectory(name=use_case, prompt=prompt, actions=actions, tests=_TESTS[use_case])
 
 
 def _xp(expr: str) -> Selector:
@@ -3074,7 +3098,7 @@ def _id(element_id: str) -> Selector:
 
 REGISTRATION_BOOK = _uc(
     "REGISTRATION_BOOK",
-    prompt="Register with username, email and password placeholders.",
+    prompt="Register with the following username: '<signup_username>', email: '<signup_email>' and password: '<signup_password>'",
     actions=[
         NavigateAction(url="http://localhost:8001/?seed=1"),
         ClickAction(selector=_xp("//a[normalize-space()='Register']")),
@@ -3092,7 +3116,7 @@ REGISTRATION_BOOK = _uc(
 
 SEARCH_BOOK = _uc(
     "SEARCH_BOOK",
-    prompt="Look for the book 'Lolita'",
+    prompt="Search for the book 'The Silent Patient' in the database",
     actions=[
         NavigateAction(url="http://localhost:8001/?seed=1"),
         ClickAction(selector=_xp("//a[contains(@href,'/search')]")),
@@ -3103,7 +3127,7 @@ SEARCH_BOOK = _uc(
 
 FILTER_BOOK = _uc(
     "FILTER_BOOK",
-    prompt="Filter books released in the year 2021",
+    prompt="Show me details about books where the genres equals 'Drama' and the year is less equal '1605'",
     actions=[
         NavigateAction(url="http://localhost:8001/?seed=1"),
         ClickAction(selector=_xp("//a[contains(@href,'/search')]")),
@@ -3118,7 +3142,7 @@ FILTER_BOOK = _uc(
 
 CONTACT_BOOK = _uc(
     "CONTACT_BOOK",
-    prompt="Fill and submit the contact form.",
+    prompt="Go to the contact page and submit a form where the subject does NOT contain 'Complaint'.",
     actions=[
         NavigateAction(url="http://localhost:8001/?seed=1"),
         ClickAction(selector=_xp("//a[normalize-space()='Contact']")),
@@ -3136,7 +3160,7 @@ CONTACT_BOOK = _uc(
 
 LOGIN_BOOK = _uc(
     "LOGIN_BOOK",
-    prompt="Login with username and password.",
+    prompt="Login with a specific username:'<username>' and password:'<password>'",
     actions=[
         NavigateAction(url="http://localhost:8001/?seed=1"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
@@ -3148,7 +3172,7 @@ LOGIN_BOOK = _uc(
 
 LOGOUT_BOOK = _uc(
     "LOGOUT_BOOK",
-    prompt="Login and logout.",
+    prompt="Login with a specific username:'<username>' and password:'<password>', then logout",
     actions=[
         NavigateAction(url="http://localhost:8001/?seed=1"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
@@ -3161,7 +3185,7 @@ LOGOUT_BOOK = _uc(
 
 DELETE_BOOK = _uc(
     "DELETE_BOOK",
-    prompt="Login and delete one assigned book.",
+    prompt="Login with username equals <username> and password equals <password>. Then, delete your book.",
     actions=[
         NavigateAction(url="http://localhost:8001/?seed=1"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
@@ -3176,7 +3200,7 @@ DELETE_BOOK = _uc(
 
 ADD_BOOK = _uc(
     "ADD_BOOK",
-    prompt="Login and add a new book.",
+    prompt="First, authenticate with username '<username>' and password '<password>'. Then, add a book whose year equals 2012, rating is greater equal 2.5, and page_count equals 1059.",
     actions=[
         NavigateAction(url="http://localhost:8001/?seed=1"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
@@ -3195,7 +3219,7 @@ ADD_BOOK = _uc(
 
 ADD_COMMENT_BOOK = _uc(
     "ADD_COMMENT_BOOK",
-    prompt="Open a book and add a comment.",
+    prompt="Add a comment to a book with a comment whose content equals a true literary experience and a commenter_name that does NOT contain 'Emily'.",
     actions=[
         NavigateAction(url="http://localhost:8001/?seed=1"),
         ClickAction(selector=_xp("//a[contains(@href,'/search')]")),
@@ -3212,7 +3236,7 @@ ADD_COMMENT_BOOK = _uc(
 
 EDIT_USER_BOOK = _uc(
     "EDIT_USER_BOOK",
-    prompt="Login and edit user profile fields.",
+    prompt="Login for the following username:<username> and password:<password>. Update your profile to modify your first name to include the word 'book' and ensure your website contains 'blue'.",
     actions=[
         NavigateAction(url="http://localhost:8001/?seed=1"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
@@ -3231,7 +3255,7 @@ EDIT_USER_BOOK = _uc(
 
 BOOK_DETAIL = _uc(
     "BOOK_DETAIL",
-    prompt="Navigate to '1984' book page",
+    prompt="Go to the book details page for a book where genres NOT CONTAINS 'Postmodern'",
     actions=[
         NavigateAction(url="http://localhost:8001/?seed=1"),
         ClickAction(selector=_xp("//a[contains(@href,'/search')]")),
@@ -3244,7 +3268,7 @@ BOOK_DETAIL = _uc(
 
 EDIT_BOOK = _uc(
     "EDIT_BOOK",
-    prompt="Login with username: <username> and password: <password>. Edit a book by changing the rating to 4.8.",
+    prompt="First, authenticate with username '<username>' and password '<password>'. Then, edit your book by setting book_author to 'Franz Kafka', book_year to '1975'.",
     actions=[
         NavigateAction(url="http://localhost:8001/?seed=1"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
@@ -3263,7 +3287,7 @@ EDIT_BOOK = _uc(
 
 PURCHASE_BOOK = _uc(
     "PURCHASE_BOOK",
-    prompt="Login with username: <username> and password: <password>. After logging in, purchase the book 'The Silent Patient'.",
+    prompt="First, authenticate with username '<username>' and password '<password>'. Then, proceed to checkout for the book whose name is NOT 'The Stand'.",
     actions=[
         NavigateAction(url="http://localhost:8001/?seed=1"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
@@ -3282,7 +3306,7 @@ PURCHASE_BOOK = _uc(
 
 SHARE_BOOK = _uc(
     "SHARE_BOOK",
-    prompt="Open detail and share the book.",
+    prompt="Share book details for a book with a rating NOT EQUALS '4.7'",
     actions=[
         NavigateAction(url="http://localhost:8001/?seed=1"),
         ClickAction(selector=_xp("(//a[contains(@href,'/books/')])[1]")),
@@ -3292,7 +3316,7 @@ SHARE_BOOK = _uc(
 
 OPEN_PREVIEW = _uc(
     "OPEN_PREVIEW",
-    prompt="Open detail and start preview.",
+    prompt="Open preview of book where the price equals '12.99' and the name contains 'icide'",
     actions=[
         NavigateAction(url="http://localhost:8001/?seed=1"),
         ClickAction(selector=_xp("(//a[contains(@href,'/books/')])[1]")),
@@ -3302,7 +3326,7 @@ OPEN_PREVIEW = _uc(
 
 ADD_TO_READING_LIST = _uc(
     "ADD_TO_READING_LIST",
-    prompt="Login with username: <username> and password: <password>. Add 'The Iliad' to your reading list.",
+    prompt="First, login for the following username:'<username>' and password:'<password>' and then add to reading list a book that is NOT in the genres 'Fantasy' or 'Thriller' with a rating of 4.7 or higher",
     actions=[
         NavigateAction(url="http://localhost:8001/?seed=1"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
@@ -3320,7 +3344,7 @@ ADD_TO_READING_LIST = _uc(
 
 REMOVE_FROM_READING_LIST = _uc(
     "REMOVE_FROM_READING_LIST",
-    prompt="Login with username: <username> and password: <password>. Remove 'The Iliad' from your reading list.",
+    prompt="First, login for the following username:'<username>' and password:'<password>' and then remove from reading list a book whose name CONTAINS 'yr' and has a page_count NOT EQUALS 417",
     actions=[
         NavigateAction(url="http://localhost:8001/?seed=1"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
@@ -3338,7 +3362,7 @@ REMOVE_FROM_READING_LIST = _uc(
 
 VIEW_CART_BOOK = _uc(
     "VIEW_CART_BOOK",
-    prompt="Login with username: <username> and password: <password>. After logging in, view your shopping cart.",
+    prompt="First, authenticate with username '<username>' and password '<password>'. Then, view the shopping cart to see items added.",
     actions=[
         NavigateAction(url="http://localhost:8001/?seed=1"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
@@ -3352,7 +3376,7 @@ VIEW_CART_BOOK = _uc(
 
 ADD_TO_CART_BOOK = _uc(
     "ADD_TO_CART_BOOK",
-    prompt="Login with username: <username> and password: <password>. After logging in, add 'Romeo and Juliet' to your shopping cart.",
+    prompt="First, authenticate with username '<username>' and password '<password>'. After successful login, add a book to the shopping cart where the genres is NOT one of ['War', 'Classic'].",
     actions=[
         NavigateAction(url="http://localhost:8001/?seed=1"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
@@ -3369,7 +3393,7 @@ ADD_TO_CART_BOOK = _uc(
 
 REMOVE_FROM_CART_BOOK = _uc(
     "REMOVE_FROM_CART_BOOK",
-    prompt="Login with username: <username> and password: <password>. After logging in, remove 'Romeo and Juliet' from your shopping cart.",
+    prompt="First, authenticate with username '<username>' and password '<password>'. After successful login, remove from the shopping cart any book that has an author NOT EQUALS 'Kathryn Stockett', a rating EQUALS '4.4', a year NOT EQUALS '2019'.",
     actions=[
         NavigateAction(url="http://localhost:8001/?seed=1"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),

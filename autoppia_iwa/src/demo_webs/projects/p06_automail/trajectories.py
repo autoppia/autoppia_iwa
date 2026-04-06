@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import re
-from typing import Any
-
 PROJECT_NUMBER = 6
 WEB_PROJECT_ID = "automail"
 
@@ -1232,132 +1229,178 @@ ACTIONS = [
 ]
 
 
-def _normalize_field_name(raw_field: str) -> str:
-    field = raw_field.strip().lower().replace(" ", "_")
-    aliases = {
-        "movie_name": "name",
-        "film_name": "name",
-    }
-    return aliases.get(field, field)
+# CheckEventTest payloads aligned with automail_tasks.json (per use_case.name).
+_RAW_TESTS: dict[str, list[dict]] = {
+    "SEARCH_EMAIL": [
+        {"type": "CheckEventTest", "event_name": "SEARCH_EMAIL", "event_criteria": {"query": {"operator": "not_equals", "value": "13"}}, "description": "Check if specific event was triggered"}
+    ],
+    "CLEAR_SELECTION": [{"type": "CheckEventTest", "event_name": "CLEAR_SELECTION", "event_criteria": {}, "description": "Check if specific event was triggered"}],
+    "EMAILS_NEXT_PAGE": [{"type": "CheckEventTest", "event_name": "EMAILS_NEXT_PAGE", "event_criteria": {}, "description": "Check if specific event was triggered"}],
+    "EMAILS_PREV_PAGE": [{"type": "CheckEventTest", "event_name": "EMAILS_PREV_PAGE", "event_criteria": {}, "description": "Check if specific event was triggered"}],
+    "VIEW_TEMPLATES": [{"type": "CheckEventTest", "event_name": "VIEW_TEMPLATES", "event_criteria": {}, "description": "Check if specific event was triggered"}],
+    "TEMPLATE_SELECTED": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "TEMPLATE_SELECTED",
+            "event_criteria": {"template_name": {"operator": "not_contains", "value": "aui"}, "subject": "Quick follow-up on our last conversation"},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "TEMPLATE_BODY_EDITED": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "TEMPLATE_BODY_EDITED",
+            "event_criteria": {"subject": {"operator": "not_equals", "value": "Introduction & Next Steps"}, "template_name": {"operator": "not_equals", "value": "Friendly Follow Up"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "TEMPLATE_SENT": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "TEMPLATE_SENT",
+            "event_criteria": {"template_name": {"operator": "not_contains", "value": "tke"}, "subject": {"operator": "contains", "value": "hank you for you"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "TEMPLATE_SAVED_DRAFT": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "TEMPLATE_SAVED_DRAFT",
+            "event_criteria": {"template_name": {"operator": "contains", "value": "ank"}, "to": {"operator": "not_contains", "value": "pkc"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "TEMPLATE_CANCELED": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "TEMPLATE_CANCELED",
+            "event_criteria": {
+                "to": "harper.adams@newsdaily.com",
+                "subject": "Recap: key notes from our meeting",
+                "template_name": {"operator": "not_contains", "value": "kgd"},
+                "body": {"operator": "not_contains", "value": "ivd"},
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "VIEW_EMAIL": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "VIEW_EMAIL",
+            "event_criteria": {"from_email": "noah.turner@compliance.com", "subject": {"operator": "contains", "value": "cember"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "ARCHIVE_EMAIL": [
+        {"type": "CheckEventTest", "event_name": "ARCHIVE_EMAIL", "event_criteria": {"subject": "Weekly Newsletter - December 19"}, "description": "Check if specific event was triggered"}
+    ],
+    "STAR_AN_EMAIL": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "STAR_AN_EMAIL",
+            "event_criteria": {"is_starred": False, "from_email": {"operator": "not_contains", "value": "vzc"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "MARK_EMAIL_AS_IMPORTANT": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "MARK_EMAIL_AS_IMPORTANT",
+            "event_criteria": {"is_important": True, "from_email": {"operator": "not_equals", "value": "ashley.wright@outlook.com"}, "subject": "Hey! Long time no see"},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "MARK_AS_UNREAD": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "MARK_AS_UNREAD",
+            "event_criteria": {"is_read": False, "subject": {"operator": "contains", "value": "Ju"}, "from_email": {"operator": "contains", "value": "y.walker@offers.com"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "DELETE_EMAIL": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "DELETE_EMAIL",
+            "event_criteria": {"from_email": {"operator": "contains", "value": "garcia@deals.com"}, "subject": {"operator": "contains", "value": "ly Digest - June"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "MARK_AS_SPAM": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "MARK_AS_SPAM",
+            "event_criteria": {"is_spam": True, "subject": {"operator": "contains", "value": "nd pl"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "ADD_LABEL": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "ADD_LABEL",
+            "event_criteria": {
+                "label_name": {"operator": "not_equals", "value": "Finance"},
+                "body": {"operator": "contains", "value": "zing day filled with joy and cele"},
+                "subject": {"operator": "contains", "value": "Birthday"},
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "CREATE_LABEL": [
+        {"type": "CheckEventTest", "event_name": "CREATE_LABEL", "event_criteria": {"label_name": {"operator": "not_contains", "value": "bxn"}}, "description": "Check if specific event was triggered"}
+    ],
+    "SEND_EMAIL": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "SEND_EMAIL",
+            "event_criteria": {
+                "to": {"operator": "not_equals", "value": "jackson.evans@customsoft.dev"},
+                "subject": {"operator": "not_equals", "value": "Special Offer - 30% Off"},
+                "body": {"operator": "contains", "value": "ou"},
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "EMAIL_SAVE_AS_DRAFT": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "EMAIL_SAVE_AS_DRAFT",
+            "event_criteria": {"to": "ava.wilson@healthcare.org", "subject": {"operator": "contains", "value": "Apr"}, "body": {"operator": "contains", "value": "articles, and insights from"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "EDIT_DRAFT_EMAIL": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "EDIT_DRAFT_EMAIL",
+            "event_criteria": {"to": "zoe.baker@civicgroup.org", "body": {"operator": "contains", "value": "customer, we're offering you 50% off an annual subscription. This offer ex"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "REPLY_EMAIL": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "REPLY_EMAIL",
+            "event_criteria": {"to": {"operator": "not_equals", "value": "isabella.clark@freelancer.dev"}, "subject": {"operator": "contains", "value": "Welcome to TaskMas"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "FORWARD_EMAIL": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "FORWARD_EMAIL",
+            "event_criteria": {"to": {"operator": "contains", "value": "inte"}, "body": {"operator": "contains", "value": "l on An"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "THEME_CHANGED": [{"type": "CheckEventTest", "event_name": "THEME_CHANGED", "event_criteria": {"theme": "light"}, "description": "Check if specific event was triggered"}],
+}
 
-
-def _parse_value_token(raw_value: str) -> Any:
-    value = raw_value.strip().strip(".")
-    if (value.startswith("'") and value.endswith("'")) or (value.startswith('"') and value.endswith('"')):
-        return value[1:-1]
-    try:
-        if "." in value:
-            return float(value)
-        return int(value)
-    except ValueError:
-        return value
-
-
-def _maybe_add_operator_criterion(criteria: dict[str, Any], field: str, operator: str, raw_value: str) -> None:
-    criteria[_normalize_field_name(field)] = {
-        "operator": operator,
-        "value": _parse_value_token(raw_value),
-    }
-
-
-def _extract_event_criteria_from_prompt(prompt: str) -> dict[str, Any]:
-    # Conservative parser: if prompt looks complex/ambiguous, return empty criteria.
-    lowered = prompt.lower()
-    tricky_markers = (" one of ", " or ", " either ", " directly ", " then ")
-    if any(marker in lowered for marker in tricky_markers):
-        return {}
-
-    criteria: dict[str, Any] = {}
-
-    not_equals_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+is\s+not\s+'([^']+)'",
-        r"\b([a-zA-Z_ ]+?)\s+not\s+'([^']+)'",
-    ]
-    contains_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+contains\s+'([^']+)'",
-    ]
-    not_contains_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+does\s+not\s+contain\s+'([^']+)'",
-        r"\b([a-zA-Z_ ]+?)\s+not\s+contain\s+'([^']+)'",
-    ]
-    equals_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+equals\s+'([^']+)'",
-    ]
-    less_equal_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+less\s+equal\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-        r"\b([a-zA-Z_ ]+?)\s+less\s+than\s+or\s+equal\s+to\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-    greater_equal_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+greater\s+equal\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-        r"\b([a-zA-Z_ ]+?)\s+greater\s+than\s+or\s+equal\s+to\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-    less_than_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+less\s+than\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-    greater_than_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+greater\s+than\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-
-    for pattern in not_contains_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "not_contains", value)
-
-    for pattern in contains_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "contains", value)
-
-    for pattern in not_equals_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "not_equals", value)
-
-    for pattern in equals_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            criteria[_normalize_field_name(field)] = _parse_value_token(value)
-
-    for pattern in less_equal_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "less_equal", value)
-
-    for pattern in greater_equal_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "greater_equal", value)
-
-    for pattern in less_than_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "less_than", value)
-
-    for pattern in greater_than_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "greater_than", value)
-
-    return criteria
-
-
-def _build_raw_tests_from_actions(actions_data: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
-    raw_tests: dict[str, list[dict[str, Any]]] = {}
-    for item in actions_data:
-        use_case = str(item.get("use_case", "")).strip()
-        if not use_case:
-            continue
-        prompt = str(item.get("prompt", ""))
-        criteria = _extract_event_criteria_from_prompt(prompt)
-        raw_tests[use_case] = [
-            {
-                "type": "CheckEventTest",
-                "event_name": use_case,
-                "event_criteria": criteria,
-                "description": "Check if specific event was triggered",
-            }
-        ]
-    return raw_tests
-
-
-_RAW_TESTS: dict[str, list[dict[str, Any]]] = _build_raw_tests_from_actions(ACTIONS)
 _TESTS: dict[str, list[BaseTaskTest]] = {uc: [BaseTaskTest.deserialize(p) for p in pl] for uc, pl in _RAW_TESTS.items()}
 
 
 def _uc(use_case: str, prompt: str, actions: list[BaseAction]) -> Trajectory:
-    return Trajectory(name=use_case, prompt=prompt, actions=actions, tests=_TESTS.get(use_case, []))
+    return Trajectory(name=use_case, prompt=prompt, actions=actions, tests=_TESTS[use_case])
 
 
 def _xp(expr: str) -> Selector:
@@ -1370,7 +1413,7 @@ def _id(element_id: str) -> Selector:
 
 SEARCH_EMAIL = _uc(
     "SEARCH_EMAIL",
-    prompt="Search for query containing 'Weekly Newsletter'",
+    prompt="Search for emails where the query is NOT '13'",
     actions=[
         NavigateAction(url="http://localhost:8005/?seed=1"),
         ClickAction(selector=_id("search-input")),
@@ -1380,7 +1423,7 @@ SEARCH_EMAIL = _uc(
 
 VIEW_TEMPLATES = _uc(
     "VIEW_TEMPLATES",
-    prompt="Open the email templates page.",
+    prompt="Open the email templates section.",
     actions=[
         NavigateAction(url="http://localhost:8005/?seed=1"),
         ClickAction(selector=_id("sidebar-templates")),
@@ -1389,7 +1432,7 @@ VIEW_TEMPLATES = _uc(
 
 TEMPLATE_SELECTED = _uc(
     "TEMPLATE_SELECTED",
-    prompt="Select the template where template_name equals 'Meeting Recap'.",
+    prompt="Select the template where template_name does NOT contain 'aui' and subject equals 'Quick follow-up on our last conversation'.",
     actions=[
         NavigateAction(url="http://localhost:8005/?seed=1"),
         ClickAction(selector=_id("sidebar-templates")),
@@ -1399,7 +1442,7 @@ TEMPLATE_SELECTED = _uc(
 
 TEMPLATE_BODY_EDITED = _uc(
     "TEMPLATE_BODY_EDITED",
-    prompt="Update the body text of the template where template_name equals 'Warm Introduction'.",
+    prompt="Edit the body of the template where subject is NOT 'Introduction & Next Steps' and template_name is NOT 'Friendly Follow Up'.",
     actions=[
         NavigateAction(url="http://localhost:8005/?seed=1"),
         ClickAction(selector=_id("sidebar-templates")),
@@ -1412,7 +1455,7 @@ TEMPLATE_BODY_EDITED = _uc(
 
 TEMPLATE_SENT = _uc(
     "TEMPLATE_SENT",
-    prompt="Send an email using the template where template_name equals 'Friendly Follow Up' and to equals 'john.doe@gmail.com'.",
+    prompt="Send email using the template where template_name not contains 'tke' and subject contains 'hank you for you'",
     actions=[
         NavigateAction(url="http://localhost:8005/?seed=1"),
         ClickAction(selector=_id("sidebar-templates")),
@@ -1425,7 +1468,7 @@ TEMPLATE_SENT = _uc(
 
 TEMPLATE_SAVED_DRAFT = _uc(
     "TEMPLATE_SAVED_DRAFT",
-    prompt="Save the template as draft where template_name equals 'Meeting Recap' and to equals 'alice@company.com'.",
+    prompt="Save the template as draft where template_name contains 'ank' and to not contains 'pkc'.",
     actions=[
         NavigateAction(url="http://localhost:8005/?seed=1"),
         ClickAction(selector=_id("sidebar-templates")),
@@ -1438,7 +1481,7 @@ TEMPLATE_SAVED_DRAFT = _uc(
 
 TEMPLATE_CANCELED = _uc(
     "TEMPLATE_CANCELED",
-    prompt="Cancel changes on the template where template_name equals 'Thank You'.",
+    prompt="Cancel template where to equals 'harper.adams@newsdaily.com' and subject equals 'Recap: key notes from our meeting' and template_name not contains 'kgd' and body not contains 'ivd'.",
     actions=[
         NavigateAction(url="http://localhost:8005/?seed=1"),
         ClickAction(selector=_id("sidebar-templates")),
@@ -1470,7 +1513,7 @@ EMAILS_PREV_PAGE = _uc(
 
 CLEAR_SELECTION = _uc(
     "CLEAR_SELECTION",
-    prompt="Clear the current selection.",
+    prompt="Clear the current selection of emails.",
     actions=[
         NavigateAction(url="http://localhost:8005/?seed=1"),
         ClickAction(selector=_xp("(//*[@id='email-card']/div[1]/button)[1]")),
@@ -1480,7 +1523,7 @@ CLEAR_SELECTION = _uc(
 
 CREATE_LABEL = _uc(
     "CREATE_LABEL",
-    prompt="Create a label named 'Work' with color 'blue'",
+    prompt="Create a new label with the name that does NOT contain 'bxn'.",
     actions=[
         NavigateAction(url="http://localhost:8005/?seed=1"),
         ClickAction(selector=_id("label-selector-trigger")),
@@ -1493,7 +1536,7 @@ CREATE_LABEL = _uc(
 
 THEME_CHANGED = _uc(
     "THEME_CHANGED",
-    prompt="Apply dark mode appearance",
+    prompt="Change the application theme to 'light' where the theme equals 'light'.",
     actions=[
         NavigateAction(url="http://localhost:8005/?seed=1"),
         ClickAction(selector=_xp("(//button[@aria-label='User account menu' or .//span[normalize-space()='U']])[1]")),
@@ -1503,7 +1546,7 @@ THEME_CHANGED = _uc(
 
 ADD_LABEL = _uc(
     "ADD_LABEL",
-    prompt="Add the label 'Work' to the email from 'eric.baker@management.com'",
+    prompt="Add a label to the email where the label_name is NOT 'Finance', the body contains 'zing day filled with joy and cele', and the subject contains 'Birthday'",
     actions=[
         NavigateAction(url="http://localhost:8005/?seed=1"),
         ClickAction(selector=_id("search-input")),
@@ -1516,7 +1559,7 @@ ADD_LABEL = _uc(
 
 SEND_EMAIL = _uc(
     "SEND_EMAIL",
-    prompt="Send the email to john.doe@gmail.com with subject 'Project Timeline Update'",
+    prompt="Send an email to 'recipient@example.com', ensuring the recipient does NOT equal 'jackson.evans@customsoft.dev' and the subject does NOT equal 'Special Offer - 30% Off' and the body contains 'ou'.",
     actions=[
         NavigateAction(url="http://localhost:8005/?seed=1"),
         ClickAction(selector=_xp("(//button[@aria-label='Compose' or normalize-space()='Compose'])[1]")),
@@ -1532,7 +1575,7 @@ SEND_EMAIL = _uc(
 
 EMAIL_SAVE_AS_DRAFT = _uc(
     "EMAIL_SAVE_AS_DRAFT",
-    prompt="Save the email as draft where email equals jane.doe@example.com",
+    prompt="Save the email as a draft addressed to 'ava.wilson@healthcare.org' with the subject that CONTAINS 'Apr' and the body that CONTAINS 'articles, and insights from'",
     actions=[
         NavigateAction(url="http://localhost:8005/?seed=1"),
         ClickAction(selector=_xp("(//button[@aria-label='Compose' or normalize-space()='Compose'])[1]")),
@@ -1548,7 +1591,7 @@ EMAIL_SAVE_AS_DRAFT = _uc(
 
 EDIT_DRAFT_EMAIL = _uc(
     "EDIT_DRAFT_EMAIL",
-    prompt="Edit the draft email where to equals 'jane.doe@example.com' and subject equals 'Client Proposal Updates'.",
+    prompt="Edit the draft email where to equals 'zoe.baker@civicgroup.org' and body contains 'customer, we're offering you 50% off an annual subscription. This offer ex'",
     actions=[
         NavigateAction(url="http://localhost:8005/?seed=1"),
         ClickAction(selector=_xp("(//button[@aria-label='Compose' or normalize-space()='Compose'])[1]")),
@@ -1567,7 +1610,7 @@ EDIT_DRAFT_EMAIL = _uc(
 
 REPLY_EMAIL = _uc(
     "REPLY_EMAIL",
-    prompt="Reply to the email where from_email equals 'eric.baker@management.com' and subject equals 'Year-End Review Meeting - Schedule'.",
+    prompt="Reply to the email where from_email NOT equals 'isabella.clark@freelancer.dev' and subject contains 'Welcome to TaskMas'",
     actions=[
         NavigateAction(url="http://localhost:8005/?seed=1"),
         ClickAction(selector=_id("search-input")),
@@ -1580,7 +1623,7 @@ REPLY_EMAIL = _uc(
 
 FORWARD_EMAIL = _uc(
     "FORWARD_EMAIL",
-    prompt="Forward the email where from_email equals 'eric.baker@management.com' and subject equals 'Year-End Review Meeting - Schedule' and to equals 'john.doe@gmail.com'.",
+    prompt="Forward the email where to contains 'inte' and body contains 'l on An'.",
     actions=[
         NavigateAction(url="http://localhost:8005/?seed=1"),
         ClickAction(selector=_id("search-input")),
@@ -1595,7 +1638,7 @@ FORWARD_EMAIL = _uc(
 
 VIEW_EMAIL = _uc(
     "VIEW_EMAIL",
-    prompt="View the email where subject contains 'Project'",
+    prompt="View the email where from_email equals 'noah.turner@compliance.com' and subject contains 'cember'.",
     actions=[
         NavigateAction(url="http://localhost:8005/?seed=1"),
         ClickAction(selector=_id("search-input")),
@@ -1606,7 +1649,7 @@ VIEW_EMAIL = _uc(
 
 STAR_AN_EMAIL = _uc(
     "STAR_AN_EMAIL",
-    prompt="Star the email where subject contains 'Project'",
+    prompt="Star the email where is_starred equals False and from_email not contains 'vzc'.",
     actions=[
         NavigateAction(url="http://localhost:8005/?seed=1"),
         ClickAction(selector=_id("search-input")),
@@ -1622,7 +1665,7 @@ STAR_AN_EMAIL = _uc(
 
 MARK_EMAIL_AS_IMPORTANT = _uc(
     "MARK_EMAIL_AS_IMPORTANT",
-    prompt="Mark the email as important where subject contains 'Project'",
+    prompt="Mark the email as important where is_important equals 'True' and from_email not equals 'ashley.wright@outlook.com' and subject equals 'Hey! Long time no see'.",
     actions=[
         NavigateAction(url="http://localhost:8005/?seed=1"),
         ClickAction(selector=_id("search-input")),
@@ -1638,7 +1681,7 @@ MARK_EMAIL_AS_IMPORTANT = _uc(
 
 MARK_AS_UNREAD = _uc(
     "MARK_AS_UNREAD",
-    prompt="Mark the email as unread where subject contains 'Project'",
+    prompt="Mark the email as unread where is_read equals False and subject contains 'Ju' and from_email contains 'y.walker@offers.com'.",
     actions=[
         NavigateAction(url="http://localhost:8005/?seed=1"),
         ClickAction(selector=_id("search-input")),
@@ -1650,7 +1693,7 @@ MARK_AS_UNREAD = _uc(
 
 DELETE_EMAIL = _uc(
     "DELETE_EMAIL",
-    prompt="Delete the email where subject contains 'Project'",
+    prompt="Delete the email from sender whose email contains 'garcia@deals.com' with the subject containing 'ly Digest - June'.",
     actions=[
         NavigateAction(url="http://localhost:8005/?seed=1"),
         ClickAction(selector=_id("search-input")),
@@ -1664,7 +1707,7 @@ DELETE_EMAIL = _uc(
 
 MARK_AS_SPAM = _uc(
     "MARK_AS_SPAM",
-    prompt="Mark the email as spam where subject contains 'Project'",
+    prompt="Mark as spam the email with subject that CONTAINS 'nd pl' and is_spam equals True.",
     actions=[
         NavigateAction(url="http://localhost:8005/?seed=1"),
         ClickAction(selector=_id("search-input")),
@@ -1678,7 +1721,7 @@ MARK_AS_SPAM = _uc(
 
 ARCHIVE_EMAIL = _uc(
     "ARCHIVE_EMAIL",
-    prompt="Archive the email where subject contains 'Project'",
+    prompt="Archive the email whose subject equals 'Weekly Newsletter - December 19'.",
     actions=[
         NavigateAction(url="http://localhost:8005/?seed=1"),
         ClickAction(selector=_id("search-input")),
