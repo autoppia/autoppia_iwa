@@ -465,15 +465,11 @@ class DeleteClientEvent(Event, BaseEventValidator):
             return True
         status_ok = True
         status_criterion = criteria.status
-        if status_criterion is not None:
+        if status_criterion is not None and not (isinstance(status_criterion, CriterionValue) and status_criterion.operator in {ComparisonOperator.NOT_EQUALS, ComparisonOperator.NOT_CONTAINS}):
             # Delete constraints can include negative status operators that are often
             # noisy with duplicated seeded clients; keep strict checks for positive
             # operators and skip strict status matching for negative predicates.
-            if not (
-                isinstance(status_criterion, CriterionValue)
-                and status_criterion.operator in {ComparisonOperator.NOT_EQUALS, ComparisonOperator.NOT_CONTAINS}
-            ):
-                status_ok = self._validate_field(self.client.status, status_criterion)
+            status_ok = self._validate_field(self.client.status, status_criterion)
         return all(
             [
                 self._validate_field(self.client.name, criteria.name),

@@ -73,14 +73,11 @@ class EvaluatorConfig:
 
 def _event_timestamp_utc(event: Any) -> datetime | None:
     raw_ts = None
-    if isinstance(event, dict):
-        raw_ts = event.get("timestamp") or (event.get("data") or {}).get("timestamp")
-    else:
-        raw_ts = getattr(event, "timestamp", None)
+    raw_ts = event.get("timestamp") or (event.get("data") or {}).get("timestamp") if isinstance(event, dict) else getattr(event, "timestamp", None)
 
     if isinstance(raw_ts, datetime):
         return raw_ts.astimezone(UTC) if raw_ts.tzinfo else raw_ts.replace(tzinfo=UTC)
-    if isinstance(raw_ts, (int, float)):
+    if isinstance(raw_ts, int | float):
         return datetime.fromtimestamp(float(raw_ts), tz=UTC)
     if isinstance(raw_ts, str) and raw_ts.strip():
         ts = raw_ts.strip()
