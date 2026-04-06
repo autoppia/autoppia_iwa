@@ -14,15 +14,15 @@ from autoppia_iwa.src.execution.actions.base import BaseAction, Selector, Select
 
 ACTIONS = [
     {
-        "url": "http://localhost:8003/?seed=1",
+        "url": "http://localhost:8003/?seed=880",
         "prompt": "Show me details for 'Thai Garden'",
         "actions": [
             {
-                "url": "http://localhost:8003/?seed=1",
+                "url": "http://localhost:8003/?seed=880",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8003/?seed=1",
+                    "url": "http://localhost:8003/?seed=880",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -80,15 +80,15 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8003/restaurant/7?seed=1",
+        "url": "http://localhost:8003/restaurant/7?seed=175",
         "prompt": "Show the full menu for 'Thai Garden' for 2 people for dinner on July 18.",
         "actions": [
             {
-                "url": "http://localhost:8003/restaurant/7?seed=1",
+                "url": "http://localhost:8003/restaurant/7?seed=175",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8003/restaurant/7?seed=1",
+                    "url": "http://localhost:8003/restaurant/7?seed=175",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -114,15 +114,15 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8003/restaurant/7?seed=1",
+        "url": "http://localhost:8003/restaurant/7?seed=621",
         "prompt": "Hide the menu for 'Thai Garden'.",
         "actions": [
             {
-                "url": "http://localhost:8003/restaurant/7?seed=1",
+                "url": "http://localhost:8003/restaurant/7?seed=621",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8003/restaurant/7?seed=1",
+                    "url": "http://localhost:8003/restaurant/7?seed=621",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -163,15 +163,15 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8003/?seed=1",
+        "url": "http://localhost:8003/?seed=854",
         "prompt": "Open the date selector and select the date '2026-02-23'.",
         "actions": [
             {
-                "url": "http://localhost:8003/?seed=1",
+                "url": "http://localhost:8003/?seed=854",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8003/?seed=1",
+                    "url": "http://localhost:8003/?seed=854",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -242,15 +242,15 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8003/?seed=1",
+        "url": "http://localhost:8003/?seed=321",
         "prompt": "Open the time dropdown and select the time equals '2:30 PM'.",
         "actions": [
             {
-                "url": "http://localhost:8003/?seed=1",
+                "url": "http://localhost:8003/?seed=321",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8003/?seed=1",
+                    "url": "http://localhost:8003/?seed=321",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -291,15 +291,15 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8003/?seed=1",
+        "url": "http://localhost:8003/?seed=654",
         "prompt": "Open the guest selector dropdown and select people equals 4.",
         "actions": [
             {
-                "url": "http://localhost:8003/?seed=1",
+                "url": "http://localhost:8003/?seed=654",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8003/?seed=1",
+                    "url": "http://localhost:8003/?seed=654",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -340,15 +340,15 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8003/?seed=1",
+        "url": "http://localhost:8003/?seed=499",
         "prompt": "Search for 'Thai Garden'",
         "actions": [
             {
-                "url": "http://localhost:8003/?seed=1",
+                "url": "http://localhost:8003/?seed=499",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8003/?seed=1",
+                    "url": "http://localhost:8003/?seed=499",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -391,15 +391,15 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8003/?seed=1",
+        "url": "http://localhost:8003/?seed=94",
         "prompt": "Scroll in the direction 'right' where section equals 'Featured Products'.",
         "actions": [
             {
-                "url": "http://localhost:8003/?seed=1",
+                "url": "http://localhost:8003/?seed=94",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8003/?seed=1",
+                    "url": "http://localhost:8003/?seed=94",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -425,15 +425,15 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8003/?seed=1",
+        "url": "http://localhost:8003/?seed=404",
         "prompt": "I'd like to book a table at the restaurant which name 'Thai Garden' for 2 people on 2026-04-03 at 12:00 PM.",
         "actions": [
             {
-                "url": "http://localhost:8003/?seed=1",
+                "url": "http://localhost:8003/?seed=404",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8003/?seed=1",
+                    "url": "http://localhost:8003/?seed=404",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -596,15 +596,15 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8003/booking/7/12%3A00%20PM?seed=1&people=2&date=2026-04-03",
+        "url": "http://localhost:8003/booking/7/12%3A00%20PM?seed=910&people=2&date=2026-04-03",
         "prompt": "Select a country where code equals 'IN'.",
         "actions": [
             {
-                "url": "http://localhost:8003/booking/7/12%3A00%20PM?seed=1&people=2&date=2026-04-03",
+                "url": "http://localhost:8003/booking/7/12%3A00%20PM?seed=910&people=2&date=2026-04-03",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8003/booking/7/12%3A00%20PM?seed=1&people=2&date=2026-04-03",
+                    "url": "http://localhost:8003/booking/7/12%3A00%20PM?seed=910&people=2&date=2026-04-03",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -645,15 +645,15 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8003/booking/7/12%3A00%20PM?seed=1&people=2&date=2026-04-03",
+        "url": "http://localhost:8003/booking/7/12%3A00%20PM?seed=156&people=2&date=2026-04-03",
         "prompt": "This reservation is for a 'birthday'.",
         "actions": [
             {
-                "url": "http://localhost:8003/booking/7/12%3A00%20PM?seed=1&people=2&date=2026-04-03",
+                "url": "http://localhost:8003/booking/7/12%3A00%20PM?seed=156&people=2&date=2026-04-03",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8003/booking/7/12%3A00%20PM?seed=1&people=2&date=2026-04-03",
+                    "url": "http://localhost:8003/booking/7/12%3A00%20PM?seed=156&people=2&date=2026-04-03",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -694,15 +694,15 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8003/booking/7/12%3A00%20PM?seed=1&people=2&date=2026-04-03",
+        "url": "http://localhost:8003/booking/7/12%3A00%20PM?seed=750&people=2&date=2026-04-03",
         "prompt": "Complete my reservation for 'Thai Garden' on 2026-04-03 at 12:00 PM for 2 people. My phone is 666777888, it's for an anniversary, and special request is 'delicious'.",
         "actions": [
             {
-                "url": "http://localhost:8003/booking/7/12%3A00%20PM?seed=1&people=2&date=2026-04-03",
+                "url": "http://localhost:8003/booking/7/12%3A00%20PM?seed=750&people=2&date=2026-04-03",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8003/booking/7/12%3A00%20PM?seed=1&people=2&date=2026-04-03",
+                    "url": "http://localhost:8003/booking/7/12%3A00%20PM?seed=750&people=2&date=2026-04-03",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -886,15 +886,15 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8003/?seed=1",
+        "url": "http://localhost:8003/?seed=376",
         "prompt": "Contact where name equals 'James'.",
         "actions": [
             {
-                "url": "http://localhost:8003/?seed=1",
+                "url": "http://localhost:8003/?seed=376",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8003/?seed=1",
+                    "url": "http://localhost:8003/?seed=376",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1063,15 +1063,15 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8003/?seed=1",
+        "url": "http://localhost:8003/?seed=300",
         "prompt": "Navigate to the About page to read about the company's mission and values.",
         "actions": [
             {
-                "url": "http://localhost:8003/?seed=1",
+                "url": "http://localhost:8003/?seed=300",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8003/?seed=1",
+                    "url": "http://localhost:8003/?seed=300",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1097,15 +1097,15 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8003/?seed=1",
+        "url": "http://localhost:8003/?seed=240",
         "prompt": "Navigate to the Help page to view frequently asked questions and support guides.",
         "actions": [
             {
-                "url": "http://localhost:8003/?seed=1",
+                "url": "http://localhost:8003/?seed=240",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8003/?seed=1",
+                    "url": "http://localhost:8003/?seed=240",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1131,15 +1131,15 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8003/?seed=1",
+        "url": "http://localhost:8003/?seed=471",
         "prompt": "Click the Trending Spots feature on the About page.",
         "actions": [
             {
-                "url": "http://localhost:8003/?seed=1",
+                "url": "http://localhost:8003/?seed=471",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8003/?seed=1",
+                    "url": "http://localhost:8003/?seed=471",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1180,15 +1180,15 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8003/?seed=1",
+        "url": "http://localhost:8003/?seed=384",
         "prompt": "Open the contact page.",
         "actions": [
             {
-                "url": "http://localhost:8003/?seed=1",
+                "url": "http://localhost:8003/?seed=384",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8003/?seed=1",
+                    "url": "http://localhost:8003/?seed=384",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1214,15 +1214,15 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8003/?seed=1",
+        "url": "http://localhost:8003/?seed=539",
         "prompt": "Click the phone contact card on the contact page.",
         "actions": [
             {
-                "url": "http://localhost:8003/?seed=1",
+                "url": "http://localhost:8003/?seed=539",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8003/?seed=1",
+                    "url": "http://localhost:8003/?seed=539",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1263,15 +1263,15 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8003/?seed=1",
+        "url": "http://localhost:8003/?seed=913",
         "prompt": "Select the Payments category in Help.",
         "actions": [
             {
-                "url": "http://localhost:8003/?seed=1",
+                "url": "http://localhost:8003/?seed=913",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8003/?seed=1",
+                    "url": "http://localhost:8003/?seed=913",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1312,15 +1312,15 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8003/?seed=1",
+        "url": "http://localhost:8003/?seed=803",
         "prompt": "Expand the refund FAQ.",
         "actions": [
             {
-                "url": "http://localhost:8003/?seed=1",
+                "url": "http://localhost:8003/?seed=803",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8003/?seed=1",
+                    "url": "http://localhost:8003/?seed=803",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1521,11 +1521,34 @@ def _id(element_id: str) -> Selector:
     return Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value=element_id)
 
 
+BASE = "http://localhost:8003"
+# From autodining_tasks.json (?seed= in each task URL)
+SEED_VIEW_RESTAURANT = 880
+SEED_VIEW_FULL_MENU = 175
+SEED_COLLAPSE_MENU = 621
+SEED_DATE_DROPDOWN_OPENED = 854
+SEED_TIME_DROPDOWN_OPENED = 321
+SEED_PEOPLE_DROPDOWN_OPENED = 654
+SEED_SEARCH_RESTAURANT = 499
+SEED_SCROLL_VIEW = 94
+SEED_BOOK_RESTAURANT = 404
+SEED_COUNTRY_SELECTED = 910
+SEED_OCCASION_SELECTED = 156
+SEED_RESERVATION_COMPLETE = 750
+SEED_CONTACT_FORM_SUBMIT = 376
+SEED_ABOUT_PAGE_VIEW = 300
+SEED_HELP_PAGE_VIEW = 240
+SEED_ABOUT_FEATURE_CLICK = 471
+SEED_CONTACT_PAGE_VIEW = 384
+SEED_CONTACT_CARD_CLICK = 539
+SEED_HELP_CATEGORY_SELECTED = 913
+SEED_HELP_FAQ_TOGGLED = 803
+
 VIEW_RESTAURANT = _uc(
     "VIEW_RESTAURANT",
     prompt="Show details for a restaurant where the rating equals '4.5', bookings are less than '613', name is NOT 'lvarcw', and reviews are less than or equal to '1568'.",
     actions=[
-        NavigateAction(url="http://localhost:8003/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_VIEW_RESTAURANT}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='search-input' or @id='search-input-help' or @id='search-box' or @id='search-field' or @id='query-box' or @id='restaurant-search' or @id='search-restaurants' or @id='search-text']"
@@ -1549,7 +1572,7 @@ VIEW_FULL_MENU = _uc(
     "VIEW_FULL_MENU",
     prompt="Show me the full menu for a restaurant with cuisine equals 'Indian' that does NOT have '5679' reviews.",
     actions=[
-        NavigateAction(url="http://localhost:8003/restaurant/7?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_VIEW_FULL_MENU}"),
         ClickAction(
             selector=_xp(
                 "(//*[@id='menu-toggle-button' or @id='dining-menu-toggle' or @id='resto-menu-toggle' or @id='menu-expand-button' or @id='dining-menu-expand' or @id='resto-menu-expand' or @id='menu-collapse-button' or @id='dining-menu-collapse' or @id='resto-menu-collapse' or @id='menu-view-toggle'])[1]"
@@ -1562,7 +1585,7 @@ COLLAPSE_MENU = _uc(
     "COLLAPSE_MENU",
     prompt="Please collapse the menu for the restaurant where the cuisine is NOT 'mhydqx'.",
     actions=[
-        NavigateAction(url="http://localhost:8003/restaurant/7?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_COLLAPSE_MENU}"),
         ClickAction(
             selector=_xp(
                 "(//*[@id='menu-toggle-button' or @id='dining-menu-toggle' or @id='resto-menu-toggle' or @id='menu-expand-button' or @id='dining-menu-expand' or @id='resto-menu-expand' or @id='menu-collapse-button' or @id='dining-menu-collapse' or @id='resto-menu-collapse' or @id='menu-view-toggle'])[1]"
@@ -1580,7 +1603,7 @@ DATE_DROPDOWN_OPENED = _uc(
     "DATE_DROPDOWN_OPENED",
     prompt="Open the date selector and select the date less equal '2026-04-16T19:00:00+00:00'.",
     actions=[
-        NavigateAction(url="http://localhost:8003/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_DATE_DROPDOWN_OPENED}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='date_picker' or @id='date-picker' or @id='date-selector' or @id='date-input' or @id='booking-date' or @id='reservation-date' or @id='calendar-trigger' or @id='date-trigger' or @id='checkin-date' or @id='date-field']"
@@ -1596,7 +1619,7 @@ TIME_DROPDOWN_OPENED = _uc(
     "TIME_DROPDOWN_OPENED",
     prompt="Open the time dropdown and select the time equals '12:00 PM'.",
     actions=[
-        NavigateAction(url="http://localhost:8003/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_TIME_DROPDOWN_OPENED}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='time_picker' or @id='time-picker' or @id='time-selector' or @id='time-input' or @id='booking-time' or @id='reservation-time' or @id='time-trigger' or @id='checkin-time' or @id='time-field']"
@@ -1610,7 +1633,7 @@ PEOPLE_DROPDOWN_OPENED = _uc(
     "PEOPLE_DROPDOWN_OPENED",
     prompt="Open the guest selector dropdown and select people equals '7'.",
     actions=[
-        NavigateAction(url="http://localhost:8003/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_PEOPLE_DROPDOWN_OPENED}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='people_picker' or @id='people-picker' or @id='guest-picker' or @id='guests-picker' or @id='people-selector' or @id='guest-selector' or @id='booking-people' or @id='reservation-people' or @id='people-input' or @id='guests-input']"
@@ -1624,7 +1647,7 @@ SEARCH_RESTAURANT = _uc(
     "SEARCH_RESTAURANT",
     prompt="Search for restaurants where the query contains 'Jay Fai'",
     actions=[
-        NavigateAction(url="http://localhost:8003/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_SEARCH_RESTAURANT}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='search-input' or @id='search-input-help' or @id='search-box' or @id='search-field' or @id='query-box' or @id='restaurant-search' or @id='search-restaurants' or @id='search-text']"
@@ -1643,7 +1666,7 @@ SCROLL_VIEW = _uc(
     "SCROLL_VIEW",
     prompt="Scroll in the direction 'right' where section contains 'Introducing OpenDinning Icons'",
     actions=[
-        NavigateAction(url="http://localhost:8003/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_SCROLL_VIEW}"),
         ClickAction(
             selector=_xp(
                 "(//*[@data-testid='scroll-right-1' or @id='scroll-right-button' or @id='scroll-right' or @id='scroll-right-btn' or @id='carousel-right' or @id='carousel-right-button' or @id='carousel-right-btn' or @id='next-button' or @id='next-slide' or @id='right-arrow'])[1]"
@@ -1656,7 +1679,7 @@ BOOK_RESTAURANT = _uc(
     "BOOK_RESTAURANT",
     prompt="Please book a table for 5 people at a restaurant where the bookings are less than or equal to '893' on '2026-04-08T19:00:00+00:00' at '2:00 PM'.",
     actions=[
-        NavigateAction(url="http://localhost:8003/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_BOOK_RESTAURANT}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='search-input' or @id='search-input-help' or @id='search-box' or @id='search-field' or @id='query-box' or @id='restaurant-search' or @id='search-restaurants' or @id='search-text']"
@@ -1699,7 +1722,7 @@ COUNTRY_SELECTED = _uc(
     "COUNTRY_SELECTED",
     prompt="Please select a country from the dropdown that is NOT 'Japan' for your reservation, ensuring the cuisine is NOT 'qddqol', the reviews are GREATER THAN or EQUAL to 986, the name does NOT CONTAIN 'fjoewn', the number of people is GREATER THAN or EQUAL to 8, the date is LESS THAN or EQUAL to '2026-04-10T19:00:00+00:00', and the time is '2:00 PM'.",
     actions=[
-        NavigateAction(url="http://localhost:8003/booking/7/12%3A00%20PM?seed=1&people=2&date=2026-04-03"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_COUNTRY_SELECTED}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='country-select' or @id='country-dropdown' or @id='country-picker' or @id='country-selector' or @id='country-choice' or @id='country-option' or @id='country-field' or @id='country-input' or @id='country-selection' or @id='country-picker-dropdown']"
@@ -1717,7 +1740,7 @@ OCCASION_SELECTED = _uc(
     "OCCASION_SELECTED",
     prompt="Please select a special occasion for a booking at a restaurant where the name equals 'Astrid y Gast\u00f3n', the bookings are less than 346, the number of people is greater than or equal to 5, the date is less than or equal to '2026-04-07T19:00:00+00:00', and the time equals '12:30 PM'.",
     actions=[
-        NavigateAction(url="http://localhost:8003/booking/7/12%3A00%20PM?seed=1&people=2&date=2026-04-03"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_OCCASION_SELECTED}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='occasion-select' or @id='occasion-dropdown' or @id='occasion-picker' or @id='occasion-selector' or @id='occasion-choice' or @id='occasion-option' or @id='occasion-field' or @id='occasion-input' or @id='occasion-selection' or @id='occasion-picker-dropdown']"
@@ -1735,7 +1758,7 @@ RESERVATION_COMPLETE = _uc(
     "RESERVATION_COMPLETE",
     prompt="Please finalize and complete the restaurant reservation for 8 people for an occasion that is 'anniversary' at a restaurant with a rating greater than 3.5, with more than 1122 reviews, where the code is NOT 'US', on or after '2026-04-12T19:00:00+00:00'.",
     actions=[
-        NavigateAction(url="http://localhost:8003/booking/7/12%3A00%20PM?seed=1&people=2&date=2026-04-03"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_RESERVATION_COMPLETE}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='full-name-input' or @id='name-input' or @id='full-name' or @id='booking-name' or @id='reservation-name' or @id='customer-name' or @id='fullname-input' or @id='name-field' or @id='guest-name' or @id='full-name-field']"
@@ -1802,7 +1825,7 @@ CONTACT_FORM_SUBMIT = _uc(
     "CONTACT_FORM_SUBMIT",
     prompt="Contact support where message does NOT contain 'Can you share details about your recent updates or new features?' and email does NOT equal 'james.wilson@example.com' and subject equals 'Website Issue Report' and username contains 'ni'",
     actions=[
-        NavigateAction(url="http://localhost:8003/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_CONTACT_FORM_SUBMIT}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='nav-contact' or @id='contact-link' or @id='contact-us-link' or @id='contact-nav' or @id='contact-us-nav' or @id='contact-button' or @id='contact-us-button' or @id='contact-menu-item' or @id='contact-us-menu-item' or @id='contact-navigation']"
@@ -1864,7 +1887,7 @@ ABOUT_PAGE_VIEW = _uc(
     "ABOUT_PAGE_VIEW",
     prompt="Navigate to the About page to view company information.",
     actions=[
-        NavigateAction(url="http://localhost:8003/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_ABOUT_PAGE_VIEW}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='nav-about' or @id='about-link' or @id='about-us-link' or @id='about-nav' or @id='about-us-nav' or @id='about-button' or @id='about-us-button' or @id='about-menu-item' or @id='about-us-menu-item' or @id='about-navigation']"
@@ -1877,7 +1900,7 @@ HELP_PAGE_VIEW = _uc(
     "HELP_PAGE_VIEW",
     prompt="Navigate to the Help page to find guidance, FAQs, or troubleshooting information.",
     actions=[
-        NavigateAction(url="http://localhost:8003/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_HELP_PAGE_VIEW}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='nav-help' or @id='help-link' or @id='support-link' or @id='help-nav' or @id='support-nav' or @id='help-button' or @id='support-button' or @id='help-menu-item' or @id='support-menu-item' or @id='help-navigation']"
@@ -1890,7 +1913,7 @@ ABOUT_FEATURE_CLICK = _uc(
     "ABOUT_FEATURE_CLICK",
     prompt="Click on the highlighted feature on the About page that does NOT contain 'Live availability'.",
     actions=[
-        NavigateAction(url="http://localhost:8003/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_ABOUT_FEATURE_CLICK}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='nav-about' or @id='about-link' or @id='about-us-link' or @id='about-nav' or @id='about-us-nav' or @id='about-button' or @id='about-us-button' or @id='about-menu-item' or @id='about-us-menu-item' or @id='about-navigation']"
@@ -1904,7 +1927,7 @@ CONTACT_PAGE_VIEW = _uc(
     "CONTACT_PAGE_VIEW",
     prompt="Open the contact page.",
     actions=[
-        NavigateAction(url="http://localhost:8003/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_CONTACT_PAGE_VIEW}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='nav-contact' or @id='contact-link' or @id='contact-us-link' or @id='contact-nav' or @id='contact-us-nav' or @id='contact-button' or @id='contact-us-button' or @id='contact-menu-item' or @id='contact-us-menu-item' or @id='contact-navigation']"
@@ -1917,7 +1940,7 @@ CONTACT_CARD_CLICK = _uc(
     "CONTACT_CARD_CLICK",
     prompt="Click the contact card where the card_type does NOT contain 'Phone'.",
     actions=[
-        NavigateAction(url="http://localhost:8003/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_CONTACT_CARD_CLICK}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='nav-contact' or @id='contact-link' or @id='contact-us-link' or @id='contact-nav' or @id='contact-us-nav' or @id='contact-button' or @id='contact-us-button' or @id='contact-menu-item' or @id='contact-us-menu-item' or @id='contact-navigation']"
@@ -1931,7 +1954,7 @@ HELP_CATEGORY_SELECTED = _uc(
     "HELP_CATEGORY_SELECTED",
     prompt="Select a help category that is NOT 'Account'",
     actions=[
-        NavigateAction(url="http://localhost:8003/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_HELP_CATEGORY_SELECTED}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='nav-help' or @id='help-link' or @id='support-link' or @id='help-nav' or @id='support-nav' or @id='help-button' or @id='support-button' or @id='help-menu-item' or @id='support-menu-item' or @id='help-navigation']"
@@ -1949,7 +1972,7 @@ HELP_FAQ_TOGGLED = _uc(
     "HELP_FAQ_TOGGLED",
     prompt="Expand the FAQ item where the question equals 'Can I get a refund?'",
     actions=[
-        NavigateAction(url="http://localhost:8003/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_HELP_FAQ_TOGGLED}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='nav-help' or @id='help-link' or @id='support-link' or @id='help-nav' or @id='support-nav' or @id='help-button' or @id='support-button' or @id='help-menu-item' or @id='support-menu-item' or @id='help-navigation']"

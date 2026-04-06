@@ -15,15 +15,15 @@ from autoppia_iwa.src.execution.actions.base import BaseAction, Selector, Select
 
 ACTIONS = [
     {
-        "url": "http://localhost:8000/?seed=1",
+        "url": "http://localhost:8000/?seed=58",
         "prompt": "Add a comment to the movie_name that is NOT 'The Godfather' with a content that is NOT 'couldn't look away'.",
         "actions": [
             {
-                "url": "http://localhost:8000/?seed=1",
+                "url": "http://localhost:8000/?seed=58",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8000/?seed=1",
+                    "url": "http://localhost:8000/?seed=58",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -140,15 +140,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8000/?seed=1",
+        "url": "http://localhost:8000/?seed=287",
         "prompt": "Login with username equals 'user<web_agent_id>' and password equals 'Passw0rd!'. Insert a new film with genres equals 'Thriller'.",
         "actions": [
             {
-                "url": "http://localhost:8000/?seed=1",
+                "url": "http://localhost:8000/?seed=287",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8000/?seed=1",
+                    "url": "http://localhost:8000/?seed=287",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -310,15 +310,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8000/?seed=1",
+        "url": "http://localhost:8000/?seed=375",
         "prompt": "Login with the username equals 'user<web_agent_id>' and password equals 'Passw0rd!' and then add to watchlist a film with rating less equal 5.0 and duration less than 124 minutes long",
         "actions": [
             {
-                "url": "http://localhost:8000/?seed=1",
+                "url": "http://localhost:8000/?seed=375",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8000/?seed=1",
+                    "url": "http://localhost:8000/?seed=375",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -474,15 +474,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8000/contact?seed=1",
+        "url": "http://localhost:8000/contact?seed=507",
         "prompt": "Fill out the contact form with a name NOT 'Lisa', an email that contains 'in@d', and a subject that does NOT contain 'mwg'.",
         "actions": [
             {
-                "url": "http://localhost:8000/?seed=1",
+                "url": "http://localhost:8000/?seed=507",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8000/?seed=1",
+                    "url": "http://localhost:8000/?seed=507",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -669,15 +669,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8000/?seed=1",
+        "url": "http://localhost:8000/?seed=488",
         "prompt": "Login with username equals 'user<web_agent_id>' and password equals 'Passw0rd!'. Then, delete your movie.",
         "actions": [
             {
-                "url": "http://localhost:8000/?seed=1",
+                "url": "http://localhost:8000/?seed=488",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8000/?seed=1",
+                    "url": "http://localhost:8000/?seed=488",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -824,15 +824,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8000/?seed=1",
+        "url": "http://localhost:8000/?seed=566",
         "prompt": "Login with username equals 'user<web_agent_id>' and password equals 'Passw0rd!'. Edit your movie by setting year to '1966'.",
         "actions": [
             {
-                "url": "http://localhost:8000/?seed=1",
+                "url": "http://localhost:8000/?seed=566",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8000/?seed=1",
+                    "url": "http://localhost:8000/?seed=566",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1011,15 +1011,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8000/?seed=1",
+        "url": "http://localhost:8000/?seed=889",
         "prompt": "Login with username equals 'user<web_agent_id>' and password equals 'Passw0rd!'. Edit your profile: ensure your first_name contains 'mes', your website does NOT contain 'nhl', and your location does NOT contain 'evc'.",
         "actions": [
             {
-                "url": "http://localhost:8000/?seed=1",
+                "url": "http://localhost:8000/?seed=889",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8000/?seed=1",
+                    "url": "http://localhost:8000/?seed=889",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1259,15 +1259,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8000/?seed=1",
+        "url": "http://localhost:8000/?seed=518",
         "prompt": "Take me directly to the interstellar film details page",
         "actions": [
             {
-                "url": "http://localhost:8000/?seed=1",
+                "url": "http://localhost:8000/?seed=518",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8000/?seed=1",
+                    "url": "http://localhost:8000/?seed=518",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1294,15 +1294,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8000/?seed=1",
+        "url": "http://localhost:8000/?seed=732",
         "prompt": "Filter for Action movies",
         "actions": [
             {
-                "url": "http://localhost:8000/?seed=1",
+                "url": "http://localhost:8000/?seed=732",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8000/?seed=1",
+                    "url": "http://localhost:8000/?seed=732",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1343,15 +1343,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8000/?seed=1",
+        "url": "http://localhost:8000/?seed=321",
         "prompt": "Please login using username equals 'user<web_agent_id>' and password equals 'Passw0rd!'.",
         "actions": [
             {
-                "url": "http://localhost:8000/?seed=1",
+                "url": "http://localhost:8000/?seed=321",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8000/?seed=1",
+                    "url": "http://localhost:8000/?seed=321",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1466,15 +1466,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8000/?seed=1",
+        "url": "http://localhost:8000/?seed=364",
         "prompt": "Please login using username equals 'user<web_agent_id>' and password equals 'Passw0rd!' and then logout.",
         "actions": [
             {
-                "url": "http://localhost:8000/?seed=1",
+                "url": "http://localhost:8000/?seed=364",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8000/?seed=1",
+                    "url": "http://localhost:8000/?seed=364",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1604,15 +1604,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8000/?seed=1",
+        "url": "http://localhost:8000/?seed=807",
         "prompt": "Please register using username equals 'newuser<web_agent_id>', email equals 'newuser<web_agent_id>@gmail.com' and password equals 'Passw0rd!'",
         "actions": [
             {
-                "url": "http://localhost:8000/?seed=1",
+                "url": "http://localhost:8000/?seed=807",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8000/?seed=1",
+                    "url": "http://localhost:8000/?seed=807",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1799,15 +1799,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8000/?seed=1",
+        "url": "http://localhost:8000/?seed=396",
         "prompt": "Login with username equals 'user<web_agent_id>' and password equals 'Passw0rd!' and remove a movie from watchlist",
         "actions": [
             {
-                "url": "http://localhost:8000/?seed=1",
+                "url": "http://localhost:8000/?seed=396",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8000/?seed=1",
+                    "url": "http://localhost:8000/?seed=396",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1980,15 +1980,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8000/?seed=1",
+        "url": "http://localhost:8000/?seed=757",
         "prompt": "Search for the movie 'La La Land'",
         "actions": [
             {
-                "url": "http://localhost:8000/?seed=1",
+                "url": "http://localhost:8000/?seed=757",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8000/?seed=1",
+                    "url": "http://localhost:8000/?seed=757",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -2040,15 +2040,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8000/?seed=1",
+        "url": "http://localhost:8000/?seed=767",
         "prompt": "Share a movie directed by one of 'Ethan Coen', 'Lana Wachowski', 'Fernando Meirelles' that is NOT named 'Schindler's List'",
         "actions": [
             {
-                "url": "http://localhost:8000/?seed=1",
+                "url": "http://localhost:8000/?seed=767",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8000/?seed=1",
+                    "url": "http://localhost:8000/?seed=767",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -2146,15 +2146,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8000/?seed=1",
+        "url": "http://localhost:8000/?seed=523",
         "prompt": "Watch the trailer for a movie with a duration NOT EQUALS '118' minutes that has a rating GREATER EQUAL '5.0'",
         "actions": [
             {
-                "url": "http://localhost:8000/?seed=1",
+                "url": "http://localhost:8000/?seed=523",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8000/?seed=1",
+                    "url": "http://localhost:8000/?seed=523",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -2406,7 +2406,23 @@ def _uc(use_case: str, prompt: str, actions: list[BaseAction]) -> Trajectory:
 
 
 BASE = "http://localhost:8000"
-SEED_DEFAULT = 1
+# From autocinema_tasks.json (?seed= in each task URL)
+SEED_FILM_DETAIL = 518
+SEED_LOGIN = 321
+SEED_DELETE_FILM = 488
+SEED_LOGOUT = 364
+SEED_FILTER_FILM = 732
+SEED_SEARCH_FILM = 757
+SEED_CONTACT = 507
+SEED_REGISTRATION = 807
+SEED_ADD_COMMENT = 58
+SEED_EDIT_FILM = 566
+SEED_ADD_FILM = 287
+SEED_EDIT_USER = 889
+SEED_ADD_TO_WATCHLIST = 375
+SEED_REMOVE_FROM_WATCHLIST = 396
+SEED_SHARE_MOVIE = 767
+SEED_WATCH_TRAILER = 523
 
 
 def _xp(expr: str) -> Selector:
@@ -2421,7 +2437,7 @@ ADD_COMMENT = _uc(
     "ADD_COMMENT",
     prompt="Add a comment to the movie_name 'Her' with content that does NOT equal 'brilliant'.",
     actions=[
-        NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_ADD_COMMENT}"),
         ClickAction(selector=_id("featured-movie-view-details-btn-2")),
         ClickAction(selector=_id("comment-name-input")),
         TypeAction(selector=_id("comment-name-input"), text="Agent"),
@@ -2435,7 +2451,7 @@ ADD_FILM = _uc(
     "ADD_FILM",
     prompt="Login with username equals 'user<web_agent_id>' and password equals 'Passw0rd!'. Register a movie directed by 'Anthony Russo' with genre equals 'Action', ensuring the cast does NOT contain 'lzl' and the rating is greater equal 5.0.",
     actions=[
-        NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_ADD_FILM}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[6]")),
         ClickAction(selector=_id("login-username-input")),
         TypeAction(selector=_id("login-username-input"), text="user<web_agent_id>"),
@@ -2452,7 +2468,7 @@ ADD_TO_WATCHLIST = _uc(
     "ADD_TO_WATCHLIST",
     prompt="Login with the username equals 'user<web_agent_id>' and password equals 'Passw0rd!' and then add to watchlist a movie from year greater than '1955'",
     actions=[
-        NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_ADD_TO_WATCHLIST}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[6]")),
         ClickAction(selector=_xp('//*[@id="login-username-input"]')),
         TypeAction(selector=_xp('//*[@id="login-username-input"]'), text="user<web_agent_id>"),
@@ -2469,7 +2485,7 @@ CONTACT = _uc(
     "CONTACT",
     prompt="Fill out the contact form with a name that contains 'Pete', a message that does NOT contain 'enu', and a subject that equals 'Support'.",
     actions=[
-        NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_CONTACT}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[4]")),
         ClickAction(selector=_id("contact-name-input")),
         TypeAction(selector=_id("contact-name-input"), text="Javier Test"),
@@ -2487,7 +2503,7 @@ DELETE_FILM = _uc(
     "DELETE_FILM",
     prompt="Login with username equals 'user<web_agent_id>' and password equals 'Passw0rd!'. Then, delete your movie.",
     actions=[
-        NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_DELETE_FILM}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[6]")),
         ClickAction(selector=_id("login-username-input")),
         TypeAction(selector=_id("login-username-input"), text="user<web_agent_id>"),
@@ -2503,7 +2519,7 @@ EDIT_FILM = _uc(
     "EDIT_FILM",
     prompt="Login with username equals 'user<web_agent_id>' and password equals 'Passw0rd!'. Edit your movie by setting year to 2021, duration to 120, and rating to 5.8.",
     actions=[
-        NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_EDIT_FILM}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[6]")),
         ClickAction(selector=_id("login-username-input")),
         TypeAction(selector=_id("login-username-input"), text="user<web_agent_id>"),
@@ -2521,7 +2537,7 @@ EDIT_USER = _uc(
     "EDIT_USER",
     prompt="Login with username equals 'user<web_agent_id>' and password equals 'Passw0rd!'. Edit your profile: ensure your first_name equals 'Benjamin', your bio contains 'films', and your website not equals 'https://moviereviews.example.net'.",
     actions=[
-        NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_EDIT_USER}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[6]")),
         ClickAction(selector=_id("login-username-input")),
         TypeAction(selector=_id("login-username-input"), text="user<web_agent_id>"),
@@ -2542,7 +2558,7 @@ FILM_DETAIL = _uc(
     "FILM_DETAIL",
     prompt="Navigate to a movie page where the name CONTAINS 'ok' and the year is LESS THAN '2025'",
     actions=[
-        NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_FILM_DETAIL}"),
         ClickAction(selector=_id("spotlight-view-details-btn-2")),
     ],
 )
@@ -2551,7 +2567,7 @@ FILTER_FILM = _uc(
     "FILTER_FILM",
     prompt="Filter films where the genre_name equals 'Crime'",
     actions=[
-        NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_FILTER_FILM}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[2]")),
         ClickAction(selector=_xp("//button[normalize-space()='Action']")),
     ],
@@ -2561,7 +2577,7 @@ LOGIN = _uc(
     "LOGIN",
     prompt="Please log in using username equals 'user<web_agent_id>' and password equals 'Passw0rd!'",
     actions=[
-        NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_LOGIN}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[6]")),
         ClickAction(selector=_id("login-username-input")),
         TypeAction(selector=_id("login-username-input"), text="javier"),
@@ -2575,7 +2591,7 @@ LOGOUT = _uc(
     "LOGOUT",
     prompt="Please login using username equals 'user<web_agent_id>' and password equals 'Passw0rd!' and then logout.",
     actions=[
-        NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_LOGOUT}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[6]")),
         ClickAction(selector=_id("login-username-input")),
         TypeAction(selector=_id("login-username-input"), text="AGENTE"),
@@ -2590,7 +2606,7 @@ REGISTRATION = _uc(
     "REGISTRATION",
     prompt="Please register using username equals 'newuser<web_agent_id>', email equals 'newuser<web_agent_id>@gmail.com' and password equals 'Passw0rd!'",
     actions=[
-        NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_REGISTRATION}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[5]")),
         ClickAction(selector=_id("register-username-input")),
         TypeAction(selector=_id("register-username-input"), text="javier"),
@@ -2608,7 +2624,7 @@ REMOVE_FROM_WATCHLIST = _uc(
     "REMOVE_FROM_WATCHLIST",
     prompt="Login with the username equals 'user<web_agent_id>' and password equals 'Passw0rd!' and then remove from watchlist a movie that does NOT contain the genre 'Comedy' and has a rating GREATER THAN or EQUAL to '5.0' and does NOT contain 'cwz'",
     actions=[
-        NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_REMOVE_FROM_WATCHLIST}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[6]")),
         ClickAction(selector=_xp('//*[@id="login-username-input"]')),
         TypeAction(selector=_xp('//*[@id="login-username-input"]'), text="user<web_agent_id>"),
@@ -2626,7 +2642,7 @@ SEARCH_FILM = _uc(
     "SEARCH_FILM",
     prompt="Search for a movie where the query is NOT '1917'",
     actions=[
-        NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_SEARCH_FILM}"),
         ClickAction(selector=_id("input")),
         TypeAction(selector=_id("input"), text="La La Land"),
         SendKeysIWAAction(keys="Enter"),
@@ -2637,7 +2653,7 @@ SHARE_MOVIE = _uc(
     "SHARE_MOVIE",
     prompt="Share details for a movie where the name equals 'Spider-Man: No Way Home'",
     actions=[
-        NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_SHARE_MOVIE}"),
         ClickAction(selector=_id("input")),
         TypeAction(selector=_id("input"), text="ethan Coen"),
         ClickAction(selector=_id("search-submit-button")),
@@ -2650,7 +2666,7 @@ WATCH_TRAILER = _uc(
     "WATCH_TRAILER",
     prompt="Watch the trailer for a movie where the name does NOT contain 'odm'",
     actions=[
-        NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_WATCH_TRAILER}"),
         ClickAction(selector=_id("featured-movie-view-details-btn")),
         ClickAction(selector=_id("watch-trailer-button")),
         ClickAction(selector=_xp('//*[@id="movie_player"]/div[1]/video')),

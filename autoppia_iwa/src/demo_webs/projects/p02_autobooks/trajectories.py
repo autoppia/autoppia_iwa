@@ -15,15 +15,15 @@ from autoppia_iwa.src.execution.actions.base import BaseAction, Selector, Select
 
 ACTIONS = [
     {
-        "url": "http://localhost:8001/?seed=1",
+        "url": "http://localhost:8001/?seed=802",
         "prompt": "Register with username, email and password placeholders.",
         "actions": [
             {
-                "url": "http://localhost:8001/?seed=1",
+                "url": "http://localhost:8001/?seed=802",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8001/?seed=1",
+                    "url": "http://localhost:8001/?seed=802",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -210,15 +210,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8001/?seed=1",
+        "url": "http://localhost:8001/?seed=569",
         "prompt": "Look for the book 'Lolita'",
         "actions": [
             {
-                "url": "http://localhost:8001/?seed=1",
+                "url": "http://localhost:8001/?seed=569",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8001/?seed=1",
+                    "url": "http://localhost:8001/?seed=569",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -276,15 +276,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8001/?seed=1",
+        "url": "http://localhost:8001/?seed=909",
         "prompt": "Filter books released in the year 2021",
         "actions": [
             {
-                "url": "http://localhost:8001/?seed=1",
+                "url": "http://localhost:8001/?seed=909",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8001/?seed=1",
+                    "url": "http://localhost:8001/?seed=909",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -380,15 +380,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8001/?seed=1",
+        "url": "http://localhost:8001/?seed=585",
         "prompt": "Fill and submit the contact form.",
         "actions": [
             {
-                "url": "http://localhost:8001/?seed=1",
+                "url": "http://localhost:8001/?seed=585",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8001/?seed=1",
+                    "url": "http://localhost:8001/?seed=585",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -575,15 +575,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8001/?seed=1",
+        "url": "http://localhost:8001/?seed=512",
         "prompt": "Login with username and password.",
         "actions": [
             {
-                "url": "http://localhost:8001/?seed=1",
+                "url": "http://localhost:8001/?seed=512",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8001/?seed=1",
+                    "url": "http://localhost:8001/?seed=512",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -664,15 +664,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8001/?seed=1",
+        "url": "http://localhost:8001/?seed=494",
         "prompt": "Login and logout.",
         "actions": [
             {
-                "url": "http://localhost:8001/?seed=1",
+                "url": "http://localhost:8001/?seed=494",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8001/?seed=1",
+                    "url": "http://localhost:8001/?seed=494",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -768,15 +768,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8001/?seed=1",
+        "url": "http://localhost:8001/?seed=720",
         "prompt": "Login and delete one assigned book.",
         "actions": [
             {
-                "url": "http://localhost:8001/?seed=1",
+                "url": "http://localhost:8001/?seed=720",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8001/?seed=1",
+                    "url": "http://localhost:8001/?seed=720",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -904,15 +904,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8001/?seed=1",
+        "url": "http://localhost:8001/?seed=385",
         "prompt": "Login and add a new book.",
         "actions": [
             {
-                "url": "http://localhost:8001/?seed=1",
+                "url": "http://localhost:8001/?seed=385",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8001/?seed=1",
+                    "url": "http://localhost:8001/?seed=385",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1110,15 +1110,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8001/?seed=1",
+        "url": "http://localhost:8001/?seed=362",
         "prompt": "Open a book and add a comment.",
         "actions": [
             {
-                "url": "http://localhost:8001/?seed=1",
+                "url": "http://localhost:8001/?seed=362",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8001/?seed=1",
+                    "url": "http://localhost:8001/?seed=362",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1280,15 +1280,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8001/?seed=1",
+        "url": "http://localhost:8001/?seed=411",
         "prompt": "Login and edit user profile fields.",
         "actions": [
             {
-                "url": "http://localhost:8001/?seed=1",
+                "url": "http://localhost:8001/?seed=411",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8001/?seed=1",
+                    "url": "http://localhost:8001/?seed=411",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1494,15 +1494,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8001/?seed=1",
+        "url": "http://localhost:8001/?seed=310",
         "prompt": "Navigate to '1984' book page",
         "actions": [
             {
-                "url": "http://localhost:8001/?seed=1",
+                "url": "http://localhost:8001/?seed=310",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8001/?seed=1",
+                    "url": "http://localhost:8001/?seed=310",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1590,15 +1590,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8001/?seed=1",
+        "url": "http://localhost:8001/?seed=858",
         "prompt": "Login with username: <username> and password: <password>. Edit a book by changing the rating to 4.8.",
         "actions": [
             {
-                "url": "http://localhost:8001/?seed=1",
+                "url": "http://localhost:8001/?seed=858",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8001/?seed=1",
+                    "url": "http://localhost:8001/?seed=858",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1790,15 +1790,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8001/?seed=1",
+        "url": "http://localhost:8001/?seed=512",
         "prompt": "Login with username: <username> and password: <password>. After logging in, purchase the book 'The Silent Patient'.",
         "actions": [
             {
-                "url": "http://localhost:8001/?seed=1",
+                "url": "http://localhost:8001/?seed=512",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8001/?seed=1",
+                    "url": "http://localhost:8001/?seed=512",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1986,15 +1986,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8001/?seed=1",
+        "url": "http://localhost:8001/?seed=426",
         "prompt": "Open detail and share the book.",
         "actions": [
             {
-                "url": "http://localhost:8001/?seed=1",
+                "url": "http://localhost:8001/?seed=426",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8001/?seed=1",
+                    "url": "http://localhost:8001/?seed=426",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -2037,15 +2037,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8001/?seed=1",
+        "url": "http://localhost:8001/?seed=921",
         "prompt": "Open detail and start preview.",
         "actions": [
             {
-                "url": "http://localhost:8001/?seed=1",
+                "url": "http://localhost:8001/?seed=921",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8001/?seed=1",
+                    "url": "http://localhost:8001/?seed=921",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -2088,15 +2088,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8001/?seed=1",
+        "url": "http://localhost:8001/?seed=426",
         "prompt": "Login with username: <username> and password: <password>. Add 'The Iliad' to your reading list.",
         "actions": [
             {
-                "url": "http://localhost:8001/?seed=1",
+                "url": "http://localhost:8001/?seed=426",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8001/?seed=1",
+                    "url": "http://localhost:8001/?seed=426",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -2269,15 +2269,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8001/?seed=1",
+        "url": "http://localhost:8001/?seed=763",
         "prompt": "Login with username: <username> and password: <password>. Remove 'The Iliad' from your reading list.",
         "actions": [
             {
-                "url": "http://localhost:8001/?seed=1",
+                "url": "http://localhost:8001/?seed=763",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8001/?seed=1",
+                    "url": "http://localhost:8001/?seed=763",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -2450,15 +2450,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8001/?seed=1",
+        "url": "http://localhost:8001/?seed=99",
         "prompt": "Login with username: <username> and password: <password>. After logging in, view your shopping cart.",
         "actions": [
             {
-                "url": "http://localhost:8001/?seed=1",
+                "url": "http://localhost:8001/?seed=99",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8001/?seed=1",
+                    "url": "http://localhost:8001/?seed=99",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -2569,15 +2569,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8001/?seed=1",
+        "url": "http://localhost:8001/?seed=534",
         "prompt": "Login with username: <username> and password: <password>. After logging in, add 'Romeo and Juliet' to your shopping cart.",
         "actions": [
             {
-                "url": "http://localhost:8001/?seed=1",
+                "url": "http://localhost:8001/?seed=534",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8001/?seed=1",
+                    "url": "http://localhost:8001/?seed=534",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -2735,15 +2735,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8001/?seed=1",
+        "url": "http://localhost:8001/?seed=331",
         "prompt": "Login with username: <username> and password: <password>. After logging in, remove 'Romeo and Juliet' from your shopping cart.",
         "actions": [
             {
-                "url": "http://localhost:8001/?seed=1",
+                "url": "http://localhost:8001/?seed=331",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8001/?seed=1",
+                    "url": "http://localhost:8001/?seed=331",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -3096,11 +3096,34 @@ def _id(element_id: str) -> Selector:
     return Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value=element_id)
 
 
+BASE = "http://localhost:8001"
+# From autobook_tasks.json (?seed= in each task URL)
+SEED_REGISTRATION_BOOK = 802
+SEED_SEARCH_BOOK = 569
+SEED_FILTER_BOOK = 909
+SEED_CONTACT_BOOK = 585
+SEED_LOGIN_BOOK = 512
+SEED_LOGOUT_BOOK = 494
+SEED_DELETE_BOOK = 720
+SEED_ADD_BOOK = 385
+SEED_ADD_COMMENT_BOOK = 362
+SEED_EDIT_USER_BOOK = 411
+SEED_BOOK_DETAIL = 310
+SEED_EDIT_BOOK = 858
+SEED_PURCHASE_BOOK = 512
+SEED_SHARE_BOOK = 426
+SEED_OPEN_PREVIEW = 921
+SEED_ADD_TO_READING_LIST = 426
+SEED_REMOVE_FROM_READING_LIST = 763
+SEED_VIEW_CART_BOOK = 99
+SEED_ADD_TO_CART_BOOK = 534
+SEED_REMOVE_FROM_CART_BOOK = 331
+
 REGISTRATION_BOOK = _uc(
     "REGISTRATION_BOOK",
     prompt="Register with the following username: '<signup_username>', email: '<signup_email>' and password: '<signup_password>'",
     actions=[
-        NavigateAction(url="http://localhost:8001/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_REGISTRATION_BOOK}"),
         ClickAction(selector=_xp("//a[normalize-space()='Register']")),
         ClickAction(selector=_id("username-input")),
         TypeAction(selector=_id("username-input"), text="__SIGNUP_USERNAME__"),
@@ -3118,7 +3141,7 @@ SEARCH_BOOK = _uc(
     "SEARCH_BOOK",
     prompt="Search for the book 'The Silent Patient' in the database",
     actions=[
-        NavigateAction(url="http://localhost:8001/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_SEARCH_BOOK}"),
         ClickAction(selector=_xp("//a[contains(@href,'/search')]")),
         TypeAction(selector=_xp("//*[@id='search-field' or @id='search-input']"), text="__SEARCH_QUERY__"),
         ClickAction(selector=_xp("//*[@id='submit-btn' or @id='search-submit-button' or @id='search-button']")),
@@ -3129,7 +3152,7 @@ FILTER_BOOK = _uc(
     "FILTER_BOOK",
     prompt="Show me details about books where the genres equals 'Drama' and the year is less equal '1605'",
     actions=[
-        NavigateAction(url="http://localhost:8001/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_FILTER_BOOK}"),
         ClickAction(selector=_xp("//a[contains(@href,'/search')]")),
         ClickAction(selector=_xp("__year_select__")),
         SendKeysIWAAction(keys="__YEAR_KEY_1__"),
@@ -3144,7 +3167,7 @@ CONTACT_BOOK = _uc(
     "CONTACT_BOOK",
     prompt="Go to the contact page and submit a form where the subject does NOT contain 'Complaint'.",
     actions=[
-        NavigateAction(url="http://localhost:8001/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_CONTACT_BOOK}"),
         ClickAction(selector=_xp("//a[normalize-space()='Contact']")),
         ClickAction(selector=_id("contact-name-input")),
         TypeAction(selector=_id("contact-name-input"), text="__CONTACT_NAME__"),
@@ -3162,7 +3185,7 @@ LOGIN_BOOK = _uc(
     "LOGIN_BOOK",
     prompt="Login with a specific username:'<username>' and password:'<password>'",
     actions=[
-        NavigateAction(url="http://localhost:8001/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_LOGIN_BOOK}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
         TypeAction(selector=_id("username-input"), text="<username>"),
         TypeAction(selector=_id("password-input"), text="<password>"),
@@ -3174,7 +3197,7 @@ LOGOUT_BOOK = _uc(
     "LOGOUT_BOOK",
     prompt="Login with a specific username:'<username>' and password:'<password>', then logout",
     actions=[
-        NavigateAction(url="http://localhost:8001/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_LOGOUT_BOOK}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
         TypeAction(selector=_id("username-input"), text="<username>"),
         TypeAction(selector=_id("password-input"), text="<password>"),
@@ -3187,7 +3210,7 @@ DELETE_BOOK = _uc(
     "DELETE_BOOK",
     prompt="Login with username equals <username> and password equals <password>. Then, delete your book.",
     actions=[
-        NavigateAction(url="http://localhost:8001/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_DELETE_BOOK}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
         TypeAction(selector=_id("username-input"), text="<username>"),
         TypeAction(selector=_id("password-input"), text="<password>"),
@@ -3202,7 +3225,7 @@ ADD_BOOK = _uc(
     "ADD_BOOK",
     prompt="First, authenticate with username '<username>' and password '<password>'. Then, add a book whose year equals 2012, rating is greater equal 2.5, and page_count equals 1059.",
     actions=[
-        NavigateAction(url="http://localhost:8001/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_ADD_BOOK}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
         TypeAction(selector=_id("username-input"), text="<username>"),
         TypeAction(selector=_id("password-input"), text="<password>"),
@@ -3221,7 +3244,7 @@ ADD_COMMENT_BOOK = _uc(
     "ADD_COMMENT_BOOK",
     prompt="Add a comment to a book with a comment whose content equals a true literary experience and a commenter_name that does NOT contain 'Emily'.",
     actions=[
-        NavigateAction(url="http://localhost:8001/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_ADD_COMMENT_BOOK}"),
         ClickAction(selector=_xp("//a[contains(@href,'/search')]")),
         TypeAction(selector=_xp("//*[@id='search-field' or @id='search-input']"), text="__SEARCH_QUERY__"),
         ClickAction(selector=_xp("//*[@id='submit-btn' or @id='search-submit-button' or @id='search-button']")),
@@ -3238,7 +3261,7 @@ EDIT_USER_BOOK = _uc(
     "EDIT_USER_BOOK",
     prompt="Login for the following username:<username> and password:<password>. Update your profile to modify your first name to include the word 'book' and ensure your website contains 'blue'.",
     actions=[
-        NavigateAction(url="http://localhost:8001/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_EDIT_USER_BOOK}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
         TypeAction(selector=_id("username-input"), text="<username>"),
         TypeAction(selector=_id("password-input"), text="<password>"),
@@ -3257,7 +3280,7 @@ BOOK_DETAIL = _uc(
     "BOOK_DETAIL",
     prompt="Go to the book details page for a book where genres NOT CONTAINS 'Postmodern'",
     actions=[
-        NavigateAction(url="http://localhost:8001/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_BOOK_DETAIL}"),
         ClickAction(selector=_xp("//a[contains(@href,'/search')]")),
         TypeAction(selector=_xp("//*[@id='search-field' or @id='search-input']"), text="__SEARCH_QUERY__"),
         ClickAction(selector=_xp("//*[@id='submit-btn' or @id='search-submit-button' or @id='search-button']")),
@@ -3270,7 +3293,7 @@ EDIT_BOOK = _uc(
     "EDIT_BOOK",
     prompt="First, authenticate with username '<username>' and password '<password>'. Then, edit your book by setting book_author to 'Franz Kafka', book_year to '1975'.",
     actions=[
-        NavigateAction(url="http://localhost:8001/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_EDIT_BOOK}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
         TypeAction(selector=_id("username-input"), text="<username>"),
         TypeAction(selector=_id("password-input"), text="<password>"),
@@ -3289,7 +3312,7 @@ PURCHASE_BOOK = _uc(
     "PURCHASE_BOOK",
     prompt="First, authenticate with username '<username>' and password '<password>'. Then, proceed to checkout for the book whose name is NOT 'The Stand'.",
     actions=[
-        NavigateAction(url="http://localhost:8001/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_PURCHASE_BOOK}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
         TypeAction(selector=_id("username-input"), text="<username>"),
         TypeAction(selector=_id("password-input"), text="<password>"),
@@ -3308,7 +3331,7 @@ SHARE_BOOK = _uc(
     "SHARE_BOOK",
     prompt="Share book details for a book with a rating NOT EQUALS '4.7'",
     actions=[
-        NavigateAction(url="http://localhost:8001/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_SHARE_BOOK}"),
         ClickAction(selector=_xp("(//a[contains(@href,'/books/')])[1]")),
         ClickAction(selector=_id("share-detail-button")),
     ],
@@ -3318,7 +3341,7 @@ OPEN_PREVIEW = _uc(
     "OPEN_PREVIEW",
     prompt="Open preview of book where the price equals '12.99' and the name contains 'icide'",
     actions=[
-        NavigateAction(url="http://localhost:8001/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_OPEN_PREVIEW}"),
         ClickAction(selector=_xp("(//a[contains(@href,'/books/')])[1]")),
         ClickAction(selector=_id("read-book-button")),
     ],
@@ -3328,7 +3351,7 @@ ADD_TO_READING_LIST = _uc(
     "ADD_TO_READING_LIST",
     prompt="First, login for the following username:'<username>' and password:'<password>' and then add to reading list a book that is NOT in the genres 'Fantasy' or 'Thriller' with a rating of 4.7 or higher",
     actions=[
-        NavigateAction(url="http://localhost:8001/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_ADD_TO_READING_LIST}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
         TypeAction(selector=_id("username-input"), text="<username>"),
         TypeAction(selector=_id("password-input"), text="<password>"),
@@ -3346,7 +3369,7 @@ REMOVE_FROM_READING_LIST = _uc(
     "REMOVE_FROM_READING_LIST",
     prompt="First, login for the following username:'<username>' and password:'<password>' and then remove from reading list a book whose name CONTAINS 'yr' and has a page_count NOT EQUALS 417",
     actions=[
-        NavigateAction(url="http://localhost:8001/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_REMOVE_FROM_READING_LIST}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
         TypeAction(selector=_id("username-input"), text="<username>"),
         TypeAction(selector=_id("password-input"), text="<password>"),
@@ -3364,7 +3387,7 @@ VIEW_CART_BOOK = _uc(
     "VIEW_CART_BOOK",
     prompt="First, authenticate with username '<username>' and password '<password>'. Then, view the shopping cart to see items added.",
     actions=[
-        NavigateAction(url="http://localhost:8001/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_VIEW_CART_BOOK}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
         TypeAction(selector=_id("username-input"), text="<username>"),
         TypeAction(selector=_id("password-input"), text="<password>"),
@@ -3378,7 +3401,7 @@ ADD_TO_CART_BOOK = _uc(
     "ADD_TO_CART_BOOK",
     prompt="First, authenticate with username '<username>' and password '<password>'. After successful login, add a book to the shopping cart where the genres is NOT one of ['War', 'Classic'].",
     actions=[
-        NavigateAction(url="http://localhost:8001/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_ADD_TO_CART_BOOK}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
         TypeAction(selector=_id("username-input"), text="<username>"),
         TypeAction(selector=_id("password-input"), text="<password>"),
@@ -3395,7 +3418,7 @@ REMOVE_FROM_CART_BOOK = _uc(
     "REMOVE_FROM_CART_BOOK",
     prompt="First, authenticate with username '<username>' and password '<password>'. After successful login, remove from the shopping cart any book that has an author NOT EQUALS 'Kathryn Stockett', a rating EQUALS '4.4', a year NOT EQUALS '2019'.",
     actions=[
-        NavigateAction(url="http://localhost:8001/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_REMOVE_FROM_CART_BOOK}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
         TypeAction(selector=_id("username-input"), text="<username>"),
         TypeAction(selector=_id("password-input"), text="<password>"),

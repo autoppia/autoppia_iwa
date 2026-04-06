@@ -15,15 +15,15 @@ from autoppia_iwa.src.execution.actions.base import BaseAction, Selector, Select
 
 ACTIONS = [
     {
-        "url": "http://localhost:8004/?seed=1",
+        "url": "http://localhost:8004/?seed=695",
         "prompt": "Filter matters to only show those with status 'Active'.",
         "actions": [
             {
-                "url": "http://localhost:8004/?seed=1",
+                "url": "http://localhost:8004/?seed=695",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8004/?seed=1",
+                    "url": "http://localhost:8004/?seed=695",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -70,15 +70,15 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8004/?seed=1",
+        "url": "http://localhost:8004/?seed=420",
         "prompt": "Sort matters by latest first.",
         "actions": [
             {
-                "url": "http://localhost:8004/?seed=1",
+                "url": "http://localhost:8004/?seed=420",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8004/?seed=1",
+                    "url": "http://localhost:8004/?seed=420",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -138,15 +138,15 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8004/?seed=1",
+        "url": "http://localhost:8004/?seed=856",
         "prompt": "Edit the matter 'Estate Planning' to change status to 'On Hold'.",
         "actions": [
             {
-                "url": "http://localhost:8004/?seed=1",
+                "url": "http://localhost:8004/?seed=856",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8004/?seed=1",
+                    "url": "http://localhost:8004/?seed=856",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -261,15 +261,15 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8004/?seed=1",
+        "url": "http://localhost:8004/?seed=452",
         "prompt": "Open the pending events list on the calendar page.",
         "actions": [
             {
-                "url": "http://localhost:8004/?seed=1",
+                "url": "http://localhost:8004/?seed=452",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8004/?seed=1",
+                    "url": "http://localhost:8004/?seed=452",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -314,15 +314,15 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8004/?seed=1",
+        "url": "http://localhost:8004/?seed=768",
         "prompt": "Add a new calendar event on 2025-05-13 at 9:00am called 'Team Sync' with a Filing type.",
         "actions": [
             {
-                "url": "http://localhost:8004/?seed=1",
+                "url": "http://localhost:8004/?seed=768",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8004/?seed=1",
+                    "url": "http://localhost:8004/?seed=768",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -439,11 +439,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8004/?seed=1",
+        "url": "http://localhost:8004/?seed=836",
         "prompt": "Search for matters that include 'Estate' in the title.",
         "actions": [
             {
-                "url": "http://localhost:8004/?seed=1",
+                "url": "http://localhost:8004/?seed=836",
                 "type": "NavigateAction",
             }
         ],
@@ -451,11 +451,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8004/?seed=1",
+        "url": "http://localhost:8004/?seed=897",
         "prompt": "Create a matter named 'New Matter', with client 'Acme Co.' and status 'Active'.",
         "actions": [
             {
-                "url": "http://localhost:8004/?seed=1",
+                "url": "http://localhost:8004/?seed=897",
                 "type": "NavigateAction",
             }
         ],
@@ -463,11 +463,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8004/?seed=1",
+        "url": "http://localhost:8004/?seed=895",
         "prompt": "Go to the Matters page and click on 'Estate Planning' to view the details of that particular matter.",
         "actions": [
             {
-                "url": "http://localhost:8004/?seed=1",
+                "url": "http://localhost:8004/?seed=895",
                 "type": "NavigateAction",
             }
         ],
@@ -475,11 +475,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8004/?seed=1",
+        "url": "http://localhost:8004/?seed=220",
         "prompt": "Archive the matter whose status is set to 'Active'.",
         "actions": [
             {
-                "url": "http://localhost:8004/?seed=1",
+                "url": "http://localhost:8004/?seed=220",
                 "type": "NavigateAction",
             }
         ],
@@ -487,11 +487,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8004/?seed=1",
+        "url": "http://localhost:8004/?seed=310",
         "prompt": "Delete the matter where status is set to 'Active'.",
         "actions": [
             {
-                "url": "http://localhost:8004/?seed=1",
+                "url": "http://localhost:8004/?seed=310",
                 "type": "NavigateAction",
             }
         ],
@@ -499,11 +499,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8004/?seed=1",
+        "url": "http://localhost:8004/?seed=817",
         "prompt": "View details of client, whose client name is 'Jessica Taylor' and email is 'jtaylor@samplemail.com'.",
         "actions": [
             {
-                "url": "http://localhost:8004/?seed=1",
+                "url": "http://localhost:8004/?seed=817",
                 "type": "NavigateAction",
             }
         ],
@@ -511,11 +511,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8004/?seed=1",
+        "url": "http://localhost:8004/?seed=277",
         "prompt": "Search for clients named 'Smith'.",
         "actions": [
             {
-                "url": "http://localhost:8004/?seed=1",
+                "url": "http://localhost:8004/?seed=277",
                 "type": "NavigateAction",
             }
         ],
@@ -523,11 +523,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8004/?seed=1",
+        "url": "http://localhost:8004/?seed=449",
         "prompt": "Add a new client named 'Nova Labs' with status Active.",
         "actions": [
             {
-                "url": "http://localhost:8004/?seed=1",
+                "url": "http://localhost:8004/?seed=449",
                 "type": "NavigateAction",
             }
         ],
@@ -535,11 +535,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8004/?seed=1",
+        "url": "http://localhost:8004/?seed=767",
         "prompt": "Delete the client named not equals 'Orion Tech Solutions'.",
         "actions": [
             {
-                "url": "http://localhost:8004/?seed=1",
+                "url": "http://localhost:8004/?seed=767",
                 "type": "NavigateAction",
             }
         ],
@@ -547,11 +547,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8004/?seed=1",
+        "url": "http://localhost:8004/?seed=169",
         "prompt": "Filter clients to status Active with 3-4 matters.",
         "actions": [
             {
-                "url": "http://localhost:8004/?seed=1",
+                "url": "http://localhost:8004/?seed=169",
                 "type": "NavigateAction",
             }
         ],
@@ -559,11 +559,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8004/?seed=1",
+        "url": "http://localhost:8004/?seed=890",
         "prompt": "Rename the document 'Retainer-Agreement-6908.pdf' to 'Retainer-Agreement-final.pdf'.",
         "actions": [
             {
-                "url": "http://localhost:8004/?seed=1",
+                "url": "http://localhost:8004/?seed=890",
                 "type": "NavigateAction",
             }
         ],
@@ -571,11 +571,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8004/?seed=1",
+        "url": "http://localhost:8004/?seed=645",
         "prompt": "Delete the document named 'Retainer-Agreement-6908.pdf'.",
         "actions": [
             {
-                "url": "http://localhost:8004/?seed=1",
+                "url": "http://localhost:8004/?seed=645",
                 "type": "NavigateAction",
             }
         ],
@@ -583,11 +583,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8004/?seed=1",
+        "url": "http://localhost:8004/?seed=177",
         "prompt": "Add log with matter 'Trademark Filing', description 'Prepare documents', and hours '2.5'.",
         "actions": [
             {
-                "url": "http://localhost:8004/?seed=1",
+                "url": "http://localhost:8004/?seed=177",
                 "type": "NavigateAction",
             }
         ],
@@ -595,11 +595,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8004/?seed=1",
+        "url": "http://localhost:8004/?seed=900",
         "prompt": "Edit the time log for 'Estate Planning' to change hours to 2.5.",
         "actions": [
             {
-                "url": "http://localhost:8004/?seed=1",
+                "url": "http://localhost:8004/?seed=900",
                 "type": "NavigateAction",
             }
         ],
@@ -607,11 +607,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8004/?seed=1",
+        "url": "http://localhost:8004/?seed=436",
         "prompt": "Delete the time log for 'Estate Planning' that recorded 2 hours.",
         "actions": [
             {
-                "url": "http://localhost:8004/?seed=1",
+                "url": "http://localhost:8004/?seed=436",
                 "type": "NavigateAction",
             }
         ],
@@ -619,11 +619,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8004/?seed=1",
+        "url": "http://localhost:8004/?seed=958",
         "prompt": "Search billing entries for 'contract' from this week.",
         "actions": [
             {
-                "url": "http://localhost:8004/?seed=1",
+                "url": "http://localhost:8004/?seed=958",
                 "type": "NavigateAction",
             }
         ],
@@ -631,11 +631,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8004/?seed=1",
+        "url": "http://localhost:8004/?seed=150",
         "prompt": "Change user name to 'Muhammad Ali'.",
         "actions": [
             {
-                "url": "http://localhost:8004/?seed=1",
+                "url": "http://localhost:8004/?seed=150",
                 "type": "NavigateAction",
             }
         ],
@@ -643,11 +643,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8004/?seed=1",
+        "url": "http://localhost:8004/?seed=742",
         "prompt": "Open the help center.",
         "actions": [
             {
-                "url": "http://localhost:8004/?seed=1",
+                "url": "http://localhost:8004/?seed=742",
                 "type": "NavigateAction",
             }
         ],
@@ -853,11 +853,37 @@ def _id(element_id: str) -> Selector:
     return Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value=element_id)
 
 
+BASE = "http://localhost:8004"
+# From autocrm_tasks.json (?seed= in each task URL)
+SEED_ADD_NEW_MATTER = 897
+SEED_VIEW_MATTER_DETAILS = 895
+SEED_DELETE_MATTER = 310
+SEED_ARCHIVE_MATTER = 220
+SEED_VIEW_CLIENT_DETAILS = 817
+SEED_SEARCH_CLIENT = 277
+SEED_DOCUMENT_DELETED = 645
+SEED_NEW_CALENDAR_EVENT_ADDED = 768
+SEED_NEW_LOG_ADDED = 177
+SEED_LOG_DELETE = 436
+SEED_CHANGE_USER_NAME = 150
+SEED_SEARCH_MATTER = 836
+SEED_ADD_CLIENT = 449
+SEED_DELETE_CLIENT = 767
+SEED_FILTER_CLIENTS = 169
+SEED_FILTER_MATTER_STATUS = 695
+SEED_SORT_MATTER_BY_CREATED_AT = 420
+SEED_UPDATE_MATTER = 856
+SEED_VIEW_PENDING_EVENTS = 452
+SEED_DOCUMENT_RENAMED = 890
+SEED_LOG_EDITED = 900
+SEED_BILLING_SEARCH = 958
+SEED_HELP_VIEWED = 742
+
 FILTER_MATTER_STATUS = _uc(
     "FILTER_MATTER_STATUS",
     prompt="Filter matters to exclude those with status 'Archived'",
     actions=[
-        NavigateAction(url="http://localhost:8004/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_FILTER_MATTER_STATUS}"),
         ClickAction(selector=_id("matters-nav-link")),
         SelectAction(selector=_id("matter-status-filter"), value="Active"),
     ],
@@ -867,7 +893,7 @@ SORT_MATTER_BY_CREATED_AT = _uc(
     "SORT_MATTER_BY_CREATED_AT",
     prompt="Sort matters by created date in 'asc' order.",
     actions=[
-        NavigateAction(url="http://localhost:8004/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_SORT_MATTER_BY_CREATED_AT}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='matters-nav-link' or @id='cases-link' or @id='projects-nav' or @id='legal-matters-link' or @id='matter-registry' or @id='tracking-link' or @id='active-cases-link' or @id='orders-link' or @id='engagements-nav' or @id='initiative-tracker']"
@@ -892,7 +918,7 @@ UPDATE_MATTER = _uc(
     "UPDATE_MATTER",
     prompt="Update any matter where the updated date equals '1mo ago'.",
     actions=[
-        NavigateAction(url="http://localhost:8004/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_UPDATE_MATTER}"),
         ClickAction(selector=_id("matters-nav-link")),
         ClickAction(selector=_id("matter-search-input")),
         TypeAction(selector=_id("matter-search-input"), text="Estate Planning"),
@@ -906,7 +932,7 @@ VIEW_PENDING_EVENTS = _uc(
     "VIEW_PENDING_EVENTS",
     prompt="Show me the pending events on the calendar where the earliest date is NOT '2025-12-12'.",
     actions=[
-        NavigateAction(url="http://localhost:8004/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_VIEW_PENDING_EVENTS}"),
         ClickAction(selector=_id("calendar-nav-link")),
         ClickAction(selector=_id("toggle-pending-events")),
     ],
@@ -916,7 +942,7 @@ NEW_CALENDAR_EVENT_ADDED = _uc(
     "NEW_CALENDAR_EVENT_ADDED",
     prompt="Add a new calendar event where the label does NOT contain 'Monthly Sales Review', the time is GREATER than '9:30am', the date is LESS than '2026-05-18', and the event_type equals 'Matter/Event'.",
     actions=[
-        NavigateAction(url="http://localhost:8004/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_NEW_CALENDAR_EVENT_ADDED}"),
         ClickAction(selector=_id("calendar-nav-link")),
         ClickAction(selector=_xp("//*[@id='day-number-2025-05-13']")),
         TypeAction(selector=_id("event-label-input"), text="Team Sync"),
@@ -930,7 +956,7 @@ SEARCH_MATTER = _uc(
     "SEARCH_MATTER",
     prompt="Search for matters where the query contains 'Data'.",
     actions=[
-        NavigateAction(url="http://localhost:8004/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_SEARCH_MATTER}"),
     ],
 )
 
@@ -938,7 +964,7 @@ ADD_NEW_MATTER = _uc(
     "ADD_NEW_MATTER",
     prompt="Create a matter with the name that is NOT 'Litigation 2025', with client that contains 'Emma', and status that contains 'On hold'.",
     actions=[
-        NavigateAction(url="http://localhost:8004/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_ADD_NEW_MATTER}"),
     ],
 )
 
@@ -946,7 +972,7 @@ VIEW_MATTER_DETAILS = _uc(
     "VIEW_MATTER_DETAILS",
     prompt="Retrieve details of the matter where the status does NOT contain 'Archived' and the name equals 'Contract Review'",
     actions=[
-        NavigateAction(url="http://localhost:8004/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_VIEW_MATTER_DETAILS}"),
     ],
 )
 
@@ -954,7 +980,7 @@ ARCHIVE_MATTER = _uc(
     "ARCHIVE_MATTER",
     prompt="Archive the matter where the name does NOT contain 'Litigation Support' and the status contains 'Pe'.",
     actions=[
-        NavigateAction(url="http://localhost:8004/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_ARCHIVE_MATTER}"),
     ],
 )
 
@@ -962,7 +988,7 @@ DELETE_MATTER = _uc(
     "DELETE_MATTER",
     prompt="Delete the matter where the name does NOT contain 'Contract Review' and the status is NOT 'Archived'",
     actions=[
-        NavigateAction(url="http://localhost:8004/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_DELETE_MATTER}"),
     ],
 )
 
@@ -970,7 +996,7 @@ VIEW_CLIENT_DETAILS = _uc(
     "VIEW_CLIENT_DETAILS",
     prompt="View details of clients where the matters are greater than '4.64'",
     actions=[
-        NavigateAction(url="http://localhost:8004/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_VIEW_CLIENT_DETAILS}"),
     ],
 )
 
@@ -978,7 +1004,7 @@ SEARCH_CLIENT = _uc(
     "SEARCH_CLIENT",
     prompt="Search for clients where the query is NOT 'Commercial Legal'.",
     actions=[
-        NavigateAction(url="http://localhost:8004/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_SEARCH_CLIENT}"),
     ],
 )
 
@@ -986,7 +1012,7 @@ ADD_CLIENT = _uc(
     "ADD_CLIENT",
     prompt="Add a new client named 'Nova Labs' with email not equals 'unitedlegal@enterprises.com', matters less than 3, status equals 'Active', and last not equals '1mo ago'.",
     actions=[
-        NavigateAction(url="http://localhost:8004/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_ADD_CLIENT}"),
     ],
 )
 
@@ -994,7 +1020,7 @@ DELETE_CLIENT = _uc(
     "DELETE_CLIENT",
     prompt="Delete the client whose name is NOT 'Nicole Miller', email does NOT contain 'nicolemiller@services.com', matters is NOT '8', status equals 'Inactive', and last contains 'Today'.",
     actions=[
-        NavigateAction(url="http://localhost:8004/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_DELETE_CLIENT}"),
     ],
 )
 
@@ -1002,7 +1028,7 @@ FILTER_CLIENTS = _uc(
     "FILTER_CLIENTS",
     prompt="Retrieve details of clients where the status equals 'Active' and the matters equals '5+'",
     actions=[
-        NavigateAction(url="http://localhost:8004/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_FILTER_CLIENTS}"),
     ],
 )
 
@@ -1010,7 +1036,7 @@ DOCUMENT_RENAMED = _uc(
     "DOCUMENT_RENAMED",
     prompt="Rename the document 'Retainer-Agreement.pdf' to 'Retainer-Agreement-final.pdf' where the new_name is NOT 'Agreement-337.docx' and the previous_name is NOT 'Complaint-2574.xlsx'.",
     actions=[
-        NavigateAction(url="http://localhost:8004/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_DOCUMENT_RENAMED}"),
     ],
 )
 
@@ -1018,7 +1044,7 @@ DOCUMENT_DELETED = _uc(
     "DOCUMENT_DELETED",
     prompt="Please delete the document with name equals 'Complaint-5725.xlsx' that has a version NOT equal to 'v5' and a size less than or equal to '1351 KB'.",
     actions=[
-        NavigateAction(url="http://localhost:8004/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_DOCUMENT_DELETED}"),
     ],
 )
 
@@ -1026,7 +1052,7 @@ NEW_LOG_ADDED = _uc(
     "NEW_LOG_ADDED",
     prompt="Add log entry with hours equals '3.6'",
     actions=[
-        NavigateAction(url="http://localhost:8004/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_NEW_LOG_ADDED}"),
     ],
 )
 
@@ -1034,7 +1060,7 @@ LOG_EDITED = _uc(
     "LOG_EDITED",
     prompt="Edit log entry where client contains 'itta', status contains 'B', matter does not contain 'Corporate Formation', and hours are greater than or equal to 1.2",
     actions=[
-        NavigateAction(url="http://localhost:8004/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_LOG_EDITED}"),
     ],
 )
 
@@ -1042,7 +1068,7 @@ LOG_DELETE = _uc(
     "LOG_DELETE",
     prompt="Delete the time log where hours is NOT equal to '6.0', matter does NOT CONTAIN 'Franchise Agreement', status CONTAINS 'Bill', and client is NOT equal to 'Strategic Partners'.",
     actions=[
-        NavigateAction(url="http://localhost:8004/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_LOG_DELETE}"),
     ],
 )
 
@@ -1050,7 +1076,7 @@ BILLING_SEARCH = _uc(
     "BILLING_SEARCH",
     prompt="Retrieve billing entries where the query equals 'Regulatory Approval' and the date_filter contains 'Previous 2 weeks'",
     actions=[
-        NavigateAction(url="http://localhost:8004/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_BILLING_SEARCH}"),
     ],
 )
 
@@ -1058,7 +1084,7 @@ CHANGE_USER_NAME = _uc(
     "CHANGE_USER_NAME",
     prompt="Change user name to 'John Smith' that does NOT contain 'Builder'",
     actions=[
-        NavigateAction(url="http://localhost:8004/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_CHANGE_USER_NAME}"),
     ],
 )
 
@@ -1066,7 +1092,7 @@ HELP_VIEWED = _uc(
     "HELP_VIEWED",
     prompt="Open the help/FAQ page.",
     actions=[
-        NavigateAction(url="http://localhost:8004/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_HELP_VIEWED}"),
     ],
 )
 

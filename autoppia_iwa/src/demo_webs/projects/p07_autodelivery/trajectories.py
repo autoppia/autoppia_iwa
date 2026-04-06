@@ -15,11 +15,11 @@ from autoppia_iwa.src.execution.actions.base import BaseAction, Selector, Select
 
 ACTIONS = [
     {
-        "url": "http://localhost:8006/?seed=1",
+        "url": "http://localhost:8006/?seed=223",
         "prompt": "Search for restaurants named 'Bella Vista'.",
         "actions": [
             {
-                "url": "http://localhost:8006/?seed=1",
+                "url": "http://localhost:8006/?seed=223",
                 "type": "NavigateAction",
             },
             {
@@ -51,11 +51,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8006/?seed=1",
+        "url": "http://localhost:8006/?seed=201",
         "prompt": "View details for the restaurant named 'Bella Vista'.",
         "actions": [
             {
-                "url": "http://localhost:8006/?seed=1",
+                "url": "http://localhost:8006/?seed=201",
                 "type": "NavigateAction",
             },
             {
@@ -90,11 +90,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8006/?seed=1",
+        "url": "http://localhost:8006/?seed=648",
         "prompt": "Filter restaurants to show only Italian cuisine.",
         "actions": [
             {
-                "url": "http://localhost:8006/?seed=1",
+                "url": "http://localhost:8006/?seed=648",
                 "type": "NavigateAction",
             },
             {
@@ -125,11 +125,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8006/?seed=1",
+        "url": "http://localhost:8006/?seed=283",
         "prompt": "Return to the full restaurant list.",
         "actions": [
             {
-                "url": "http://localhost:8006/?seed=1",
+                "url": "http://localhost:8006/?seed=283",
                 "type": "NavigateAction",
             },
             {
@@ -153,11 +153,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8006/?seed=1",
+        "url": "http://localhost:8006/?seed=12",
         "prompt": "Return to all restaurants after viewing 'Bella Vista'.",
         "actions": [
             {
-                "url": "http://localhost:8006/?seed=1",
+                "url": "http://localhost:8006/?seed=12",
                 "type": "NavigateAction",
             },
             {
@@ -200,11 +200,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8006/restaurants?seed=1",
+        "url": "http://localhost:8006/restaurants?seed=670",
         "prompt": "Open the add-to-cart modal for 'Pepperoni Classic' at 'Pizza Paradise'.",
         "actions": [
             {
-                "url": "http://localhost:8006/restaurants?seed=1",
+                "url": "http://localhost:8006/restaurants?seed=670",
                 "type": "NavigateAction",
             },
             {
@@ -247,11 +247,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8006/?seed=1",
+        "url": "http://localhost:8006/?seed=811",
         "prompt": "Add 'Pepperoni Classic' to cart from 'Pizza Paradise'.",
         "actions": [
             {
-                "url": "http://localhost:8006/?seed=1",
+                "url": "http://localhost:8006/?seed=811",
                 "type": "NavigateAction",
             },
             {
@@ -302,11 +302,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8006/?seed=1",
+        "url": "http://localhost:8006/?seed=899",
         "prompt": "Start a quick order from any restaurant.",
         "actions": [
             {
-                "url": "http://localhost:8006/?seed=1",
+                "url": "http://localhost:8006/?seed=899",
                 "type": "NavigateAction",
             },
             {
@@ -322,11 +322,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8006/?seed=1",
+        "url": "http://localhost:8006/?seed=345",
         "prompt": "Go to the checkout page.",
         "actions": [
             {
-                "url": "http://localhost:8006/?seed=1",
+                "url": "http://localhost:8006/?seed=345",
                 "type": "NavigateAction",
             },
             {
@@ -367,11 +367,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8006/?seed=1",
+        "url": "http://localhost:8006/?seed=822",
         "prompt": "Show me the next page of restaurants.",
         "actions": [
             {
-                "url": "http://localhost:8006/?seed=1",
+                "url": "http://localhost:8006/?seed=822",
                 "type": "NavigateAction",
             },
             {
@@ -387,11 +387,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8006/?seed=1",
+        "url": "http://localhost:8006/?seed=24",
         "prompt": "Show me the previous page of restaurants.",
         "actions": [
             {
-                "url": "http://localhost:8006/?seed=1",
+                "url": "http://localhost:8006/?seed=24",
                 "type": "NavigateAction",
             },
             {
@@ -415,11 +415,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8006/?seed=1",
+        "url": "http://localhost:8006/?seed=745",
         "prompt": "Submit a review with name 'Agente' and comment 'good'.",
         "actions": [
             {
-                "url": "http://localhost:8006/?seed=1",
+                "url": "http://localhost:8006/?seed=745",
                 "type": "NavigateAction",
             },
             {
@@ -481,11 +481,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8006/?seed=1",
+        "url": "http://localhost:8006/?seed=893",
         "prompt": "Delete the review for the restaurant with name 'Bella Vista' where the author contains 'ria', the comment contains 'ood!', the rating is NOT '4.5', the cuisine does NOT contain 'Japanese', and the review_rating is NOT '4.5'.",
         "actions": [
             {
-                "url": "http://localhost:8006/?seed=1",
+                "url": "http://localhost:8006/?seed=893",
                 "type": "NavigateAction",
             },
             {
@@ -509,11 +509,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8006/?seed=1",
+        "url": "http://localhost:8006/?seed=242",
         "prompt": "Empty my cart where the quantity is less than or equal to 8 and the price equals '14.99'.",
         "actions": [
             {
-                "url": "http://localhost:8006/?seed=1",
+                "url": "http://localhost:8006/?seed=242",
                 "type": "NavigateAction",
             },
             {
@@ -562,11 +562,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8006/?seed=1",
+        "url": "http://localhost:8006/?seed=371",
         "prompt": "Set dropoff preference where quantity greater equal 2 and item equals 'Picanha' and price less equal 26.99 and restaurant equals 'Carnaval Grill' and delivery_preference equals 'Hand it to me'.",
         "actions": [
             {
-                "url": "http://localhost:8006/?seed=1",
+                "url": "http://localhost:8006/?seed=371",
                 "type": "NavigateAction",
             },
             {
@@ -650,11 +650,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8006/?seed=1",
+        "url": "http://localhost:8006/?seed=434",
         "prompt": "Add an address where quantity greater equal 2 and item equals 'Picanha' and price less equal 26.99 and restaurant equals 'Carnaval Grill' and address equals '505 Cherry Circle, Fairview'.",
         "actions": [
             {
-                "url": "http://localhost:8006/?seed=1",
+                "url": "http://localhost:8006/?seed=434",
                 "type": "NavigateAction",
             },
             {
@@ -759,11 +759,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8006/?seed=1",
+        "url": "http://localhost:8006/?seed=383",
         "prompt": "Place an order where address not contains '101 Elm Drive, Centerville' and phone not equals '+1-555-901-2345' and mode not contains 'delivery' and preferences not contains 'soy-free' and size not contains 'medium' and quantity less than '2' and price equals '14.3' and restaurant equals 'Tokyo Sushi House'.",
         "actions": [
             {
-                "url": "http://localhost:8006/?seed=1",
+                "url": "http://localhost:8006/?seed=383",
                 "type": "NavigateAction",
             },
             {
@@ -873,11 +873,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8006/?seed=1",
+        "url": "http://localhost:8006/?seed=239",
         "prompt": "Edit the cart item 'Margherita Pizza' from Sushi Zen where the item does NOT contain 'Egg & Cheese Sandwich' and the restaurant is NOT 'Waffle Works'.",
         "actions": [
             {
-                "url": "http://localhost:8006/?seed=1",
+                "url": "http://localhost:8006/?seed=239",
                 "type": "NavigateAction",
             },
             {
@@ -926,11 +926,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8006/?seed=1",
+        "url": "http://localhost:8006/?seed=483",
         "prompt": "Select a delivery priority that is 'normal' for an item with size that CONTAINS 'll', a quantity of at least 2, an item that CONTAINS 'eek', a price greater than 9.17, and a restaurant that CONTAINS 'Table'.",
         "actions": [
             {
-                "url": "http://localhost:8006/?seed=1",
+                "url": "http://localhost:8006/?seed=483",
                 "type": "NavigateAction",
             },
             {
@@ -1014,11 +1014,11 @@ ACTIONS = [
         "has_success": False,
     },
     {
-        "url": "http://localhost:8006/?seed=1",
+        "url": "http://localhost:8006/?seed=693",
         "prompt": "Increase the quantity of 'Pepperoni Classic' to 2 at 'Pizza Paradise'.",
         "actions": [
             {
-                "url": "http://localhost:8006/?seed=1",
+                "url": "http://localhost:8006/?seed=693",
                 "type": "NavigateAction",
             },
             {
@@ -1274,11 +1274,35 @@ def _id(element_id: str) -> Selector:
     return Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value=element_id)
 
 
+BASE = "http://localhost:8006"
+# From autodelivery_tasks.json (?seed= in each task URL)
+SEED_SEARCH_DELIVERY_RESTAURANT = 223
+SEED_VIEW_DELIVERY_RESTAURANT = 201
+SEED_RESTAURANT_FILTER = 648
+SEED_VIEW_ALL_RESTAURANTS = 283
+SEED_DELETE_REVIEW = 893
+SEED_BACK_TO_ALL_RESTAURANTS = 12
+SEED_ADD_TO_CART_MODAL_OPEN = 670
+SEED_ITEM_INCREMENTED = 693
+SEED_ADD_TO_CART_MENU_ITEM = 811
+SEED_EDIT_CART_ITEM = 239
+SEED_QUICK_ORDER_STARTED = 899
+SEED_QUICK_REORDER = 956
+SEED_OPEN_CHECKOUT_PAGE = 345
+SEED_DROPOFF_PREFERENCE = 371
+SEED_ADDRESS_ADDED = 434
+SEED_EMPTY_CART = 242
+SEED_PLACE_ORDER = 383
+SEED_RESTAURANT_NEXT_PAGE = 822
+SEED_RESTAURANT_PREV_PAGE = 24
+SEED_REVIEW_SUBMITTED = 745
+SEED_DELIVERY_PRIORITY_SELECTED = 483
+
 SEARCH_DELIVERY_RESTAURANT = _uc(
     "SEARCH_DELIVERY_RESTAURANT",
     prompt="Search for restaurants where the query is NOT 'Casa Saltshaker'.",
     actions=[
-        NavigateAction(url="http://localhost:8006/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_SEARCH_DELIVERY_RESTAURANT}"),
         ClickAction(selector=_id("search-input")),
         TypeAction(selector=_id("search-input"), text="__DELIVERY_SEARCH_QUERY__"),
         SendKeysIWAAction(keys="Enter"),
@@ -1289,7 +1313,7 @@ VIEW_DELIVERY_RESTAURANT = _uc(
     "VIEW_DELIVERY_RESTAURANT",
     prompt="Show me the details of a restaurant where the rating is less equal to '4.7' and the cuisine does not contain 'Asian'.",
     actions=[
-        NavigateAction(url="http://localhost:8006/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_VIEW_DELIVERY_RESTAURANT}"),
         ClickAction(selector=_id("search-input")),
         TypeAction(selector=_id("search-input"), text="__DELIVERY_SEARCH_QUERY__"),
         ClickAction(selector=_xp("(//*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'] | //*[@id='restaurant-image'] | //*[@id='restaurant-name'])[1]")),
@@ -1300,7 +1324,7 @@ RESTAURANT_FILTER = _uc(
     "RESTAURANT_FILTER",
     prompt="Show me restaurants with a rating LESS THAN 4.7 that do NOT have a cuisine that CONTAINS 'Austrian'",
     actions=[
-        NavigateAction(url="http://localhost:8006/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_RESTAURANT_FILTER}"),
         ClickAction(selector=_xp("//*[@id='search-filters']/div[3]/button[2]")),
         TypeAction(selector=_id("search-input"), text="__DELIVERY_SEARCH_QUERY__"),
         SendKeysIWAAction(keys="Enter"),
@@ -1311,7 +1335,7 @@ VIEW_ALL_RESTAURANTS = _uc(
     "VIEW_ALL_RESTAURANTS",
     prompt="Show me all restaurants.",
     actions=[
-        NavigateAction(url="http://localhost:8006/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_VIEW_ALL_RESTAURANTS}"),
         ClickAction(
             selector=_xp(
                 "(//*[@id='quick-order-header' or contains(@id,'quick-order')] | //button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'quick order')] | //button[contains(translate(@aria-label, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'quick order')] | //nav//button[contains(@class,'bg-green-600')])[1]"
@@ -1329,7 +1353,7 @@ BACK_TO_ALL_RESTAURANTS = _uc(
     "BACK_TO_ALL_RESTAURANTS",
     prompt="Return to all restaurants where the name does NOT contain 'Nobu' and the cuisine does NOT equal 'Desserts'",
     actions=[
-        NavigateAction(url="http://localhost:8006/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_BACK_TO_ALL_RESTAURANTS}"),
         ClickAction(selector=_id("search-input")),
         TypeAction(selector=_id("search-input"), text="__DELIVERY_SEARCH_QUERY__"),
         ClickAction(
@@ -1349,7 +1373,7 @@ ADD_TO_CART_MODAL_OPEN = _uc(
     "ADD_TO_CART_MODAL_OPEN",
     prompt="Open the add-to-cart modal where price equals '33.98' and restaurant contains 'ggan'.",
     actions=[
-        NavigateAction(url="http://localhost:8006/restaurants?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_ADD_TO_CART_MODAL_OPEN}"),
         ClickAction(selector=_id("search-input")),
         TypeAction(selector=_id("search-input"), text="__DELIVERY_RESTAURANT_QUERY__"),
         ClickAction(
@@ -1369,7 +1393,7 @@ ADD_TO_CART_MENU_ITEM = _uc(
     "ADD_TO_CART_MENU_ITEM",
     prompt="Add a menu item to my cart where preferences is NOT one of ['vegetarian', 'mild'] and quantity is less equal '8' and price is NOT '25.98' and restaurant equals 'Waffle Works'.",
     actions=[
-        NavigateAction(url="http://localhost:8006/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_ADD_TO_CART_MENU_ITEM}"),
         ClickAction(selector=_id("search-input")),
         TypeAction(selector=_id("search-input"), text="__DELIVERY_RESTAURANT_QUERY__"),
         ClickAction(
@@ -1394,7 +1418,7 @@ QUICK_ORDER_STARTED = _uc(
     "QUICK_ORDER_STARTED",
     prompt="Start a quick order from any restaurant.",
     actions=[
-        NavigateAction(url="http://localhost:8006/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_QUICK_ORDER_STARTED}"),
         ClickAction(
             selector=_xp(
                 "(//*[@id='quick-order' or @id='quick-order-header' or contains(@id,'quick-order')] | //button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'quick order')] | //button[contains(translate(@aria-label, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'quick order')])[1]"
@@ -1407,7 +1431,7 @@ OPEN_CHECKOUT_PAGE = _uc(
     "OPEN_CHECKOUT_PAGE",
     prompt="Go to the checkout page where preferences contains 'peanut-fre' and size not contains 'small' and quantity less equal '3' and item equals 'Chef's Special' and restaurant contains 'ik'.",
     actions=[
-        NavigateAction(url="http://localhost:8006/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_OPEN_CHECKOUT_PAGE}"),
         ClickAction(selector=_xp("(//*[@id='restaurant-grid-item-0']//div[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'])[1]")),
         ClickAction(selector=_xp("(//*[@id='menu-item-1-1']//button | //*[@id='menu-item-1-0']//button | //*[@id='add-to-cart'][1])[1]")),
         ClickAction(
@@ -1423,7 +1447,7 @@ RESTAURANT_NEXT_PAGE = _uc(
     "RESTAURANT_NEXT_PAGE",
     prompt="Show me the next set of restaurants.",
     actions=[
-        NavigateAction(url="http://localhost:8006/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_RESTAURANT_NEXT_PAGE}"),
         ClickAction(
             selector=_xp(
                 "(//*[@id='pagination-next'] | //button[@id='pagination-next'] | //button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'next')])[1]"
@@ -1436,7 +1460,7 @@ RESTAURANT_PREV_PAGE = _uc(
     "RESTAURANT_PREV_PAGE",
     prompt="Go back to the previous page of restaurants.",
     actions=[
-        NavigateAction(url="http://localhost:8006/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_RESTAURANT_PREV_PAGE}"),
         ClickAction(
             selector=_xp(
                 "(//*[@id='pagination-next'] | //button[@id='pagination-next'] | //button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'next')])[1]"
@@ -1454,7 +1478,7 @@ REVIEW_SUBMITTED = _uc(
     "REVIEW_SUBMITTED",
     prompt="Submit a review for a restaurant where the comment does NOT contain 'Super friendly staff and delicious food at the hotel restaurant.'",
     actions=[
-        NavigateAction(url="http://localhost:8006/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_REVIEW_SUBMITTED}"),
         ClickAction(selector=_xp("(//*[@id='restaurant-grid-item-0']//div[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'])[1]")),
         ClickAction(selector=_id("review-name")),
         TypeAction(selector=_id("review-name"), text="Agente"),
@@ -1468,7 +1492,7 @@ DELETE_REVIEW = _uc(
     "DELETE_REVIEW",
     prompt="Delete the review for the restaurant with cuisine equals 'Healthy' where the rating is NOT '4.8' and the author is NOT 'Olivia M.'",
     actions=[
-        NavigateAction(url="http://localhost:8006/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_DELETE_REVIEW}"),
         ClickAction(selector=_xp("(//*[@id='restaurant-grid-item-0']//div[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'])[1]")),
         ClickAction(
             selector=_xp(
@@ -1482,7 +1506,7 @@ EMPTY_CART = _uc(
     "EMPTY_CART",
     prompt="Clear my shopping cart of items where the quantity is greater than 9, the item equals 'Wagyu Beef', the price equals '91.98', and the restaurant contains 'suya's'.",
     actions=[
-        NavigateAction(url="http://localhost:8006/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_EMPTY_CART}"),
         ClickAction(selector=_xp("(//*[@id='restaurant-grid-item-0']//div[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'])[1]")),
         ClickAction(selector=_xp("(//*[@id='menu-item-1-1']//button | //*[@id='menu-item-1-0']//button | //*[@id='add-to-cart'][1])[1]")),
         ClickAction(
@@ -1503,7 +1527,7 @@ DROPOFF_PREFERENCE = _uc(
     "DROPOFF_PREFERENCE",
     prompt="Set dropoff preference where quantity greater than 3 and price less equal 65.98 and item contains 'aisse' and restaurant equals 'Gordon Ramsay' and delivery_preference equals 'Meet in the lobby'.",
     actions=[
-        NavigateAction(url="http://localhost:8006/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_DROPOFF_PREFERENCE}"),
         ClickAction(selector=_id("search-input")),
         TypeAction(selector=_id("search-input"), text="__DELIVERY_RESTAURANT_QUERY__"),
         ClickAction(
@@ -1536,7 +1560,7 @@ ADDRESS_ADDED = _uc(
     "ADDRESS_ADDED",
     prompt="Add an address that equals '404 Walnut Blvd, Brookside' with a size that contains 'al', preferences that contains 'o-oni', quantity equals '3', and price not equals '13.48' at a restaurant that contains 'Ba'.",
     actions=[
-        NavigateAction(url="http://localhost:8006/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_ADDRESS_ADDED}"),
         ClickAction(selector=_id("search-input")),
         TypeAction(selector=_id("search-input"), text="__DELIVERY_RESTAURANT_QUERY__"),
         ClickAction(
@@ -1571,7 +1595,7 @@ PLACE_ORDER = _uc(
     "PLACE_ORDER",
     prompt="Place an order where address equals '202 Birch Lane, Lakeview' and username equals 'George Kim' and mode not equals 'delivery' and phone equals '+1-555-456-7890' and size not contains 'large' and preferences is not one of ['peanut-free', 'organic'] and quantity not equals '9' and item equals 'German Fried Potatoes' and restaurant equals 'Peter Luger Steak House'.",
     actions=[
-        NavigateAction(url="http://localhost:8006/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_PLACE_ORDER}"),
         ClickAction(selector=_id("search-input")),
         TypeAction(selector=_id("search-input"), text="__DELIVERY_RESTAURANT_QUERY__"),
         ClickAction(
@@ -1603,7 +1627,7 @@ EDIT_CART_ITEM = _uc(
     "EDIT_CART_ITEM",
     prompt="Edit the cart item 'Hummus' from a restaurant that does NOT contain 'Beirut Express'.",
     actions=[
-        NavigateAction(url="http://localhost:8006/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_EDIT_CART_ITEM}"),
         ClickAction(selector=_xp("(//*[@id='restaurant-grid-item-0']//div[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'])[1]")),
         ClickAction(selector=_xp("(//*[@id='menu-item-1-0']//button | //*[@id='add-to-cart'][1])[1]")),
         ClickAction(
@@ -1620,7 +1644,7 @@ DELIVERY_PRIORITY_SELECTED = _uc(
     "DELIVERY_PRIORITY_SELECTED",
     prompt="Select a delivery priority for my order that is NOT 'normal', with a quantity of items that is less than or equal to 7, a price that is greater than 15.45, and from a restaurant that contains 'Taco Fiesta', ensuring that my preferences do NOT contain 'paleo'.",
     actions=[
-        NavigateAction(url="http://localhost:8006/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_DELIVERY_PRIORITY_SELECTED}"),
         ClickAction(selector=_id("search-input")),
         TypeAction(selector=_id("search-input"), text="__DELIVERY_RESTAURANT_QUERY__"),
         ClickAction(
@@ -1653,7 +1677,7 @@ ITEM_INCREMENTED = _uc(
     "ITEM_INCREMENTED",
     prompt="Increase the quantity of 'hef's Special' to 7 where the restaurant is NOT 'Cedar Middle Eastern Cafe'.",
     actions=[
-        NavigateAction(url="http://localhost:8006/?seed=1"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_ITEM_INCREMENTED}"),
         ClickAction(selector=_id("search-input")),
         TypeAction(selector=_id("search-input"), text="__DELIVERY_RESTAURANT_QUERY__"),
         ClickAction(

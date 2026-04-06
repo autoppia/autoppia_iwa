@@ -15,15 +15,15 @@ from autoppia_iwa.src.execution.actions.base import BaseAction, Selector, Select
 
 ACTIONS = [
     {
-        "url": "http://localhost:8002/?seed=18",
+        "url": "http://localhost:8002/?seed=750",
         "prompt": "Show me details for the Premium Drone",
         "actions": [
             {
-                "url": "http://localhost:8002/?seed=18",
+                "url": "http://localhost:8002/?seed=750",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8002/?seed=18",
+                    "url": "http://localhost:8002/?seed=750",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -96,15 +96,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8002/?seed=18",
+        "url": "http://localhost:8002/?seed=562",
         "prompt": "Expand the Explore further section for the Premium Drone page.",
         "actions": [
             {
-                "url": "http://localhost:8002/?seed=18",
+                "url": "http://localhost:8002/?seed=562",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8002/?seed=18",
+                    "url": "http://localhost:8002/?seed=562",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -192,15 +192,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8002/?seed=15",
+        "url": "http://localhost:8002/?seed=826",
         "prompt": "Search for products that contain 'Premium Drone'",
         "actions": [
             {
-                "url": "http://localhost:8002/?seed=15",
+                "url": "http://localhost:8002/?seed=826",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8002/?seed=15",
+                    "url": "http://localhost:8002/?seed=826",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -258,15 +258,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8002/?seed=15",
+        "url": "http://localhost:8002/?seed=509",
         "prompt": "Filter results to Technology products.",
         "actions": [
             {
-                "url": "http://localhost:8002/?seed=15",
+                "url": "http://localhost:8002/?seed=509",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8002/?seed=15",
+                    "url": "http://localhost:8002/?seed=509",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -307,15 +307,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8002/?seed=15",
+        "url": "http://localhost:8002/?seed=784",
         "prompt": "Add the Premium Drone to my cart.",
         "actions": [
             {
-                "url": "http://localhost:8002/?seed=15",
+                "url": "http://localhost:8002/?seed=784",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8002/?seed=15",
+                    "url": "http://localhost:8002/?seed=784",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -388,15 +388,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8002/?seed=15",
+        "url": "http://localhost:8002/?seed=640",
         "prompt": "Add the Premium Drone to my wishlist.",
         "actions": [
             {
-                "url": "http://localhost:8002/?seed=15",
+                "url": "http://localhost:8002/?seed=640",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8002/?seed=15",
+                    "url": "http://localhost:8002/?seed=640",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -480,15 +480,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8002/?seed=15",
+        "url": "http://localhost:8002/?seed=459",
         "prompt": "Open my wishlist page.",
         "actions": [
             {
-                "url": "http://localhost:8002/?seed=15",
+                "url": "http://localhost:8002/?seed=459",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8002/?seed=15",
+                    "url": "http://localhost:8002/?seed=459",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -514,15 +514,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8002/?seed=15",
+        "url": "http://localhost:8002/?seed=406",
         "prompt": "Open my cart page.",
         "actions": [
             {
-                "url": "http://localhost:8002/?seed=15",
+                "url": "http://localhost:8002/?seed=406",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8002/?seed=15",
+                    "url": "http://localhost:8002/?seed=406",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -548,15 +548,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8002/?seed=15",
+        "url": "http://localhost:8002/?seed=125",
         "prompt": "On Premium Drone details, change quantity from 1 to 2.",
         "actions": [
             {
-                "url": "http://localhost:8002/?seed=15",
+                "url": "http://localhost:8002/?seed=125",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8002/?seed=15",
+                    "url": "http://localhost:8002/?seed=125",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -666,15 +666,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8002/?seed=15",
+        "url": "http://localhost:8002/?seed=159",
         "prompt": "From cart, proceed to checkout with the Premium Drone.",
         "actions": [
             {
-                "url": "http://localhost:8002/?seed=15",
+                "url": "http://localhost:8002/?seed=159",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8002/?seed=15",
+                    "url": "http://localhost:8002/?seed=159",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -777,15 +777,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8002/?seed=15",
+        "url": "http://localhost:8002/?seed=449",
         "prompt": "Start checkout from the Premium Drone detail page.",
         "actions": [
             {
-                "url": "http://localhost:8002/?seed=15",
+                "url": "http://localhost:8002/?seed=449",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8002/?seed=15",
+                    "url": "http://localhost:8002/?seed=449",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -873,15 +873,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8002/?seed=15",
+        "url": "http://localhost:8002/?seed=49",
         "prompt": "Share the Premium Drone product page.",
         "actions": [
             {
-                "url": "http://localhost:8002/?seed=15",
+                "url": "http://localhost:8002/?seed=49",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8002/?seed=15",
+                    "url": "http://localhost:8002/?seed=49",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -969,15 +969,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8002/?seed=15",
+        "url": "http://localhost:8002/?seed=264",
         "prompt": "Scroll right in the Featured Products carousel.",
         "actions": [
             {
-                "url": "http://localhost:8002/?seed=15",
+                "url": "http://localhost:8002/?seed=264",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8002/?seed=15",
+                    "url": "http://localhost:8002/?seed=264",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1003,15 +1003,15 @@ ACTIONS = [
         "has_success": True,
     },
     {
-        "url": "http://localhost:8002/?seed=15",
+        "url": "http://localhost:8002/?seed=842",
         "prompt": "Complete an order for the Premium Drone.",
         "actions": [
             {
-                "url": "http://localhost:8002/?seed=15",
+                "url": "http://localhost:8002/?seed=842",
                 "type": "NavigateAction",
                 "go_back": False,
                 "attributes": {
-                    "url": "http://localhost:8002/?seed=15",
+                    "url": "http://localhost:8002/?seed=842",
                     "go_back": False,
                     "go_forward": False,
                 },
@@ -1217,11 +1217,28 @@ def _id(element_id: str) -> Selector:
     return Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value=element_id)
 
 
+BASE = "http://localhost:8002"
+# From autozone_tasks.json (?seed= in each task URL)
+SEED_VIEW_DETAIL = 750
+SEED_DETAILS_TOGGLE = 562
+SEED_SHARE_PRODUCT = 49
+SEED_SEARCH_PRODUCT = 826
+SEED_CATEGORY_FILTER = 509
+SEED_ADD_TO_CART = 784
+SEED_ADD_TO_WISHLIST = 640
+SEED_VIEW_CART = 406
+SEED_VIEW_WISHLIST = 459
+SEED_CAROUSEL_SCROLL = 264
+SEED_QUANTITY_CHANGED = 125
+SEED_PROCEED_TO_CHECKOUT = 159
+SEED_CHECKOUT_STARTED = 449
+SEED_ORDER_COMPLETED = 842
+
 VIEW_DETAIL = _uc(
     "VIEW_DETAIL",
     prompt="Show details for a product with a rating of 4.3 or less and a category that contains 'en'",
     actions=[
-        NavigateAction(url="http://localhost:8002/?seed=18"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_VIEW_DETAIL}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
@@ -1250,7 +1267,7 @@ DETAILS_TOGGLE = _uc(
     "DETAILS_TOGGLE",
     prompt="Expand the details section for the product with title 'Drybar Buttercup Hair Dryer' that has a rating of 4.4 and belongs to the category that contains 'Home'.",
     actions=[
-        NavigateAction(url="http://localhost:8002/?seed=18"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_DETAILS_TOGGLE}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
@@ -1284,7 +1301,7 @@ SEARCH_PRODUCT = _uc(
     "SEARCH_PRODUCT",
     prompt="Search for products with query equals 'Ninja Foodi 8-in-1'",
     actions=[
-        NavigateAction(url="http://localhost:8002/?seed=15"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_SEARCH_PRODUCT}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
@@ -1308,7 +1325,7 @@ CATEGORY_FILTER = _uc(
     "CATEGORY_FILTER",
     prompt="Filter to show only products in the category 'electronics'.",
     actions=[
-        NavigateAction(url="http://localhost:8002/?seed=15"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_CATEGORY_FILTER}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='browse-all-button' or @id='browse-all-btn' or @id='browse-btn' or @id='browse-button' or @id='browse-all-items-btn' or @id='browse-items-btn' or @id='browse-catalog-btn' or @id='browse-list-btn' or @id='open-browse-btn' or @id='browse-more-btn']"
@@ -1326,7 +1343,7 @@ ADD_TO_CART = _uc(
     "ADD_TO_CART",
     prompt="Add 1 item to cart where the price is GREATER THAN or EQUAL to '99.99' and the brand is NOT 'Arlo'",
     actions=[
-        NavigateAction(url="http://localhost:8002/?seed=15"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_ADD_TO_CART}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
@@ -1355,7 +1372,7 @@ ADD_TO_WISHLIST = _uc(
     "ADD_TO_WISHLIST",
     prompt="Add to wishlist an item where the brand does NOT CONTAIN 'NinjaXYZ184', the rating equals '4.6', and the price is NOT '92.0'",
     actions=[
-        NavigateAction(url="http://localhost:8002/?seed=15"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_ADD_TO_WISHLIST}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
@@ -1385,7 +1402,7 @@ VIEW_WISHLIST = _uc(
     "VIEW_WISHLIST",
     prompt="Open my wishlist from the home wishlist preview.",
     actions=[
-        NavigateAction(url="http://localhost:8002/?seed=15"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_VIEW_WISHLIST}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='view-wishlist-button' or @id='wishlist-btn' or @id='wishlist-link' or @id='go-wishlist' or @id='view-wishlist-btn' or @id='wishlist-button' or @id='show-wishlist-btn' or @id='open-wishlist-btn' or @id='wishlist-view-btn' or @id='all-wishlist-btn' or @id='save-later']"
@@ -1398,7 +1415,7 @@ VIEW_CART = _uc(
     "VIEW_CART",
     prompt="Show me the contents of my shopping cart",
     actions=[
-        NavigateAction(url="http://localhost:8002/?seed=15"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_VIEW_CART}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='cart-btn' or @id='shopping-cart' or @id='basket-btn' or @id='cart-action' or @id='view-cart' or @id='goto-cart' or @id='cart-link' or @id='basket-link' or @id='cart-icon' or @id='shopping-basket']"
@@ -1411,7 +1428,7 @@ QUANTITY_CHANGED = _uc(
     "QUANTITY_CHANGED",
     prompt="Update quantity of item with title 'Instant Pot Duo Plus' in my cart to 6",
     actions=[
-        NavigateAction(url="http://localhost:8002/?seed=15"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_QUANTITY_CHANGED}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
@@ -1447,7 +1464,7 @@ PROCEED_TO_CHECKOUT = _uc(
     "PROCEED_TO_CHECKOUT",
     prompt="Proceed to checkout with a total amount of '189.99'",
     actions=[
-        NavigateAction(url="http://localhost:8002/?seed=15"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_PROCEED_TO_CHECKOUT}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
@@ -1486,7 +1503,7 @@ CHECKOUT_STARTED = _uc(
     "CHECKOUT_STARTED",
     prompt="Click on Buy now to initiate the checkout process with a total amount less equal to '349.0'.",
     actions=[
-        NavigateAction(url="http://localhost:8002/?seed=15"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_CHECKOUT_STARTED}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
@@ -1520,7 +1537,7 @@ SHARE_PRODUCT = _uc(
     "SHARE_PRODUCT",
     prompt="Share the product link for an item where the category is NOT 'Home'.",
     actions=[
-        NavigateAction(url="http://localhost:8002/?seed=15"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_SHARE_PRODUCT}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
@@ -1554,7 +1571,7 @@ CAROUSEL_SCROLL = _uc(
     "CAROUSEL_SCROLL",
     prompt="Scroll through the carousel titled 'Top Sellers In Fitness' where the direction is NOT 'RIGHT'",
     actions=[
-        NavigateAction(url="http://localhost:8002/?seed=15"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_CAROUSEL_SCROLL}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='carousel-right-btn' or @id='carousel-next' or @id='carousel-forward' or @id='carousel-right' or @id='carousel-next-btn' or @id='carousel-arrow-right' or @id='carousel-control-right' or @id='carousel-nav-right' or @id='carousel-right-control' or @id='carousel-right-arrow']"
@@ -1567,7 +1584,7 @@ ORDER_COMPLETED = _uc(
     "ORDER_COMPLETED",
     prompt="Complete my order with a title that CONTAINS 'ple'",
     actions=[
-        NavigateAction(url="http://localhost:8002/?seed=15"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_ORDER_COMPLETED}"),
         ClickAction(
             selector=_xp(
                 "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
