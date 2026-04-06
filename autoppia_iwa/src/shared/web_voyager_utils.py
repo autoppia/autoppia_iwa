@@ -53,7 +53,7 @@ def load_jsonl_file(file_path: Path) -> list[dict]:
 def load_real_tasks(num_of_urls: int = 0, task: dict | None = None, by_indices: list | None = None) -> list[TaskData]:
     """Load real tasks, excluding impossible ones."""
 
-    if task.get("url") and task.get("prompt"):
+    if task and task.get("url") and task.get("prompt"):
         unique_id = str(uuid.uuid4())
         unique_name = f"custom_web_{unique_id[:8]}"
         return [TaskData(web=task["url"], ques=task["prompt"], id=unique_id, web_name=unique_name)]

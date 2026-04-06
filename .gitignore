@@ -7,6 +7,7 @@ notebooks/
 .env*
 !.env.example
 .venv
+.venv311
 env/
 venv/
 .idea
@@ -43,6 +44,7 @@ stress_test.log
 
 prompt_test_output/*
 
+benchmark-output/**
 *.webm
 .pytest_cache
 *.jsonl

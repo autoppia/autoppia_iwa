@@ -54,6 +54,72 @@ def _read_tasks_from_file(filename: Path) -> dict:
         return json.load(f)
 
 
+def load_tasks_from_custom_json(
+    tasks_json_path: Path | str,
+    projects_by_id: dict[str, WebProject],
+) -> tuple[WebProject, list[Task]]:
+    """
+    Load tasks from a custom JSON file. Same shape as cache: project_id, project_name, tasks.
+
+    Raises:
+        FileNotFoundError: Path does not exist.
+        ValueError: Path is not a file, invalid JSON, missing keys, empty tasks, or unknown project_id.
+        Exception: Task deserialization failure (re-raised with index context).
+    """
+    path = Path(tasks_json_path).resolve()
+    if not path.exists():
+        raise FileNotFoundError(f"tasks_json_path does not exist: {path}")
+    if not path.is_file():
+        raise ValueError(f"tasks_json_path must be a file, not a directory: {path}")
+
+    try:
+        with open(path, encoding="utf-8") as f:
+            raw = f.read()
+    except OSError as e:
+        raise OSError(f"Failed to read tasks file {path}: {e}") from e
+
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON in tasks file {path}: {e}") from e
+
+    if not isinstance(data, dict):
+        raise ValueError(f"Tasks file must contain a JSON object; got {type(data).__name__} at {path}")
+
+    project_id = data.get("project_id")
+    if project_id is None:
+        raise ValueError(f"Tasks file {path} is missing required key 'project_id'")
+    if not isinstance(project_id, str):
+        raise ValueError(f"Tasks file {path}: 'project_id' must be a string; got {type(project_id).__name__}")
+
+    tasks_data = data.get("tasks")
+    if tasks_data is None:
+        raise ValueError(f"Tasks file {path} is missing required key 'tasks'")
+    if not isinstance(tasks_data, list):
+        raise ValueError(f"Tasks file {path}: 'tasks' must be a list; got {type(tasks_data).__name__}")
+    if len(tasks_data) == 0:
+        raise ValueError(f"Tasks file {path}: tasks array is empty")
+
+    project = projects_by_id.get(project_id)
+    if project is None:
+        available = ", ".join(sorted(projects_by_id.keys()))
+        raise ValueError(f"Unknown project_id '{project_id}' in tasks file {path}. Available: {available}")
+
+    tasks: list[Task] = []
+    for i, task_data in enumerate(tasks_data):
+        if not isinstance(task_data, dict):
+            raise ValueError(f"Task at index {i} in {path} is not a JSON object; got {type(task_data).__name__}")
+        try:
+            tasks.append(Task.deserialize(task_data))
+        except Exception as e:
+            task_id = task_data.get("id", "?")
+            logger.error(f"Task at index {i} (id={task_id}) failed to deserialize: {e}")
+            raise ValueError(f"Task at index {i} failed to deserialize: {e}") from e
+
+    logger.info(f"Loaded {len(tasks)} tasks from custom file {path} for project '{project.name}'")
+    return (project, tasks)
+
+
 async def load_tasks_from_json(project: WebProject, task_cache_dir: str) -> list[Task] | None:
     """Load tasks from a project-specific JSON file."""
     filename = get_cache_filename(project, task_cache_dir)

@@ -13,14 +13,21 @@ from autoppia_iwa.src.demo_webs.projects.autodining_4.events import (
     ContactCardClickEvent,
     ContactEvent,
     CountrySelectedEvent,
-    DateDropdownOpenedEvent,
+    DateSelectedEvent,
     HelpCategorySelectedEvent,
     HelpFaqToggledEvent,
+    LoginEvent,
+    LogoutEvent,
     OccasionSelectedEvent,
-    PeopleDropdownOpenedEvent,
+    PeopleSelectedEvent,
+    RegisterEvent,
+    ReviewCreatedEvent,
+    ReviewDeletedEvent,
+    ReviewEditedEvent,
     ScrollViewEvent,
     SearchRestaurantEvent,
-    TimeDropdownOpenedEvent,
+    TagFilterSelectedEvent,
+    TimeSelectedEvent,
     ViewFullMenuEvent,
     ViewRestaurantEvent,
 )
@@ -34,9 +41,16 @@ def _be(event_name: str, data: dict | None = None, web_agent_id: str = "test-age
 
 
 AUTODINING_PAYLOADS = [
-    ("DATE_DROPDOWN_OPENED", {}),
-    ("TIME_DROPDOWN_OPENED", {"time": "19:00"}),
-    ("PEOPLE_DROPDOWN_OPENED", {"people": 2}),
+    ("DATE_SELECTED", {"date": "2026-02-23T19:00:00+00:00"}),
+    ("TIME_SELECTED", {"time": "19:00"}),
+    ("PEOPLE_SELECTED", {"people": 2}),
+    ("TAG_FILTER_SELECTED", {"tag": "sushi", "action": "add", "search": "sushi"}),
+    ("LOGIN", {"username": "james", "source": "modal"}),
+    ("REGISTER", {"username": "emma", "email": "emma@example.com", "source": "modal"}),
+    ("LOGOUT", {"username": "james"}),
+    ("REVIEW_CREATED", {"review_id": "review-1", "restaurant_id": "rest-1", "username": "james", "rating": 5, "comment_length": 120}),
+    ("REVIEW_EDITED", {"review_id": "review-1", "restaurant_id": "rest-1", "username": "james", "rating": 4, "comment_length": 80}),
+    ("REVIEW_DELETED", {"review_id": "review-1", "restaurant_id": "rest-1", "username": "james"}),
     ("SEARCH_RESTAURANT", {"query": "italian"}),
     ("VIEW_RESTAURANT", {"restaurantId": "1", "restaurantName": "R", "cuisine": "Italian", "rating": 4}),
     ("VIEW_FULL_MENU", {"menu": [], "date": "2025-03-15"}),
@@ -65,18 +79,53 @@ class TestParseAutodiningEvents:
 class TestValidateAutodiningEventsCriteria:
     """Validate_criteria tests for autodining_4 events that have ValidationCriteria."""
 
-    def test_date_dropdown_opened_validate_none(self):
-        e = DateDropdownOpenedEvent.parse(_be("DATE_DROPDOWN_OPENED", {}))
+    def test_date_selected_validate_none(self):
+        e = DateSelectedEvent.parse(_be("DATE_SELECTED", {"date": "2026-02-23T19:00:00+00:00"}))
         assert e.validate_criteria(None) is True
 
-    def test_time_dropdown_opened_validate_criteria(self):
-        e = TimeDropdownOpenedEvent.parse(_be("TIME_DROPDOWN_OPENED", {"time": "19:00"}))
-        criteria = TimeDropdownOpenedEvent.ValidationCriteria(time="19:00")
+    def test_time_selected_validate_criteria(self):
+        e = TimeSelectedEvent.parse(_be("TIME_SELECTED", {"time": "19:00"}))
+        criteria = TimeSelectedEvent.ValidationCriteria(time="19:00")
         assert e.validate_criteria(criteria) is True
 
-    def test_people_dropdown_opened_validate_criteria(self):
-        e = PeopleDropdownOpenedEvent.parse(_be("PEOPLE_DROPDOWN_OPENED", {"people": 2}))
-        criteria = PeopleDropdownOpenedEvent.ValidationCriteria(people=2)
+    def test_people_selected_validate_criteria(self):
+        e = PeopleSelectedEvent.parse(_be("PEOPLE_SELECTED", {"people": 2}))
+        criteria = PeopleSelectedEvent.ValidationCriteria(people=2)
+        assert e.validate_criteria(criteria) is True
+
+    def test_tag_filter_selected_validate_criteria(self):
+        e = TagFilterSelectedEvent.parse(_be("TAG_FILTER_SELECTED", {"tag": "sushi", "action": "add", "search": "sushi"}))
+        criteria = TagFilterSelectedEvent.ValidationCriteria(tag="sushi", action="add")
+        assert e.validate_criteria(criteria) is True
+
+    def test_login_validate_criteria(self):
+        e = LoginEvent.parse(_be("LOGIN", {"username": "james", "source": "modal"}))
+        criteria = LoginEvent.ValidationCriteria(username="james")
+        assert e.validate_criteria(criteria) is True
+
+    def test_register_validate_criteria(self):
+        e = RegisterEvent.parse(_be("REGISTER", {"username": "emma", "email": "emma@example.com", "source": "modal"}))
+        criteria = RegisterEvent.ValidationCriteria(username="emma", email="emma@example.com")
+        assert e.validate_criteria(criteria) is True
+
+    def test_logout_validate_criteria(self):
+        e = LogoutEvent.parse(_be("LOGOUT", {"username": "james"}))
+        criteria = LogoutEvent.ValidationCriteria(username="james")
+        assert e.validate_criteria(criteria) is True
+
+    def test_review_created_validate_criteria(self):
+        e = ReviewCreatedEvent.parse(_be("REVIEW_CREATED", {"review_id": "review-1", "restaurant_id": "rest-1", "username": "james", "rating": 5, "comment_length": 120}))
+        criteria = ReviewCreatedEvent.ValidationCriteria(review_id="review-1", restaurant_id="rest-1", rating=5)
+        assert e.validate_criteria(criteria) is True
+
+    def test_review_edited_validate_criteria(self):
+        e = ReviewEditedEvent.parse(_be("REVIEW_EDITED", {"review_id": "review-1", "restaurant_id": "rest-1", "username": "james", "rating": 4, "comment_length": 80}))
+        criteria = ReviewEditedEvent.ValidationCriteria(review_id="review-1", restaurant_id="rest-1", rating=4)
+        assert e.validate_criteria(criteria) is True
+
+    def test_review_deleted_validate_criteria(self):
+        e = ReviewDeletedEvent.parse(_be("REVIEW_DELETED", {"review_id": "review-1", "restaurant_id": "rest-1", "username": "james"}))
+        criteria = ReviewDeletedEvent.ValidationCriteria(review_id="review-1", restaurant_id="rest-1")
         assert e.validate_criteria(criteria) is True
 
     def test_search_restaurant_event_validate_criteria(self):
