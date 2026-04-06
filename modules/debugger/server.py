@@ -131,8 +131,8 @@ def _resolve_trace_dir(raw: str | None = None) -> Path:
                 raise HTTPException(status_code=403, detail="trace_dir_forbidden")
         else:
             path.relative_to(base)
-    except ValueError:
-        raise HTTPException(status_code=403, detail="trace_dir_forbidden")
+    except ValueError as verr:
+        raise HTTPException(status_code=403, detail="trace_dir_forbidden") from verr
 
     roots = _allowed_trace_roots()
     if not _is_under_allowed_root(path, roots):
