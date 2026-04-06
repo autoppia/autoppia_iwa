@@ -10,6 +10,7 @@ from autoppia_iwa.src.execution.actions.actions import (
     NavigateAction,
     SendKeysIWAAction,
     TypeAction,
+    WaitAction,
 )
 from autoppia_iwa.src.execution.actions.base import BaseAction, Selector, SelectorType
 
@@ -2438,12 +2439,16 @@ ADD_COMMENT = _uc(
     prompt="Add a comment to the movie_name 'Her' with content that does NOT equal 'brilliant'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_ADD_COMMENT}"),
-        ClickAction(selector=_id("featured-movie-view-details-btn-2")),
-        ClickAction(selector=_id("comment-name-input")),
-        TypeAction(selector=_id("comment-name-input"), text="Agent"),
-        ClickAction(selector=_id("comment-message-textarea")),
-        TypeAction(selector=_id("comment-message-textarea"), text="good movie"),
-        ClickAction(selector=_id("share-feedback-button")),
+        ClickAction(selector=_id("text-input")),
+        TypeAction(selector=_id("text-input"), text="Her"),
+        ClickAction(selector=_id("search-execute")),
+        ClickAction(selector=_xp("//button[normalize-space()='2']")),
+        ClickAction(selector=_xp("//a[contains(@href, '/real-movie-029')]")),
+        ClickAction(selector=_id("name-entry")),
+        TypeAction(selector=_id("name-entry"), text="Agent"),
+        ClickAction(selector=_id("message-field")),
+        TypeAction(selector=_id("message-field"), text="Good movie"),
+        ClickAction(selector=_id("share-btn")),
     ],
 )
 
@@ -2453,14 +2458,17 @@ ADD_FILM = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_ADD_FILM}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[6]")),
-        ClickAction(selector=_id("login-username-input")),
-        TypeAction(selector=_id("login-username-input"), text="user<web_agent_id>"),
-        ClickAction(selector=_id("login-password-input")),
-        TypeAction(selector=_id("login-password-input"), text="Passw0rd!"),
-        ClickAction(selector=_id("login-sign-in-button")),
+        ClickAction(selector=_id("login-username")),
+        TypeAction(selector=_id("login-username"), text="user1"),
+        ClickAction(selector=_id("password-entry-field")),
+        TypeAction(selector=_id("password-entry-field"), text="Passw0rd!"),
+        ClickAction(selector=_id("signin-control")),
         ClickAction(selector=_xp("//button[normalize-space()='Add Movies']")),
-        ClickAction(selector=_xp("//button[normalize-space()='Adventure']")),
-        ClickAction(selector=_id("save-changes-button")),
+        TypeAction(selector=_xp("//input[@value='Unknown Director']"), text="Anthony Russo"),
+        TypeAction(selector=_xp("//input[@value='4']"), text="5.0"),
+        ClickAction(selector=_xp("//button[normalize-space()='Action']")),
+        TypeAction(selector=_xp("//label[contains(normalize-space(), 'Trailer URL')]/following::input[2]"), text="John,Roy"),
+        ClickAction(selector=_id("save-btn")),
     ],
 )
 
@@ -2471,13 +2479,13 @@ ADD_TO_WATCHLIST = _uc(
         NavigateAction(url=f"{BASE}/?seed={SEED_ADD_TO_WATCHLIST}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[6]")),
         ClickAction(selector=_xp('//*[@id="login-username-input"]')),
-        TypeAction(selector=_xp('//*[@id="login-username-input"]'), text="user<web_agent_id>"),
-        ClickAction(selector=_xp('//*[@id="login-password-input"]')),
-        TypeAction(selector=_xp('//*[@id="login-password-input"]'), text="Passw0rd!"),
-        ClickAction(selector=_id("login-sign-in-button")),
+        TypeAction(selector=_xp('//*[@id="login-username-input"]'), text="user1"),
+        ClickAction(selector=_xp('//*[@id="password-input-field"]')),
+        TypeAction(selector=_xp('//*[@id="password-input-field"]'), text="Passw0rd!"),
+        ClickAction(selector=_id("sign-in-action")),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[1]")),
-        ClickAction(selector=_id("featured-movie-view-details-btn")),
-        ClickAction(selector=_id("watchlist-button")),
+        ClickAction(selector=_id("details-btn")),
+        ClickAction(selector=_id("watchlist-btn")),
     ],
 )
 
@@ -2487,15 +2495,15 @@ CONTACT = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_CONTACT}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[4]")),
-        ClickAction(selector=_id("contact-name-input")),
-        TypeAction(selector=_id("contact-name-input"), text="Javier Test"),
-        ClickAction(selector=_id("contact-email-input")),
-        TypeAction(selector=_id("contact-email-input"), text="javier.test@example.com"),
+        ClickAction(selector=_id("name-input")),
+        TypeAction(selector=_id("name-input"), text="Peter Siddle"),
+        ClickAction(selector=_id("contact-email-entry")),
+        TypeAction(selector=_id("contact-email-entry"), text="javier.test@example.com"),
         ClickAction(selector=_id("contact-subject-input")),
-        TypeAction(selector=_id("contact-subject-input"), text="Hello from trajectory"),
-        ClickAction(selector=_id("contact-message-textarea")),
-        TypeAction(selector=_id("contact-message-textarea"), text="Please help with movie recommendations."),
-        ClickAction(selector=_id("send-message-button")),
+        TypeAction(selector=_id("contact-subject-input"), text="Support"),
+        ClickAction(selector=_id("message-entry-area")),
+        TypeAction(selector=_id("message-entry-area"), text="Please help with movie recommendations."),
+        ClickAction(selector=_id("send-btn")),
     ],
 )
 
@@ -2505,13 +2513,13 @@ DELETE_FILM = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_DELETE_FILM}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[6]")),
-        ClickAction(selector=_id("login-username-input")),
-        TypeAction(selector=_id("login-username-input"), text="user<web_agent_id>"),
-        ClickAction(selector=_id("login-password-input")),
-        TypeAction(selector=_id("login-password-input"), text="Passw0rd!"),
-        ClickAction(selector=_id("login-sign-in-button")),
-        ClickAction(selector=_xp("//button[normalize-space()='Edit Movies']")),
-        ClickAction(selector=_id("delete-movie-button")),
+        ClickAction(selector=_id("username-entry-field")),
+        TypeAction(selector=_id("username-entry-field"), text="user1"),
+        ClickAction(selector=_id("login-pass")),
+        TypeAction(selector=_id("login-pass"), text="Passw0rd!"),
+        ClickAction(selector=_id("login-button")),
+        ClickAction(selector=_xp("(//button[normalize-space()='Movies'])[1]")),
+        ClickAction(selector=_id("delete-button")),
     ],
 )
 
@@ -2521,15 +2529,18 @@ EDIT_FILM = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_EDIT_FILM}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[6]")),
-        ClickAction(selector=_id("login-username-input")),
-        TypeAction(selector=_id("login-username-input"), text="user<web_agent_id>"),
-        ClickAction(selector=_id("login-password-input")),
-        TypeAction(selector=_id("login-password-input"), text="Passw0rd!"),
-        ClickAction(selector=_id("login-sign-in-button")),
-        ClickAction(selector=_xp("//button[normalize-space()='Edit Movies']")),
-        ClickAction(selector=_xp("(//label[contains(normalize-space(), 'Year')]/input)[1]")),
-        TypeAction(selector=_xp("(//label[contains(normalize-space(), 'Year')]/input)[1]"), text="1966"),
-        ClickAction(selector=_id("save-changes-button")),
+        ClickAction(selector=_id("login-username")),
+        TypeAction(selector=_id("login-username"), text="user1"),
+        ClickAction(selector=_id("password-entry-field")),
+        TypeAction(selector=_id("password-entry-field"), text="Passw0rd!"),
+        ClickAction(selector=_id("signin-control")),
+        ClickAction(selector=_xp("//button[normalize-space()='Movies']")),
+        TypeAction(selector=_xp("//input[@value='Amélie']"), text="The Lost Daughter"),
+        TypeAction(selector=_xp("//input[@value='2001']"), text="2021"),
+        TypeAction(selector=_xp("//input[@value='122']"), text="120"),
+        TypeAction(selector=_xp("//input[@value='8.3']"), text="5.8"),
+        ClickAction(selector=_id("save-btn")),
+        WaitAction(time_seconds=0.3),
     ],
 )
 
@@ -2540,17 +2551,17 @@ EDIT_USER = _uc(
         NavigateAction(url=f"{BASE}/?seed={SEED_EDIT_USER}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[6]")),
         ClickAction(selector=_id("login-username-input")),
-        TypeAction(selector=_id("login-username-input"), text="user<web_agent_id>"),
-        ClickAction(selector=_id("login-password-input")),
-        TypeAction(selector=_id("login-password-input"), text="Passw0rd!"),
-        ClickAction(selector=_id("login-sign-in-button")),
-        ClickAction(selector=_id("profile-last-name-input")),
-        TypeAction(selector=_id("profile-last-name-input"), text="Alexander"),
-        ClickAction(selector=_id("profile-bio-textarea")),
-        TypeAction(selector=_id("profile-bio-textarea"), text="cinema lover"),
+        TypeAction(selector=_id("login-username-input"), text="user1"),
+        ClickAction(selector=_id("password-input-field")),
+        TypeAction(selector=_id("password-input-field"), text="Passw0rd!"),
+        ClickAction(selector=_id("sign-in-action")),
+        ClickAction(selector=_id("profile-firstname-entry")),
+        TypeAction(selector=_id("profile-firstname-entry"), text="Benjamin"),
+        ClickAction(selector=_id("profile-bio-field")),
+        TypeAction(selector=_id("profile-bio-field"), text="films lovers"),
         ClickAction(selector=_id("profile-website-input")),
-        TypeAction(selector=_id("profile-website-input"), text="https://example.org"),
-        ClickAction(selector=_id("save-profile-button")),
+        TypeAction(selector=_id("website-field-input"), text="https://example.org"),
+        ClickAction(selector=_id("save-profile")),
     ],
 )
 
@@ -2559,7 +2570,10 @@ FILM_DETAIL = _uc(
     prompt="Navigate to a movie page where the name CONTAINS 'ok' and the year is LESS THAN '2025'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_FILM_DETAIL}"),
-        ClickAction(selector=_id("spotlight-view-details-btn-2")),
+        ClickAction(selector=_id("form-input")),
+        TypeAction(selector=_id("form-input"), text="ok"),
+        ClickAction(selector=_id("search-action")),
+        ClickAction(selector=_xp("//a[contains(@href, '/real-movie-171')]")),
     ],
 )
 
@@ -2569,7 +2583,7 @@ FILTER_FILM = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_FILTER_FILM}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[2]")),
-        ClickAction(selector=_xp("//button[normalize-space()='Action']")),
+        ClickAction(selector=_xp("//button[normalize-space()='Crime']")),
     ],
 )
 
@@ -2579,11 +2593,11 @@ LOGIN = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_LOGIN}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[6]")),
-        ClickAction(selector=_id("login-username-input")),
-        TypeAction(selector=_id("login-username-input"), text="javier"),
-        ClickAction(selector=_id("login-password-input")),
-        TypeAction(selector=_id("login-password-input"), text="123456"),
-        ClickAction(selector=_id("login-sign-in-button")),
+        ClickAction(selector=_id("username-field")),
+        TypeAction(selector=_id("username-field"), text="user1"),
+        ClickAction(selector=_id("login-password-field")),
+        TypeAction(selector=_id("login-password-field"), text="Passw0rd!"),
+        ClickAction(selector=_id("login-control")),
     ],
 )
 
@@ -2593,11 +2607,11 @@ LOGOUT = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_LOGOUT}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[6]")),
-        ClickAction(selector=_id("login-username-input")),
-        TypeAction(selector=_id("login-username-input"), text="AGENTE"),
-        ClickAction(selector=_id("login-password-input")),
-        TypeAction(selector=_id("login-password-input"), text="Passw0rd!"),
-        ClickAction(selector=_id("login-sign-in-button")),
+        ClickAction(selector=_id("login-user")),
+        TypeAction(selector=_id("login-user"), text="user1"),
+        ClickAction(selector=_id("password-field")),
+        TypeAction(selector=_id("password-field"), text="Passw0rd!"),
+        ClickAction(selector=_id("signin-button")),
         ClickAction(selector=_xp("//html/body/header/div/nav/button")),
     ],
 )
@@ -2608,15 +2622,15 @@ REGISTRATION = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_REGISTRATION}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[5]")),
-        ClickAction(selector=_id("register-username-input")),
-        TypeAction(selector=_id("register-username-input"), text="javier"),
+        ClickAction(selector=_id("register-username-field")),
+        TypeAction(selector=_id("register-username-field"), text="newuser1"),
         ClickAction(selector=_id("register-email-input")),
-        TypeAction(selector=_id("register-email-input"), text="javi@gmail.com"),
-        ClickAction(selector=_id("register-password-input")),
-        TypeAction(selector=_id("register-password-input"), text="123456"),
+        TypeAction(selector=_id("register-email-input"), text="newuser1@gmail.com"),
+        ClickAction(selector=_id("password-input-field")),
+        TypeAction(selector=_id("password-input-field"), text="Passw0rd!"),
         ClickAction(selector=_id("register-confirm-password-input")),
-        TypeAction(selector=_id("register-confirm-password-input"), text="123456"),
-        ClickAction(selector=_id("create-account-button")),
+        TypeAction(selector=_id("register-confirm-password-input"), text="Passw0rd!"),
+        ClickAction(selector=_id("create-button")),
     ],
 )
 
@@ -2626,15 +2640,16 @@ REMOVE_FROM_WATCHLIST = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_REMOVE_FROM_WATCHLIST}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[6]")),
-        ClickAction(selector=_xp('//*[@id="login-username-input"]')),
-        TypeAction(selector=_xp('//*[@id="login-username-input"]'), text="user<web_agent_id>"),
-        ClickAction(selector=_xp('//*[@id="login-password-input"]')),
-        TypeAction(selector=_xp('//*[@id="login-password-input"]'), text="Passw0rd!"),
+        ClickAction(selector=_xp('//*[@id="username-input-field"]')),
+        TypeAction(selector=_xp('//*[@id="username-input-field"]'), text="user1"),
+        ClickAction(selector=_xp('//*[@id="login-password-entry"]')),
+        TypeAction(selector=_xp('//*[@id="login-password-entry"]'), text="Passw0rd!"),
         ClickAction(selector=_id("login-sign-in-button")),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[1]")),
-        ClickAction(selector=_id("featured-movie-view-details-btn")),
+        ClickAction(selector=_id("view-movie-btn")),
         ClickAction(selector=_id("watchlist-button")),
         ClickAction(selector=_id("watchlist-button")),
+        WaitAction(time_seconds=0.3),
     ],
 )
 
@@ -2643,8 +2658,8 @@ SEARCH_FILM = _uc(
     prompt="Search for a movie where the query is NOT '1917'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_SEARCH_FILM}"),
-        ClickAction(selector=_id("input")),
-        TypeAction(selector=_id("input"), text="La La Land"),
+        ClickAction(selector=_id("input-box")),
+        TypeAction(selector=_id("input-box"), text="The Matrix"),
         SendKeysIWAAction(keys="Enter"),
     ],
 )
@@ -2654,11 +2669,11 @@ SHARE_MOVIE = _uc(
     prompt="Share details for a movie where the name equals 'Spider-Man: No Way Home'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_SHARE_MOVIE}"),
-        ClickAction(selector=_id("input")),
-        TypeAction(selector=_id("input"), text="ethan Coen"),
+        ClickAction(selector=_id("form-field")),
+        TypeAction(selector=_id("form-field"), text="Spider-Man: No Way Home"),
         ClickAction(selector=_id("search-submit-button")),
         ClickAction(selector=_id("view-details-button")),
-        ClickAction(selector=_id("share-button")),
+        ClickAction(selector=_id("send-control")),
     ],
 )
 
@@ -2667,9 +2682,9 @@ WATCH_TRAILER = _uc(
     prompt="Watch the trailer for a movie where the name does NOT contain 'odm'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_WATCH_TRAILER}"),
-        ClickAction(selector=_id("featured-movie-view-details-btn")),
-        ClickAction(selector=_id("watch-trailer-button")),
-        ClickAction(selector=_xp('//*[@id="movie_player"]/div[1]/video')),
+        ClickAction(selector=_id("see-more-button")),
+        ClickAction(selector=_id("play-btn")),
+        WaitAction(time_seconds=0.3),
     ],
 )
 
