@@ -2,6 +2,7 @@ import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from urllib.parse import urlparse
 
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.execution.actions.actions import BaseAction, NavigateAction
@@ -171,7 +172,10 @@ def test_rewrite_to_remote_path_without_scheme_or_netloc_is_anchored():
 def test_rewrite_to_remote_loopback_preserves_agent_port():
     with patch("autoppia_iwa.src.web_agents.apified_one_shot_agent.DEMO_WEBS_ENDPOINT", "https://remote.app"):
         result = ApifiedOneShotWebAgent._rewrite_to_remote("http://127.0.0.1:7777/page")
-        assert result.startswith("https://remote.app:7777") or ":7777" in result
+        parsed = urlparse(result)
+        assert parsed.scheme == "https"
+        assert parsed.hostname == "remote.app"
+        assert parsed.port == 7777
 
 
 def test_rewrite_to_remote_non_loopback_uses_remote_netloc():
