@@ -429,7 +429,8 @@ class AsyncStatefulEvaluator(AsyncWebAgentSession):
             self.task,
             self._history,
             extracted_data=self.latest_extracted_data,
-        )        if not matrix:
+        )
+        if not matrix:
             self._last_score = ScoreDetails()
             return self._last_score
         last = matrix[-1] if matrix else []
