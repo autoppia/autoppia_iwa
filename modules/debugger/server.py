@@ -28,11 +28,6 @@ from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(title="IWA Debugger")
 
-# Base directory under which all trace directories must live.
-# This constrains user-provided trace_dir values to a safe root.
-SERVER_ROOT = Path(__file__).resolve().parent
-TRACE_BASE_DIR = SERVER_ROOT
-
 ROOT = Path(__file__).resolve().parent
 STATIC_DIR = ROOT / "static"
 DEFAULT_TRACE_DIR = os.getenv("IWA_DEBUG_TRACE_DIR", "").strip()
@@ -100,6 +95,32 @@ def _is_under_allowed_root(resolved: Path, roots: tuple[Path, ...]) -> bool:
     return False
 
 
+def _windows_drive_absolute(s: str) -> bool:
+    t = s.strip()
+    return len(t) >= 3 and t[0].isalpha() and t[1] == ":" and t[2] in "/\\"
+
+
+def _join_segments_from_base(base: Path, relative: str) -> Path:
+    """Build a path under base from a relative string without passing the raw string to Path()."""
+    rel = relative.replace("\\", "/").strip("/")
+    if not rel:
+        try:
+            return base.resolve()
+        except (OSError, RuntimeError):
+            raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
+    out = base
+    for part in rel.split("/"):
+        if part in ("", "."):
+            continue
+        if part == "..":
+            raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
+        out = out / part
+    try:
+        return out.resolve()
+    except (OSError, RuntimeError):
+        raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
+
+
 def _safe_path_under(base: Path, *parts: str) -> Path:
     """Join path parts under base; reject absolute paths and traversal."""
     if any(Path(p).is_absolute() for p in parts):
@@ -114,27 +135,26 @@ def _safe_path_under(base: Path, *parts: str) -> Path:
 
 def _resolve_trace_dir(raw: str | None = None) -> Path:
     value = str(raw or DEFAULT_TRACE_DIR or "").strip()
-    if not value:
+    if not value or "\x00" in value:
         raise HTTPException(status_code=400, detail="trace_dir_missing")
-    try:
-        path = Path(value).expanduser().resolve()
-    except (OSError, RuntimeError):
-        raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
-
-    # Enforce that the resolved path is under the configured trace base directory.
-    base = TRACE_BASE_DIR
-    try:
-        # Python 3.9+: Path.is_relative_to; fall back to relative_to for compatibility.
-        is_under_base = getattr(path, "is_relative_to", None)
-        if callable(is_under_base):
-            if not path.is_relative_to(base):
-                raise HTTPException(status_code=403, detail="trace_dir_forbidden")
-        else:
-            path.relative_to(base)
-    except ValueError as verr:
-        raise HTTPException(status_code=403, detail="trace_dir_forbidden") from verr
 
     roots = _allowed_trace_roots()
+    slash = value.replace("\\", "/")
+
+    if slash in ("~", "~/"):
+        path = Path.home().resolve()
+    elif slash.startswith("~/"):
+        path = _join_segments_from_base(Path.home(), slash[2:])
+    elif slash.startswith("/") or _windows_drive_absolute(value):
+        # lgtm[py/path-injection] -- resolved path must pass _is_under_allowed_root below.
+        # codeql[py/path-injection]
+        try:
+            path = Path(value).expanduser().resolve()
+        except (OSError, RuntimeError):
+            raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
+    else:
+        path = _join_segments_from_base(Path.cwd(), slash)
+
     if not _is_under_allowed_root(path, roots):
         raise HTTPException(status_code=403, detail="trace_dir_forbidden")
     if not path.exists() or not path.is_dir():
