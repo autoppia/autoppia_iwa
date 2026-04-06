@@ -722,8 +722,8 @@ class ViewCartBookEvent(Event, BaseEventValidator):
         pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
+        # VIEW_CART_BOOK has no constraint fields; an empty criteria object must pass.
+        return True
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "ViewCartBookEvent":
