@@ -32,6 +32,10 @@ ROOT = Path(__file__).resolve().parent
 STATIC_DIR = ROOT / "static"
 DEFAULT_TRACE_DIR = os.getenv("IWA_DEBUG_TRACE_DIR", "").strip()
 
+# Extra allowed roots for trace_dir (query param / env), separated by os.pathsep.
+# Without this, trace_dir must resolve under cwd, under TRACE_SCAN_ROOTS, or equal IWA_DEBUG_TRACE_DIR.
+_TRACE_ALLOW_EXTRA_RAW = os.getenv("IWA_DEBUG_TRACE_ALLOW_ROOTS", "").strip()
+
 # Scan these directories for trace_index.json files
 TRACE_SCAN_ROOTS = [
     Path.cwd() / "benchmark-output" / "traces",
@@ -54,11 +58,66 @@ def _jsonable(value: Any) -> Any:
     return value
 
 
+def _allowed_trace_roots() -> tuple[Path, ...]:
+    """Resolved directories under which a user-supplied trace_dir may lie."""
+    candidates: list[Path] = []
+    seen: set[str] = set()
+
+    def add(p: Path) -> None:
+        try:
+            r = p.expanduser().resolve()
+        except (OSError, RuntimeError):
+            return
+        key = str(r)
+        if key not in seen:
+            seen.add(key)
+            candidates.append(r)
+
+    add(Path.cwd())
+    for root in TRACE_SCAN_ROOTS:
+        add(root)
+    if DEFAULT_TRACE_DIR:
+        add(Path(DEFAULT_TRACE_DIR))
+    for part in _TRACE_ALLOW_EXTRA_RAW.split(os.pathsep):
+        part = part.strip()
+        if part:
+            add(Path(part))
+    return tuple(candidates)
+
+
+def _is_under_allowed_root(resolved: Path, roots: tuple[Path, ...]) -> bool:
+    for root in roots:
+        try:
+            resolved.relative_to(root)
+            return True
+        except ValueError:
+            continue
+    return False
+
+
+def _safe_path_under(base: Path, *parts: str) -> Path:
+    """Join path parts under base; reject absolute paths and traversal."""
+    if any(Path(p).is_absolute() for p in parts):
+        raise HTTPException(status_code=400, detail="path_not_allowed")
+    candidate = Path(base, *parts).resolve()
+    try:
+        candidate.relative_to(base.resolve())
+    except ValueError:
+        raise HTTPException(status_code=400, detail="path_traversal") from None
+    return candidate
+
+
 def _resolve_trace_dir(raw: str | None = None) -> Path:
     value = str(raw or DEFAULT_TRACE_DIR or "").strip()
     if not value:
         raise HTTPException(status_code=400, detail="trace_dir_missing")
-    path = Path(value).expanduser().resolve()
+    try:
+        path = Path(value).expanduser().resolve()
+    except (OSError, RuntimeError):
+        raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
+    roots = _allowed_trace_roots()
+    if not _is_under_allowed_root(path, roots):
+        raise HTTPException(status_code=403, detail="trace_dir_forbidden")
     if not path.exists() or not path.is_dir():
         raise HTTPException(status_code=404, detail=f"trace_dir_not_found:{path}")
     if not (path / "trace_index.json").exists():
@@ -135,7 +194,8 @@ def _load_trace_bundle(trace_dir: Path) -> dict[str, Any]:
     for item in raw_episodes:
         if not isinstance(item, dict):
             continue
-        ep_file = trace_dir / str(item.get("file") or "")
+        file_name = str(item.get("file") or "").strip()
+        ep_file = _safe_path_under(trace_dir, file_name) if file_name else trace_dir / "__episode_file_unset__"
         summary = {
             "episode_task_id": str(item.get("episode_task_id") or ""),
             "task_id": str(item.get("task_id") or ""),
@@ -195,7 +255,10 @@ def _load_episode(trace_dir: Path, episode_task_id: str) -> dict[str, Any]:
     for item in bundle["episodes"]:
         if str(item.get("episode_task_id") or "") != episode_task_id:
             continue
-        path = trace_dir / str(item.get("file") or "")
+        file_name = str(item.get("file") or "").strip()
+        if not file_name:
+            raise HTTPException(status_code=404, detail=f"episode_file_missing:{episode_task_id}")
+        path = _safe_path_under(trace_dir, file_name)
         payload = _load_json(path)
         steps = payload.get("steps") if isinstance(payload.get("steps"), list) else []
         annotated = [_annotate_step(s) for s in steps if isinstance(s, dict)]
