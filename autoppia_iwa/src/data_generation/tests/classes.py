@@ -22,8 +22,6 @@ from autoppia_iwa.src.llms.interfaces import ILLM
 # Import helpers locally inside methods that need them.
 from .prompts import OPINION_BASED_HTML_TEST_SYS_MSG, SCREENSHOT_TEST_SYSTEM_PROMPT
 
-# Moved from schemas.py - consolidated into classes.py
-
 
 class ITest(ABC):
     @abstractmethod
