@@ -11,16 +11,34 @@ A comprehensive, five-step pipeline that:
 
 ```bash
 # Fast path with defaults (dynamic seeds on, writes one JSON result)
-python -m autoppia_iwa.entrypoints.web_verification.run --project-id autocrm
+python -m autoppia_iwa.entrypoints.web_verification.run -p autocrm
 
-# Use mock IWAP when offline and keep logs verbose
-python -m autoppia_iwa.entrypoints.web_verification.run --project-id autocrm --iwap-use-mock --verbose
+# Skip LLM review for speed (CLI flags vary; see table below)
+python -m autoppia_iwa.entrypoints.web_verification.run -p autocrm --no-llm-review
 
-# Skip LLM review and dynamic verification for speed
-python -m autoppia_iwa.entrypoints.web_verification.run --project-id autocrm --no-llm-review --no-dynamic-verification
+# Only one use case (same pattern as iwa benchmark: repeat -u for multiple)
+python -m autoppia_iwa.entrypoints.web_verification.run -p autocrm -u LOGIN
 ```
 
-**Outputs**: One JSON per project is written to `./verification_results/verification_<project_id>.json` (overwritten on rerun unless you change `--output-dir`).
+**Outputs**: One JSON per project is written to `./verification_results/verification_<project_id>.json` (overwritten on rerun unless you change `--output`).
+
+### Trajectory evaluation (optional)
+
+Replay golden flows from each project’s `trajectories.py` (scripted actions and saved tests) through the same `ConcurrentEvaluator` path as IWAP dynamic verification. URLs are remapped to the project’s configured `frontend_url` so local ports match your running demo.
+
+- **Supported project IDs**: `autolist`, `autodrive`, `autohealth` (see [`trajectory_registry.py`](../../src/demo_webs/trajectory_registry.py)).
+- **`--trajectories-only`**: Runs **trajectory replay only** (no bulk dataset load for V2). Skips task generation, LLM review, V2 seed-sweep (`get_all_data` per seed), and IWAP — **no `OPENAI_API_KEY` required**. The seed must be present on the trajectory’s first navigate URL (`?seed=…`).
+- **`--evaluate-trajectories`**: Adds trajectory replay to the **full** pipeline (after V2). Still runs task generation and LLM review first, so you need **`OPENAI_API_KEY`** (or disable LLM only where supported).
+
+Requires `dynamic_verification_enabled`. Examples:
+
+```bash
+# No OpenAI — trajectory replay only
+python -m autoppia_iwa.entrypoints.web_verification.run -p autohealth --trajectories-only
+
+# Full verification plus trajectories (needs OPENAI_API_KEY)
+python -m autoppia_iwa.entrypoints.web_verification.run -p autohealth --evaluate-trajectories
+```
 
 ## Pre-Validation
 
@@ -235,17 +253,15 @@ V2 Verification: PASSED - All 3 datasets are different. Dynamic data generation 
 
 | Argument | Type | Default | Description |
 |----------|------|---------|-------------|
-| `--project-id` | str | **Required** | ID of the web project to verify (e.g., `'autocinema_1'`, `'autocrm'`) |
+| `--project` / `-p` | str | **Required** | ID of the web project to verify (e.g., `autocrm`, `autodrive`) |
+| `--use-case` / `-u` | str | (none) | Restrict to this use case name (exact match); repeat for multiple |
 | `--tasks-per-use-case` | int | `2` | Number of tasks to generate per use case |
-| `--dynamic` | flag | `True` | Enable dynamic seed generation |
 | `--no-llm-review` | flag | `False` | Disable LLM review of tasks and tests |
-| `--no-iwap` | flag | `False` | Disable IWAP doability check |
-| `--iwap-use-mock` | flag | `False` | Use mock IWAP API response instead of real API |
-| `--no-dynamic-verification` | flag | `False` | Disable dynamic verification with different seeds |
-| `--iwap-url` | str | From env/config | Base URL for IWAP service (default: `https://api-leaderboard.autoppia.com`) |
-| `--seeds` | str | `"1,50,100,200,300"` | Comma-separated list of seed values to test |
-| `--output-dir` | str | `"./verification_results"` | Directory to save results JSON files |
-| `--verbose` | flag | `False` | Enable verbose logging |
+| `--evaluate-trajectories` | flag | `False` | Add trajectory replay to the full pipeline (needs `OPENAI_API_KEY` for task generation) |
+| `--trajectories-only` | flag | `False` | Trajectory replay only; skips V2 bulk dataset loads, OpenAI, IWAP, and generated tasks |
+| `--seeds` | str | `"1,50,100,200,300"` | Comma-separated list of seed values (V2, IWAP Step 4, and `config` trajectory mode) |
+| `--output` / `-o` | str | `"./verification_results"` | Directory to save results JSON files |
+| `--verbose` / `-v` | flag | `False` | Enable verbose logging |
 
 ### Environment Variables
 
@@ -258,6 +274,9 @@ The `WebVerificationConfig` dataclass provides programmatic configuration:
 ```python
 @dataclass
 class WebVerificationConfig:
+    # Scope: None = all use cases; else only listed names (exact match)
+    use_case_filter: list[str] | None = None
+
     # Task generation
     tasks_per_use_case: int = 2
     dynamic_enabled: bool = True
@@ -276,6 +295,10 @@ class WebVerificationConfig:
     # Dynamic verification
     dynamic_verification_enabled: bool = True
     seed_values: list[int] = [1, 50, 100, 200, 300]
+
+    # Trajectory evaluation
+    evaluate_trajectories: bool = False
+    evaluate_trajectories_only: bool = False  # implies evaluate_trajectories
 
     # Output
     output_dir: str = "./verification_results"

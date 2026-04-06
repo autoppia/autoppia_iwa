@@ -1,0 +1,35 @@
+from autoppia_iwa.src.demo_webs.trajectory_registry import (
+    get_trajectory_map,
+    remap_url_to_frontend,
+    supported_trajectory_project_ids,
+)
+
+
+def test_remap_url_to_frontend_preserves_path_query_and_fragment():
+    out = remap_url_to_frontend(
+        "http://old-host:9999/ride/trip?seed=317&x=1#frag",
+        "https://new.example:443",
+    )
+    assert out == "https://new.example:443/ride/trip?seed=317&x=1#frag"
+
+
+def test_remap_url_to_frontend_empty_returns_original():
+    assert remap_url_to_frontend("", "http://localhost:8000") == ""
+    assert remap_url_to_frontend("http://a/b", "") == "http://a/b"
+
+
+def test_supported_trajectory_project_ids_contains_known_demo_projects():
+    ids = supported_trajectory_project_ids()
+    assert "autolist" in ids
+    assert "autodrive" in ids
+    assert "autohealth" in ids
+
+
+def test_get_trajectory_map_returns_dict_for_autodrive():
+    m = get_trajectory_map("autodrive")
+    assert m is not None
+    assert "SEARCH" in m or "ENTER_LOCATION" in m
+
+
+def test_get_trajectory_map_unknown_project_returns_none():
+    assert get_trajectory_map("autocinema") is None

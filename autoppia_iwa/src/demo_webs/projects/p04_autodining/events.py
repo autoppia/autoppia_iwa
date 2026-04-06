@@ -2,7 +2,17 @@ from collections.abc import Callable
 from datetime import date, datetime
 from typing import Any
 
-from dateutil.parser import isoparse
+try:
+    from dateutil.parser import isoparse
+except ImportError:  # broken/empty ``dateutil`` namespace installs
+
+    def isoparse(val: str) -> datetime:
+        v = val.strip()
+        if v.endswith("Z"):
+            v = v[:-1] + "+00:00"
+        return datetime.fromisoformat(v)
+
+
 from loguru import logger
 from pydantic import BaseModel, ConfigDict, field_validator
 
