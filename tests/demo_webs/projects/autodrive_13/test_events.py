@@ -49,6 +49,26 @@ class TestParseLocationAndDestination:
         assert e.event_name == "ENTER_LOCATION"
         assert e.location == "Lyon"
 
+    def test_enter_location_focus_without_value(self, mock_log):
+        """Trip form logs ENTER_LOCATION on focus before any text (no `value` in payload)."""
+        e = EnterLocationEvent.parse(
+            _be(
+                "ENTER_LOCATION",
+                {
+                    "page": "trip_form",
+                    "action": "focus",
+                    "inputType": "location",
+                    "timestamp": "2026-04-02T10:03:34.741Z",
+                },
+            )
+        )
+        assert isinstance(e, EnterLocationEvent)
+        assert e.location == ""
+
+    def test_search_location_accepts_location_key(self, mock_log):
+        e = SearchLocationEvent.parse(_be("SEARCH_LOCATION", {"location": "Berlin"}))
+        assert e.location == "Berlin"
+
     def test_search_destination_parse(self, mock_log):
         e = SearchDestinationEvent.parse(_be("SEARCH_DESTINATION", {"value": "Marseille"}))
         assert e.destination == "Marseille"
@@ -57,6 +77,20 @@ class TestParseLocationAndDestination:
         e = EnterDestinationEvent.parse(_be("ENTER_DESTINATION", {"value": "Nice"}))
         assert e.event_name == "ENTER_DESTINATION"
         assert e.destination == "Nice"
+
+    def test_enter_destination_focus_without_value(self, mock_log):
+        e = EnterDestinationEvent.parse(
+            _be(
+                "ENTER_DESTINATION",
+                {"page": "trip_form", "action": "focus", "inputType": "destination"},
+            )
+        )
+        assert isinstance(e, EnterDestinationEvent)
+        assert e.destination == ""
+
+    def test_search_destination_accepts_destination_key(self, mock_log):
+        e = SearchDestinationEvent.parse(_be("SEARCH_DESTINATION", {"destination": "Toulouse"}))
+        assert e.destination == "Toulouse"
 
 
 @patch("autoppia_iwa.src.demo_webs.projects.p13_autodrive.events.log_event")
@@ -113,6 +147,22 @@ class TestParseSearchRide:
         assert e.location == "Paris"
         assert e.destination == "Lyon"
         assert e.scheduled is not None
+
+    def test_search_ride_scheduled_now_uses_event_timestamp(self, mock_log):
+        e = SearchRideEvent.parse(
+            _be(
+                "SEARCH",
+                {
+                    "pickup": "Cafe Restaurant - 4629 Maple Dr, Chicago, IL 60608, USA",
+                    "dropoff": "Cafe Restaurant - 4629 Maple Dr, Chicago, IL 60608, USA",
+                    "scheduled": "now",
+                },
+                timestamp="2026-04-02T10:39:48.610Z",
+            )
+        )
+        assert e.scheduled.year == 2026
+        assert e.scheduled.month == 4
+        assert e.scheduled.day == 2
 
 
 @patch("autoppia_iwa.src.demo_webs.projects.p13_autodrive.events.log_event")
@@ -185,6 +235,29 @@ class TestParseSelectCarAndReserve:
             )
         )
         assert e.event_name == "CANCEL_RESERVATION"
+
+    def test_cancel_reservation_parse_trip_data_shape(self, mock_log):
+        payload = {
+            "tripId": "1",
+            "tripData": {
+                "id": "1",
+                "date": "2025-07-18",
+                "time": "13:00",
+                "price": 31.5,
+                "pickup": "100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA",
+                "dropoff": "1030 Post Street Apartments - 1030 Post St #112, San Francisco, CA 94109, USA",
+                "ride": {"name": "Comfort"},
+            },
+            "timestamp": "2026-04-02T10:40:14.136Z",
+        }
+        e = CancelReservationEvent.parse(_be("CANCEL_RESERVATION", payload))
+        assert e.location.startswith("100 Van Ness")
+        assert e.destination.startswith("1030 Post")
+        assert e.ride_name == "Comfort"
+        assert e.price == 31.5
+        assert e.scheduled.year == 2025
+        assert e.scheduled.month == 7
+        assert e.scheduled.day == 18
 
 
 # Validation tests

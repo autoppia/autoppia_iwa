@@ -39,7 +39,11 @@ from autoppia_iwa.src.evaluation.benchmark.reporting import (
 from autoppia_iwa.src.evaluation.benchmark.trace_writer import TraceWriter
 from autoppia_iwa.src.evaluation.benchmark.utils.logging import setup_logging
 from autoppia_iwa.src.evaluation.benchmark.utils.metrics import TimingMetrics
-from autoppia_iwa.src.evaluation.benchmark.utils.task_generation import load_tasks_from_json, save_tasks_to_json
+from autoppia_iwa.src.evaluation.benchmark.utils.task_generation import (
+    filter_tasks_by_use_cases,
+    load_tasks_from_json,
+    save_tasks_to_json,
+)
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStats
 from autoppia_iwa.src.evaluation.stateful_evaluator import TaskExecutionSession
 from autoppia_iwa.src.web_agents.classes import IWebAgent, sanitize_html
@@ -76,9 +80,9 @@ class Benchmark:
         self.last_run_report: dict[str, Any] | None = None
         self.last_results_path: str | None = None
 
-        self._validate()
         config.log_file.parent.mkdir(parents=True, exist_ok=True)
         setup_logging(str(config.log_file))
+        self._validate()
 
     def _validate(self) -> None:
         if not self.config.projects:
@@ -143,8 +147,12 @@ class Benchmark:
         if self.config.use_cached_tasks:
             cached = await load_tasks_from_json(project, cache_dir)
             if cached:
-                logger.info(f"Using {len(cached)} cached tasks for {project.name}")
-                return cached
+                filtered = filter_tasks_by_use_cases(cached, self.config.use_cases)
+                if self.config.use_cases:
+                    logger.info(f"use_cases {self.config.use_cases!r}: {len(filtered)}/{len(cached)} cached tasks for {project.name}")
+                else:
+                    logger.info(f"Using {len(filtered)} cached tasks for {project.name}")
+                return filtered
 
         config = TaskGenerationConfig(
             prompts_per_use_case=self.config.prompts_per_use_case,

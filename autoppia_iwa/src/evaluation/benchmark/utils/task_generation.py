@@ -52,6 +52,28 @@ def _read_tasks_from_file(filename: Path) -> dict:
         return json.load(f)
 
 
+def filter_tasks_by_use_cases(tasks: list[Task], use_cases: list[str] | None) -> list[Task]:
+    """
+    Keep tasks whose use_case.name matches one of use_cases (case-insensitive).
+
+    When use_cases is None or empty, returns tasks unchanged. Tasks with no use_case
+    are dropped when filtering is active.
+    """
+    if not use_cases:
+        return tasks
+    wanted = {u.strip().casefold() for u in use_cases if u and str(u).strip()}
+    if not wanted:
+        return tasks
+
+    out: list[Task] = []
+    for t in tasks:
+        uc = getattr(t, "use_case", None)
+        name = getattr(uc, "name", None) if uc is not None else None
+        if isinstance(name, str) and name.strip().casefold() in wanted:
+            out.append(t)
+    return out
+
+
 async def load_tasks_from_json(project: WebProject, task_cache_dir: str) -> list[Task] | None:
     """Load tasks from a project-specific JSON file."""
     filename = get_cache_filename(project, task_cache_dir)

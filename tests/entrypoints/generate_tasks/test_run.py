@@ -20,6 +20,7 @@ class _Task:
 async def test_run_generates_and_saves_tasks(monkeypatch, tmp_path, capsys):
     fake_project = type("Project", (), {"id": "autobooks", "name": "Autobooks"})()
 
+    monkeypatch.setattr(generate_tasks_run, "_require_llm_credentials", lambda: None)
     monkeypatch.setattr("autoppia_iwa.src.bootstrap.AppBootstrap", lambda: None)
     monkeypatch.setattr("autoppia_iwa.src.demo_webs.config.demo_web_projects", [fake_project])
     monkeypatch.setattr(

@@ -103,7 +103,7 @@ class StepRequest(BaseModel):
 class StepToolCall(BaseModel):
     """Canonical tool call payload used by /step response."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
     name: str
     arguments: dict[str, Any] = Field(default_factory=dict)
@@ -129,7 +129,7 @@ class StepToolCall(BaseModel):
 class StepResponse(BaseModel):
     """Canonical response payload returned by /step endpoints."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
     protocol_version: str = Field(default=STEP_PROTOCOL_VERSION)
     tool_calls: list[StepToolCall]
