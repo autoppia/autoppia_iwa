@@ -25,6 +25,7 @@ from autoppia_iwa.src.data_generation.tasks.simple.simple_task_generator import 
 from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
 from autoppia_iwa.src.demo_webs.trajectory_registry import get_trajectory_map, supported_trajectory_project_ids
 from autoppia_iwa.src.di_container import DIContainer
+from autoppia_iwa.src.llms.interfaces import ILLM
 
 from .config import WebVerificationConfig
 from .dynamic_verifier import DynamicVerifier
@@ -33,6 +34,24 @@ from .llm_reviewer import LLMReviewer
 
 # Constants
 UNKNOWN_REASON = "Unknown reason"
+
+
+class _TrajectoryOnlyLlmStub(ILLM):
+    """Placeholder LLM when ``evaluate_trajectories_only``; task generation must not run."""
+
+    def predict(self, *args, **kwargs) -> str:
+        raise RuntimeError(
+            "Task generation requires an LLM. This run uses trajectories-only mode "
+            "(no OpenAI). Use a full verification run with OPENAI_API_KEY set, or pass "
+            "``--trajectories-only`` intentionally without calling task generation.",
+        )
+
+    async def async_predict(self, *args, **kwargs) -> str:
+        raise RuntimeError(
+            "Task generation requires an LLM. This run uses trajectories-only mode "
+            "(no OpenAI). Use a full verification run with OPENAI_API_KEY set, or pass "
+            "``--trajectories-only`` intentionally without calling task generation.",
+        )
 
 
 def _truncate_for_display(text: str, max_length: int) -> str:
@@ -61,7 +80,12 @@ class WebVerificationPipeline:
         """
         self.web_project = web_project
         self.config = config
-        self.llm_service = llm_service or DIContainer.llm_service()
+        if llm_service is not None:
+            self.llm_service = llm_service
+        elif config.evaluate_trajectories_only:
+            self.llm_service = _TrajectoryOnlyLlmStub()
+        else:
+            self.llm_service = DIContainer.llm_service()
 
         # Initialize components
         self.task_generator = SimpleTaskGenerator(
@@ -93,6 +117,7 @@ class WebVerificationPipeline:
             DynamicVerifier(
                 web_project=web_project,
                 llm_reviewer=self.llm_reviewer,
+                llm_service_for_tasks=self.llm_service if config.evaluate_trajectories_only else None,
             )
             if config.dynamic_verification_enabled
             else None
@@ -118,8 +143,15 @@ class WebVerificationPipeline:
             logger.warning(f"No use cases found for project {self.web_project.id}")
             return self.results
 
+        use_cases_to_run = self._use_cases_matching_filter()
+        if not use_cases_to_run:
+            logger.warning(
+                f"No use cases to verify for project {self.web_project.id} (filter={self.config.use_case_filter!r})",
+            )
+            return self.results
+
         # Process each use case
-        for use_case in self.web_project.use_cases:
+        for use_case in use_cases_to_run:
             logger.info(f"Processing use case: {use_case.name}")
             use_case_results = await self._process_use_case(use_case)
             self.results["use_cases"][use_case.name] = use_case_results
@@ -129,6 +161,24 @@ class WebVerificationPipeline:
 
         logger.info("Web verification pipeline completed")
         return self.results
+
+    def _use_cases_matching_filter(self) -> list[UseCase]:
+        """Return project use cases to run, applying ``config.use_case_filter`` when set."""
+        all_uc = list(self.web_project.use_cases or [])
+        filt = self.config.use_case_filter
+        if not filt:
+            return all_uc
+        wanted = set(filt)
+        out = [uc for uc in all_uc if uc.name in wanted]
+        found_names = {uc.name for uc in out}
+        missing = wanted - found_names
+        if missing:
+            logger.warning(
+                "Use case filter name(s) not defined on project %s: %s",
+                self.web_project.id,
+                sorted(missing),
+            )
+        return out
 
     async def _process_use_case(self, use_case: UseCase) -> dict[str, Any]:
         """
@@ -151,183 +201,210 @@ class WebVerificationPipeline:
             "trajectory_verification": None,
         }
 
-        # Step 1: Generate tasks (2 per use case) with constraints
-        # Generate each task separately with different seeds to ensure variety
-        self._print_step_banner(
-            "📝 STEP 1: TASK GENERATION",
-            f"Use Case: {use_case.name}",
-            f"Generating {self.config.tasks_per_use_case} task(s)...",
-        )
+        tasks: list[Task] = []
 
-        tasks = []
-
-        for task_index in range(self.config.tasks_per_use_case):
-            task_num = task_index + 1
-            total_tasks = self.config.tasks_per_use_case
-
-            print(f"🔄 Generating task {task_num}/{total_tasks}...")
-
-            # Clear constraints from use_case before generating new task
-            # This ensures each task gets fresh constraints based on its own seed
-            use_case.constraints = None
-
-            # Generate one task at a time - each will get a different random seed
-            task_list = await self.task_generator.generate_tasks_for_use_case(
-                use_case=use_case,
-                number_of_prompts=1,  # Generate one at a time
-                dynamic=self.config.dynamic_enabled,
+        if self.config.evaluate_trajectories_only:
+            self._print_step_banner(
+                "⏭️ STEP 1 (TASK GEN) & LLM REVIEW: SKIPPED",
+                f"Use Case: {use_case.name}",
+                "Trajectories-only: no OpenAI; Step 2 (bulk dataset load) skipped; trajectory replay only.",
+                "For full verification with task generation and V2 diversity checks, omit --trajectories-only.",
+            )
+            logger.info(f"evaluate_trajectories_only: skipping Step 1 and LLM for {use_case.name}")
+        else:
+            # Step 1: Generate tasks (2 per use case) with constraints
+            # Generate each task separately with different seeds to ensure variety
+            self._print_step_banner(
+                "📝 STEP 1: TASK GENERATION",
+                f"Use Case: {use_case.name}",
+                f"Generating {self.config.tasks_per_use_case} task(s)...",
             )
 
-            if task_list and len(task_list) > 0:
-                task = task_list[0]
-                # IMPORTANT: The task.use_case is a reference to the shared use_case object.
-                # We need to create a copy of the use_case for this task to preserve the constraints
-                # that were just generated, before they get overwritten by the next task generation.
-                if use_case.constraints and task.use_case:
-                    # Create a copy of the use_case object so each task has its own independent use_case
-                    # with its own constraints. This prevents constraints from being overwritten.
-                    task.use_case = copy.deepcopy(use_case)
-                    logger.debug(f"Created independent use_case copy for task {task_num} with {len(task.use_case.constraints)} constraints")
+            tasks = []
 
-                tasks.append(task)
+            for task_index in range(self.config.tasks_per_use_case):
+                task_num = task_index + 1
+                total_tasks = self.config.tasks_per_use_case
 
-                # Print successfully generated task details
-                seed_value, constraints, constraints_str = self._get_task_seed_and_constraints(task)
-                print(f"✅ Task {task_num}/{total_tasks} generated successfully!")
-                self._print_task_info_block(
-                    task.id,
-                    task.prompt,
-                    seed_value,
-                    constraints,
-                    constraints_str,
-                    line_indent="   ",
-                    prompt_max_length=100,
+                print(f"🔄 Generating task {task_num}/{total_tasks}...")
+
+                # Clear constraints from use_case before generating new task
+                # This ensures each task gets fresh constraints based on its own seed
+                use_case.constraints = None
+
+                # Generate one task at a time - each will get a different random seed
+                task_list = await self.task_generator.generate_tasks_for_use_case(
+                    use_case=use_case,
+                    number_of_prompts=1,  # Generate one at a time
+                    dynamic=self.config.dynamic_enabled,
                 )
-                print()
-                sys.stdout.flush()
-            else:
-                print(f"❌ Failed to generate task {task_num}/{total_tasks}")
-                print()
 
-        if not tasks:
-            self._print_step_banner("❌ ERROR: No tasks generated for use case", trailing_newline=True)
-            logger.warning(f"No tasks generated for use case: {use_case.name}")
-            use_case_results["error"] = "No tasks generated"
-            return use_case_results
+                if task_list and len(task_list) > 0:
+                    task = task_list[0]
+                    # IMPORTANT: The task.use_case is a reference to the shared use_case object.
+                    # We need to create a copy of the use_case for this task to preserve the constraints
+                    # that were just generated, before they get overwritten by the next task generation.
+                    if use_case.constraints and task.use_case:
+                        # Create a copy of the use_case object so each task has its own independent use_case
+                        # with its own constraints. This prevents constraints from being overwritten.
+                        task.use_case = copy.deepcopy(use_case)
+                        logger.debug(f"Created independent use_case copy for task {task_num} with {len(task.use_case.constraints)} constraints")
 
-        self._print_step_banner(f"✅ All {len(tasks)} task(s) generated successfully!", leading_newline=False, trailing_newline=True)
-        sys.stdout.flush()
+                    tasks.append(task)
 
-        # Step 1: LLM review (no retry logic)
-        self._print_step_banner("🤖 STEP 1: LLM REVIEW", f"Use Case: {use_case.name}", f"Reviewing {len(tasks)} task(s)...")
-
-        # Review each task once
-        task_review_map = {}
-        for task_index, task in enumerate(tasks):
-            task_num = task_index + 1
-            seed_value, constraints, constraints_str = self._get_task_seed_and_constraints(task)
-
-            # Review task with LLM
-            if self.llm_reviewer:
-                self._print_step_banner(f"📋 Reviewing Task {task_num}/{len(tasks)}", f"Giving task {task_num} to LLM for review...", leading_newline=False, trailing_newline=True)
-
-                logger.debug(f"Reviewing task {task.id} with LLM: checking if prompt matches constraints")
-                review_result = await self.llm_reviewer.review_task_and_constraints(task)
-                review_result["task_id"] = task.id
-                review_result["retry_count"] = 0
-
-                sys.stdout.flush()
-                print("-" * 80)
-                print("📝 TASK DETAILS:")
-                print("-" * 80)
-                self._print_task_info_block(
-                    task.id,
-                    task.prompt,
-                    seed_value,
-                    constraints,
-                    constraints_str,
-                    use_case_name=use_case.name,
-                    line_indent="  ",
-                    constraints_header="\nConstraints Details:",
-                    prompt_max_length=None,
-                    prompt_on_new_line=True,
-                )
-                print("-" * 80)
-                print("🤖 LLM REVIEW RESULT:")
-                print("-" * 80)
-                print(f"Valid: {'✅ YES' if review_result.get('valid', False) else '❌ NO'}")
-                if review_result.get("issues"):
-                    print("\nIssues found:")
-                    for issue in review_result.get("issues", []):
-                        print(f"  - {issue}")
-                if review_result.get("reasoning"):
-                    print("\nReasoning:")
-                    print(f"  {review_result.get('reasoning')}")
-                print("=" * 80)
-                sys.stdout.flush()
-                print()
-
-                if review_result.get("valid", False):
-                    print(f"✅ Task {task_num} passed LLM review!\n")
+                    # Print successfully generated task details
+                    seed_value, constraints, constraints_str = self._get_task_seed_and_constraints(task)
+                    print(f"✅ Task {task_num}/{total_tasks} generated successfully!")
+                    self._print_task_info_block(
+                        task.id,
+                        task.prompt,
+                        seed_value,
+                        constraints,
+                        constraints_str,
+                        line_indent="   ",
+                        prompt_max_length=100,
+                    )
+                    print()
+                    sys.stdout.flush()
                 else:
-                    print(f"❌ Task {task_num} failed LLM review\n")
-                sys.stdout.flush()
+                    print(f"❌ Failed to generate task {task_num}/{total_tasks}")
+                    print()
 
-                logger.debug(f"Task {task.id} LLM review result: valid={review_result.get('valid', False)}")
-            else:
-                # LLM reviewer disabled - mark as passed
-                review_result = {
-                    "valid": True,
-                    "task_id": task.id,
-                    "retry_count": 0,
-                    "skipped": True,
-                    "reasoning": "LLM review is disabled",
+            if not tasks:
+                self._print_step_banner("❌ ERROR: No tasks generated for use case", trailing_newline=True)
+                logger.warning(f"No tasks generated for use case: {use_case.name}")
+                use_case_results["error"] = "No tasks generated"
+                return use_case_results
+
+            self._print_step_banner(f"✅ All {len(tasks)} task(s) generated successfully!", leading_newline=False, trailing_newline=True)
+            sys.stdout.flush()
+
+            # Step 1: LLM review (no retry logic)
+            self._print_step_banner("🤖 STEP 1: LLM REVIEW", f"Use Case: {use_case.name}", f"Reviewing {len(tasks)} task(s)...")
+
+            # Review each task once
+            task_review_map = {}
+            for task_index, task in enumerate(tasks):
+                task_num = task_index + 1
+                seed_value, constraints, constraints_str = self._get_task_seed_and_constraints(task)
+
+                # Review task with LLM
+                if self.llm_reviewer:
+                    self._print_step_banner(f"📋 Reviewing Task {task_num}/{len(tasks)}", f"Giving task {task_num} to LLM for review...", leading_newline=False, trailing_newline=True)
+
+                    logger.debug(f"Reviewing task {task.id} with LLM: checking if prompt matches constraints")
+                    review_result = await self.llm_reviewer.review_task_and_constraints(task)
+                    review_result["task_id"] = task.id
+                    review_result["retry_count"] = 0
+
+                    sys.stdout.flush()
+                    print("-" * 80)
+                    print("📝 TASK DETAILS:")
+                    print("-" * 80)
+                    self._print_task_info_block(
+                        task.id,
+                        task.prompt,
+                        seed_value,
+                        constraints,
+                        constraints_str,
+                        use_case_name=use_case.name,
+                        line_indent="  ",
+                        constraints_header="\nConstraints Details:",
+                        prompt_max_length=None,
+                        prompt_on_new_line=True,
+                    )
+                    print("-" * 80)
+                    print("🤖 LLM REVIEW RESULT:")
+                    print("-" * 80)
+                    print(f"Valid: {'✅ YES' if review_result.get('valid', False) else '❌ NO'}")
+                    if review_result.get("issues"):
+                        print("\nIssues found:")
+                        for issue in review_result.get("issues", []):
+                            print(f"  - {issue}")
+                    if review_result.get("reasoning"):
+                        print("\nReasoning:")
+                        print(f"  {review_result.get('reasoning')}")
+                    print("=" * 80)
+                    sys.stdout.flush()
+                    print()
+
+                    if review_result.get("valid", False):
+                        print(f"✅ Task {task_num} passed LLM review!\n")
+                    else:
+                        print(f"❌ Task {task_num} failed LLM review\n")
+                    sys.stdout.flush()
+
+                    logger.debug(f"Task {task.id} LLM review result: valid={review_result.get('valid', False)}")
+                else:
+                    # LLM reviewer disabled - mark as passed
+                    review_result = {
+                        "valid": True,
+                        "task_id": task.id,
+                        "retry_count": 0,
+                        "skipped": True,
+                        "reasoning": "LLM review is disabled",
+                    }
+
+                # Store task and review result
+                task_review_map[task_index] = {
+                    "task": task,
+                    "review_result": review_result,
                 }
 
-            # Store task and review result
-            task_review_map[task_index] = {
-                "task": task,
-                "review_result": review_result,
-            }
+            # Print summary of review results
+            sys.stdout.flush()
+            self._print_step_banner("📊 REVIEW SUMMARY", leading_newline=False, trailing_newline=False)
+            passed_count = sum(1 for info in task_review_map.values() if info.get("review_result", {}).get("valid", False))
+            total_count = len(task_review_map)
+            print(f"Tasks Passed: {passed_count}/{total_count}")
+            for task_idx, task_info in sorted(task_review_map.items()):
+                task_num = task_idx + 1
+                review_result = task_info.get("review_result", {})
+                is_valid = review_result.get("valid", False)
+                status = "✅ PASSED" if is_valid else "❌ FAILED"
+                print(f"  Task {task_num}: {status}")
+            print("=" * 80 + "\n")
+            sys.stdout.flush()
 
-        # Print summary of review results
-        sys.stdout.flush()
-        self._print_step_banner("📊 REVIEW SUMMARY", leading_newline=False, trailing_newline=False)
-        passed_count = sum(1 for info in task_review_map.values() if info.get("review_result", {}).get("valid", False))
-        total_count = len(task_review_map)
-        print(f"Tasks Passed: {passed_count}/{total_count}")
-        for task_idx, task_info in sorted(task_review_map.items()):
-            task_num = task_idx + 1
-            review_result = task_info.get("review_result", {})
-            is_valid = review_result.get("valid", False)
-            status = "✅ PASSED" if is_valid else "❌ FAILED"
-            print(f"  Task {task_num}: {status}")
-        print("=" * 80 + "\n")
-        sys.stdout.flush()
+            # Store final results
+            for _task_index, task_info in sorted(task_review_map.items()):
+                task = task_info["task"]
+                review_result = task_info["review_result"]
+                seed_value, constraints, constraints_str = self._get_task_seed_and_constraints(task)
 
-        # Store final results
-        for _task_index, task_info in sorted(task_review_map.items()):
-            task = task_info["task"]
-            review_result = task_info["review_result"]
-            seed_value, constraints, constraints_str = self._get_task_seed_and_constraints(task)
+                # Serialize constraints to make them JSON-compatible
+                serialized_constraints = self._serialize_constraints(constraints) if constraints else None
 
-            # Serialize constraints to make them JSON-compatible
-            serialized_constraints = self._serialize_constraints(constraints) if constraints else None
+                task_info_dict = {
+                    "task_id": task.id,
+                    "prompt": task.prompt,
+                    "constraints": serialized_constraints,
+                    "constraints_str": constraints_str,
+                    "seed": seed_value,
+                }
+                use_case_results["tasks"].append(task_info_dict)
 
-            task_info_dict = {
-                "task_id": task.id,
-                "prompt": task.prompt,
-                "constraints": serialized_constraints,
-                "constraints_str": constraints_str,
-                "seed": seed_value,
-            }
-            use_case_results["tasks"].append(task_info_dict)
-
-            if review_result:
-                use_case_results["llm_reviews"].append(review_result)
+                if review_result:
+                    use_case_results["llm_reviews"].append(review_result)
 
         # Step 2 (V2): Dataset Diversity Verification - verify that datasets are different with different seeds
-        if self.config.dynamic_enabled and self.dynamic_verifier:
+        if self.config.evaluate_trajectories_only:
+            self._print_step_banner(
+                "⏭️ STEP 2 (V2): DATASET DIVERSITY — SKIPPED",
+                f"Use Case: {use_case.name}",
+                "Trajectories-only: skipping bulk get_all_data() loads (same path as task-generation dataset cache).",
+                "Trajectory replay uses only the seed(s) embedded in the scripted flow URLs.",
+            )
+            logger.info(
+                "evaluate_trajectories_only: skipping V2 dataset diversity for %s (no bulk data generation)",
+                use_case.name,
+            )
+            use_case_results["dataset_diversity_verification"] = {
+                "skipped": True,
+                "reason": "Skipped in trajectories-only mode (avoids loading full datasets per seed)",
+                "passed": None,
+            }
+        elif self.config.dynamic_enabled and self.dynamic_verifier:
             self._print_step_banner(
                 "🔄 STEP 2 (V2): DATASET DIVERSITY VERIFICATION",
                 f"Use Case: {use_case.name}",
@@ -848,13 +925,22 @@ class WebVerificationPipeline:
         if self.config.evaluate_trajectories and has_trajectory_verification:
             trajectory_verification_status = "Pass" if all_trajectory_verification_passed else "Fail"
 
-        summary = {
-            "task_generation": "Pass" if all_tasks_generated and total_tasks > 0 else "Fail",
-            "number_of_tasks_generated": total_tasks,
-            "llm_review": "Pass" if (all_llm_reviews_passed or not self.llm_reviewer) else "Fail",
-            "dynamic_verification": dynamic_verification_status,
-            "trajectory_verification": trajectory_verification_status,
-        }
+        if self.config.evaluate_trajectories_only:
+            summary = {
+                "task_generation": "Skipped",
+                "number_of_tasks_generated": 0,
+                "llm_review": "Skipped",
+                "dynamic_verification": dynamic_verification_status,
+                "trajectory_verification": trajectory_verification_status,
+            }
+        else:
+            summary = {
+                "task_generation": "Pass" if all_tasks_generated and total_tasks > 0 else "Fail",
+                "number_of_tasks_generated": total_tasks,
+                "llm_review": "Pass" if (all_llm_reviews_passed or not self.llm_reviewer) else "Fail",
+                "dynamic_verification": dynamic_verification_status,
+                "trajectory_verification": trajectory_verification_status,
+            }
 
         return summary
 
@@ -914,6 +1000,8 @@ class WebVerificationPipeline:
 
             # Include use cases where task generation failed (no tasks) for manual inspection.
             if not tasks:
+                if self.config.evaluate_trajectories_only:
+                    continue
                 report["use_cases"][use_case_name] = {
                     "use_case_description": use_case_data.get("use_case_description", ""),
                     "flagged_tasks": [],
@@ -1310,19 +1398,22 @@ class WebVerificationPipeline:
             summary_lines.append("  Step 0 (Pre-validation): ✓ Passed")
 
             # Step 1: Task Generation and LLM Review
-            tasks = use_case_data.get("tasks", [])
-            summary_lines.append(f"  Step 1 (Task Generation): {len(tasks)} tasks generated")
-
-            # LLM reviews
-            reviews = use_case_data.get("llm_reviews", [])
-            if reviews:
-                valid_reviews = sum(1 for r in reviews if r.get("valid", False))
-                if valid_reviews == len(reviews):
-                    summary_lines.append(f"  Step 1 (LLM Review): ✓ Passed ({valid_reviews}/{len(reviews)} valid)")
-                else:
-                    summary_lines.append(f"  Step 1 (LLM Review): ✗ Failed ({valid_reviews}/{len(reviews)} valid)")
+            if self.config.evaluate_trajectories_only:
+                summary_lines.append("  Step 1 (Task Generation): ⏭️ Skipped (trajectories-only)")
+                summary_lines.append("  Step 1 (LLM Review): ⏭️ Skipped (trajectories-only)")
             else:
-                summary_lines.append("  Step 1 (LLM Review): ⏭️ Skipped")
+                tasks = use_case_data.get("tasks", [])
+                summary_lines.append(f"  Step 1 (Task Generation): {len(tasks)} tasks generated")
+
+                reviews = use_case_data.get("llm_reviews", [])
+                if reviews:
+                    valid_reviews = sum(1 for r in reviews if r.get("valid", False))
+                    if valid_reviews == len(reviews):
+                        summary_lines.append(f"  Step 1 (LLM Review): ✓ Passed ({valid_reviews}/{len(reviews)} valid)")
+                    else:
+                        summary_lines.append(f"  Step 1 (LLM Review): ✗ Failed ({valid_reviews}/{len(reviews)} valid)")
+                else:
+                    summary_lines.append("  Step 1 (LLM Review): ⏭️ Skipped")
 
             # Step 2: V2 Dataset Diversity Verification
             dataset_diversity = use_case_data.get("dataset_diversity_verification")
@@ -1473,6 +1564,10 @@ class WebVerificationPipeline:
 
         # Task Generation Quality
         summary_lines.append("\n✅ Task Generation Quality:")
+        if categories["generation_skipped"]:
+            summary_lines.append(
+                f"  ⏭️  Skipped — trajectories-only ({len(categories['generation_skipped'])}): {', '.join(categories['generation_skipped'])}",
+            )
         if categories["generation_ok"]:
             summary_lines.append(f"  ✓ Good generation ({len(categories['generation_ok'])}): {', '.join(categories['generation_ok'])}")
         if categories["generation_failed"]:
@@ -1489,6 +1584,10 @@ class WebVerificationPipeline:
 
         # Solution Availability (IWAP)
         summary_lines.append("\n🔍 Solution Availability (IWAP):")
+        if categories["iwap_skipped"]:
+            summary_lines.append(
+                f"  ⏭️  IWAP not run ({len(categories['iwap_skipped'])}): {', '.join(categories['iwap_skipped'])}",
+            )
         if categories["has_solution"]:
             summary_lines.append(f"  ✓ Has solutions ({len(categories['has_solution'])}): {', '.join(categories['has_solution'])}")
         if categories["no_solution"]:
@@ -1509,8 +1608,12 @@ class WebVerificationPipeline:
         summary_lines.append("\n📈 Overall Status:")
         total_use_cases = len(self.results["use_cases"])
         summary_lines.append(f"  Total Use Cases: {total_use_cases}")
-        summary_lines.append(f"  - Good generation: {len(categories['generation_ok'])}/{total_use_cases}")
-        summary_lines.append(f"  - Dataset diverse (V2): {len(categories['dataset_diverse'])}/{total_use_cases}")
+        if categories["generation_skipped"]:
+            summary_lines.append(f"  - Task gen skipped (trajectories-only): {len(categories['generation_skipped'])}/{total_use_cases}")
+            summary_lines.append("  - V2 dataset diversity: skipped (trajectories-only)")
+        else:
+            summary_lines.append(f"  - Good generation: {len(categories['generation_ok'])}/{total_use_cases}")
+            summary_lines.append(f"  - Dataset diverse (V2): {len(categories['dataset_diverse'])}/{total_use_cases}")
         summary_lines.append(f"  - Has solutions: {len(categories['has_solution'])}/{total_use_cases}")
         summary_lines.append(f"  - Truly dynamic (V3): {len(categories['truly_dynamic'])}/{total_use_cases}")
         summary_lines.append(f"  - Needs review (not dynamic): {len(categories['not_dynamic'])}/{total_use_cases}")
@@ -1528,11 +1631,13 @@ class WebVerificationPipeline:
         categories = {
             "generation_ok": [],
             "generation_failed": [],
+            "generation_skipped": [],
             "dataset_diverse": [],
             "dataset_not_diverse": [],
             "dataset_untested": [],
             "has_solution": [],
             "no_solution": [],
+            "iwap_skipped": [],
             "truly_dynamic": [],
             "not_dynamic": [],
             "dynamic_partial": [],
@@ -1541,20 +1646,22 @@ class WebVerificationPipeline:
 
         for use_case_name, use_case_data in self.results["use_cases"].items():
             # Task Generation Quality
-            llm_reviews = use_case_data.get("llm_reviews", [])
-            if llm_reviews:
-                all_valid = all(r.get("valid", False) for r in llm_reviews)
-                if all_valid and len(llm_reviews) > 0:
-                    categories["generation_ok"].append(use_case_name)
-                else:
-                    categories["generation_failed"].append(use_case_name)
+            if self.config.evaluate_trajectories_only:
+                categories["generation_skipped"].append(use_case_name)
             else:
-                # No LLM reviews means generation might have failed or was skipped
-                tasks = use_case_data.get("tasks", [])
-                if tasks:
-                    categories["generation_ok"].append(use_case_name)
+                llm_reviews = use_case_data.get("llm_reviews", [])
+                if llm_reviews:
+                    all_valid = all(r.get("valid", False) for r in llm_reviews)
+                    if all_valid and len(llm_reviews) > 0:
+                        categories["generation_ok"].append(use_case_name)
+                    else:
+                        categories["generation_failed"].append(use_case_name)
                 else:
-                    categories["generation_failed"].append(use_case_name)
+                    tasks = use_case_data.get("tasks", [])
+                    if tasks:
+                        categories["generation_ok"].append(use_case_name)
+                    else:
+                        categories["generation_failed"].append(use_case_name)
 
             # Dataset Diversity (V2)
             dataset_diversity = use_case_data.get("dataset_diversity_verification", {})
@@ -1570,13 +1677,13 @@ class WebVerificationPipeline:
                 categories["dataset_untested"].append(use_case_name)
 
             # Solution Availability (IWAP)
-            iwap_status = use_case_data.get("iwap_status", {})
-            if iwap_status.get("matched", False) or (iwap_status.get("executed", False) and iwap_status.get("matched") is not False):
-                # Check if it actually found a solution (not just executed)
-                if iwap_status.get("matched", False):
-                    categories["has_solution"].append(use_case_name)
-                else:
-                    categories["no_solution"].append(use_case_name)
+            iwap_status = use_case_data.get("iwap_status") or {}
+            if iwap_status.get("skipped"):
+                categories["iwap_skipped"].append(use_case_name)
+            elif iwap_status.get("matched", False):
+                categories["has_solution"].append(use_case_name)
+            elif iwap_status.get("executed", False):
+                categories["no_solution"].append(use_case_name)
             else:
                 categories["no_solution"].append(use_case_name)
 

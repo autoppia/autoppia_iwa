@@ -35,6 +35,7 @@ class DynamicVerifier:
         self,
         web_project: WebProject,
         llm_reviewer=None,
+        llm_service_for_tasks=None,
     ):
         """
         Initialize Dynamic Verifier
@@ -42,12 +43,15 @@ class DynamicVerifier:
         Args:
             web_project: The web project to verify
             llm_reviewer: Optional LLM reviewer for reviewing generated tasks
+            llm_service_for_tasks: Optional LLM for ``SimpleTaskGenerator`` (defaults to DI container).
+                Pass the pipeline LLM (e.g. trajectories-only stub) to avoid loading OpenAI when unused.
         """
         self.web_project = web_project
         self.llm_reviewer = llm_reviewer
+        task_llm = llm_service_for_tasks if llm_service_for_tasks is not None else DIContainer.llm_service()
         self.task_generator = SimpleTaskGenerator(
             web_project=web_project,
-            llm_service=DIContainer.llm_service(),
+            llm_service=task_llm,
         )
 
     # ============================================================================

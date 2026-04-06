@@ -9,6 +9,9 @@ from dataclasses import dataclass
 class WebVerificationConfig:
     """Configuration for web verification pipeline"""
 
+    # Scope: if non-empty, only these use case names (exact match) are verified; None = all
+    use_case_filter: list[str] | None = None
+
     # Task generation
     tasks_per_use_case: int = 2
     dynamic_enabled: bool = True
@@ -30,6 +33,8 @@ class WebVerificationConfig:
 
     # Trajectory evaluation (repo-local golden flows from trajectories.py)
     evaluate_trajectories: bool = False
+    # Skip task generation, LLM review, and IWAP; only V2 + trajectory replay (no OpenAI init).
+    evaluate_trajectories_only: bool = False
 
     # Output
     output_dir: str = "./verification_results"
@@ -37,6 +42,8 @@ class WebVerificationConfig:
 
     def __post_init__(self):
         """Set default values after initialization"""
+        if self.evaluate_trajectories_only:
+            self.evaluate_trajectories = True
         if self.seed_values is None:
             self.seed_values = [1, 50, 100, 200, 300]
 
