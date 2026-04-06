@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import re
-from typing import Any
-
 PROJECT_NUMBER = 1
 WEB_PROJECT_ID = "autocinema"
 
@@ -2218,133 +2215,194 @@ ACTIONS = [
     },
 ]
 
+# CheckEventTest payloads aligned with former autocinema_tasks.json (per use_case.name).
+_RAW_TESTS: dict[str, list[dict]] = {
+    "FILM_DETAIL": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "FILM_DETAIL",
+            "event_criteria": {
+                "year": {"operator": "less_than", "value": 2025},
+                "name": {"operator": "contains", "value": "ok"},
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "LOGIN": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "LOGIN",
+            "event_criteria": {
+                "username": "user<web_agent_id>",
+                "password": "Passw0rd!",
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "DELETE_FILM": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "DELETE_FILM",
+            "event_criteria": {
+                "username": "user<web_agent_id>",
+                "password": "Passw0rd!",
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "LOGOUT": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "LOGOUT",
+            "event_criteria": {
+                "username": "user<web_agent_id>",
+                "password": "Passw0rd!",
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "FILTER_FILM": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "FILTER_FILM",
+            "event_criteria": {"genre_name": "Crime"},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "SEARCH_FILM": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "SEARCH_FILM",
+            "event_criteria": {"query": {"operator": "not_equals", "value": "1917"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "CONTACT": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "CONTACT",
+            "event_criteria": {
+                "name": {"operator": "contains", "value": "Pete"},
+                "message": {"operator": "not_contains", "value": "enu"},
+                "subject": "Support",
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "REGISTRATION": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "REGISTRATION",
+            "event_criteria": {
+                "username": "newuser<web_agent_id>",
+                "email": "newuser<web_agent_id>@gmail.com",
+                "password": "Passw0rd!",
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "ADD_COMMENT": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "ADD_COMMENT",
+            "event_criteria": {
+                "movie_name": "Her",
+                "content": {"operator": "not_equals", "value": "brilliant"},
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "EDIT_FILM": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "EDIT_FILM",
+            "event_criteria": {
+                "username": "user<web_agent_id>",
+                "password": "Passw0rd!",
+                "movie_rating": 5.8,
+                "name": "The Lost Daughter",
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "ADD_FILM": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "ADD_FILM",
+            "event_criteria": {
+                "username": "user<web_agent_id>",
+                "password": "Passw0rd!",
+                "director": "Anthony Russo",
+                "genres": "Action",
+                "cast": {"operator": "not_contains", "value": "lzl"},
+                "rating": {"operator": "greater_equal", "value": 5.0},
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "EDIT_USER": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "EDIT_USER",
+            "event_criteria": {
+                "username": "user<web_agent_id>",
+                "password": "Passw0rd!",
+                "first_name": "Benjamin",
+                "bio": {"operator": "contains", "value": "films"},
+                "website": {"operator": "not_equals", "value": "https://moviereviews.example.net"},
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "ADD_TO_WATCHLIST": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "ADD_TO_WATCHLIST",
+            "event_criteria": {
+                "username": "user<web_agent_id>",
+                "password": "Passw0rd!",
+                "year": {"operator": "greater_than", "value": 1955},
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "REMOVE_FROM_WATCHLIST": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "REMOVE_FROM_WATCHLIST",
+            "event_criteria": {
+                "username": "user<web_agent_id>",
+                "password": "Passw0rd!",
+                "genres": {"operator": "not_contains", "value": "Comedy"},
+                "rating": {"operator": "greater_equal", "value": 5.0},
+                "name": {"operator": "not_contains", "value": "cwz"},
+            },
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "SHARE_MOVIE": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "SHARE_MOVIE",
+            "event_criteria": {"name": "Spider-Man: No Way Home"},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+    "WATCH_TRAILER": [
+        {
+            "type": "CheckEventTest",
+            "event_name": "WATCH_TRAILER",
+            "event_criteria": {"name": {"operator": "not_contains", "value": "odm"}},
+            "description": "Check if specific event was triggered",
+        }
+    ],
+}
 
-def _normalize_field_name(raw_field: str) -> str:
-    field = raw_field.strip().lower().replace(" ", "_")
-    aliases = {
-        "movie_name": "name",
-        "film_name": "name",
-    }
-    return aliases.get(field, field)
-
-
-def _parse_value_token(raw_value: str) -> Any:
-    value = raw_value.strip().strip(".")
-    if (value.startswith("'") and value.endswith("'")) or (value.startswith('"') and value.endswith('"')):
-        return value[1:-1]
-    try:
-        if "." in value:
-            return float(value)
-        return int(value)
-    except ValueError:
-        return value
-
-
-def _maybe_add_operator_criterion(criteria: dict[str, Any], field: str, operator: str, raw_value: str) -> None:
-    criteria[_normalize_field_name(field)] = {
-        "operator": operator,
-        "value": _parse_value_token(raw_value),
-    }
-
-
-def _extract_event_criteria_from_prompt(prompt: str) -> dict[str, Any]:
-    # Conservative parser: if prompt looks complex/ambiguous, return empty criteria.
-    lowered = prompt.lower()
-    tricky_markers = (" one of ", " or ", " either ", " directly ", " then ")
-    if any(marker in lowered for marker in tricky_markers):
-        return {}
-
-    criteria: dict[str, Any] = {}
-
-    not_equals_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+is\s+not\s+'([^']+)'",
-        r"\b([a-zA-Z_ ]+?)\s+not\s+'([^']+)'",
-    ]
-    contains_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+contains\s+'([^']+)'",
-    ]
-    not_contains_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+does\s+not\s+contain\s+'([^']+)'",
-        r"\b([a-zA-Z_ ]+?)\s+not\s+contain\s+'([^']+)'",
-    ]
-    equals_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+equals\s+'([^']+)'",
-    ]
-    less_equal_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+less\s+equal\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-        r"\b([a-zA-Z_ ]+?)\s+less\s+than\s+or\s+equal\s+to\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-    greater_equal_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+greater\s+equal\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-        r"\b([a-zA-Z_ ]+?)\s+greater\s+than\s+or\s+equal\s+to\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-    less_than_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+less\s+than\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-    greater_than_patterns = [
-        r"\b([a-zA-Z_ ]+?)\s+greater\s+than\s+'?([0-9]+(?:\.[0-9]+)?)'?",
-    ]
-
-    for pattern in not_contains_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "not_contains", value)
-
-    for pattern in contains_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "contains", value)
-
-    for pattern in not_equals_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "not_equals", value)
-
-    for pattern in equals_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            criteria[_normalize_field_name(field)] = _parse_value_token(value)
-
-    for pattern in less_equal_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "less_equal", value)
-
-    for pattern in greater_equal_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "greater_equal", value)
-
-    for pattern in less_than_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "less_than", value)
-
-    for pattern in greater_than_patterns:
-        for field, value in re.findall(pattern, prompt, flags=re.IGNORECASE):
-            _maybe_add_operator_criterion(criteria, field, "greater_than", value)
-
-    return criteria
-
-
-def _build_raw_tests_from_actions(actions_data: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
-    raw_tests: dict[str, list[dict[str, Any]]] = {}
-    for item in actions_data:
-        use_case = str(item.get("use_case", "")).strip()
-        if not use_case:
-            continue
-        prompt = str(item.get("prompt", ""))
-        criteria = _extract_event_criteria_from_prompt(prompt)
-        raw_tests[use_case] = [
-            {
-                "type": "CheckEventTest",
-                "event_name": use_case,
-                "event_criteria": criteria,
-                "description": "Check if specific event was triggered",
-            }
-        ]
-    return raw_tests
-
-
-_RAW_TESTS: dict[str, list[dict[str, Any]]] = _build_raw_tests_from_actions(ACTIONS)
 _TESTS: dict[str, list[BaseTaskTest]] = {uc: [BaseTaskTest.deserialize(p) for p in pl] for uc, pl in _RAW_TESTS.items()}
 
 
 def _uc(use_case: str, prompt: str, actions: list[BaseAction]) -> Trajectory:
-    return Trajectory(name=use_case, prompt=prompt, actions=actions, tests=_TESTS.get(use_case, []))
+    return Trajectory(name=use_case, prompt=prompt, actions=actions, tests=_TESTS[use_case])
 
 
 BASE = "http://localhost:8000"
@@ -2361,7 +2419,7 @@ def _id(element_id: str) -> Selector:
 
 ADD_COMMENT = _uc(
     "ADD_COMMENT",
-    prompt="Add a comment to the movie_name that is NOT 'The Godfather' with a content that is NOT 'couldn't look away'.",
+    prompt="Add a comment to the movie_name 'Her' with content that does NOT equal 'brilliant'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
         ClickAction(selector=_id("featured-movie-view-details-btn-2")),
@@ -2375,7 +2433,7 @@ ADD_COMMENT = _uc(
 
 ADD_FILM = _uc(
     "ADD_FILM",
-    prompt="Login with username equals 'user<web_agent_id>' and password equals 'Passw0rd!'. Insert a new film with genres equals 'Thriller'.",
+    prompt="Login with username equals 'user<web_agent_id>' and password equals 'Passw0rd!'. Register a movie directed by 'Anthony Russo' with genre equals 'Action', ensuring the cast does NOT contain 'lzl' and the rating is greater equal 5.0.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[6]")),
@@ -2392,7 +2450,7 @@ ADD_FILM = _uc(
 
 ADD_TO_WATCHLIST = _uc(
     "ADD_TO_WATCHLIST",
-    prompt="Login with the username equals 'user<web_agent_id>' and password equals 'Passw0rd!' and then add to watchlist a film with rating less equal 5.0 and duration less than 124 minutes long",
+    prompt="Login with the username equals 'user<web_agent_id>' and password equals 'Passw0rd!' and then add to watchlist a movie from year greater than '1955'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[6]")),
@@ -2409,7 +2467,7 @@ ADD_TO_WATCHLIST = _uc(
 
 CONTACT = _uc(
     "CONTACT",
-    prompt="Fill out the contact form with a name NOT 'Lisa', an email that contains 'in@d', and a subject that does NOT contain 'mwg'.",
+    prompt="Fill out the contact form with a name that contains 'Pete', a message that does NOT contain 'enu', and a subject that equals 'Support'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[4]")),
@@ -2443,7 +2501,7 @@ DELETE_FILM = _uc(
 
 EDIT_FILM = _uc(
     "EDIT_FILM",
-    prompt="Login with username equals 'user<web_agent_id>' and password equals 'Passw0rd!'. Edit your movie by setting year to '1966'.",
+    prompt="Login with username equals 'user<web_agent_id>' and password equals 'Passw0rd!'. Edit your movie by setting year to 2021, duration to 120, and rating to 5.8.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[6]")),
@@ -2461,7 +2519,7 @@ EDIT_FILM = _uc(
 
 EDIT_USER = _uc(
     "EDIT_USER",
-    prompt="Login with username equals 'user<web_agent_id>' and password equals 'Passw0rd!'. Edit your profile: ensure your first_name contains 'mes', your website does NOT contain 'nhl', and your location does NOT contain 'evc'.",
+    prompt="Login with username equals 'user<web_agent_id>' and password equals 'Passw0rd!'. Edit your profile: ensure your first_name equals 'Benjamin', your bio contains 'films', and your website not equals 'https://moviereviews.example.net'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[6]")),
@@ -2482,7 +2540,7 @@ EDIT_USER = _uc(
 
 FILM_DETAIL = _uc(
     "FILM_DETAIL",
-    prompt="Take me directly to the interstellar film details page",
+    prompt="Navigate to a movie page where the name CONTAINS 'ok' and the year is LESS THAN '2025'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
         ClickAction(selector=_id("spotlight-view-details-btn-2")),
@@ -2491,7 +2549,7 @@ FILM_DETAIL = _uc(
 
 FILTER_FILM = _uc(
     "FILTER_FILM",
-    prompt="Filter for Action movies",
+    prompt="Filter films where the genre_name equals 'Crime'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[2]")),
@@ -2501,7 +2559,7 @@ FILTER_FILM = _uc(
 
 LOGIN = _uc(
     "LOGIN",
-    prompt="Please login using username equals 'user<web_agent_id>' and password equals 'Passw0rd!'.",
+    prompt="Please log in using username equals 'user<web_agent_id>' and password equals 'Passw0rd!'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[6]")),
@@ -2548,7 +2606,7 @@ REGISTRATION = _uc(
 
 REMOVE_FROM_WATCHLIST = _uc(
     "REMOVE_FROM_WATCHLIST",
-    prompt="Login with username equals 'user<web_agent_id>' and password equals 'Passw0rd!' and remove a movie from watchlist",
+    prompt="Login with the username equals 'user<web_agent_id>' and password equals 'Passw0rd!' and then remove from watchlist a movie that does NOT contain the genre 'Comedy' and has a rating GREATER THAN or EQUAL to '5.0' and does NOT contain 'cwz'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
         ClickAction(selector=_xp("//html/body/header/div/nav/a[6]")),
@@ -2566,7 +2624,7 @@ REMOVE_FROM_WATCHLIST = _uc(
 
 SEARCH_FILM = _uc(
     "SEARCH_FILM",
-    prompt="Search for the movie 'La La Land'",
+    prompt="Search for a movie where the query is NOT '1917'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
         ClickAction(selector=_id("input")),
@@ -2577,7 +2635,7 @@ SEARCH_FILM = _uc(
 
 SHARE_MOVIE = _uc(
     "SHARE_MOVIE",
-    prompt="Share a movie directed by one of 'Ethan Coen', 'Lana Wachowski', 'Fernando Meirelles' that is NOT named 'Schindler's List'",
+    prompt="Share details for a movie where the name equals 'Spider-Man: No Way Home'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
         ClickAction(selector=_id("input")),
@@ -2590,7 +2648,7 @@ SHARE_MOVIE = _uc(
 
 WATCH_TRAILER = _uc(
     "WATCH_TRAILER",
-    prompt="Watch the trailer for a movie with a duration NOT EQUALS '118' minutes that has a rating GREATER EQUAL '5.0'",
+    prompt="Watch the trailer for a movie where the name does NOT contain 'odm'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_DEFAULT}"),
         ClickAction(selector=_id("featured-movie-view-details-btn")),
