@@ -701,8 +701,3 @@ def load_autodrive_use_case_completion_flows() -> dict[str, Trajectory]:
         "TRIP_DETAILS": TRIP_DETAILS,
         "CANCEL_RESERVATION": CANCEL_RESERVATION,
     }
-
-
-if __name__ == "__main__":
-    for name, uc in sorted(load_autodrive_use_case_completion_flows().items()):
-        print(name, "->", uc.prompt[:72], "...")

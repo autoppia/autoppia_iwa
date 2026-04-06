@@ -652,8 +652,3 @@ def load_autohealth_use_case_completion_flows() -> dict[str, Trajectory]:
         "OPEN_CONTACT_DOCTOR_FORM": OPEN_CONTACT_DOCTOR_FORM,
         "CONTACT_DOCTOR": CONTACT_DOCTOR,
     }
-
-
-if __name__ == "__main__":
-    all_use_cases = load_autohealth_use_case_completion_flows()
-    print(all_use_cases)

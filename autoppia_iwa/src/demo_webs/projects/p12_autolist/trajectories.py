@@ -604,9 +604,3 @@ def load_autolist_use_case_completion_flows() -> dict[str, Trajectory]:
         "AUTOLIST_TEAM_ROLE_ASSIGNED": AUTOLIST_TEAM_ROLE_ASSIGNED,
         "AUTOLIST_TEAM_CREATED": AUTOLIST_TEAM_CREATED,
     }
-
-
-if __name__ == "__main__":
-    for name, uc in sorted(load_autolist_use_case_completion_flows().items()):
-        if name.startswith("AUTOLIST_"):
-            print(name, "->", (uc.prompt or "")[:72], "...")
