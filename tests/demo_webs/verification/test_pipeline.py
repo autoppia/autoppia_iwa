@@ -14,15 +14,54 @@ class _DummyIWAPClient:
     def __init__(self, *args, **kwargs):
         pass
 
+    async def get_tasks_with_solutions(self, **kwargs):
+        return {"success": False, "error": "mock"}
+
 
 class _DummyLLMReviewer:
     def __init__(self, *args, **kwargs):
         pass
 
+    async def review_task_and_constraints(self, task):
+        return {"valid": True, "task_id": getattr(task, "id", None), "retry_count": 0}
+
 
 class _DummyDynamicVerifier:
     def __init__(self, *args, **kwargs):
         pass
+
+    async def verify_dataset_diversity_with_seeds(self, seed_values):
+        return {
+            "skipped": False,
+            "passed": True,
+            "all_different": True,
+            "seeds_tested": seed_values,
+            "comparison_results": [],
+            "summary": "",
+            "loaded_count": len(seed_values),
+            "expected_count": len(seed_values),
+        }
+
+    async def verify_trajectory(self, *args, **kwargs):
+        return {
+            "all_passed": True,
+            "passed_count": 1,
+            "total_count": 1,
+            "seeds_tested": [1],
+            "results": {
+                1: {
+                    "evaluation": {
+                        "final_score": 1.0,
+                        "success": True,
+                        "tests_passed": 1,
+                        "total_tests": 1,
+                    },
+                },
+            },
+            "summary": "trajectory ok",
+            "needs_review": False,
+            "trajectory_name": "ENTER_LOCATION",
+        }
 
 
 def _build_project(use_cases):
@@ -112,3 +151,88 @@ async def test_pipeline_run_processes_use_cases_and_saves_results(monkeypatch):
 
     assert result["use_cases"]["BOOK_TICKET"] == {"processed": "BOOK_TICKET"}
     assert saved["called"] is True
+
+
+@pytest.mark.asyncio
+async def test_pipeline_evaluate_trajectories_calls_verify_trajectory(monkeypatch):
+    from autoppia_iwa.src.data_generation.tasks.classes import Task
+
+    traj_calls: list[int] = []
+
+    class _Gen:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        async def generate_tasks_for_use_case(self, use_case, number_of_prompts=1, dynamic=False, base_url=None):
+            return [
+                Task(
+                    url="http://localhost:8012/?seed=1",
+                    prompt="prompt",
+                    use_case=use_case,
+                    web_project_id="autodrive",
+                )
+            ]
+
+    class _TrackingDynamicVerifier(_DummyDynamicVerifier):
+        async def verify_trajectory(self, *args, **kwargs):
+            traj_calls.append(1)
+            return await _DummyDynamicVerifier.verify_trajectory(self, *args, **kwargs)
+
+    monkeypatch.setattr(
+        "autoppia_iwa.src.demo_webs.web_verification.pipeline.SimpleTaskGenerator",
+        _Gen,
+    )
+    monkeypatch.setattr(
+        "autoppia_iwa.src.demo_webs.web_verification.pipeline.IWAPClient",
+        _DummyIWAPClient,
+    )
+    monkeypatch.setattr(
+        "autoppia_iwa.src.demo_webs.web_verification.pipeline.LLMReviewer",
+        _DummyLLMReviewer,
+    )
+    monkeypatch.setattr(
+        "autoppia_iwa.src.demo_webs.web_verification.pipeline.DynamicVerifier",
+        _TrackingDynamicVerifier,
+    )
+    monkeypatch.setattr(
+        "autoppia_iwa.src.demo_webs.web_verification.pipeline.DIContainer.llm_service",
+        lambda: object(),
+    )
+
+    use_case = UseCase(
+        name="ENTER_LOCATION",
+        description="Enter pickup",
+        event=object,
+        event_source_code="class Event: ...",
+        examples=[],
+    )
+    project = WebProject(
+        id="autodrive",
+        name="Autodrive",
+        backend_url="http://localhost:8001",
+        frontend_url="http://localhost:8012",
+        urls=["http://localhost:8012"],
+        use_cases=[use_case],
+    )
+    cfg = WebVerificationConfig(
+        evaluate_trajectories=True,
+        dynamic_enabled=True,
+        dynamic_verification_enabled=True,
+        llm_review_enabled=True,
+        iwap_enabled=True,
+        seed_values=[1],
+        tasks_per_use_case=1,
+    )
+    pipeline = WebVerificationPipeline(project, cfg)
+
+    async def no_save():
+        return None
+
+    monkeypatch.setattr(pipeline, "_save_results", no_save)
+
+    result = await pipeline.run()
+
+    assert traj_calls == [1]
+    tv = result["use_cases"]["ENTER_LOCATION"].get("trajectory_verification")
+    assert tv is not None
+    assert tv.get("all_passed") is True

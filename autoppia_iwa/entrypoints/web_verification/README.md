@@ -11,16 +11,26 @@ A comprehensive, five-step pipeline that:
 
 ```bash
 # Fast path with defaults (dynamic seeds on, writes one JSON result)
-python -m autoppia_iwa.entrypoints.web_verification.run --project-id autocrm
+python -m autoppia_iwa.entrypoints.web_verification.run -p autocrm
 
-# Use mock IWAP when offline and keep logs verbose
-python -m autoppia_iwa.entrypoints.web_verification.run --project-id autocrm --iwap-use-mock --verbose
-
-# Skip LLM review and dynamic verification for speed
-python -m autoppia_iwa.entrypoints.web_verification.run --project-id autocrm --no-llm-review --no-dynamic-verification
+# Skip LLM review for speed (CLI flags vary; see table below)
+python -m autoppia_iwa.entrypoints.web_verification.run -p autocrm --no-llm-review
 ```
 
-**Outputs**: One JSON per project is written to `./verification_results/verification_<project_id>.json` (overwritten on rerun unless you change `--output-dir`).
+**Outputs**: One JSON per project is written to `./verification_results/verification_<project_id>.json` (overwritten on rerun unless you change `--output`).
+
+### Trajectory evaluation (optional)
+
+Replay golden flows from each project’s `trajectories.py` (scripted actions and saved tests) through the same `ConcurrentEvaluator` path as IWAP dynamic verification. URLs are remapped to the project’s configured `frontend_url` so local ports match your running demo.
+
+- **Supported project IDs**: `autolist`, `autodrive`, `autohealth` (see [`trajectory_registry.py`](../../src/demo_webs/trajectory_registry.py)).
+- **`--evaluate-trajectories`**: Enable per–use-case trajectory replay (after V2, independent of IWAP). The seed is always taken from the trajectory’s first navigate URL (`?seed=…`); trajectories without that query parameter fail verification for that use case.
+
+Requires `dynamic_verification_enabled` (do not pass `--no-dynamic-verification` if your CLI adds it). Example:
+
+```bash
+python -m autoppia_iwa.entrypoints.web_verification.run -p autodrive --evaluate-trajectories
+```
 
 ## Pre-Validation
 
@@ -235,17 +245,13 @@ V2 Verification: PASSED - All 3 datasets are different. Dynamic data generation 
 
 | Argument | Type | Default | Description |
 |----------|------|---------|-------------|
-| `--project-id` | str | **Required** | ID of the web project to verify (e.g., `'autocinema_1'`, `'autocrm'`) |
+| `--project` / `-p` | str | **Required** | ID of the web project to verify (e.g., `autocrm`, `autodrive`) |
 | `--tasks-per-use-case` | int | `2` | Number of tasks to generate per use case |
-| `--dynamic` | flag | `True` | Enable dynamic seed generation |
 | `--no-llm-review` | flag | `False` | Disable LLM review of tasks and tests |
-| `--no-iwap` | flag | `False` | Disable IWAP doability check |
-| `--iwap-use-mock` | flag | `False` | Use mock IWAP API response instead of real API |
-| `--no-dynamic-verification` | flag | `False` | Disable dynamic verification with different seeds |
-| `--iwap-url` | str | From env/config | Base URL for IWAP service (default: `https://api-leaderboard.autoppia.com`) |
-| `--seeds` | str | `"1,50,100,200,300"` | Comma-separated list of seed values to test |
-| `--output-dir` | str | `"./verification_results"` | Directory to save results JSON files |
-| `--verbose` | flag | `False` | Enable verbose logging |
+| `--evaluate-trajectories` | flag | `False` | Enable replay of repo `trajectories.py` flows (`autolist`, `autodrive`, `autohealth`); seed from each trajectory URL |
+| `--seeds` | str | `"1,50,100,200,300"` | Comma-separated list of seed values (V2, IWAP Step 4, and `config` trajectory mode) |
+| `--output` / `-o` | str | `"./verification_results"` | Directory to save results JSON files |
+| `--verbose` / `-v` | flag | `False` | Enable verbose logging |
 
 ### Environment Variables
 
@@ -276,6 +282,9 @@ class WebVerificationConfig:
     # Dynamic verification
     dynamic_verification_enabled: bool = True
     seed_values: list[int] = [1, 50, 100, 200, 300]
+
+    # Trajectory evaluation
+    evaluate_trajectories: bool = False
 
     # Output
     output_dir: str = "./verification_results"

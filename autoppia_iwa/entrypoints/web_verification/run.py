@@ -17,6 +17,11 @@ def _parse_args():
     parser.add_argument("--tasks-per-use-case", type=int, default=2)
     parser.add_argument("--seeds", type=str, default="1,50,100,200,300")
     parser.add_argument("--no-llm-review", action="store_true")
+    parser.add_argument(
+        "--evaluate-trajectories",
+        action="store_true",
+        help="Replay repo-local trajectories (autolist, autodrive, autohealth) through the evaluator",
+    )
     parser.add_argument("--verbose", "-v", action="store_true")
     return parser.parse_args()
 
@@ -28,10 +33,12 @@ async def run(
     seeds: str = "1,50,100,200,300",
     no_llm_review: bool = False,
     verbose: bool = False,
+    evaluate_trajectories: bool = False,
 ):
     from autoppia_iwa.src.bootstrap import AppBootstrap
     from autoppia_iwa.src.demo_webs.config import demo_web_projects
-    from autoppia_iwa.src.demo_webs.web_verification import WebVerificationConfig, WebVerificationPipeline
+    from autoppia_iwa.src.demo_webs.web_verification.config import WebVerificationConfig
+    from autoppia_iwa.src.demo_webs.web_verification.pipeline import WebVerificationPipeline
     from autoppia_iwa.src.evaluation.benchmark.utils.task_generation import get_projects_by_ids
 
     AppBootstrap()
@@ -47,6 +54,7 @@ async def run(
         seed_values=[int(s.strip()) for s in seeds.split(",")],
         output_dir=output_dir,
         verbose=verbose,
+        evaluate_trajectories=evaluate_trajectories,
     )
 
     pipeline = WebVerificationPipeline(web_project=project, config=config)
@@ -69,6 +77,7 @@ async def _main_async(args) -> int:
             seeds=args.seeds,
             no_llm_review=args.no_llm_review,
             verbose=args.verbose,
+            evaluate_trajectories=args.evaluate_trajectories,
         )
     except ValueError as exc:
         print(str(exc))

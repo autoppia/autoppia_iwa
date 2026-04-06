@@ -23,6 +23,7 @@ from loguru import logger
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.data_generation.tasks.simple.simple_task_generator import SimpleTaskGenerator
 from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
+from autoppia_iwa.src.demo_webs.trajectory_registry import get_trajectory_map, supported_trajectory_project_ids
 from autoppia_iwa.src.di_container import DIContainer
 
 from .config import WebVerificationConfig
@@ -147,6 +148,7 @@ class WebVerificationPipeline:
             "dataset_diversity_verification": None,  # V2: Will be set in Step 2
             "doability_check": None,
             "dynamic_verification": None,  # V3: Will be set in Step 4 if solution is available
+            "trajectory_verification": None,
         }
 
         # Step 1: Generate tasks (2 per use case) with constraints
@@ -365,6 +367,40 @@ class WebVerificationPipeline:
                 "reason": "Dynamic mode disabled or verifier unavailable",
                 "passed": None,
             }
+
+        # Trajectory verification (repo-local golden flows; independent of IWAP)
+        if self.config.evaluate_trajectories:
+            if not self.dynamic_verifier or not self.config.dynamic_verification_enabled:
+                use_case_results["trajectory_verification"] = {
+                    "skipped": True,
+                    "reason": "Dynamic verifier unavailable or dynamic verification disabled",
+                }
+            else:
+                traj_map = get_trajectory_map(self.web_project.id)
+                if traj_map is None:
+                    supported = ", ".join(sorted(supported_trajectory_project_ids()))
+                    use_case_results["trajectory_verification"] = {
+                        "skipped": True,
+                        "reason": f"Project '{self.web_project.id}' has no trajectory definitions (supported: {supported})",
+                    }
+                elif use_case.name not in traj_map:
+                    use_case_results["trajectory_verification"] = {
+                        "skipped": True,
+                        "reason": f"No trajectory registered for use case '{use_case.name}'",
+                    }
+                else:
+                    self._print_step_banner(
+                        "🎯 TRAJECTORY VERIFICATION",
+                        f"Use Case: {use_case.name}",
+                        "Seed: from trajectory URL (?seed=…)",
+                        f"Project ID: {self.web_project.id}",
+                    )
+                    traj = traj_map[use_case.name]
+                    tv = await self.dynamic_verifier.verify_trajectory(traj, use_case)
+                    use_case_results["trajectory_verification"] = tv
+                    print(f"\nTrajectory verification: {'✓ PASSED' if tv.get('all_passed') else '✗ FAILED'}")
+                    print(tv.get("summary", ""))
+                    print("=" * 80 + "\n")
 
         # Step 3: IWAP API call - proceed if enabled and (LLM reviews are valid or review is disabled)
         if self.iwap_client:
@@ -640,6 +676,10 @@ class WebVerificationPipeline:
 
                 formatted_use_case["tasks"].append(formatted_task)
 
+            traj_raw = use_case_data.get("trajectory_verification")
+            if traj_raw is not None:
+                formatted_use_case["trajectory_verification"] = self._compact_trajectory_results_for_storage(traj_raw)
+
             # Add matched data at use case level (only if matched)
             if match_result.get("matched", False):
                 matched_data = {
@@ -693,6 +733,45 @@ class WebVerificationPipeline:
 
         return formatted_results
 
+    def _compact_trajectory_results_for_storage(self, traj_raw: dict[str, Any]) -> dict[str, Any]:
+        """Minimal trajectory block for JSON output (mirrors dynamic_verification shape)."""
+        if traj_raw.get("skipped"):
+            return {
+                "skipped": True,
+                "reason": traj_raw.get("reason", ""),
+            }
+        if traj_raw.get("error"):
+            return {
+                "error": traj_raw.get("error"),
+                "all_passed": False,
+            }
+        seed_results: dict[str, Any] = {}
+        for seed, seed_result in (traj_raw.get("results") or {}).items():
+            evaluation = seed_result.get("evaluation", {}) if isinstance(seed_result, dict) else {}
+            if evaluation:
+                seed_results[str(seed)] = {
+                    "evaluation": evaluation,
+                    "score": evaluation.get("final_score", 0.0),
+                    "tests_passed": evaluation.get("tests_passed", 0),
+                    "total_tests": evaluation.get("total_tests", 0),
+                    "success": evaluation.get("success", False),
+                }
+            else:
+                seed_results[str(seed)] = {
+                    "score": 0.0,
+                    "success": seed_result.get("success", False) if isinstance(seed_result, dict) else False,
+                    "error": seed_result.get("error") if isinstance(seed_result, dict) else None,
+                }
+        return {
+            "trajectory_name": traj_raw.get("trajectory_name"),
+            "seeds_tested": traj_raw.get("seeds_tested", []),
+            "results_by_seed": seed_results,
+            "all_passed": traj_raw.get("all_passed", False),
+            "passed_count": traj_raw.get("passed_count", 0),
+            "total_count": traj_raw.get("total_count", 0),
+            "needs_review": traj_raw.get("needs_review", False),
+        }
+
     def _calculate_summary(self) -> dict[str, Any]:
         """
         Calculate summary statistics for all use cases
@@ -703,12 +782,15 @@ class WebVerificationPipeline:
             - number_of_tasks_generated: int
             - llm_review: Pass | Fail
             - dynamic_verification: Pass | Fail
+            - trajectory_verification: Pass | Fail | N/A
         """
         total_tasks = 0
         all_tasks_generated = True
         all_llm_reviews_passed = True
         all_dynamic_verification_passed = True
         has_dynamic_verification = False
+        has_trajectory_verification = False
+        all_trajectory_verification_passed = True
 
         for _use_case_name, use_case_data in self.results["use_cases"].items():
             tasks = use_case_data.get("tasks", [])
@@ -741,6 +823,18 @@ class WebVerificationPipeline:
                     all_dynamic_verification_passed = False
             # If skipped, we don't count it as failed (it's just not applicable)
 
+            traj = use_case_data.get("trajectory_verification")
+            if traj is not None and self.config.evaluate_trajectories:
+                if traj.get("skipped"):
+                    pass
+                elif traj.get("error"):
+                    has_trajectory_verification = True
+                    all_trajectory_verification_passed = False
+                else:
+                    has_trajectory_verification = True
+                    if not traj.get("all_passed", False):
+                        all_trajectory_verification_passed = False
+
         # Determine summary status
         # Dynamic verification: Pass if all seeds passed (all_passed=True), else Fail
         # If no dynamic verification was executed, we can't determine pass/fail
@@ -750,11 +844,16 @@ class WebVerificationPipeline:
         if has_dynamic_verification:
             dynamic_verification_status = "Pass" if all_dynamic_verification_passed else "Fail"
 
+        trajectory_verification_status = "N/A"
+        if self.config.evaluate_trajectories and has_trajectory_verification:
+            trajectory_verification_status = "Pass" if all_trajectory_verification_passed else "Fail"
+
         summary = {
             "task_generation": "Pass" if all_tasks_generated and total_tasks > 0 else "Fail",
             "number_of_tasks_generated": total_tasks,
             "llm_review": "Pass" if (all_llm_reviews_passed or not self.llm_reviewer) else "Fail",
             "dynamic_verification": dynamic_verification_status,
+            "trajectory_verification": trajectory_verification_status,
         }
 
         return summary
@@ -1247,6 +1346,20 @@ class WebVerificationPipeline:
                         summary_lines.append(f"  Step 2 (V2 Dataset): ⚠️  {dataset_diversity.get('summary', 'Unknown status')}")
             else:
                 summary_lines.append("  Step 2 (V2 Dataset): ⏭️ Skipped (no data)")
+
+            # Trajectory verification (optional)
+            traj_v = use_case_data.get("trajectory_verification")
+            if traj_v is not None and self.config.evaluate_trajectories:
+                if traj_v.get("skipped"):
+                    summary_lines.append(f"  Trajectory replay: ⏭️ Skipped ({traj_v.get('reason', UNKNOWN_REASON)})")
+                elif traj_v.get("error"):
+                    summary_lines.append(f"  Trajectory replay: ✗ Error ({traj_v.get('error')})")
+                else:
+                    ok = traj_v.get("all_passed", False)
+                    pc, tc = traj_v.get("passed_count", 0), traj_v.get("total_count", 0)
+                    summary_lines.append(
+                        f"  Trajectory replay: {'✓ Passed' if ok else '✗ Failed'} ({pc}/{tc} seeds)",
+                    )
 
             # Step 3: IWAP API / Doability check
             iwap_status = use_case_data.get("iwap_status")

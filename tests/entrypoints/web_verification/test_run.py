@@ -32,8 +32,8 @@ async def test_run_builds_pipeline(monkeypatch, capsys):
         def get_summary(self):
             return "summary-text"
 
-    monkeypatch.setattr("autoppia_iwa.src.demo_webs.web_verification.WebVerificationConfig", FakeConfig)
-    monkeypatch.setattr("autoppia_iwa.src.demo_webs.web_verification.WebVerificationPipeline", FakePipeline)
+    monkeypatch.setattr("autoppia_iwa.src.demo_webs.web_verification.config.WebVerificationConfig", FakeConfig)
+    monkeypatch.setattr("autoppia_iwa.src.demo_webs.web_verification.pipeline.WebVerificationPipeline", FakePipeline)
 
     result = await verify_run.run(project_id="autobooks", seeds="1,2,3", no_llm_review=True, verbose=True)
 
@@ -41,7 +41,43 @@ async def test_run_builds_pipeline(monkeypatch, capsys):
     assert captured["project"] is fake_project
     assert captured["config_kwargs"]["seed_values"] == [1, 2, 3]
     assert captured["config_kwargs"]["llm_review_enabled"] is False
+    assert captured["config_kwargs"]["evaluate_trajectories"] is False
     assert "summary-text" in capsys.readouterr().out
+
+
+@pytest.mark.asyncio
+async def test_run_passes_evaluate_trajectories_to_config(monkeypatch, capsys):
+    fake_project = type("Project", (), {"id": "autodrive", "name": "Autodrive"})()
+    captured = {}
+
+    monkeypatch.setattr("autoppia_iwa.src.bootstrap.AppBootstrap", lambda: None)
+    monkeypatch.setattr("autoppia_iwa.src.demo_webs.config.demo_web_projects", [fake_project])
+    monkeypatch.setattr(
+        "autoppia_iwa.src.evaluation.benchmark.utils.task_generation.get_projects_by_ids",
+        lambda _all, ids: [fake_project] if ids == ["autodrive"] else [],
+    )
+
+    class FakeConfig:
+        def __init__(self, **kwargs):
+            captured["config_kwargs"] = kwargs
+
+    class FakePipeline:
+        def __init__(self, web_project=None, config=None):
+            captured["project"] = web_project
+            captured["config"] = config
+
+        async def run(self):
+            return {"ok": True}
+
+        def get_summary(self):
+            return ""
+
+    monkeypatch.setattr("autoppia_iwa.src.demo_webs.web_verification.config.WebVerificationConfig", FakeConfig)
+    monkeypatch.setattr("autoppia_iwa.src.demo_webs.web_verification.pipeline.WebVerificationPipeline", FakePipeline)
+
+    await verify_run.run(project_id="autodrive", evaluate_trajectories=True)
+
+    assert captured["config_kwargs"]["evaluate_trajectories"] is True
 
 
 def test_main_exits_non_zero_on_invalid_project(monkeypatch, capsys):
@@ -55,6 +91,7 @@ def test_main_exits_non_zero_on_invalid_project(monkeypatch, capsys):
             "seeds": "1",
             "no_llm_review": False,
             "verbose": False,
+            "evaluate_trajectories": False,
         },
     )()
     monkeypatch.setattr(verify_run, "_parse_args", lambda: args)

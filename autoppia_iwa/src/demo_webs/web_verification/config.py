@@ -28,6 +28,9 @@ class WebVerificationConfig:
     dynamic_verification_enabled: bool = True
     seed_values: list[int] | None = None  # Default seeds to test
 
+    # Trajectory evaluation (repo-local golden flows from trajectories.py)
+    evaluate_trajectories: bool = False
+
     # Output
     output_dir: str = "./verification_results"
     verbose: bool = False

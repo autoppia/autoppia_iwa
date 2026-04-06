@@ -5,6 +5,7 @@ This verifier evaluates solutions from IWAP API against tasks generated with dif
 ensuring the solution works correctly across different dynamic content.
 """
 
+import copy
 import hashlib
 import json
 from typing import Any
@@ -14,11 +15,12 @@ from loguru import logger
 
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.data_generation.tasks.simple.simple_task_generator import SimpleTaskGenerator
-from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.classes import Trajectory, WebProject
+from autoppia_iwa.src.demo_webs.trajectory_registry import remap_url_to_frontend
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.evaluation.legacy.concurrent_config import EvaluatorConfig
 from autoppia_iwa.src.evaluation.legacy.concurrent_evaluator import ConcurrentEvaluator
-from autoppia_iwa.src.execution.actions.actions import BaseAction
+from autoppia_iwa.src.execution.actions.actions import BaseAction, NavigateAction
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 
@@ -131,6 +133,128 @@ class DynamicVerifier:
             "summary": summary,
             "needs_review": all_passed and passed_count == total_count and total_count >= 3,
         }
+
+    async def verify_trajectory(
+        self,
+        trajectory: Trajectory,
+        use_case: Any,
+    ) -> dict[str, Any]:
+        """
+        Replay a repo-local ``Trajectory`` (prompt, actions, tests) through ``ConcurrentEvaluator``,
+        with URLs remapped to ``web_project.frontend_url``.
+
+        Uses the ``seed`` query parameter from the trajectory's first ``NavigateAction`` URL only.
+        """
+        if not use_case:
+            return {
+                "error": "No use case provided",
+                "all_passed": False,
+                "passed_count": 0,
+                "total_count": 0,
+                "seeds_tested": [],
+                "results": {},
+                "summary": "No use case",
+            }
+
+        frontend = (self.web_project.frontend_url or "").strip() or (self.web_project.urls[0] if self.web_project.urls else "")
+        if not frontend:
+            return {
+                "error": "WebProject has no frontend_url or urls",
+                "all_passed": False,
+                "passed_count": 0,
+                "total_count": 0,
+                "seeds_tested": [],
+                "results": {},
+                "summary": "Missing frontend URL",
+            }
+
+        raw_actions = trajectory.actions or []
+        if not raw_actions:
+            return {
+                "error": "Trajectory has no actions",
+                "all_passed": False,
+                "passed_count": 0,
+                "total_count": 0,
+                "seeds_tested": [],
+                "results": {},
+                "summary": "No actions in trajectory",
+            }
+
+        base_actions: list[BaseAction] = copy.deepcopy(raw_actions)
+        for action in base_actions:
+            if isinstance(action, NavigateAction) and getattr(action, "url", None):
+                action.url = remap_url_to_frontend(action.url, frontend)
+
+        start_url = ""
+        for action in base_actions:
+            if isinstance(action, NavigateAction) and getattr(action, "url", None):
+                start_url = action.url
+                break
+        if not start_url:
+            start_url = frontend
+
+        authored = self._extract_seed_from_url(start_url)
+        if authored is None:
+            return {
+                "error": "Trajectory first navigate URL must include a seed query parameter (?seed=…)",
+                "all_passed": False,
+                "passed_count": 0,
+                "total_count": 0,
+                "seeds_tested": [],
+                "results": {},
+                "summary": "Missing seed in trajectory URL",
+            }
+
+        seeds_to_run = [authored]
+
+        logger.info(
+            f"Trajectory verification for {use_case.name} (seed from trajectory URL: {seeds_to_run})",
+        )
+
+        results: dict[int, dict[str, Any]] = {}
+        all_passed = True
+        tests_list = list(trajectory.tests or [])
+
+        for seed in seeds_to_run:
+            seeded_url = self._url_with_seed(start_url, seed)
+            task = Task(
+                use_case=use_case,
+                prompt=trajectory.prompt,
+                url=seeded_url,
+                tests=tests_list,
+                web_project_id=self.web_project.id,
+            )
+            seed_result = await self._evaluate_prepared_task_actions(
+                task=task,
+                base_actions=base_actions,
+                use_case=use_case,
+                iteration_seed=seed,
+            )
+            passed = self._check_seed_result(seed_result, [{"trajectory": True}])
+            results[seed] = seed_result
+            if not passed:
+                all_passed = False
+
+        summary, passed_count, total_count = self._generate_verification_summary(results, [{"trajectory": True}])
+
+        return {
+            "use_case_name": use_case.name,
+            "trajectory_name": trajectory.name,
+            "seeds_tested": seeds_to_run,
+            "results": results,
+            "all_passed": all_passed,
+            "passed_count": passed_count,
+            "total_count": total_count,
+            "summary": summary,
+            "needs_review": False,
+        }
+
+    def _url_with_seed(self, url: str, seed: int) -> str:
+        parsed = urlparse(url)
+        query_params = parse_qs(parsed.query)
+        query_params["seed"] = [str(seed)]
+        new_query = urlencode(query_params, doseq=True)
+        return urlunparse(parsed._replace(query=new_query))
 
     async def verify_dataset_diversity_with_seeds(
         self,
@@ -561,37 +685,41 @@ class DynamicVerifier:
             Dictionary with evaluation results
         """
         try:
-            # Update URL with new seed
-            parsed = urlparse(api_start_url)
-            query_params = parse_qs(parsed.query)
-            query_params["seed"] = [str(seed)]
-            new_query = urlencode(query_params, doseq=True)
-            seeded_url = urlunparse(parsed._replace(query=new_query))
-
-            # Convert API tests to CheckEventTest objects and create task
+            seeded_url = self._url_with_seed(api_start_url, seed)
             tests = self._convert_api_tests_to_check_event_tests(api_tests, use_case)
             task = self._create_task_from_api(api_prompt, seeded_url, use_case, tests)
+            return await self._evaluate_prepared_task_actions(task, base_actions, use_case, seed)
+        except Exception as e:
+            logger.error(f"Error evaluating solution with seed {seed}: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+            }
 
-            # Extract seed value and constraints
+    async def _evaluate_prepared_task_actions(
+        self,
+        task: Task,
+        base_actions: list[BaseAction],
+        use_case: Any,
+        iteration_seed: int,
+    ) -> dict[str, Any]:
+        """Run ``ConcurrentEvaluator`` for a built ``Task`` and scripted ``BaseAction`` list."""
+        try:
             seed_value = self._extract_seed_from_url(task.url)
             constraints = task.use_case.constraints if task.use_case and task.use_case.constraints else None
             constraints_str = task.use_case.constraints_to_str() if task.use_case else ""
 
-            # Print task details before evaluation
-            self._print_evaluation_task_details(task, use_case, seed_value, constraints_str, len(base_actions), seed)
+            self._print_evaluation_task_details(task, use_case, seed_value, constraints_str, len(base_actions), iteration_seed)
 
-            # Update NavigateAction URLs to match the task seed
             updated_actions = self._update_navigate_actions_with_seed(base_actions, task.url)
 
-            # Create TaskSolution from the updated actions
             task_solution = TaskSolution(
                 task_id=task.id,
                 actions=updated_actions,
                 web_agent_id="iwap_solution",
             )
 
-            # Evaluate the solution
-            logger.info(f"Evaluating solution against task {task.id} with seed {seed}")
+            logger.info(f"Evaluating solution against task {task.id} with seed {iteration_seed}")
             evaluator = ConcurrentEvaluator(
                 self.web_project,
                 EvaluatorConfig(
@@ -604,14 +732,10 @@ class DynamicVerifier:
 
             evaluation_result = await evaluator.evaluate_single_task_solution(task, task_solution)
 
-            # Print evaluation results
             score = evaluation_result.final_score
             self._print_evaluation_results(evaluation_result, score)
 
-            # Serialize constraints
             serialized_constraints = self._serialize_constraints(constraints) if constraints else None
-
-            # Serialize actions for analysis
             serialized_actions = self._serialize_actions(updated_actions) if updated_actions else []
 
             return {
@@ -621,19 +745,18 @@ class DynamicVerifier:
                 "constraints": serialized_constraints,
                 "constraints_str": constraints_str,
                 "seed": seed_value,
-                "actions": serialized_actions,  # Include actions executed
+                "actions": serialized_actions,
                 "evaluation": {
                     "final_score": score,
                     "tests_passed": evaluation_result.stats.tests_passed if evaluation_result.stats else 0,
                     "total_tests": evaluation_result.stats.total_tests if evaluation_result.stats else 0,
-                    # Usamos tolerancia (1e-9) en lugar de == porque los números flotantes pueden tener errores de precisión
                     "success": abs(score - 1.0) < 1e-9,
                     "error": evaluation_result.stats.error_message if evaluation_result.stats else None,
                 },
             }
 
         except Exception as e:
-            logger.error(f"Error evaluating solution with seed {seed}: {e}")
+            logger.error(f"Error evaluating prepared task with seed {iteration_seed}: {e}")
             return {
                 "success": False,
                 "error": str(e),
@@ -670,8 +793,6 @@ class DynamicVerifier:
 
     def _update_navigate_actions_with_seed(self, base_actions: list[BaseAction], task_url: str) -> list[BaseAction]:
         """Update NavigateAction URLs to match the task seed."""
-        from autoppia_iwa.src.execution.actions.actions import NavigateAction
-
         updated_actions = []
         task_seed = self._extract_seed_from_url(task_url)
 
