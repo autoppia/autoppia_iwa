@@ -28,6 +28,11 @@ from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(title="IWA Debugger")
 
+# Base directory under which all trace directories must live.
+# This constrains user-provided trace_dir values to a safe root.
+SERVER_ROOT = Path(__file__).resolve().parent
+TRACE_BASE_DIR = SERVER_ROOT
+
 ROOT = Path(__file__).resolve().parent
 STATIC_DIR = ROOT / "static"
 DEFAULT_TRACE_DIR = os.getenv("IWA_DEBUG_TRACE_DIR", "").strip()
@@ -115,6 +120,20 @@ def _resolve_trace_dir(raw: str | None = None) -> Path:
         path = Path(value).expanduser().resolve()
     except (OSError, RuntimeError):
         raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
+
+    # Enforce that the resolved path is under the configured trace base directory.
+    base = TRACE_BASE_DIR
+    try:
+        # Python 3.9+: Path.is_relative_to; fall back to relative_to for compatibility.
+        is_under_base = getattr(path, "is_relative_to", None)
+        if callable(is_under_base):
+            if not path.is_relative_to(base):
+                raise HTTPException(status_code=403, detail="trace_dir_forbidden")
+        else:
+            path.relative_to(base)
+    except ValueError:
+        raise HTTPException(status_code=403, detail="trace_dir_forbidden")
+
     roots = _allowed_trace_roots()
     if not _is_under_allowed_root(path, roots):
         raise HTTPException(status_code=403, detail="trace_dir_forbidden")
