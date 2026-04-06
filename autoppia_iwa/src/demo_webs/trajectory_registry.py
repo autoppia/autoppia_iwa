@@ -48,8 +48,15 @@ def _load_autohealth() -> dict[str, Trajectory]:
     return load_autohealth_use_case_completion_flows()
 
 
+def _load_autocalendar() -> dict[str, Trajectory]:
+    from autoppia_iwa.src.demo_webs.projects.p11_autocalendar.trajectories import load_autocalendar_use_case_completion_flows
+
+    return load_autocalendar_use_case_completion_flows()
+
+
 # Project ``id`` (WebProject.id) -> lazy loader
 TRAJECTORY_LOADERS_BY_PROJECT_ID: dict[str, TrajectoryLoader] = {
+    "autocalendar": _load_autocalendar,
     "autolist": _load_autolist,
     "autodrive": _load_autodrive,
     "autohealth": _load_autohealth,
