@@ -10,6 +10,8 @@ from autoppia_iwa.src.web_agents.classes import IWebAgent
 
 BenchmarkAgentTarget = Literal["local", "remote"]
 
+TestTypes = Literal["event_only", "data_extraction_only"]
+
 
 @dataclass(slots=True)
 class BenchmarkConfig:
@@ -35,6 +37,14 @@ class BenchmarkConfig:
     # When set, load tasks from this JSON file instead of generating or using cache.
     # File shape: {"project_id": "<id>", "project_name": "<name>", "tasks": [ Task.serialize() ... ] }
     tasks_json_path: Path | str | None = None
+
+    # Which test types to generate/execute for tasks.
+    # - "event_only": only CheckEventTest (current behaviour)
+    # - "data_extraction_only": only DataExtractionTest
+    test_types: TestTypes = "event_only"
+    # Optional per-run whitelist of use-case names that support DataExtractionTest.
+    # If None, only UseCase.supports_data_extraction is used.
+    data_extraction_use_cases: list[str] | None = None
 
     # Execution
     runs: int = 1
@@ -85,6 +95,9 @@ class BenchmarkConfig:
 
         if self.evaluator_mode == "stateful" and self.max_steps_per_task <= 0:
             raise ValueError("max_steps_per_task must be > 0 when using stateful mode.")
+
+        if self.test_types not in ("event_only", "data_extraction_only"):
+            raise ValueError(f"Invalid test_types: {self.test_types}. Must be 'event_only' or 'data_extraction_only'.")
 
         # Use benchmark-output/ directory for all generated artifacts
         benchmark_dir = self.base_dir / "benchmark-output"

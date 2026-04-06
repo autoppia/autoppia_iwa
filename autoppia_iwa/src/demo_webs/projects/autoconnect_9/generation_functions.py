@@ -35,6 +35,70 @@ FILTER_JOBS_OPTIONS = {
 }
 
 
+def _build_data_extraction_result(
+    selected_item: dict[str, Any],
+    visible_fields: list[str],
+    *,
+    verify_field: str | None = None,
+    question_fields_override: list[str] | None = None,
+) -> dict[str, Any] | None:
+    """Build constraints + question_fields_and_values for data_extraction_only; returns None on validation failure."""
+    available_fields = [f for f in visible_fields if selected_item.get(f) is not None]
+    if len(available_fields) < 2:
+        return None
+
+    question_fields: list[str]
+    chosen_verify_field: str
+
+    if question_fields_override:
+        question_fields = [f for f in question_fields_override if f in available_fields and selected_item.get(f) is not None]
+        if question_fields:
+            remaining = [f for f in available_fields if f not in question_fields]
+            if not remaining:
+                return None
+            chosen_verify_field = verify_field if verify_field is not None and verify_field in remaining else random.choice(remaining)
+            # chosen_verify_field = "company"
+            remaining_for_extra = [f for f in available_fields if f != chosen_verify_field and f not in question_fields]
+            if len(remaining_for_extra) >= 2:
+                num_extra = random.randint(1, len(remaining_for_extra))
+                question_fields = question_fields + random.sample(remaining_for_extra, num_extra)
+        else:
+            question_fields = []
+            chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+    else:
+        chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+        question_fields = []
+
+    if chosen_verify_field not in available_fields:
+        return None
+    verify_value = selected_item.get(chosen_verify_field)
+    if verify_value is None:
+        return None
+
+    if question_fields:
+        question_candidates = question_fields
+    else:
+        question_candidates = [f for f in available_fields if f != chosen_verify_field]
+        if not question_candidates:
+            return None
+        num_question_fields = 1 if len(question_candidates) == 1 else 2
+        question_candidates = random.sample(question_candidates, num_question_fields)
+
+    question_fields_and_values: dict[str, Any] = {}
+    for qf in question_candidates:
+        val = selected_item.get(qf)
+        if val is not None:
+            question_fields_and_values[qf] = val
+    if not question_fields_and_values:
+        return None
+
+    constraints = [create_constraint_dict(chosen_verify_field, ComparisonOperator.EQUALS, verify_value)]
+    return {
+        "constraints": constraints,
+        "question_fields_and_values": question_fields_and_values,
+    }
+
+
 def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]] | None:
     if dataset is None:
         return None
@@ -328,20 +392,73 @@ def _normalize_constraint_value(
     return value
 
 
-async def generate_view_user_profile_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_view_user_profile_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """
     Generates constraints for viewing a user profile based on the provided user profile data.
     Uses first user (index 0) to align with web implementation.
     """
     dataset = await _get_entity_list(task_url, dataset, "users")
+    if test_types == "data_extraction_only":
+        if not dataset:
+            return []
+        selected = random.choice(dataset)
+        selected_item: dict[str, Any] = {
+            "name": selected.get("name"),
+            "title": selected.get("title"),
+            "bio": selected.get("bio"),
+        }
+        visible_fields = ["name", "title", "bio"]
+
+        experiences = selected.get("experience") or []
+        if isinstance(experiences, list) and len(experiences) > 0:
+            exp = random.choice(experiences) if len(experiences) > 1 else experiences[0]
+            if isinstance(exp, dict):
+                selected_item["company"] = exp.get("company")
+                selected_item["experience_title"] = exp.get("title")
+                selected_item["experience_duration"] = exp.get("duration")
+                visible_fields.extend(["company", "experience_title", "experience_duration"])
+
+        verify_candidates = [f for f in ("title", "bio", "experience_title", "experience_duration", "company") if selected_item.get(f) is not None]
+        if not verify_candidates:
+            return []
+        chosen_verify = random.choice(verify_candidates)
+        if chosen_verify in ("title", "bio"):
+            question_override = ["name"]
+        elif chosen_verify == "experience_title":
+            question_override = ["name", "company"]
+        elif chosen_verify == "company":
+            question_override = ["name", "experience_title", "experience_duration"]
+        else:
+            question_override = ["name", "company", "experience_title"]
+
+        return (
+            _build_data_extraction_result(
+                selected_item,
+                visible_fields,
+                verify_field=chosen_verify,
+                question_fields_override=question_override,
+            )
+            or []
+        )
+
     field_operators = FIELD_OPERATORS_VIEW_USER_PROFILE_MAP
     all_constraints = _generate_constraints(dataset, field_operators, num_constraints=1, sample_index=USER_INDEX_FOR_WEB)
     return all_constraints
 
 
-async def generate_connect_with_user_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_connect_with_user_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     users = await _get_entity_list(task_url, dataset, "users")
     dataset = [u for u in users if u.get("username") != "alexsmith"]
+    if test_types == "data_extraction_only":
+        return await generate_view_user_profile_constraints(task_url, dataset, test_types)
 
     field_operators = FIELD_OPERATORS_CONNECT_WITH_USER_MAP
     field_map = {
@@ -351,11 +468,31 @@ async def generate_connect_with_user_constraints(task_url: str | None = None, da
     return all_constraints
 
 
-async def generate_like_post_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None):
+async def generate_like_post_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """
     Generates constraints for liking a post based on the provided post data.
     """
     dataset = await _get_entity_list(task_url, dataset, "posts")
+    if test_types == "data_extraction_only":
+        if not dataset:
+            return []
+        selected = random.choice(dataset)
+        user = selected.get("user") or {}
+        selected_item = {
+            "poster_name": selected.get("name") or user.get("name"),
+            "poster_content": selected.get("content"),
+            "likes": selected.get("likes"),
+        }
+        visible_fields = ["poster_content", "likes", "poster_name"]
+        verify_field_candidates = ["poster_content", "likes"]
+        chosen_verify_field = random.choice(verify_field_candidates)
+        question_fields_override = ["poster_name", "likes"] if chosen_verify_field == "poster_content" else ["poster_name", "poster_content"]
+        return _build_data_extraction_result(selected_item, visible_fields, question_fields_override=question_fields_override, verify_field=chosen_verify_field) or []
+
     field_operators = FIELD_OPERATORS_LIKE_POST_MAP
     field_map = {"poster_content": "content", "poster_name": "name"}
 
@@ -390,10 +527,43 @@ SAMPLE_COMMENTS = [
 ]
 
 
-async def generate_comment_on_post_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_comment_on_post_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """
     Generates constraints for commenting on a post based on the provided post data.
     """
+    if test_types == "data_extraction_only":
+        posts = await _get_entity_list(task_url, dataset, "posts")
+        if not posts:
+            return []
+        eligible = [p for p in posts if isinstance(p.get("comments"), list) and len(p["comments"]) > 0]
+        if not eligible:
+            return []
+        selected = random.choice(eligible)
+        comment_list = selected["comments"]
+        chosen = comment_list[0] if len(comment_list) == 1 else random.choice(comment_list)
+        commenter = chosen.get("user") if isinstance(chosen.get("user"), dict) else {}
+        selected_item = {
+            "poster_name": selected.get("user").get("name"),
+            "poster_content": selected.get("content"),
+            "commenter_name": commenter.get("name") or commenter.get("username"),
+            "comment_text": chosen.get("text"),
+            "total_comments": len(comment_list),
+        }
+        visible_fields = ["commenter_name", "comment_text", "total_comments", "poster_name", "poster_content"]
+        # chosen_verify_field = random.choice(candidate_verify_fields)
+        chosen_verify_field = "total_comments"
+        if chosen_verify_field == "comment_text":
+            question_fields_override = ["poster_name", "poster_content", "commenter_name"]
+        elif chosen_verify_field == "commenter_name":
+            question_fields_override = ["poster_name", "poster_content", "commenter_text"]
+        else:
+            question_fields_override = ["poster_name", "poster_content"]
+        return _build_data_extraction_result(selected_item, visible_fields, question_fields_override=question_fields_override, verify_field=chosen_verify_field) or []
+
     fixed_field = "comment_text"
     sample_comments = [{fixed_field: comment} for comment in SAMPLE_COMMENTS]
     field_operators = FIELD_OPERATORS_COMMENT_ON_POST_MAP.copy()
@@ -449,11 +619,32 @@ def generate_post_status_constraints() -> list[dict[str, Any]]:
     return all_constraints
 
 
-async def generate_follow_page_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_follow_page_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """
     Generates constraints for following a company page based on the provided user profile data.
     """
     dataset = await _get_entity_list(task_url, dataset, "recommendations")
+    if test_types == "data_extraction_only":
+        if not dataset:
+            return []
+        selected = random.choice(dataset)
+        raw_match_score = selected.get("relevanceScore")
+        match_score = f"{round(raw_match_score * 100)}%" if isinstance(raw_match_score, int | float) else raw_match_score
+        selected_item = {
+            "title": selected.get("title"),
+            "category": selected.get("category"),
+            "reason": selected.get("reason"),
+            "match_score": match_score,
+        }
+        visible_fields = ["match_score", "category", "title", "reason"]
+        chosen_verify_field = random.choice(["match_score", "category", "title"])
+        question_fields_override = ["match_score", "category"] if chosen_verify_field == "title" else ["title"]
+        return _build_data_extraction_result(selected_item, visible_fields, question_fields_override=question_fields_override, verify_field=chosen_verify_field) or []
+
     field_operators = FIELD_OPERATORS_FOLLOW_PAGE_MAP
     field_map = {"recommendation": "title"}
     all_constraints = _generate_constraints(dataset, field_operators, field_map)
@@ -473,8 +664,26 @@ async def generate_unfollow_page_constraints(task_url: str | None = None, datase
     return constraints
 
 
-async def generate_apply_for_job_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_apply_for_job_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     dataset = await _get_entity_list(task_url, dataset, "jobs")
+    if test_types == "data_extraction_only":
+        if not dataset:
+            return []
+        selected = random.choice(dataset)
+        selected_item = {
+            "job_title": selected.get("title"),
+            "company": selected.get("company"),
+            "location": selected.get("location"),
+            "experience": selected.get("experience"),
+            "salary": selected.get("salary"),
+            "job_type": selected.get("type"),
+        }
+        visible_fields = ["job_title", "company", "location", "experience", "salary", "job_type"]
+        return _build_data_extraction_result(selected_item, visible_fields, question_fields_override=["job_title"]) or []
 
     field_map = {
         "job_title": "title",
@@ -486,11 +695,27 @@ async def generate_apply_for_job_constraints(task_url: str | None = None, datase
     return all_constraints
 
 
-async def generate_search_users_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_search_users_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """
     Generates constraints for searching users based on the provided user profile data.
     """
     dataset = await _get_entity_list(task_url, dataset, "users")
+    if test_types == "data_extraction_only":
+        if not dataset:
+            return []
+        selected = random.choice(dataset)
+        selected_item = {
+            "name": selected.get("name"),
+            "title": selected.get("title"),
+            "bio": selected.get("bio"),
+        }
+        visible_fields = ["name", "title", "bio"]
+        return _build_data_extraction_result(selected_item, visible_fields, question_fields_override=["name"]) or []
+
     field_operators = FIELD_OPERATORS_SEARCH_USERS_MAP
     field_map = {"query": ["name", "title"]}
     all_constraints = _generate_constraints(dataset, field_operators, field_map)
@@ -498,12 +723,34 @@ async def generate_search_users_constraints(task_url: str | None = None, dataset
     return all_constraints
 
 
-async def generate_search_jobs_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_search_jobs_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """
     Generates constraints for searching jobs based on the provided job data.
     Replaces raw salary values with predefined filter options if applicable.
     """
     dataset = await _get_entity_list(task_url, dataset, "jobs")
+    if test_types == "data_extraction_only":
+        if not dataset:
+            return []
+        selected = random.choice(dataset)
+        selected_item = {
+            "job_title": selected.get("title"),
+            "company": selected.get("company"),
+            "location": selected.get("location"),
+            "salary": selected.get("salary"),
+        }
+        visible_fields = [
+            "job_title",
+            "company",
+            "location",
+            "salary",
+        ]
+        return _build_data_extraction_result(selected_item, visible_fields, question_fields_override=["job_title"]) or []
+
     field_operators = FIELD_OPERATORS_SEARCH_JOBS_MAP
     field_map = {"query": ["title", "company"]}
     all_constraints = _generate_constraints(dataset, field_operators, field_map)
@@ -512,11 +759,30 @@ async def generate_search_jobs_constraints(task_url: str | None = None, dataset:
     return all_constraints
 
 
-async def generate_view_job_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_view_job_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """
     Generates constraints for viewing a job based on the provided job data.
     """
     dataset = await _get_entity_list(task_url, dataset, "jobs")
+    if test_types == "data_extraction_only":
+        if not dataset:
+            return []
+        selected = random.choice(dataset)
+        selected_item = {
+            "job_title": selected.get("title"),
+            "company": selected.get("company"),
+            "location": selected.get("location"),
+            "experience": selected.get("experience"),
+            "salary": selected.get("salary"),
+            "job_type": selected.get("type"),
+        }
+        visible_fields = ["job_title", "company", "location", "experience", "salary", "job_type"]
+        return _build_data_extraction_result(selected_item, visible_fields, question_fields_override=["job_title"]) or []
+
     field_operators = FIELD_OPERATORS_VIEW_JOB_MAP
     field_map = {"job_title": "title"}
     all_constraints = _generate_constraints(dataset, field_operators, field_map)
@@ -524,10 +790,31 @@ async def generate_view_job_constraints(task_url: str | None = None, dataset: li
     return all_constraints
 
 
-def generate_filter_jobs_constraints() -> list[dict[str, Any]]:
+def generate_filter_jobs_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """
     Generates constraints for filtering jobs based on current filters/result counts.
     """
+    if test_types == "data_extraction_only":
+        jobs_dataset = _extract_entity_dataset(dataset, "jobs") or []
+        if not jobs_dataset:
+            return []
+        selected = random.choice(jobs_dataset)
+        selected_item = {
+            "job_title": selected.get("title"),
+            "company": selected.get("company"),
+            "location": selected.get("location"),
+            "experience": selected.get("experience"),
+            "salary": selected.get("salary"),
+        }
+        visible_fields = ["job_title", "company", "location", "experience", "salary"]
+        verify_fields_candidate = ["location", "experience", "salary"]
+        chosen_verify_field = random.choice(verify_fields_candidate)
+        return _build_data_extraction_result(selected_item, visible_fields, question_fields_override=["job_title"], verify_field=chosen_verify_field) or []
+
     constraints_list = []
     possible_fields = ["experience", "salary", "location", "remote"]
     selected_fields = random.sample(possible_fields, random.randint(1, len(possible_fields)))
@@ -573,9 +860,24 @@ async def generate_back_to_all_jobs_constraints(task_url: str | None = None, dat
     return constraints_list
 
 
-async def generate_save_post_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_save_post_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     constraints_list = []
     dataset = await _get_entity_list(task_url, dataset, "posts")
+    if test_types == "data_extraction_only":
+        if not dataset:
+            return []
+        selected = random.choice(dataset)
+        user = selected.get("user") or {}
+        selected_item = {
+            "poster_name": selected.get("name") or user.get("name"),
+            "poster_content": selected.get("content"),
+        }
+        visible_fields = ["poster_name", "poster_content"]
+        return _build_data_extraction_result(selected_item, visible_fields, question_fields_override=["poster_content"]) or []
 
     transformed_posts = []
     for post in dataset:
@@ -627,14 +929,28 @@ def _normalize_edit_profile_value(field: str, value: Any, op: ComparisonOperator
     return value
 
 
-async def generate_edit_profile_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_edit_profile_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     constraint_list = []
     dataset = await _get_entity_list(task_url, dataset, "users")
     if not dataset:
         return constraint_list
+    selected_user = dataset[USER_INDEX_FOR_WEB] if len(dataset) > USER_INDEX_FOR_WEB else dataset[0]
+    if test_types == "data_extraction_only":
+        selected_item = {
+            "name": selected_user.get("name"),
+            "title": selected_user.get("title"),
+            "bio": selected_user.get("bio"),
+        }
+        visible_fields = ["name", "title", "bio"]
+        return _build_data_extraction_result(selected_item, visible_fields, question_fields_override=["name"]) or []
+
     possible_fields = ["name", "bio", "about", "title"]
     selected_fields = random.sample(possible_fields, random.randint(1, len(possible_fields)))
-    first_user = dataset[USER_INDEX_FOR_WEB] if len(dataset) > USER_INDEX_FOR_WEB else dataset[0]
+    first_user = selected_user
     for field in selected_fields:
         allowed_ops = FIELD_OPERATORS_EDIT_PROFILE_MAP.get(field, [])
         if not allowed_ops:
@@ -664,7 +980,11 @@ def _get_experience_data_for_user(user: dict) -> list[dict[str, Any]]:
     ]
 
 
-async def generate_edit_experience_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_edit_experience_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     constraint_list = []
     dataset = await _get_entity_list(task_url, dataset, "users")
     if not dataset:
@@ -680,6 +1000,29 @@ async def generate_edit_experience_constraints(task_url: str | None = None, data
     picked_exp = experiences[0] if experiences else None
     if picked_exp is None:
         return constraint_list
+
+    if test_types == "data_extraction_only":
+        selected_item = {
+            "name": first_user.get("name"),
+            "company": picked_exp.get("company"),
+            "experience_duration": picked_exp.get("duration"),
+            "experience_title": picked_exp.get("title"),
+            "experience_location": picked_exp.get("location"),
+            "experience_description": picked_exp.get("description"),
+        }
+        visible_fields = ["name", "company", "experience_duration", "experience_location", "experience_description", "experience_title"]
+        verify_candidates = [f for f in ("experience_location", "experience_description", "experience_title", "experience_duration", "company") if selected_item.get(f) is not None]
+        if not verify_candidates:
+            return []
+        chosen_verify = random.choice(verify_candidates)
+        if chosen_verify == "experience_title":
+            question_override = ["name", "company"]
+        elif chosen_verify == "company":
+            question_override = ["name", "experience_title", "experience_duration"]
+        else:
+            question_override = ["name", "company", "experience_title"]
+
+        return _build_data_extraction_result(selected_item, visible_fields, question_fields_override=question_override, verify_field=chosen_verify) or []
 
     selected_fields = random.sample(possible_fields, random.randint(1, len(possible_fields)))
     for field in selected_fields:
@@ -701,9 +1044,81 @@ async def generate_edit_experience_constraints(task_url: str | None = None, data
     return constraint_list
 
 
-async def generate_remove_post_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    constraints = await generate_save_post_constraints(task_url, dataset)
-    return constraints
+async def generate_remove_post_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    posts = await _get_entity_list(task_url, dataset, "posts")
+    users = await _get_entity_list(task_url, dataset, "users")
+    if not posts or not users:
+        return []
+
+    selected_user = users[USER_INDEX_FOR_WEB] if len(users) > USER_INDEX_FOR_WEB else users[0]
+    selected_user_name = selected_user.get("name")
+    if not selected_user_name:
+        return []
+
+    matching_posts = []
+    for post in posts:
+        user = post.get("user") or {}
+        poster_name = post.get("name") or user.get("name")
+        if poster_name == selected_user_name:
+            matching_posts.append(post)
+
+    if not matching_posts:
+        return []
+
+    if test_types == "data_extraction_only":
+        selected_post = random.choice(matching_posts)
+        selected_item = {
+            "poster_name": selected_user_name,
+            "poster_content": selected_post.get("content"),
+        }
+        visible_fields = ["poster_name", "poster_content"]
+        return (
+            _build_data_extraction_result(
+                selected_item,
+                visible_fields,
+                question_fields_override=["poster_content"],
+                verify_field="poster_name",
+            )
+            or []
+        )
+
+    transformed_posts = []
+    for post in matching_posts:
+        new_post = {}
+        for key, value in post.items():
+            if key == "user" and isinstance(value, dict):
+                # Flatten user fields with prefix
+                for u_key, u_value in value.items():
+                    new_post[f"user_{u_key}"] = u_value
+            else:
+                new_post[key] = value
+        transformed_posts.append(new_post)
+
+    if not transformed_posts:
+        return []
+
+    post = random.choice(transformed_posts)
+    constraints_list = []
+    for field in ["author", "content"]:
+        allowed_op = FIELD_OPERATORS_SAVE_POST_MAP.get(field, [])
+        if not allowed_op:
+            continue
+        op = ComparisonOperator(random.choice(allowed_op))
+
+        field_value = post.get("user_name") if field == "author" else post.get("content")
+
+        if field_value is None:
+            continue
+
+        value = _generate_constraint_value(op, field_value, field, transformed_posts)
+        if value is not None:
+            constraints_list.append(create_constraint_dict(field, op, value))
+
+    return constraints_list
 
 
 async def generate_unhide_post_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
@@ -711,7 +1126,11 @@ async def generate_unhide_post_constraints(task_url: str | None = None, dataset:
     return constraints
 
 
-async def generate_add_experience_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_add_experience_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     constraint_list = []
     dataset = await _get_entity_list(task_url, dataset, "users")
     if not dataset:
@@ -722,6 +1141,14 @@ async def generate_add_experience_constraints(task_url: str | None = None, datas
     picked_exp = experiences[0] if experiences else None
     if picked_exp is None:
         return constraint_list
+    if test_types == "data_extraction_only":
+        selected_item = {
+            "name": first_user.get("name"),
+            "title": first_user.get("title"),
+            "bio": first_user.get("bio"),
+        }
+        visible_fields = ["name", "title", "bio"]
+        return _build_data_extraction_result(selected_item, visible_fields, question_fields_override=["name"]) or []
 
     for field in possible_fields:
         field_value = picked_exp.get(field)

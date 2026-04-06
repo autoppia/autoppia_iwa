@@ -20,6 +20,7 @@ from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStats, EvaluatorConfig
 from autoppia_iwa.src.evaluation.concurrent_evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.evaluation.stateful_evaluator import AsyncStatefulEvaluator
+from autoppia_iwa.src.evaluation.stateful_evaluator.evaluator import BrowserSnapshot, StepResult
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer
 from autoppia_iwa.src.web_agents.act_response_utils import actions_to_act_response
 from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution, sanitize_snapshot_html
@@ -199,7 +200,8 @@ class Benchmark:
 
                 try:
                     # Call the agent's HTTP /act endpoint (same as the subnet with miners)
-                    actions = await agent.act(
+                    # ✅ Llamar al endpoint /act del agente HTTP (IGUAL que la subnet con miners)
+                    act_result = await agent.act(
                         task=task,
                         snapshot_html=html,
                         url=current_url,
@@ -208,7 +210,14 @@ class Benchmark:
                     )
                 except Exception as exc:
                     logger.warning(f"[stateful_eval] agent {agent.name} /act failed: {exc}")
-                    actions = []
+                    act_result = []
+
+                if isinstance(act_result, dict):
+                    actions = act_result.get("actions", [])
+                    if "extracted_data" in act_result:
+                        evaluator.latest_extracted_data = act_result["extracted_data"]
+                else:
+                    actions = act_result
 
                 # Accumulate usage from this act() response (benchmark-side tracking)
                 usage = self._get_usage_from_agent(agent)
@@ -224,6 +233,27 @@ class Benchmark:
 
                 if not actions:
                     # No actions = agent finished or error
+                    if self.config.test_types == "data_extraction_only" and isinstance(act_result, dict) and "extracted_data" in act_result:
+                        score_details = await evaluator.get_score_details()
+                        final_score = score_details.raw_score
+                        tests_passed = score_details.tests_passed
+                        total_tests = score_details.total_tests
+                        snap = step_result.snapshot
+                        page = evaluator.page
+                        if page:
+                            with contextlib.suppress(Exception):
+                                snap = BrowserSnapshot(
+                                    html=await page.content() or "",
+                                    url=page.url or task.url,
+                                    screenshot=None,
+                                )
+                        step_result = StepResult(score=score_details, snapshot=snap, action_result=None)
+                        logger.debug(f"[stateful_eval] agent {agent.name} no actions, data_extraction re-score raw={final_score} success={score_details.success}")
+                        if score_details.success:
+                            logger.info(f"[stateful_eval] agent {agent.name} completed task (data extraction)!")
+                            break
+                        step_index += 1
+                        continue
                     logger.debug(f"[stateful_eval] agent {agent.name} returned no actions, terminating")
                     break
 
@@ -339,12 +369,20 @@ class Benchmark:
                 # Use act() instead of solve_task()
                 # In concurrent mode, we call once with an empty initial snapshot
                 # Send task WITH placeholders - agent should return actions with placeholders
-                actions = await agent.act(
+                # Agent may return list[BaseAction] or dict with "actions" and optionally "extracted_data" (for DataExtractionTest)
+                act_result = await agent.act(
                     task=task,  # Send task with placeholders, NOT replaced
                     snapshot_html="",  # Empty in concurrent mode (agent does not need to see HTML)
                     url=task.url,
                     step_index=0,  # Always 0 in concurrent mode
                 )
+
+                if isinstance(act_result, dict):
+                    actions = act_result.get("actions", [])
+                    extracted_data = act_result.get("extracted_data")
+                else:
+                    actions = act_result
+                    extracted_data = None
 
                 if not actions:
                     logger.warning(f"{agent.name} returned empty actions for task {task.id}")
@@ -354,6 +392,7 @@ class Benchmark:
                     task_id=task.id,
                     actions=actions,
                     web_agent_id=agent.id,
+                    extracted_data=extracted_data,
                 )
                 # Track usage from this single act() response (benchmark-side, no API call)
                 usage = self._get_usage_from_agent(agent)
@@ -517,6 +556,8 @@ class Benchmark:
             prompts_per_use_case=self.config.prompts_per_use_case,
             use_cases=self.config.use_cases,
             dynamic=self.config.dynamic,
+            test_types=self.config.test_types,
+            data_extraction_use_cases=self.config.data_extraction_use_cases,
         )
         pipeline = TaskGenerationPipeline(web_project=project, config=config)
         tasks = await pipeline.generate()

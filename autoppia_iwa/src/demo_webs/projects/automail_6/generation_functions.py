@@ -26,42 +26,12 @@ from .data import (
     FIELD_OPERATORS_TEMPLATE_SELECTED_MAP,
     FIELD_OPERATORS_TEMPLATE_SENT_MAP,
     FIELD_OPERATORS_VIEW_EMAIL_MAP,
+    VISIBLE_FIELDS_EMAIL_DETAIL,
+    VISIBLE_FIELDS_EMAIL_SEARCH,
+    VISIBLE_FIELDS_TEMPLATE_DETAIL,
     get_all_email_words,
 )
 from .data_utils import fetch_data
-
-TEMPLATES = [
-    {
-        "id": "intro",
-        "name": "Warm Introduction",
-        "subject": "Introduction & Next Steps",
-        "body": "Hi <name>,\n\nIt was great connecting with you. I'm sharing a quick summary of what we discussed and suggested next steps. Please let me know if you'd like me to adjust anything.\n\nThanks,\nMe",
-    },
-    {
-        "id": "follow-up",
-        "name": "Friendly Follow Up",
-        "subject": "Quick follow-up on our last conversation",
-        "body": "Hello <name>,\n\nI wanted to check in on the items we talked about last week. I'm happy to help keep things moving.\n\nBest,\nMe",
-    },
-    {
-        "id": "meeting-recap",
-        "name": "Meeting Recap",
-        "subject": "Recap: key notes from our meeting",
-        "body": "Hi <name>,\n\nHere's a concise recap of today's discussion and the action items we agreed on. Feel free to add or adjust anything I might have missed.\n\nRegards,\nMe",
-    },
-    {
-        "id": "thank-you",
-        "name": "Thank You",
-        "subject": "Thank you for your time",
-        "body": "Hi <name>,\n\nThank you for the thoughtful conversation. I appreciated your insights and look forward to collaborating soon.\n\nWarm regards,\nMe",
-    },
-    {
-        "id": "reminder",
-        "name": "Gentle Reminder",
-        "subject": "Friendly reminder",
-        "body": "Hello <name>,\n\nThis is a quick reminder about the pending items we discussed. Please let me know if there's anything you need from my side.\n\nThanks,\nMe",
-    },
-]
 
 
 def _body_safe_substring_for_contains(body: str) -> str:
@@ -100,12 +70,104 @@ async def _ensure_email_dataset(task_url: str | None = None, dataset: dict[str, 
     """Extract emails data from the pre-loaded dataset, or fetch from server if not available."""
     _ = dataset  # Unused parameter kept for backward compatibility
     seed = get_seed_from_url(task_url)
-    emails = await fetch_data(seed_value=seed)
+    emails = await fetch_data(seed_value=seed, entity_type="emails", method="distribute", filter_key="category")
     fetched_dataset = {"emails": emails}
 
     if fetched_dataset and "emails" in fetched_dataset:
         return fetched_dataset["emails"]
     return []
+
+
+async def _ensure_templates_dataset(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+) -> list[dict[str, Any]]:
+    seed = get_seed_from_url(task_url)
+    rows = await fetch_data(seed_value=seed, count=5, entity_type="templates", method="select")
+    normalized: list[dict[str, Any]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        name = row.get("name") or row.get("template_name") or row.get("templateName")
+        subject = row.get("subject")
+        body = row.get("body")
+        if name is None and subject is None and body is None:
+            continue
+        normalized.append({**row, "name": name})
+    return normalized
+
+
+def _build_data_extraction_result(
+    selected_item: dict[str, Any],
+    visible_fields: list[str],
+    *,
+    verify_field: str | None = None,
+    question_fields_override: list[str] | None = None,
+) -> dict[str, Any] | None:
+    """Build constraints + question_fields_and_values for data_extraction_only; returns None on validation failure.
+
+    When verify_field is provided, it is used as the verify field (fixed). Otherwise, verify field is chosen randomly
+    from the available visible fields.
+
+    When question_fields_override is provided and non-empty, those fields (that exist and have values) are used
+    as the fixed question fields. The verify field is verify_field if it is provided and lies among the remaining
+    visible fields; otherwise it is chosen randomly from the remaining available fields.
+    If, apart from the verify field and the fixed question fields, there are 2 or more visible fields left,
+    a random subset of those is added to the question fields.
+    """
+    available_fields = [f for f in visible_fields if selected_item.get(f) is not None]
+    if len(available_fields) < 2:
+        return None
+
+    question_fields: list[str]
+    chosen_verify_field: str
+
+    if question_fields_override:
+        question_fields = [f for f in question_fields_override if f in available_fields and selected_item.get(f) is not None]
+        if question_fields:
+            remaining = [f for f in available_fields if f not in question_fields]
+            if not remaining:
+                return None
+            chosen_verify_field = verify_field if verify_field is not None and verify_field in remaining else random.choice(remaining)
+            remaining_for_extra = [f for f in available_fields if f != chosen_verify_field and f not in question_fields]
+            if len(remaining_for_extra) >= 2:
+                num_extra = random.randint(1, len(remaining_for_extra))
+                question_fields = question_fields + random.sample(remaining_for_extra, num_extra)
+        else:
+            question_fields = []
+            chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+    else:
+        chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+        question_fields = []
+
+    if chosen_verify_field not in available_fields:
+        return None
+    verify_value = selected_item.get(chosen_verify_field)
+    if verify_value is None:
+        return None
+
+    if question_fields:
+        question_candidates = question_fields
+    else:
+        question_candidates = [f for f in available_fields if f != chosen_verify_field]
+        if not question_candidates:
+            return None
+        num_question_fields = 1 if len(question_candidates) == 1 else 2
+        question_candidates = random.sample(question_candidates, num_question_fields)
+
+    question_fields_and_values: dict[str, Any] = {}
+    for qf in question_candidates:
+        val = selected_item.get(qf)
+        if val is not None:
+            question_fields_and_values[qf] = val
+    if not question_fields_and_values:
+        return None
+
+    constraints = [create_constraint_dict(chosen_verify_field, ComparisonOperator.EQUALS, verify_value)]
+    return {
+        "constraints": constraints,
+        "question_fields_and_values": question_fields_and_values,
+    }
 
 
 def _collect_field_values_from_dataset(dataset: list[dict[str, Any]], field: str) -> list[Any]:
@@ -212,7 +274,19 @@ def _generate_constraint_value(
     return value
 
 
-async def generate_view_email_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_view_email_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        base = await _ensure_email_dataset(task_url, dataset)
+        if not base:
+            return []
+        email = choice(base)
+        result = _build_data_extraction_result(email, VISIBLE_FIELDS_EMAIL_DETAIL, question_fields_override=["subject"])
+        return result if result is not None else []
+
     constraints_list = []
     possible_fields = list(FIELD_OPERATORS_VIEW_EMAIL_MAP.keys())
     num_constraints = random.randint(1, len(possible_fields))
@@ -241,7 +315,22 @@ def _boolean_constraints_value(value, operator: ComparisonOperator) -> bool:
         return not bool(value)
 
 
-async def generate_is_starred_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_is_starred_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        base = await _ensure_email_dataset(task_url, dataset)
+        if not base:
+            return []
+        un_starred_emails = [e for e in base if e.get("is_starred") is False]
+        if not un_starred_emails:
+            return []
+        email = choice(un_starred_emails)
+        result = _build_data_extraction_result(email, VISIBLE_FIELDS_EMAIL_DETAIL, question_fields_override=["subject"])
+        return result if result is not None else []
+
     constraints_list = []
     # Filter emails where is_starred == False
     base = await _ensure_email_dataset(task_url, dataset)
@@ -260,7 +349,22 @@ async def generate_is_starred_constraints(task_url: str | None = None, dataset: 
     return constraints_list
 
 
-async def generate_is_read_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_is_read_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        base = await _ensure_email_dataset(task_url, dataset)
+        if not base:
+            return []
+        read_emails = [e for e in base if e.get("is_read") is True]
+        if not read_emails:
+            return []
+        email = choice(read_emails)
+        result = _build_data_extraction_result(email, VISIBLE_FIELDS_EMAIL_DETAIL, question_fields_override=["subject"])
+        return result if result is not None else []
+
     constraints_list = []
     fixed_field = "is_read"
     field_value = False
@@ -274,7 +378,22 @@ async def generate_is_read_constraints(task_url: str | None = None, dataset: lis
     return constraints_list
 
 
-async def generate_is_important_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_is_important_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        base = await _ensure_email_dataset(task_url, dataset)
+        if not base:
+            return []
+        un_important_emails = [e for e in base if e.get("is_important") is False]
+        if not un_important_emails:
+            return []
+        email = choice(un_important_emails)
+        result = _build_data_extraction_result(email, VISIBLE_FIELDS_EMAIL_DETAIL, question_fields_override=["subject"])
+        return result if result is not None else []
+
     constraints_list = []
     fixed_field = "is_important"
     base = await _ensure_email_dataset(task_url, dataset)
@@ -286,7 +405,22 @@ async def generate_is_important_constraints(task_url: str | None = None, dataset
     return constraints_list
 
 
-async def generate_is_spam_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_is_spam_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        base = await _ensure_email_dataset(task_url, dataset)
+        if not base:
+            return []
+        legal_emails = [e for e in base if e.get("is_spam") is False]
+        if not legal_emails:
+            return []
+        email = choice(legal_emails)
+        result = _build_data_extraction_result(email, VISIBLE_FIELDS_EMAIL_DETAIL, question_fields_override=["subject"])
+        return result if result is not None else []
+
     constraints_list = []
     fixed_field = "is_spam"
     field_value = True
@@ -312,7 +446,19 @@ def _generate_search_constraint_value(operator, value, dataset):
         return choice([word for word in dataset if value not in word])
 
 
-async def generate_search_email_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_search_email_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        data = await _ensure_email_dataset(task_url, dataset)
+        if not data:
+            return []
+        email = choice(data)
+        result = _build_data_extraction_result(email, VISIBLE_FIELDS_EMAIL_SEARCH, question_fields_override=["subject"])
+        return result if result is not None else []
+
     constraints_list = []
     data = await _ensure_email_dataset(task_url, dataset)
     all_email_words = get_all_email_words(data)
@@ -356,7 +502,19 @@ LIST_OF_EMAILS = [
 ]
 
 
-async def generate_save_as_draft_send_email_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_save_as_draft_send_email_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        base = await _ensure_email_dataset(task_url, dataset)
+        if not base:
+            return []
+        email = choice(base)
+        result = _build_data_extraction_result(email, VISIBLE_FIELDS_EMAIL_DETAIL, question_fields_override=["subject"])
+        return result if result is not None else []
+
     constraints_list = []
     base = await _ensure_email_dataset(task_url, dataset)
     email = choice(base)
@@ -386,7 +544,43 @@ async def generate_save_as_draft_send_email_constraints(task_url: str | None = N
     return constraints_list
 
 
-async def generate_archive_email_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_draft_only_data_extraction_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    """Shared generator for draft-related use cases.
+
+    Event-only behavior stays identical by delegating to the existing send/draft generator.
+    Data-extraction behavior is draft-only (`is_draft == True`).
+    """
+    if test_types != "data_extraction_only":
+        return await generate_save_as_draft_send_email_constraints(task_url=task_url, dataset=dataset, test_types=test_types)
+
+    base = await _ensure_email_dataset(task_url, dataset)
+    if not base:
+        return []
+    draft_emails = [e for e in base if e.get("is_draft") is True]
+    if not draft_emails:
+        return []
+    email = choice(draft_emails)
+    result = _build_data_extraction_result(email, VISIBLE_FIELDS_EMAIL_DETAIL, question_fields_override=["subject"])
+    return result if result is not None else []
+
+
+async def generate_archive_email_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        data = await _ensure_email_dataset(task_url, dataset)
+        if not data:
+            return []
+        email = choice(data)
+        result = _build_data_extraction_result(email, VISIBLE_FIELDS_EMAIL_DETAIL, question_fields_override=["subject"])
+        return result if result is not None else []
+
     constraints_list = []
     possible_fields = list(FIELD_OPERATORS_VIEW_EMAIL_MAP.keys())
     data = await _ensure_email_dataset(task_url, dataset)
@@ -508,9 +702,24 @@ def generate_theme_changed_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_template_selection_constraints() -> list[dict[str, Any]]:
+async def generate_template_selection_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        templates = await _ensure_templates_dataset(task_url, dataset if isinstance(dataset, dict) else None)
+        if not templates:
+            return []
+        template = choice(templates)
+        result = _build_data_extraction_result(template, VISIBLE_FIELDS_TEMPLATE_DETAIL, question_fields_override=["name"])
+        return result if result is not None else []
+
     constraints_list = []
-    template = choice(TEMPLATES)
+    templates = await _ensure_templates_dataset(task_url, dataset if isinstance(dataset, dict) else None)
+    if not templates:
+        return constraints_list
+    template = choice(templates)
     possible_fields = ["template_name", "subject"]
     for field in possible_fields:
         allowed_ops = FIELD_OPERATORS_TEMPLATE_SELECTED_MAP.get(field, [])
@@ -519,16 +728,31 @@ def generate_template_selection_constraints() -> list[dict[str, Any]]:
         operator = ComparisonOperator(choice(allowed_ops))
         mapped_field = FIELD_MAP_TEMPLATE_NAME.get(field, field)
         field_value = template.get(mapped_field)
-        value = _generate_constraint_value(operator, field_value, mapped_field, TEMPLATES)
+        value = _generate_constraint_value(operator, field_value, mapped_field, templates)
         constraint = create_constraint_dict(field, operator, value)
         constraints_list.append(constraint)
 
     return constraints_list
 
 
-def generate_template_body_constraints() -> list[dict[str, Any]]:
+async def generate_template_body_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        templates = await _ensure_templates_dataset(task_url, dataset if isinstance(dataset, dict) else None)
+        if not templates:
+            return []
+        template = choice(templates)
+        result = _build_data_extraction_result(template, VISIBLE_FIELDS_TEMPLATE_DETAIL, question_fields_override=["name"])
+        return result if result is not None else []
+
     constraints_list = []
-    template = choice(TEMPLATES)
+    templates = await _ensure_templates_dataset(task_url, dataset if isinstance(dataset, dict) else None)
+    if not templates:
+        return constraints_list
+    template = choice(templates)
     possible_fields = ["template_name", "subject", "body"]
     num_fields = randint(1, len(possible_fields))
     selected_fields = sample(possible_fields, num_fields)
@@ -542,16 +766,31 @@ def generate_template_body_constraints() -> list[dict[str, Any]]:
         if field == "body" and operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
             value = _body_safe_substring_for_contains(field_value)
         else:
-            value = _generate_constraint_value(operator, field_value, mapped_field, TEMPLATES)
+            value = _generate_constraint_value(operator, field_value, mapped_field, templates)
         constraint = create_constraint_dict(field, operator, value)
         constraints_list.append(constraint)
 
     return constraints_list
 
 
-def generate_sent_template_constraints() -> list[dict[str, Any]]:
+async def generate_sent_template_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        templates = await _ensure_templates_dataset(task_url, dataset if isinstance(dataset, dict) else None)
+        if not templates:
+            return []
+        template = choice(templates)
+        result = _build_data_extraction_result(template, VISIBLE_FIELDS_TEMPLATE_DETAIL, question_fields_override=["name"])
+        return result if result is not None else []
+
     constraints_list = []
-    template = choice(TEMPLATES)
+    templates = await _ensure_templates_dataset(task_url, dataset if isinstance(dataset, dict) else None)
+    if not templates:
+        return constraints_list
+    template = choice(templates)
     to_emails = [{"to": email} for email in LIST_OF_EMAILS]
     sample_email = choice(to_emails)
     possible_fields = ["template_name", "subject", "body", "to"]
@@ -573,7 +812,7 @@ def generate_sent_template_constraints() -> list[dict[str, Any]]:
             if field == "body" and operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
                 value = _body_safe_substring_for_contains(field_value)
             else:
-                value = _generate_constraint_value(operator, field_value, mapped_field, TEMPLATES)
+                value = _generate_constraint_value(operator, field_value, mapped_field, templates)
             constraint = create_constraint_dict(field, operator, value)
             constraints_list.append(constraint)
 

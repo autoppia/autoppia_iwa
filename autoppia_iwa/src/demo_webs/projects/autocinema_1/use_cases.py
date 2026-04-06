@@ -224,6 +224,27 @@ ALL prompts must follow this pattern exactly, each phrased slightly differently 
 """
 
 
+FILM_DETAIL_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field.
+
+Use natural language only. Do NOT use schema-style field names such as
+"director", "rating", "duration", or any names with underscores (_).
+
+Always refer to fields using natural phrasing.
+
+Identify the film using the provided visible field values (e.g. film name, year, genre),
+then ask for the verify field value.
+
+Examples:
+- "Who directed the film Inception?"
+- "What is the rating of the film released in 2010 that is in the Sci-Fi genre?"
+- "How long is the movie The Matrix?"
+- "What genre is the film Interstellar?"
+
+Do NOT start with imperative phring like "Navigate..." or "Go to...".
+The output must be a single question.
+""".strip()
+
 FILM_DETAIL_USE_CASE = UseCase(
     name="FILM_DETAIL",
     description="The user explicitly requests to navigate to or go to the details page of a specific movie that meets certain criteria, where they can view information including director, year, genres, rating, duration, and cast.",
@@ -231,6 +252,8 @@ FILM_DETAIL_USE_CASE = UseCase(
     event_source_code=FilmDetailEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
     constraints_generator=generate_film_detail_constraints,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=FILM_DETAIL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Navigate to The Matrix movie page",
@@ -288,6 +311,26 @@ ALL prompts must follow this pattern exactly, each phrased slightly differently 
 """
 
 
+ADD_TO_WATCHLIST_FILM_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the film.
+
+Use natural language only. Do NOT use schema-style field names such as "name", "rating", "duration", "genre", or any names with underscores (_).
+
+Identify the film using the provided visible fields (e.g., rating, duration, genre, year), then ask for the verify field value naturally.
+
+Every generated question MUST end with a confirmation phrase like "Confirm the value before adding to the watchlist" or "Please confirm before adding to the watchlist". This must appear at the end of the question.
+
+Do NOT start questions with imperative phrasing (e.g., Add..., Delete..., Remove..., Watch..., Share...).
+
+Examples:
+- "What is the rating of the movie with a duration of 120 minutes released in 2010? Please confirm before adding to the watchlist."
+- "Which movie released in 2018? Confirm the value before adding to the watchlist."
+- "Please provide the duration of the film 'Inception' to confirm before adding to the watchlist."
+- "What is the genre of the movie with a 2015 release year? Confirm before adding to the watchlist."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
+
 ADD_TO_WATCHLIST_USE_CASE = UseCase(
     name="ADD_TO_WATCHLIST",
     description="The user explicitly requests to add a film into wishlist of a specific movie that meets certain criteria, where they can view information including director, year, genres, rating, duration, and cast.",
@@ -296,6 +339,8 @@ ADD_TO_WATCHLIST_USE_CASE = UseCase(
     replace_func=login_and_film_replace_func,
     additional_prompt_info=None,  # Will be populated dynamically from API
     constraints_generator=generate_add_to_watchlist_constraints,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=ADD_TO_WATCHLIST_FILM_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Login with the username equals <username> and password equals <password> and then add to watchlist The Matrix movie",
@@ -404,6 +449,26 @@ ALL prompts must follow this pattern exactly, each phrased slightly differently 
 """
 
 
+SHARE_FILM_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the film.
+
+Use natural language only. Do NOT use schema-style field names such as "name", "rating", "duration", "genre", or any names with underscores (_).
+
+Identify the film using the provided visible fields (e.g., rating, duration, genre, year), then ask for the verify field value naturally.
+
+Every generated question MUST end with a confirmation phrase like "Confirm the value before sharing" or "Please confirm before sharing". This must appear at the end of the question.
+
+Do NOT start questions with imperative phrasing (e.g., Share..., Add..., Delete..., Remove..., Watch...).
+
+Examples:
+- "What is the rating of the movie with a duration of 120 minutes released in 2010? Please confirm before sharing."
+- "Which movie released in 2018? Confirm the value before sharing."
+- "Please provide the duration of the film 'Inception' to confirm before sharing."
+- "What is the genre of the movie with a 2015 release year? Confirm before sharing."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
+
 SHARE_FILM_USE_CASE = UseCase(
     name="SHARE_MOVIE",
     description="The user requests to share a specific movie that meets certain criteria, where they can view information including director, year, genres, rating, duration, and cast.",
@@ -411,6 +476,8 @@ SHARE_FILM_USE_CASE = UseCase(
     event_source_code=ShareFilmEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
     constraints_generator=generate_share_film_constraints,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=SHARE_FILM_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Share The Matrix movie",
@@ -470,6 +537,26 @@ ALL prompts must follow this pattern exactly, each phrased slightly differently 
 """
 
 
+WATCH_TRAILER_FILM_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the film.
+
+Use natural language only. Do NOT use schema-style field names such as "name", "rating", "duration", "genre", or any names with underscores (_).
+
+Identify the film using the provided visible fields (e.g., rating, duration, genre, year), then ask for the verify field value naturally.
+
+Every generated question MUST end with a confirmation phrase like "Confirm the value before watching the trailer" or "Please confirm before watching the trailer". This must appear at the end of the question.
+
+Do NOT start questions with imperative phrasing (e.g., Watch..., Share..., Add..., Delete..., Remove...).
+
+Examples:
+- "What is the rating of the movie with a duration of 120 minutes released in 2010? Please confirm before watching the trailer."
+- "Which movie released in 2018? Confirm the value before watching the trailer."
+- "Please provide the duration of the film 'Inception' to confirm before watching the trailer."
+- "What is the genre of the movie with a 2015 release year? Confirm before watching the trailer."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
+
 WATCH_TRAILER_USE_CASE = UseCase(
     name="WATCH_TRAILER",
     description="The user requests to watch the trailer of a specific movie that meets certain criteria, where they can view information including director, year, genres, rating, duration, and cast.",
@@ -477,6 +564,8 @@ WATCH_TRAILER_USE_CASE = UseCase(
     event_source_code=WatchTrailer.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
     constraints_generator=generate_watch_trailer_constraints,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=WATCH_TRAILER_FILM_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Watch the trailer for The Matrix movie",
@@ -532,6 +621,20 @@ For example:
 ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL clearly indicating that it is a simple SEARCH.
 """
 
+SEARCH_FILM_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the name of the movie.
+
+Use the provided visible fields (e.g. director, year, genre, rating) to identify the film.
+Use natural language only. Do NOT use schema-style field names like "director", "year", "genre", "rating" in the question.
+Do NOT start the question with phrases like "Search for...".
+
+Examples:
+- "What is the name of the movie directed by Christopher Nolan released in 2010?"
+- "Which movie released in 1999 is a Sci-Fi action film?"
+- "What is the name of the film that was released in 2014?"
+
+The output must be a single question whose answer is the movie name.
+""".strip()
 SEARCH_FILM_USE_CASE = UseCase(
     name="SEARCH_FILM",
     description="The user searches for a film using a query.",
@@ -540,6 +643,8 @@ SEARCH_FILM_USE_CASE = UseCase(
     replace_func=replace_film_placeholders,
     constraints_generator=generate_search_film_constraints,
     additional_prompt_info=SEARCH_FILM_INFO,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=SEARCH_FILM_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Look for the film 'The Shawshank Redemption'",
@@ -709,6 +814,26 @@ VALID EXAMPLE:
 All generated prompts must strictly follow this structure, with only minor natural wording variations.
 """
 
+DELETE_FILM_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the film.
+
+Use natural language only. Do NOT use schema-style field names such as "name", "rating", "duration", "genre", or any names with underscores (_).
+
+Identify the film using the provided visible fields (e.g., rating, duration, genre, year), then ask for the verify field value naturally.
+
+Every generated question MUST end with a confirmation phrase like "Confirm the value before deletion" or "Please confirm before deletion". This must appear at the end of the question.
+
+Do NOT start questions with imperative phrasing (e.g., Delete..., Remove..., Watch..., Add...).
+
+Examples:
+- "What is the rating of the movie with a duration of 120 minutes released in 2010? Please confirm before deletion."
+- "Which movie released in 2018? Confirm the value before deletion."
+- "Please provide the duration of the film 'Inception' to confirm before deletion."
+- "What is the genre of the movie with a 2015 release year? Confirm before deletion."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
+
 DELETE_FILM_USE_CASE = UseCase(
     name="DELETE_FILM",
     description="The user deletes a film from the system.",
@@ -716,6 +841,8 @@ DELETE_FILM_USE_CASE = UseCase(
     event_source_code=DeleteFilmEvent.get_source_code_of_class(),
     additional_prompt_info=DELETE_FILM_ADDITIONAL_PROMPT_INFO,
     constraints_generator=generate_delete_film_constraints,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=DELETE_FILM_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Log in with username equals user<web_agent_id> and password equals <password>. Then, delete your movie.",
@@ -898,6 +1025,26 @@ ALL prompts must follow this pattern exactly, each phrased slightly differently 
 """
 
 
+FILTER_FILM_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be the genre or release year of the film.
+
+Use natural language only. Do NOT use schema-style field names such as "genre", "year", or any names with underscores (_).
+
+Identify the film using the provided visible field values, then ask for the verify field value naturally.
+
+Every generated question MUST end with a confirmation phrase like "Confirm the value before applying the filter" or "Please confirm before filtering". This must appear at the end of the question.
+
+Do NOT start questions with imperative phrasing (e.g., Filter..., Browse..., Search..., Show...).
+
+Examples:
+- "What is the genre of the movie released in 2010 with a rating of PG-13? Please confirm before applying the filter."
+- "Which movie released in 2018 has a duration under 120 minutes? Confirm the value before filtering."
+- "Please provide the release year of the film 'Inception' to confirm before applying the filter."
+- "What is the genre of the film with a 2015 release year? Confirm before applying the filter."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
+
 FILTER_FILM_USE_CASE = UseCase(
     name="FILTER_FILM",
     description="The user applies filters to search for films by genre and/or year. Includes Filter in the prompt",
@@ -905,6 +1052,8 @@ FILTER_FILM_USE_CASE = UseCase(
     event_source_code=FilterFilmEvent.get_source_code_of_class(),
     constraints_generator=generate_film_filter_constraints,
     additional_prompt_info=None,  # Will be populated dynamically from API
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=FILTER_FILM_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Filter movies released in the year 1994",

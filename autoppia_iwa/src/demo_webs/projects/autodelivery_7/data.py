@@ -86,3 +86,19 @@ FIELD_OPERATORS_REVIEW_SUBMIT_MAP = {
     "cuisine": STRING_OPERATORS,
     "rating": LOGICAL_OPERATORS,
 }
+
+# Visible fields used for data-extraction question generation.
+VISIBLE_FIELDS_RESTAURANT_DETAIL = ["name", "cuisine", "rating", "description"]
+VISIBLE_FIELDS_VIEW_RESTAURANT_DETAIL = [
+    "name",
+    "cuisine",
+    "rating",
+    "description",
+    "deliveryTime",
+    "pickupTime",
+    "dishes",
+    "names_of_menu_items",
+]
+VISIBLE_FIELDS_MENU_ITEM_DETAIL = ["restaurant_name", "item_name", "price", "item_description"]
+VISIBLE_FIELD_QUICK_REORDER = ["name", "rating", "cuisine", "deliveryTime", "pickupTime"]
+VISIBLE_FIELDS_DELETE_RESTAURANT_REVIEW = ["name", "description", "cuisine", "rating", "author", "review_rating", "comment", "date"]

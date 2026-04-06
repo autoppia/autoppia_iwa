@@ -62,12 +62,43 @@ from .generation_functions import (
     generate_write_job_title_constraint,
 )
 
+BOOK_A_CONSULTATION_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a consultant in the book a consultation context (e.g., name, country, role, rating, consultation fee).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "country", "role", "rating", "consultation_fee" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., consultant name, country, role, rating, consultation fee).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Book...", "Schedule...", or "Reserve...".
+
+Always end the question naturally with "so I can book the consultation."
+
+For example, if the verify field is 'consultation fee', format the question naturally:
+- "Can you tell me the consultation fee for the consultant 'Alice Johnson' from USA, who works as a 'Career Coach' and has a rating of 4.8, so I can book the consultation?"
+
+Examples:
+- "Can you tell me the country of the consultant 'John Smith', who works as a 'Financial Consultant', has a rating of 4.5, and charges $150 consultation fee per session, so I can book the consultation?"
+- "Can you tell me the role of the consultant 'Emily Clark' from UK, who has a rating of 4.7 and charges $120 consultation fee per session, so I can book the consultation?"
+- "Can you tell me the rating of the consultant 'Michael Lee' from Australia, who works as a 'Startup Mentor' and charges $200 consultation fee per session, so I can book the consultation?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 BOOK_A_CONSULTATION_USE_CASE = UseCase(
     name="BOOK_A_CONSULTATION",
     description="The user initiate the booking process for a consultation",
     event=BookAConsultationEvent,
     event_source_code=BookAConsultationEvent.get_source_code_of_class(),
     constraints_generator=generate_book_consultant_constraint,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=BOOK_A_CONSULTATION_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Book a consultation whose name is 'Alexa R'",
@@ -96,12 +127,44 @@ BOOK_A_CONSULTATION_USE_CASE = UseCase(
     ],
 )
 
+HIRE_BTN_CLICKED_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a freelancer in the hire button clicked context (e.g., name, country, role, rating, jobs completed, total earning, total jobs, total hours).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "country", "role", "rating", "jobs_completed", "total_earning", "total_jobs", "total_hours" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., freelancer name, country, role, rating, number of jobs completed, total earning, total jobs, total hours).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Hire...", "Select...", or "Choose...".
+
+Always end the question naturally with "so I can start hiring him/her."
+
+For example, if the verify field is 'total earning', format the question naturally:
+- "Can you tell me the total earning of the freelancer 'Bob Johnson' from USA, who works as a 'Full Stack Developer', has a rating of 4.9, has completed 120 jobs, has 150 total jobs, and has worked 2000 total hours, so I can start hiring him?"
+
+Examples:
+- "Can you tell me the country of the freelancer 'John Smith', who works as a 'Data Analyst', has a rating of 4.6, has completed 90 jobs, has total earnings of $60k+, has 110 total jobs, and has worked 1400 total hours, so I can start hiring him?"
+- "Can you tell me the role of the freelancer 'Emily Clark', from UK, who has a rating of 4.8, has completed 150 jobs, has total earnings of $90k+, has 170 total jobs, and has worked 2500 total hours, so I can start hiring her?"
+- "Can you tell me the number of jobs completed by the freelancer 'Michael Lee' from Australia, who works as a 'Mobile Developer', has a rating of 4.5, has total earnings of $40k+, has 70 total jobs, and has worked 1000 total hours, so I can start hiring him?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
+
 HIRE_BUTTON_CLICKED_USE_CASE = UseCase(
     name="HIRE_BTN_CLICKED",
     description="The user clicked hire button to start hiring a consultation workflow",
     event=HireButtonClickedEvent,
     event_source_code=HireButtonClickedEvent.get_source_code_of_class(),
     constraints_generator=generate_hire_button_clicked_constraint,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=HIRE_BTN_CLICKED_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Hire a consultant whose name is 'Brandon M'",
@@ -144,12 +207,43 @@ SELECT_HIRING_TEAM_USE_CASE = UseCase(
     additional_prompt_info=ADDITIONAL_PROMPT_INFO,
 )
 
+HIRE_LATER_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a freelancer in the hire later context (e.g., name, country, role, rating, jobs completed, total earning, total hours).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "country", "role", "rating", "jobs_completed", "total_earning", "total_hours" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., freelancer name, country, role, rating, number of jobs completed, total earning, total hours).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Hire...", "Save...", or "Select...".
+
+Always end the question naturally with "so I can hire him/her later."
+
+For example, if the verify field is 'total earning', format the question naturally:
+- "Can you tell me the total earning of the freelancer 'Bob Johnson' from USA, who works as a 'Full Stack Developer', has a rating of 4.9, has completed 120 jobs, and has worked 2000 total hours, so I can hire him later?"
+
+Examples:
+- "Can you tell me the country of the freelancer 'John Smith', who works as a 'Data Analyst', has a rating of 4.6, has completed 90 jobs, has total earnings of $60k, and has worked 1400 total hours, so I can hire him later?"
+- "Can you tell me the role of the freelancer 'Emily Clark', from UK, who has a rating of 4.8, has completed 150 jobs, has total earnings of $90k, and has worked 2500 total hours, so I can hire her later?"
+- "Can you tell me the number of jobs completed by the freelancer 'Michael Lee' from Australia, who works as a 'Mobile Developer', has a rating of 4.5, has total earnings of $40k, and has worked 1000 total hours, so I can hire him later?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 HIRE_LATER_USE_CASE = UseCase(
     name="HIRE_LATER",
     description="The user opts to hire later instead of starting hiring now.",
     event=HireLaterEvent,
     event_source_code=HireLaterEvent.get_source_code_of_class(),
     constraints_generator=generate_hire_button_clicked_constraint,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=HIRE_LATER_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Decide to hire later for expert Jane Doe.",
@@ -209,12 +303,44 @@ HIRE_LATER_START_USE_CASE = UseCase(
         },
     ],
 )
+
+QUICK_HIRE_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a freelancer in the quick hire context (e.g., name, country, role, rating, jobs completed, total earning, total hours).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "country", "role", "rating", "jobs_completed", "total_earning", "total_hours" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., freelancer name, country, role, rating, number of jobs completed, total earning, total hours).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Hire...", "Quick hire...", or "Select...".
+
+Always end the question naturally with "so I can quickly hire him/her."
+
+For example, if the verify field is 'total earning', format the question naturally:
+- "Can you tell me the total earning of the freelancer 'Bob Johnson' from USA, who works as a 'Full Stack Developer', has a rating of 4.9, has completed 120 jobs, and has worked 2000 total hours, so I can quickly hire him?"
+
+Examples:
+- "Can you tell me the country of the freelancer 'John Smith', who works as a 'Data Analyst', has a rating of 4.6, has completed 90 jobs, has total earnings of $60k, and has worked 1400 total hours, so I can quickly hire him?"
+- "Can you tell me the role of the freelancer 'Emily Clark', from UK, who has a rating of 4.8, has completed 150 jobs, has total earnings of $90k, and has worked 2500 total hours, so I can quickly hire her?"
+- "Can you tell me the number of jobs completed by the freelancer 'Michael Lee' from Australia, who works as a 'Mobile Developer', has a rating of 4.5, has total earnings of $40k, and has worked 1000 total hours, so I can quickly hire him?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 QUICK_HIRE_USE_CASE = UseCase(
     name="QUICK_HIRE",
     description="The user triggers quick hire directly from expert information.",
     event=QuickHireEvent,
     event_source_code=QuickHireEvent.get_source_code_of_class(),
     constraints_generator=generate_quick_hire_constraint,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=QUICK_HIRE_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Quick hire the expert John Smith.",
@@ -230,12 +356,44 @@ QUICK_HIRE_USE_CASE = UseCase(
         },
     ],
 )
+
+HIRE_CONSULTANT_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a consultant in the hire consultant context (e.g., name, country, role, rating, jobs completed, total earning, total hours).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "country", "role", "rating", "jobs_completed", "total_earning", "total_hours" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., consultant name, country, role, rating, number of jobs completed, total earning, total hours).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Hire...", "Select...", or "Choose...".
+
+Always end the question naturally with "so I can hire him/her."
+
+For example, if the verify field is 'total earning', format the question naturally:
+- "Can you tell me the total earning of the consultant 'Bob Johnson' from USA, who works as a 'Career Coach', has a rating of 4.9, has completed 120 jobs, and has worked 2000 total hours, so I can hire him?"
+
+Examples:
+- "Can you tell me the country of the consultant 'John Smith', who works as a 'Financial Consultant', has a rating of 4.6, has completed 90 jobs, has total earnings of $60k+, and has worked 1400 total hours, so I can hire him?"
+- "Can you tell me the role of the consultant 'Emily Clark' from UK, who has a rating of 4.8, has completed 150 jobs, has total earnings of $90k+, and has worked 2500 total hours, so I can hire her?"
+- "Can you tell me the number of jobs completed by the consultant 'Michael Lee' from Australia, who works as a 'Startup Mentor', has a rating of 4.5, has total earnings of $40k+, and has worked 1000 total hours, so I can hire him?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 HIRE_CONSULTATION_USE_CASE = UseCase(
     name="HIRE_CONSULTANT",
     description="The user confirm hiring of a chosen consultation",
     event=HireConsultantEvent,
     event_source_code=HireConsultantEvent.get_source_code_of_class(),
     constraints_generator=generate_hire_consultation_constraint,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=HIRE_CONSULTANT_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "The user click 'Hire' button to confirm hiring of a chosen consultation",
@@ -286,12 +444,50 @@ CANCEL_HIRE_USE_CASE = UseCase(
 
 """job related use cases"""
 
+
+POST_A_JOB_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a job post in the post a job context (e.g., title, status, start date, logged time, logged time price).
+
+Use natural language only. Do NOT use schema-style field names such as "title", "status", "start", "logged_time", "logged_time_price" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., job title, status, start date, logged time, logged time price).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Post...", "Create...", or "Add...".
+
+Do NOT add any purpose-based suffix like "so I can...". The question should be direct and complete on its own.
+
+For example, if the verify field is 'status', format the question naturally:
+- "Can you tell me the status of the job titled 'Build a Website', which starts on March 10, has logged time of 20 hours, and a logged time price of $500?"
+For example, if the verify field is 'jobs_completed', format the question naturally:
+- "How many total jobs are completed for now?"
+For example, if the verify field is 'jobs_in_progress', format the question naturally:
+- "How many jobs are in progress for now?"
+
+Examples:
+- "Can you tell me the start date of the job titled 'Design a Logo', which has a status of 'Completed', has logged time of 10 hours, and a logged time price of $200?"
+- "Can you tell me the logged time of the job titled 'Develop Mobile App', which has a status of 'Pending', starts on May 1, and has a logged time price of $800?"
+- "Can you tell me the logged time price of the job titled 'SEO Optimization', which has a status of 'In Progress', starts on June 12, and has logged time of 25 hours?"
+- "How many total jobs are completed for now?"
+- "How many jobs are in progress for now?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only non-verify fields for identification.
+- Always include all question fields with values in the question for precise identification.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 POST_A_JOB_USE_CASE = UseCase(
     name="POST_A_JOB",
     description="The user post a job",
     event=PostAJobEvent,
     event_source_code=PostAJobEvent.get_source_code_of_class(),
     constraints_generator=generate_job_posting_constraint,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=POST_A_JOB_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "User clicks 'Post a job' button to initiate the posting process for a job",
@@ -652,12 +848,43 @@ NAVBAR_PROFILE_CLICK_USE_USE = UseCase(
     ],
 )
 
+CONTACT_EXPERT_OPENED_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of an expert in the contact expert context (e.g., name, country, role, rating, jobs completed, total earning, total hours).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "country", "role", "rating", "jobs_completed", "total_earning", "total_hours" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., expert name, country, role, rating, number of jobs completed, total earning, total hours).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Contact...", "Message...", or "Reach out...".
+
+Always end the question naturally with "so I can contact him/her."
+
+For example, if the verify field is 'total earning', format the question naturally:
+- "Can you tell me the total earning of the expert 'Bob Johnson' from USA, who works as a 'Career Coach', has a rating of 4.9, has completed 120 jobs, and has worked 2000 total hours, so I can contact him?"
+
+Examples:
+- "Can you tell me the country of the expert 'John Smith', who works as a 'Financial Consultant', has a rating of 4.6, has completed 90 jobs, has total earnings of $60k, and has worked 1400 total hours, so I can contact him?"
+- "Can you tell me the role of the expert 'Emily Clark' from UK, who has a rating of 4.8, has completed 150 jobs, has total earnings of $90k, and has worked 2500 total hours, so I can contact her?"
+- "Can you tell me the number of jobs completed by the expert 'Michael Lee' from Australia, who works as a 'Startup Mentor', has a rating of 4.5, has total earnings of $40k, and has worked 1000 total hours, so I can contact him?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 CONTACT_EXPERT_OPENED_USE_CASE = UseCase(
     name="CONTACT_EXPERT_OPENED",
     description="The user click a contact for contacting with expert.",
     event=ContactExpertOpenedEvent,
     event_source_code=ContactExpertOpenedEvent.get_source_code_of_class(),
     constraints_generator=generate_hire_button_clicked_constraint,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=CONTACT_EXPERT_OPENED_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Contact an expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
@@ -692,12 +919,37 @@ CONTACT_EXPERT_MESSAGE_SENT_USE_CASE = UseCase(
     ],
 )
 
+EDIT_PROFILE_NAME_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which is the profile name in the edit profile name context.
+
+Use natural language only. Do NOT include any other fields, since no question fields are provided.
+
+Do NOT start the question with imperative phrasing like "Edit..." or "Change...".
+
+Always end the question naturally with "so I can edit it."
+
+Format the question naturally to ask for the profile name.
+- "Can you tell me my profile name, so I can edit it?"
+
+Examples:
+- "Can you tell me my profile name, so I can edit it?"
+- "Can you tell me my name, so I can edit it?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Do not add any other fields or values, since there are none.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 EDIT_PROFILE_NAME_USE_CASE = UseCase(
     name="EDIT_PROFILE_NAME",
     description="The user edits and updates their profile name.",
     event=EditProfileNameEvent,
     event_source_code=EditProfileNameEvent.get_source_code_of_class(),
     constraints_generator=generate_edit_profile_name_constraint,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=EDIT_PROFILE_NAME_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Edit profile name where name equals 'Emily Patel'.",
@@ -714,12 +966,37 @@ EDIT_PROFILE_NAME_USE_CASE = UseCase(
     ],
 )
 
+EDIT_PROFILE_TITLE_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which is the profile title in the edit profile title context.
+
+Use natural language only. Do NOT include any other fields, since no question fields are provided.
+
+Do NOT start the question with imperative phrasing like "Edit..." or "Change...".
+
+Always end the question naturally with "so I can edit it."
+
+Format the question naturally to ask for the profile title.
+- "Can you tell me my profile title, so I can edit it?"
+
+Examples:
+- "Can you tell me my profile title, so I can edit it?"
+- "Can you tell me my title, so I can edit it?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Do not add any other fields or values, since there are none.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 EDIT_PROFILE_TITLE_USE_CASE = UseCase(
     name="EDIT_PROFILE_TITLE",
     description="The user edits and updates their profile title.",
     event=EditProfileTitleEvent,
     event_source_code=EditProfileTitleEvent.get_source_code_of_class(),
     constraints_generator=generate_edit_profile_title_constraint,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=EDIT_PROFILE_TITLE_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Edit profile title where title equals 'Senior Software Engineer'.",
@@ -736,12 +1013,38 @@ EDIT_PROFILE_TITLE_USE_CASE = UseCase(
     ],
 )
 
+EDIT_PROFILE_LOCATION_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which is the profile location in the edit profile location context.
+
+Use natural language only. Do NOT include any other fields, since no question fields are provided.
+
+Do NOT start the question with imperative phrasing like "Edit..." or "Change...".
+
+Always end the question naturally with "so I can edit it."
+
+Format the question naturally to ask for the profile location.
+- "Can you tell me my profile location, so I can edit it?"
+
+Examples:
+- "Can you tell me my profile location, so I can edit it?"
+- "Can you tell me my location, so I can edit it?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Do not add any other fields or values, since there are none.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
+
 EDIT_PROFILE_LOCATION_USE_CASE = UseCase(
     name="EDIT_PROFILE_LOCATION",
     description="The user edits and updates their profile location.",
     event=EditProfileLocationEvent,
     event_source_code=EditProfileLocationEvent.get_source_code_of_class(),
     constraints_generator=generate_edit_profile_location_constraint,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=EDIT_PROFILE_LOCATION_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Edit profile location where location equals 'New York, USA'.",
@@ -779,12 +1082,38 @@ EDIT_PROFILE_ABOUT_USE_CASE = UseCase(
         },
     ],
 )
+
+EDIT_PROFILE_EMAIL_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which is the profile email in the edit profile email context.
+
+Use natural language only. Do NOT include any other fields, since no question fields are provided.
+
+Do NOT start the question with imperative phrasing like "Edit..." or "Change...".
+
+Always end the question naturally with "so I can edit it."
+
+Format the question naturally to ask for the profile email.
+- "Can you tell me my profile email, so I can edit it?"
+
+Examples:
+- "Can you tell me my profile email, so I can edit it?"
+- "Can you tell me my email, so I can edit it?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Do not add any other fields or values, since there are none.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 EDIT_PROFILE_EMAIL_USE_CASE = UseCase(
     name="EDIT_PROFILE_EMAIL",
     description="The user edits and updates their profile email address.",
     event=EditProfileEmailEvent,
     event_source_code=EditProfileEmailEvent.get_source_code_of_class(),
     constraints_generator=generate_edit_profile_email_constraint,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=EDIT_PROFILE_EMAIL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Edit profile email where email equals 'emily.patel@example.com'.",
@@ -819,12 +1148,43 @@ BROWSE_FAVORITE_USE_CASE = UseCase(
     ],
 )
 
+FAVORITE_EXPERT_SELECTED_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of an expert in the favorite expert context (e.g., name, country, role, rating, jobs completed, total earning, total hours).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "country", "role", "rating", "jobs_completed", "total_earning", "total_hours" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., expert name, country, role, rating, number of jobs completed, total earning, total hours).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Favorite...", "Select...", or "Choose...".
+
+Always end the question naturally with "so I can mark him/her as favorite."
+
+For example, if the verify field is 'total earning', format the question naturally:
+- "Can you tell me the total earning of the expert 'Bob Johnson' from USA, who works as a 'Career Coach', has a rating of 4.9, has completed 120 jobs, and has worked 2000 total hours, so I can mark him as favorite?"
+
+Examples:
+- "Can you tell me the country of the expert 'John Smith', who works as a 'Financial Consultant', has a rating of 4.6, has completed 90 jobs, has total earnings of $60k, and has worked 1400 total hours, so I can mark him as favorite?"
+- "Can you tell me the role of the expert 'Emily Clark' from UK, who has a rating of 4.8, has completed 150 jobs, has total earnings of $90k, and has worked 2500 total hours, so I can mark her as favorite?"
+- "Can you tell me the number of jobs completed by the expert 'Michael Lee' from Australia, who works as a 'Startup Mentor', has a rating of 4.5, has total earnings of $40k, and has worked 1000 total hours, so I can mark him as favorite?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 FAVORITE_EXPERT_SELECTED_USE_CASE = UseCase(
     name="FAVORITE_EXPERT_SELECTED",
     description="The user selects an expert to mark them as favorite.",
     event=FavoriteExpertSelectedEvent,
     event_source_code=FavoriteExpertSelectedEvent.get_source_code_of_class(),
     constraints_generator=generate_hire_button_clicked_constraint,
+    supports_data_extraction=True,
+    additional_prompt_info_for_data_extraction_task=FAVORITE_EXPERT_SELECTED_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Select favorite expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",

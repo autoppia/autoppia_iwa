@@ -317,6 +317,39 @@ class TestAct:
         assert agent._task_state == {"phase": "browse"}
 
     @pytest.mark.asyncio
+    async def test_act_returns_dict_when_extracted_data_in_response(self):
+        agent = ApifiedWebAgent(base_url="http://localhost:9999", id="a1")
+        task = Task(url="https://example.com", prompt="Read it", web_project_id="dummy")
+        response_mock = AsyncMock()
+        response_mock.status = 200
+        response_mock.raise_for_status = MagicMock()
+        response_mock.json = AsyncMock(
+            return_value={
+                "actions": [{"type": "ClickAction", "x": 1, "y": 2}],
+                "extracted_data": "subnet-42",
+            }
+        )
+        post_mock = MagicMock()
+        post_mock.__aenter__ = AsyncMock(return_value=response_mock)
+        post_mock.__aexit__ = AsyncMock(return_value=None)
+        session_mock = MagicMock()
+        session_mock.post = MagicMock(return_value=post_mock)
+        session_mock.__aenter__ = AsyncMock(return_value=session_mock)
+        session_mock.__aexit__ = AsyncMock(return_value=None)
+
+        with patch("aiohttp.ClientSession", return_value=session_mock):
+            result = await agent.act(
+                task=task,
+                snapshot_html="<html></html>",
+                url="http://localhost:8000/",
+                step_index=0,
+            )
+        assert isinstance(result, dict)
+        assert result["extracted_data"] == "subnet-42"
+        assert len(result["actions"]) == 1
+        assert result["actions"][0].type == "ClickAction"
+
+    @pytest.mark.asyncio
     async def test_act_returns_empty_when_both_endpoints_fail(self):
         agent = ApifiedWebAgent(base_url="http://localhost:9999", timeout=0.5)
         task = Task(url="https://example.com", prompt="P", web_project_id="dummy")

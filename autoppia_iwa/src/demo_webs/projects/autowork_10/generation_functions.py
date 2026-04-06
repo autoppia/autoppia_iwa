@@ -1,5 +1,6 @@
 import contextlib
 import random
+import re
 from datetime import date, datetime, time
 from random import choice
 from typing import Any
@@ -77,6 +78,70 @@ JOB_DESCRIPTIONS = [
 BUDGET_TYPES = ["hourly", "fixed"]
 SCOPE_OPTIONS = ["Small", "Medium", "Large"]
 DURATION_OPTIONS = ["3 to 6 months", "More than 6 months"]
+
+
+def _build_data_extraction_result(
+    selected_item: dict[str, Any],
+    visible_fields: list[str],
+    *,
+    verify_field: str | None = None,
+    question_fields_override: list[str] | None = None,
+) -> dict[str, Any] | None:
+    """Build constraints + question_fields_and_values for data_extraction_only; returns None on validation failure."""
+    available_fields = [f for f in visible_fields if selected_item.get(f) is not None]
+    if len(available_fields) < 2:
+        return None
+
+    question_fields: list[str]
+    chosen_verify_field: str
+
+    if question_fields_override:
+        question_fields = [f for f in question_fields_override if f in available_fields and selected_item.get(f) is not None]
+        if question_fields:
+            remaining = [f for f in available_fields if f not in question_fields]
+            if not remaining:
+                return None
+            chosen_verify_field = verify_field if verify_field is not None and verify_field in remaining else random.choice(remaining)
+            # chosen_verify_field = "company"
+            remaining_for_extra = [f for f in available_fields if f != chosen_verify_field and f not in question_fields]
+            if len(remaining_for_extra) >= 2:
+                num_extra = random.randint(1, len(remaining_for_extra))
+                question_fields = question_fields + random.sample(remaining_for_extra, num_extra)
+        else:
+            question_fields = []
+            chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+    else:
+        chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+        question_fields = []
+
+    if chosen_verify_field not in available_fields:
+        return None
+    verify_value = selected_item.get(chosen_verify_field)
+    if verify_value is None:
+        return None
+
+    if question_fields:
+        question_candidates = question_fields
+    else:
+        question_candidates = [f for f in available_fields if f != chosen_verify_field]
+        if not question_candidates:
+            return None
+        num_question_fields = 1 if len(question_candidates) == 1 else 2
+        question_candidates = random.sample(question_candidates, num_question_fields)
+
+    question_fields_and_values: dict[str, Any] = {}
+    for qf in question_candidates:
+        val = selected_item.get(qf)
+        if val is not None:
+            question_fields_and_values[qf] = val
+    if not question_fields_and_values:
+        return None
+
+    constraints = [create_constraint_dict(chosen_verify_field, ComparisonOperator.EQUALS, verify_value)]
+    return {
+        "constraints": constraints,
+        "question_fields_and_values": question_fields_and_values,
+    }
 
 
 def _collect_field_values_from_dataset(dataset: list[dict[str, Any]], field: str) -> list[Any]:
@@ -303,8 +368,33 @@ def _generate_constraints(
     return all_constraints
 
 
-async def generate_book_consultant_constraint(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None) -> list[dict[str, Any]]:
+async def generate_book_consultant_constraint(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     experts_data = await _get_experts_data(task_url, dataset)
+    if test_types == "data_extraction_only":
+        if not experts_data:
+            return []
+        selected = random.choice(experts_data)
+        selected_item = {
+            "name": selected.get("name"),
+            "country": selected.get("country"),
+            "role": selected.get("role"),
+            "rating": selected.get("rating"),
+            "consultation_fee": selected.get("consultation"),
+        }
+        visible_fields = ["name", "country", "role", "rating", "consultation_fee"]
+        return (
+            _build_data_extraction_result(
+                selected_item,
+                visible_fields,
+                question_fields_override=["name"],
+            )
+            or []
+        )
+
     field_operators = FIELD_OPERATORS_USER_BOOK_CONSULTANT_MAP
     selected_field = ["slug"]
     constraints_list = _generate_constraints(experts_data, field_operators, min_constraints=2, selected_fields=selected_field)
@@ -312,8 +402,28 @@ async def generate_book_consultant_constraint(task_url: str | None = None, datas
     return constraints_list
 
 
-async def generate_hire_button_clicked_constraint(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None) -> list[dict[str, Any]]:
+async def generate_hire_button_clicked_constraint(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     experts_data = await _get_experts_data(task_url, dataset)
+    if test_types == "data_extraction_only":
+        if not experts_data:
+            return []
+        selected = random.choice(experts_data)
+        selected_item = {
+            "name": selected.get("name"),
+            "country": selected.get("country"),
+            "role": selected.get("role"),
+            "rating": selected.get("rating"),
+            "jobs_completed": selected.get("jobs"),
+            "total_earning": selected.get("stats").get("earnings"),
+            "total_hours": selected.get("stats").get("hours"),
+        }
+        visible_fields = ["name", "country", "role", "rating", "jobs_completed", "total_earning", "total_hours"]
+        return _build_data_extraction_result(selected_item, visible_fields, question_fields_override=["name"]) or []
+
     field_operators = FIELD_OPERATORS_MAP_HIRE_BUTTON
     selected_field = []
     constraints_list = _generate_constraints(experts_data, field_operators, min_constraints=2, selected_fields=selected_field)
@@ -368,13 +478,19 @@ async def generate_select_hiring_team_constraint(task_url: str | None = None, da
     return constraints_list
 
 
-async def generate_hire_consultation_constraint(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None) -> list[dict[str, Any]]:
+async def generate_hire_consultation_constraint(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    experts_data = await _get_experts_data(task_url, dataset)
+    if test_types == "data_extraction_only":
+        return await generate_hire_button_clicked_constraint(task_url, dataset, test_types=test_types)
     field_mapping = {
         "increaseHowMuch": {"field": "increaseHowMuch", "dataset": _list_to_field_dataset(["5%", "10%", "15%"], "increaseHowMuch")},
         "increaseWhen": {"field": "increaseWhen", "dataset": _list_to_field_dataset(["Never", "After 3 months", "After 6 months", "After 12 months"], "increaseWhen")},
         "paymentType": {"field": "paymentType", "dataset": _list_to_field_dataset(["fixed", "hourly"], "paymentType")},
     }
-    experts_data = await _get_experts_data(task_url, dataset)
     field_operators = FIELD_OPERATORS_MAP_HIRING_CONSULTANT
     selected_fields = []
     constraints_list = _generate_constraints(experts_data, field_operators, min_constraints=2, field_map=field_mapping, selected_fields=selected_fields)
@@ -382,8 +498,14 @@ async def generate_hire_consultation_constraint(task_url: str | None = None, dat
     return constraints_list
 
 
-async def generate_quick_hire_constraint(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None) -> list[dict[str, Any]]:
-    return await generate_book_consultant_constraint(task_url, dataset)
+async def generate_quick_hire_constraint(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        return await generate_hire_button_clicked_constraint(task_url, dataset, test_types=test_types)
+    return await generate_book_consultant_constraint(task_url, dataset, test_types=test_types)
 
 
 async def generate_cancel_hire_constraint(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None) -> list[dict[str, Any]]:
@@ -395,7 +517,60 @@ async def generate_cancel_hire_constraint(task_url: str | None = None, dataset: 
     return constraints_list
 
 
-def generate_job_posting_constraint() -> list[dict[str, Any]]:
+async def generate_job_posting_constraint(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        jobs_data = await _ensure_dataset(task_url, dataset, entity_type="jobs")
+        if not isinstance(jobs_data, list) or not jobs_data:
+            return []
+        jobs_completed = sum(1 for job in jobs_data if isinstance(job, dict) and job.get("status") == "Completed")
+        jobs_in_progress = sum(1 for job in jobs_data if isinstance(job, dict) and job.get("status") == "In progress")
+        selected = random.choice(jobs_data)
+        if not isinstance(selected, dict):
+            return []
+        raw_time = selected.get("time") or ""
+        raw_activity = selected.get("activity") or ""
+        # Prefer parsing from "time", fallback to "activity"
+        logged_time_match = re.search(r"(\d+:\d+\s*hrs)", raw_time) or re.search(r"(\d+:\d+\s*hrs)", raw_activity)
+        logged_price_match = re.search(r"\((\$[\d,]+)\)", raw_time) or re.search(r"\((\$[\d,]+)\)", raw_activity)
+        logged_time = logged_time_match.group(1) if logged_time_match else None
+        logged_time_price = logged_price_match.group(1) if logged_price_match else None
+        selected_item = {
+            "title": selected.get("title"),
+            "status": selected.get("status"),
+            "start": selected.get("start"),
+            "logged_time": logged_time,
+            "logged_time_price": logged_time_price,
+        }
+        visible_fields = ["title", "status", "start", "logged_time", "logged_time_price"]
+        available_fields = [f for f in visible_fields if selected_item.get(f) is not None]
+        if len(available_fields) < 2:
+            return []
+
+        special_verify_values = {
+            "jobs_completed": jobs_completed,
+            "jobs_in_progress": jobs_in_progress,
+        }
+        verify_candidates = available_fields + list(special_verify_values.keys())
+        chosen_verify_field = random.choice(verify_candidates)
+        question_fields_override = ["title", "logged_time"] if chosen_verify_field == "logged_time_price" else ["title"]
+
+        if chosen_verify_field in special_verify_values:
+            return {"constraints": [create_constraint_dict(chosen_verify_field, ComparisonOperator.EQUALS, special_verify_values[chosen_verify_field])]}
+
+        return (
+            _build_data_extraction_result(
+                selected_item,
+                visible_fields,
+                verify_field=chosen_verify_field,
+                question_fields_override=question_fields_override,
+            )
+            or []
+        )
+
     constraints_list = []
     possible_field = list(FIELD_OPERATORS_MAP_POSTING_A_JOB.keys())
     num_constraints = random.randint(1, len(possible_field))
@@ -707,11 +882,27 @@ PROFILE_NAME_OPTIONS = [
 ]
 
 
-def generate_edit_profile_name_constraint() -> list[dict[str, Any]]:
+def generate_edit_profile_name_constraint(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    _ = task_url, dataset
+    if test_types == "data_extraction_only":
+        value = "Alex Smith"
+        return {"constraints": [create_constraint_dict("name", ComparisonOperator.EQUALS, value)]}
     return _generate_edit_profile_value_constraint(PROFILE_NAME_OPTIONS)
 
 
-def generate_edit_profile_title_constraint() -> list[dict[str, Any]]:
+def generate_edit_profile_title_constraint(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    _ = task_url, dataset
+    if test_types == "data_extraction_only":
+        value = "Project Manager"
+        return {"constraints": [create_constraint_dict("title", ComparisonOperator.EQUALS, value)]}
     return _generate_edit_profile_value_constraint(JOB_TITLES)
 
 
@@ -749,7 +940,15 @@ LOCATION_OPTIONS = [
 ]
 
 
-def generate_edit_profile_location_constraint() -> list[dict[str, Any]]:
+def generate_edit_profile_location_constraint(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    _ = task_url, dataset
+    if test_types == "data_extraction_only":
+        value = "San Francisco, CA"
+        return {"constraints": [create_constraint_dict("location", ComparisonOperator.EQUALS, value)]}
     return _generate_edit_profile_value_constraint(LOCATION_OPTIONS)
 
 
@@ -777,7 +976,15 @@ PROFILE_EMAIL_OPTIONS = [
 ]
 
 
-def generate_edit_profile_email_constraint() -> list[dict[str, Any]]:
+def generate_edit_profile_email_constraint(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    _ = task_url, dataset
+    if test_types == "data_extraction_only":
+        value = "alexsmith@autowork.com"
+        return {"constraints": [create_constraint_dict("email", ComparisonOperator.EQUALS, value)]}
     return _generate_edit_profile_value_constraint(PROFILE_EMAIL_OPTIONS)
 
 

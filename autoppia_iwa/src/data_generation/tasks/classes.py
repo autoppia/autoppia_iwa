@@ -1,13 +1,13 @@
 # file: data_generation/domain/classes.py
 import random
 import uuid
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
 # Import your test classes:
-from autoppia_iwa.src.data_generation.tests.classes import CheckEventTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot
+from autoppia_iwa.src.data_generation.tests.classes import CheckEventTest, DataExtractionTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
 
@@ -24,7 +24,7 @@ class BrowserSpecification(BaseModel):
 
 
 # The union of test classes for polymorphic deserialization
-TestUnion = Annotated[CheckEventTest | JudgeBaseOnHTML | JudgeBaseOnScreenshot, Field(discriminator="type")]
+TestUnion = Annotated[CheckEventTest | JudgeBaseOnHTML | JudgeBaseOnScreenshot | DataExtractionTest, Field(discriminator="type")]
 
 
 class Task(BaseModel):
@@ -155,6 +155,12 @@ class TaskGenerationConfig(BaseModel):
     # Specific use cases to focus on. If None, generates for all available use cases.
     use_cases: list[str] | None = None
     dynamic: bool = False
+    # Which test types to generate/attach for the tasks coming from this config.
+    # Mirrors BenchmarkConfig.test_types but kept as a plain string to avoid import cycles.
+    test_types: Literal["event_only", "data_extraction_only"] = "event_only"
+    # Optional list of use-case names that can receive DataExtractionTest; if None,
+    # the pipeline relies solely on UseCase.supports_data_extraction.
+    data_extraction_use_cases: list[str] | None = None
 
     @field_validator("prompts_per_use_case", mode="before")
     @classmethod

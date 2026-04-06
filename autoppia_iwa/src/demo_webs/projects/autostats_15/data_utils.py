@@ -72,6 +72,10 @@ def _normalize_transfer(raw: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
+# UI display: emission always in M; marketCap/volume24h use formatLargeNumber (B/M/K by magnitude).
+_EMISSION_DIVISOR_M = 1_000_000
+
+
 def _add_trends_to_subnets(subnets: list[dict[str, Any]], seed: int) -> list[dict[str, Any]]:
     """Add price, marketCap, volume24h, trendData and subnet_name (from name) for constraints."""
     result: list[dict[str, Any]] = []

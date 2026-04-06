@@ -119,6 +119,22 @@ class TestNormalizeTransfer:
         out = _normalize_transfer(raw)
         assert "block_number" not in out
 
+    def test_preserves_amount_and_formats_block_number_only(self):
+        """Structural normalize: block_number from blockNumber; amounts stay raw (UI formatting is elsewhere)."""
+        raw = {
+            "hash": "0x1",
+            "from": "5B2svMMjjH48G2jPYFNhsqWqJdHtP3m9rqs4J33Sb3gN9dSM",
+            "to": "5xaNYwAgxf7oXBhsjx9zsMYqkWCWvsF3RcwuZHnZ6TcRanuZ",
+            "amount": 1399.4479,
+            "blockNumber": 1000000,
+        }
+        out = _normalize_transfer(raw)
+        assert out["amount"] == 1399.4479
+        assert out["hash"] == "0x1"
+        assert out["from"] == "5B2svMMjjH48G2jPYFNhsqWqJdHtP3m9rqs4J33Sb3gN9dSM"
+        assert out["to"] == "5xaNYwAgxf7oXBhsjx9zsMYqkWCWvsF3RcwuZHnZ6TcRanuZ"
+        assert out["block_number"] == 1000000
+
 
 class TestAddTrendsToSubnets:
     def test_empty_list(self):
@@ -139,8 +155,9 @@ class TestAddTrendsToSubnets:
     def test_root_has_large_market_cap_and_volume(self):
         subnets = [{"id": 0, "name": "Root"}]
         out = _add_trends_to_subnets(subnets, 99)
-        assert out[0]["marketCap"] >= 50_000_000
-        assert out[0]["volume24h"] >= 5_000_000
+        # M-scaled, 2 decimals: 50M to 100M → 50.0 to 100.0, 5M to 10M → 5.0 to 10.0
+        assert out[0]["marketCap"] >= 50.0
+        assert out[0]["volume24h"] >= 5.0
 
     def test_non_root_has_derived_price_and_caps(self):
         subnets = [{"id": 5, "name": "Other"}]
@@ -150,6 +167,24 @@ class TestAddTrendsToSubnets:
         assert "volume24h" in out[0]
         assert "trendData" in out[0]
         assert len(out[0]["trendData"]) == 7
+
+    def test_emission_preserved_when_present(self):
+        """Subnet row is deep-copied; emission is not rescaled in data_utils."""
+        subnets = [
+            {"id": 0, "name": "Root", "emission": 38_551.84},
+            {"id": 3, "name": "Compute", "emission": 950_725.02},
+        ]
+        out = _add_trends_to_subnets(subnets, 99)
+        assert len(out) == 2
+        assert out[0]["emission"] == 38_551.84
+        assert out[1]["emission"] == 950_725.02
+        assert isinstance(out[0]["marketCap"], int | float)
+        assert isinstance(out[0]["volume24h"], int | float)
+
+    def test_emission_absent_when_not_in_input(self):
+        subnets = [{"id": 1, "name": "NoEmission"}]
+        out = _add_trends_to_subnets(subnets, 0)
+        assert "emission" not in out[0]
 
     def test_deterministic_for_same_seed(self):
         subnets = [{"id": 3, "name": "X"}]
@@ -236,6 +271,13 @@ class TestAccountToAccountWithDetails:
         assert "balanceTrend" in out
         assert len(out["balanceTrend"]) == 30
 
+    def test_balance_staked_numeric_raw(self):
+        account = {"address": "5PDQkfbnQa6ffdoziyeHsfd9ZLavP28Yq3QLSdWGsou8YE6v", "balance": 65952.5175, "stakedAmount": 22817.6268}
+        out = _account_to_account_with_details(account, 0)
+        assert out["balance"] == 65952.5175
+        assert out["stakedAmount"] == 22817.6268
+        assert out["address"] == "5PDQkfbnQa6ffdoziyeHsfd9ZLavP28Yq3QLSdWGsou8YE6v"
+
 
 _MODULE = "autoppia_iwa.src.demo_webs.projects.autostats_15.data_utils"
 
@@ -244,11 +286,34 @@ _MODULE = "autoppia_iwa.src.demo_webs.projects.autostats_15.data_utils"
 class TestFetchData:
     """fetch_data with mocked get_backend_service_url and load_dataset_data."""
 
-    async def test_validators_returns_raw(self):
+    async def test_validators_returns_normalized(self):
         raw = [{"hotkey": "0xabc", "rank": 1}]
         with patch(f"{_MODULE}.get_backend_service_url", return_value="http://test/"), patch(f"{_MODULE}.load_dataset_data", new_callable=AsyncMock, return_value=raw):
             result = await fetch_data("validators", 1, count=10)
-        assert result == raw
+        assert len(result) == 1
+        assert result[0]["hotkey"] == "0xabc"
+        assert result[0]["rank"] == 1
+
+    async def test_validators_return_server_rows_unchanged(self):
+        raw = [
+            {
+                "hotkey": "0xdef",
+                "rank": 2,
+                "totalWeight": 859_221,
+                "rootStake": 500_000,
+                "alphaStake": 2_500_000_000,
+                "dominance": 3.4567,
+                "commission": 5.123,
+            }
+        ]
+        with patch(f"{_MODULE}.get_backend_service_url", return_value="http://test/"), patch(f"{_MODULE}.load_dataset_data", new_callable=AsyncMock, return_value=raw):
+            result = await fetch_data("validators", 1, count=10)
+        assert len(result) == 1
+        assert result[0]["totalWeight"] == 859_221
+        assert result[0]["rootStake"] == 500_000
+        assert result[0]["alphaStake"] == 2_500_000_000
+        assert result[0]["dominance"] == 3.4567
+        assert result[0]["commission"] == 5.123
 
     async def test_subnets_returns_with_trends(self):
         raw = [{"id": 1, "name": "Sub1"}]
