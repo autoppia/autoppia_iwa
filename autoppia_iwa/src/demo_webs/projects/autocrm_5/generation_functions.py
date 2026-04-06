@@ -637,7 +637,10 @@ async def generate_add_client_constraints(
         if not allowed_ops:
             continue
         op = ComparisonOperator(random.choice(allowed_ops))
-        constraints.append(create_constraint_dict(field, op, sample.get(field)))
+        value = _generate_constraint_value(op, sample.get(field), field, clients)
+        if value is None:
+            continue
+        constraints.append(create_constraint_dict(field, op, value))
     return constraints
 
 

@@ -144,7 +144,7 @@ class IWebAgent(ABC):
         Returns:
             List of actions to execute (may be multiple for batch execution)
         """
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
     async def solve_task(self, task: Task) -> "TaskSolution":
@@ -152,7 +152,7 @@ class IWebAgent(ABC):
         Optional: return a full task solution (sequence of actions) in one shot.
         Used by one-shot agents (e.g. POST /solve_task_at_once). Agents that only support
         """
-        pass
+        pass  # pragma: no cover
 
 
 class BaseAgent(IWebAgent):

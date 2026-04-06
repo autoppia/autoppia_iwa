@@ -1,6 +1,7 @@
 # concurrent_evaluator.py
 import asyncio
 import contextlib
+import json
 import os
 import time
 from collections import defaultdict
@@ -135,7 +136,8 @@ class ConcurrentEvaluator(IEvaluator):
         self.total_evaluation_time = 0.0
         self.evaluation_count = 0
         self.web_project = web_project
-        self.backend_demo_webs_service = BackendDemoWebService(web_project=web_project)
+        self.validator_id = str(VALIDATOR_ID or os.getenv("VALIDATOR_ID", "validator_001")).strip() or "validator_001"
+        self.backend_demo_webs_service = BackendDemoWebService(web_project=web_project, validator_id=self.validator_id)
 
         # Statistics collection
         self.evaluation_stats: list[EvaluationStats] = []
@@ -632,9 +634,22 @@ class ConcurrentEvaluator(IEvaluator):
                 browser = await playwright.chromium.launch(headless=headless, args=[f"--window-size={browser_specifications.screen_width},{browser_specifications.screen_height}"])
                 # browser = await playwright.chromium.launch(headless=EVALUATOR_HEADLESS, slow_mo=2000)
                 context = await browser.new_context(
-                    extra_http_headers={"X-WebAgent-Id": web_agent_id, "X-Validator-Id": VALIDATOR_ID},
+                    extra_http_headers={"X-WebAgent-Id": web_agent_id, "X-Validator-Id": self.validator_id},
                     no_viewport=True,
                 )
+                # Keep attribution ids in localStorage too. Several demo fronts read these
+                # values from storage when emitting backend events.
+                with contextlib.suppress(Exception):
+                    await context.add_init_script(
+                        f"""
+(() => {{
+  try {{
+    localStorage.setItem("web_agent_id", {json.dumps(web_agent_id)});
+    localStorage.setItem("validator_id", {json.dumps(self.validator_id)});
+  }} catch (e) {{}}
+}})();
+"""
+                    )
                 context.set_default_timeout(self.config.browser_timeout)
                 page = await context.new_page()
 
