@@ -283,7 +283,7 @@ _RAW_TESTS: dict[str, list[dict]] = {
                 "name": {"operator": "not_contains", "value": "mvk"},
                 "description": {"operator": "not_equals", "value": "Create user communication plan for important announcements"},
                 "date": {"operator": "less_than", "value": "2026-04-24"},
-                "priority": {"operator": "not_equals", "value": 4},
+                "priority": {"operator": "not_equals", "value": "Low"},
             },
             "description": "Check if specific event was triggered",
         }
@@ -296,7 +296,7 @@ _RAW_TESTS: dict[str, list[dict]] = {
                 "name": {"operator": "not_contains", "value": "vqs"},
                 "description": {"operator": "contains", "value": "ate"},
                 "date": {"operator": "greater_than", "value": "2026-04-28"},
-                "priority": 1,
+                "priority": "Highest",
             },
             "description": "Check if specific event was triggered",
         }
@@ -309,7 +309,7 @@ _RAW_TESTS: dict[str, list[dict]] = {
                 "name": {"operator": "not_equals", "value": "Implement data anonymization"},
                 "description": "Review pull requests and provide feedback to development team",
                 "date": {"operator": "less_than", "value": "2026-04-25"},
-                "priority": {"operator": "not_equals", "value": 4},
+                "priority": {"operator": "not_equals", "value": "Low"},
             },
             "description": "Check if specific event was triggered",
         }
@@ -322,7 +322,7 @@ _RAW_TESTS: dict[str, list[dict]] = {
                 "name": {"operator": "contains", "value": "t"},
                 "description": {"operator": "not_equals", "value": "Plan tasks and priorities for the next development sprint"},
                 "date": {"operator": "less_than", "value": "2026-04-22"},
-                "priority": {"operator": "not_equals", "value": 4},
+                "priority": {"operator": "not_equals", "value": "Low"},
             },
             "description": "Check if specific event was triggered",
         }
@@ -335,7 +335,7 @@ _RAW_TESTS: dict[str, list[dict]] = {
                 "name": {"operator": "not_equals", "value": "Review vendor contracts"},
                 "description": {"operator": "not_contains", "value": "uwv"},
                 "date": {"operator": "less_equal", "value": "2026-04-27"},
-                "priority": 3,
+                "priority": "Medium",
             },
             "description": "Check if specific event was triggered",
         }
@@ -444,7 +444,7 @@ AUTOLIST_TASK_ADDED = _uc(
 
 AUTOLIST_CANCEL_TASK_CREATION = _uc(
     "AUTOLIST_CANCEL_TASK_CREATION",
-    prompt=("Please cancel the task creation where the name does NOT contain 'vqs', the description contains 'ate', the date is AFTER '2026-04-28', and the priority equals '1'."),
+    prompt=("Please cancel the task creation where the name does NOT contain 'vqs', the description contains 'ate', the date is AFTER '2026-04-28', and the priority equals 'Highest'."),
     actions=[
         NavigateAction(url=_home(SEED_CANCEL_TASK_CREATION)),
         *_open_add_task_form(),
@@ -494,7 +494,7 @@ AUTOLIST_COMPLETE_TASK = _uc(
 
 AUTOLIST_DELETE_TASK = _uc(
     "AUTOLIST_DELETE_TASK",
-    prompt=("Delete task whose name not equals 'Review vendor contracts' and description not contains 'uwv' and date less equal '2026-04-27' and priority equals '3'."),
+    prompt=("Delete task whose name not equals 'Review vendor contracts' and description not contains 'uwv' and date less equal '2026-04-27' and priority equals 'Medium'."),
     actions=[
         NavigateAction(url=_home(SEED_DELETE_TASK)),
         WaitAction(time_seconds=3.0),
