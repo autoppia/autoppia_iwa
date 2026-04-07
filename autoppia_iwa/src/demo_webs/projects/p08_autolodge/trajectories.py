@@ -2,7 +2,7 @@
 Golden trajectories for Autoppia Lodge (``autolodge``, web_8).
 
 Per-use-case ``prompt`` and ``tests`` are static literals below (no JSON load).
-``actions`` are empty until concrete flows are scripted.
+Seeds match ``autolodge_tasks.json`` in this package (``?seed=`` on ``http://localhost:8007``).
 
 Base URL: ``http://localhost:8007``.
 """
@@ -14,9 +14,92 @@ WEB_PROJECT_ID = "autolodge"
 
 from autoppia_iwa.src.data_generation.tests.classes import BaseTaskTest
 from autoppia_iwa.src.demo_webs.classes import Trajectory
-from autoppia_iwa.src.execution.actions.base import BaseAction
+from autoppia_iwa.src.execution.actions import (
+    ClickAction,
+    EvaluateAction,
+    NavigateAction,
+    SelectDropDownOptionAction,
+    TypeAction,
+    WaitAction,
+)
+from autoppia_iwa.src.execution.actions.base import BaseAction, Selector, SelectorType
 
 BASE = "http://localhost:8007"
+
+# Seeds from autolodge_tasks.json (canonical order)
+SEED_SEARCH_HOTEL = 230
+SEED_VIEW_HOTEL = 897
+SEED_EDIT_NUMBER_OF_GUESTS = 154
+SEED_RESERVE_HOTEL = 543
+SEED_EDIT_CHECK_IN_OUT_DATES = 714
+SEED_CONFIRM_AND_PAY = 115
+SEED_MESSAGE_HOST = 110
+SEED_SHARE_HOTEL = 314
+SEED_ADD_TO_WISHLIST = 634
+SEED_REMOVE_FROM_WISHLIST = 698
+SEED_BACK_TO_ALL_HOTELS = 574
+SEED_SUBMIT_REVIEW = 229
+SEED_APPLY_FILTERS = 913
+SEED_PAYMENT_METHOD_SELECTED = 733
+SEED_WISHLIST_OPENED = 772
+SEED_BOOK_FROM_WISHLIST = 468
+SEED_POPULAR_HOTELS_VIEWED = 672
+SEED_HELP_VIEWED = 306
+SEED_FAQ_OPENED = 234
+
+# Static hotel IDs aligned with prompts / CheckEventTest criteria (see web_8 ``hotels.json``)
+HID_VIEW = 56
+HID_EDIT_GUESTS = 50
+HID_RESERVE = 59
+HID_EDIT_DATES = 179
+HID_CONFIRM = 54
+HID_MESSAGE = 134
+HID_SHARE = 36
+HID_ADD_WL = 3
+HID_REMOVE_WL = 200
+HID_BACK = 39
+HID_REVIEW = 91
+HID_PAYMENT = 59
+HID_BOOK_WL = 10
+
+_MESSAGE_TEXT = "Is there parking available nearby?"
+_SHARE_EMAIL = "friend@example.com"
+_REVIEW_COMMENT = "Great stay"
+
+# react-day-picker v8: pick checkout-aligned range (check-in > 2025-06-19, checkout 2025-12-31) on confirm calendar
+_EDIT_STAY_CALENDAR_JS = """async () => {
+  const root = document.getElementById('dateRangeCalendar');
+  if (!root) return false;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const cap = () => root.querySelector('.rdp-caption_label')?.textContent?.trim() || '';
+  const nextMonth = async () => {
+    const btn = root.querySelector('button[name="next-month"]');
+    if (btn && !btn.disabled) btn.click();
+    await sleep(150);
+  };
+  for (let i = 0; i < 28; i++) {
+    if (cap().includes('July') && cap().includes('2025')) break;
+    await nextMonth();
+  }
+  const pickDay = (n) => {
+    for (const b of root.querySelectorAll('button[name="day"]')) {
+      if (b.textContent?.trim() !== String(n)) continue;
+      if (b.disabled) continue;
+      if (b.className.includes('day_outside')) continue;
+      b.click();
+      return true;
+    }
+    return false;
+  };
+  pickDay(20);
+  await sleep(200);
+  for (let i = 0; i < 28; i++) {
+    if (cap().includes('December') && cap().includes('2025')) break;
+    await nextMonth();
+  }
+  pickDay(31);
+  return true;
+}"""
 
 _PROMPTS: dict[str, str] = {
     "SEARCH_HOTEL": "Search for hotels where the search term equals 'Bali, Indonesia'",
@@ -292,6 +375,24 @@ _RAW_TESTS: dict[str, list[dict]] = {
 _TESTS: dict[str, list[BaseTaskTest]] = {uc: [BaseTaskTest.deserialize(p) for p in pl] for uc, pl in _RAW_TESTS.items()}
 
 
+def _xp(expr: str) -> Selector:
+    return Selector(type=SelectorType.XPATH_SELECTOR, value=expr)
+
+
+def _home(seed: int) -> str:
+    return f"{BASE}/?seed={seed}"
+
+
+def _stay(hid: int, seed: int, extra: str = "") -> str:
+    q = f"?seed={seed}" + (f"&{extra}" if extra else "")
+    return f"{BASE}/stay/{hid}{q}"
+
+
+def _confirm(hid: int, seed: int, extra: str = "") -> str:
+    q = f"?seed={seed}" + (f"&{extra}" if extra else "")
+    return f"{BASE}/stay/{hid}/confirm{q}"
+
+
 def _uc(use_case: str, actions: list[BaseAction]) -> Trajectory:
     return Trajectory(
         name=use_case,
@@ -301,101 +402,219 @@ def _uc(use_case: str, actions: list[BaseAction]) -> Trajectory:
     )
 
 
-# --- One trajectory per use case (canonical JSON order); fill ``actions`` later. ---
-
 SEARCH_HOTEL = _uc(
     "SEARCH_HOTEL",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_home(SEED_SEARCH_HOTEL)),
+        WaitAction(time_seconds=0.4),
+        ClickAction(selector=_xp('//*[@id="search_field" or contains(@id, "search-input")]')),
+        WaitAction(time_seconds=0.2),
+        ClickAction(selector=_xp('//*[@id="where-input" or contains(@id, "where_input")]')),
+        TypeAction(selector=_xp('//*[@id="where-input" or contains(@id, "where_input")]'), text="Bali, Indonesia"),
+        ClickAction(selector=_xp('//*[@id="search_button" or contains(@id, "search-submit")]')),
+    ],
 )
 
 VIEW_HOTEL = _uc(
     "VIEW_HOTEL",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_stay(HID_VIEW, SEED_VIEW_HOTEL)),
+        WaitAction(time_seconds=0.6),
+    ],
 )
 
 EDIT_NUMBER_OF_GUESTS = _uc(
     "EDIT_NUMBER_OF_GUESTS",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_stay(HID_EDIT_GUESTS, SEED_EDIT_NUMBER_OF_GUESTS)),
+        WaitAction(time_seconds=0.6),
+        TypeAction(selector=_xp('//*[@id="guests-count" or contains(@id, "guests_count")]'), text="2"),
+    ],
 )
 
 RESERVE_HOTEL = _uc(
     "RESERVE_HOTEL",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_stay(HID_RESERVE, SEED_RESERVE_HOTEL)),
+        WaitAction(time_seconds=0.7),
+        ClickAction(selector=_xp('//*[@id="reserve-button" or contains(@id, "reserve_button")]')),
+    ],
 )
 
 EDIT_CHECK_IN_OUT_DATES = _uc(
     "EDIT_CHECK_IN_OUT_DATES",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_confirm(HID_EDIT_DATES, SEED_EDIT_CHECK_IN_OUT_DATES, "guests=1")),
+        WaitAction(time_seconds=1.0),
+        ClickAction(selector=_xp('//*[@id="edit_dates_button" or contains(@id, "edit-dates")]')),
+        WaitAction(time_seconds=0.4),
+        EvaluateAction(script=_EDIT_STAY_CALENDAR_JS),
+        WaitAction(time_seconds=0.5),
+    ],
 )
 
 CONFIRM_AND_PAY = _uc(
     "CONFIRM_AND_PAY",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_confirm(HID_CONFIRM, SEED_CONFIRM_AND_PAY, "guests=2")),
+        WaitAction(time_seconds=1.0),
+        TypeAction(selector=_xp('//*[@id="card_number_input" or contains(@id, "card-number")]'), text="4242424242424242"),
+        TypeAction(selector=_xp('//*[@id="card_exp_input" or contains(@id, "card-exp")]'), text="12 / 28"),
+        TypeAction(selector=_xp('//*[@id="card_cvv_input" or contains(@id, "card-cvv")]'), text="456"),
+        TypeAction(selector=_xp('//*[@id="zip_input" or contains(@id, "zip")]'), text="54321"),
+        SelectDropDownOptionAction(
+            selector=_xp('//*[@id="country_select" or contains(@id, "country")]'),
+            text="United States",
+        ),
+        ClickAction(selector=_xp('//*[@id="confirm_and_pay_button" or contains(@id, "confirm-and-pay")]')),
+    ],
 )
 
 MESSAGE_HOST = _uc(
     "MESSAGE_HOST",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_confirm(HID_MESSAGE, SEED_MESSAGE_HOST, "guests=2")),
+        WaitAction(time_seconds=1.0),
+        TypeAction(selector=_xp('//*[@id="host_message_input" or contains(@id, "host-message")]'), text=_MESSAGE_TEXT),
+        ClickAction(selector=_xp('//*[@id="send_host_message_button" or contains(@id, "send-host")]')),
+    ],
 )
 
 SHARE_HOTEL = _uc(
     "SHARE_HOTEL",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_stay(HID_SHARE, SEED_SHARE_HOTEL)),
+        WaitAction(time_seconds=0.7),
+        ClickAction(selector=_xp('//*[@id="share-button" or contains(@id, "share_button")]')),
+        WaitAction(time_seconds=0.2),
+        TypeAction(
+            selector=_xp('//div[contains(@class,"fixed") and contains(@class,"inset-0")]//input[@type="email"]'),
+            text=_SHARE_EMAIL,
+        ),
+        ClickAction(selector=_xp('//*[@id="share-send-button" or contains(@id, "share_send")]')),
+    ],
 )
 
 ADD_TO_WISHLIST = _uc(
     "ADD_TO_WISHLIST",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_stay(HID_ADD_WL, SEED_ADD_TO_WISHLIST)),
+        WaitAction(time_seconds=0.7),
+        ClickAction(
+            selector=_xp('//button[.//path[contains(@d,"M12 21.35")]]'),
+        ),
+    ],
 )
 
 REMOVE_FROM_WISHLIST = _uc(
     "REMOVE_FROM_WISHLIST",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_stay(HID_REMOVE_WL, SEED_REMOVE_FROM_WISHLIST)),
+        WaitAction(time_seconds=0.5),
+        ClickAction(selector=_xp('//button[.//path[contains(@d,"M12 21.35")]]')),
+        WaitAction(time_seconds=0.3),
+        ClickAction(selector=_xp('//button[.//path[contains(@d,"M12 21.35")]]')),
+    ],
 )
 
 BACK_TO_ALL_HOTELS = _uc(
     "BACK_TO_ALL_HOTELS",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_confirm(HID_BACK, SEED_BACK_TO_ALL_HOTELS, "guests=1")),
+        WaitAction(time_seconds=0.9),
+        ClickAction(
+            selector=_xp('//button[contains(., "Back to all hotels") or contains(., "Back to stays") or contains(., "Return to listings")]'),
+        ),
+    ],
 )
 
 SUBMIT_REVIEW = _uc(
     "SUBMIT_REVIEW",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_stay(HID_REVIEW, SEED_SUBMIT_REVIEW)),
+        WaitAction(time_seconds=0.7),
+        TypeAction(
+            selector=_xp('//form[.//button[contains(.,"Submit review") or contains(.,"Send review")]]//textarea'),
+            text=_REVIEW_COMMENT,
+        ),
+        SelectDropDownOptionAction(
+            selector=_xp('//form[.//button[contains(.,"Submit review") or contains(.,"Send review")]]//select'),
+            text="3 ★",
+        ),
+        ClickAction(selector=_xp('//form[.//button[contains(.,"Submit review") or contains(.,"Send review")]]//button[@type="submit"]')),
+    ],
 )
 
 APPLY_FILTERS = _uc(
     "APPLY_FILTERS",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_home(SEED_APPLY_FILTERS)),
+        WaitAction(time_seconds=0.5),
+        SelectDropDownOptionAction(selector=_xp('//*[@id="rating-filter" or contains(@id,"rating_filter")]'), text="4.5+"),
+        SelectDropDownOptionAction(selector=_xp('//*[@id="region-filter" or contains(@id,"region_filter")]'), text="United States"),
+        ClickAction(selector=_xp('//button[contains(., "Apply") or contains(., "apply_filters")]')),
+    ],
 )
 
 PAYMENT_METHOD_SELECTED = _uc(
     "PAYMENT_METHOD_SELECTED",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_confirm(HID_PAYMENT, SEED_PAYMENT_METHOD_SELECTED, "guests=1")),
+        WaitAction(time_seconds=1.0),
+        ClickAction(selector=_xp('//label[.//span[contains(.,"cash") or contains(.,"Cash") or contains(.,"arrival")]]//input[@type="radio"]')),
+        WaitAction(time_seconds=0.15),
+        ClickAction(selector=_xp('//label[.//span[contains(.,"card") or contains(.,"Card") or contains(.,"debit")]]//input[@type="radio"]')),
+    ],
 )
 
 WISHLIST_OPENED = _uc(
     "WISHLIST_OPENED",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=f"{BASE}/wishlist?seed={SEED_WISHLIST_OPENED}"),
+        WaitAction(time_seconds=0.6),
+    ],
 )
 
 BOOK_FROM_WISHLIST = _uc(
     "BOOK_FROM_WISHLIST",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_stay(HID_BOOK_WL, SEED_BOOK_FROM_WISHLIST)),
+        WaitAction(time_seconds=0.6),
+        ClickAction(selector=_xp('//button[.//path[contains(@d,"M12 21.35")]]')),
+        WaitAction(time_seconds=0.4),
+        NavigateAction(url=f"{BASE}/wishlist?seed={SEED_BOOK_FROM_WISHLIST}"),
+        WaitAction(time_seconds=0.6),
+        ClickAction(
+            selector=_xp(f'//a[contains(@href, "/stay/{HID_BOOK_WL}") and contains(@href, "source=wishlist")]'),
+        ),
+    ],
 )
 
 POPULAR_HOTELS_VIEWED = _uc(
     "POPULAR_HOTELS_VIEWED",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=f"{BASE}/popular?seed={SEED_POPULAR_HOTELS_VIEWED}"),
+        WaitAction(time_seconds=0.6),
+    ],
 )
 
 HELP_VIEWED = _uc(
     "HELP_VIEWED",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=f"{BASE}/help?seed={SEED_HELP_VIEWED}"),
+        WaitAction(time_seconds=0.5),
+    ],
 )
 
 FAQ_OPENED = _uc(
     "FAQ_OPENED",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=f"{BASE}/help?seed={SEED_FAQ_OPENED}"),
+        WaitAction(time_seconds=0.4),
+        ClickAction(
+            selector=_xp('//button[contains(., "payment options") or contains(., "Payment options")]'),
+        ),
+    ],
 )
 
 

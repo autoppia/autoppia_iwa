@@ -2,7 +2,7 @@
 Golden trajectories for Autoppia AutoConnect (``autoconnect``, web_9).
 
 Per-use-case ``prompt`` and ``tests`` are static literals below (no JSON load).
-``actions`` are empty until concrete flows are scripted.
+Seeds match ``autoconnect_tasks.json`` in this package (``?seed=`` on ``http://localhost:8008``).
 
 Base URL: ``http://localhost:8008``.
 """
@@ -14,9 +14,136 @@ WEB_PROJECT_ID = "autoconnect"
 
 from autoppia_iwa.src.data_generation.tests.classes import BaseTaskTest
 from autoppia_iwa.src.demo_webs.classes import Trajectory
-from autoppia_iwa.src.execution.actions.base import BaseAction
+from autoppia_iwa.src.execution.actions import (
+    ClickAction,
+    NavigateAction,
+    SelectDropDownOptionAction,
+    TypeAction,
+    WaitAction,
+)
+from autoppia_iwa.src.execution.actions.base import BaseAction, Selector, SelectorType
 
 BASE = "http://localhost:8008"
+DEFAULT_SEED = 1
+
+# Seeds from autoconnect_tasks.json
+SEED_VIEW_USER_PROFILE = 134
+SEED_CONNECT_WITH_USER = 868
+SEED_POST_STATUS = 654
+SEED_LIKE_POST = 423
+SEED_COMMENT_ON_POST = 18
+SEED_SAVE_POST = 13
+SEED_HIDE_POST = 361
+SEED_VIEW_SAVED_POSTS = 148
+SEED_VIEW_APPLIED_JOBS = 880
+SEED_CANCEL_APPLICATION = 428
+SEED_EDIT_PROFILE = 824
+SEED_EDIT_EXPERIENCE = 326
+SEED_ADD_EXPERIENCE = 667
+SEED_REMOVE_POST = 282
+SEED_VIEW_HIDDEN_POSTS = 547
+SEED_UNHIDE_POST = 13
+SEED_SEARCH_USERS = 551
+SEED_FOLLOW_PAGE = 557
+SEED_UNFOLLOW_PAGE = 406
+SEED_VIEW_JOB = 409
+SEED_FILTER_JOBS = 209
+SEED_BACK_TO_ALL_JOBS = 665
+SEED_APPLY_FOR_JOB = 806
+SEED_SEARCH_JOBS = 61
+SEED_HOME_NAVBAR = 809
+SEED_JOBS_NAVBAR = 523
+
+# Copy-paste strings aligned with prompts / static dataset
+_ABOUT_TARGET = (
+    "Hello! I'm Andrew, a senior ux designer with expertise in user-centered design. "
+    "I'm passionate about accessibility and inclusive design. I'm always learning and "
+    "exploring new trends and technologies in my field."
+)
+_POST_WEEKEND = "Weekend getaway was exactly what I needed. Sometimes a change of scenery makes all the difference."
+_POST_PERSONAL_BEST = "Personal best today! Progress feels good."
+_POST_FRIDAY = "Friday vibes! Another productive week in the books."
+_BIRTHDAY_POST = "Birthday wishes are making my day! Thank you to everyone who reached out."
+_POST_STATUS_SAFE = "IWA trajectory: status update (not the React Summit line)."
+
+
+def _home(seed: int = DEFAULT_SEED) -> str:
+    return f"{BASE}/?seed={seed}"
+
+
+def _path(seed: int, path: str) -> str:
+    p = path.strip().lstrip("/")
+    return f"{BASE}/{p}?seed={seed}" if p else _home(seed)
+
+
+def _xp(expr: str) -> Selector:
+    return Selector(type=SelectorType.XPATH_SELECTOR, value=expr)
+
+
+def _task_entry(seed: int) -> list[BaseAction]:
+    return [NavigateAction(url=_home(seed)), WaitAction(time_seconds=1.0)]
+
+
+def _nav_home_click() -> list[BaseAction]:
+    return [
+        ClickAction(selector=_xp("(//*[@id='nav_home_link' or @id='nav_home' or @id='nav-feed'])[1]")),
+        WaitAction(time_seconds=0.6),
+    ]
+
+
+def _nav_jobs_click() -> list[BaseAction]:
+    return [
+        ClickAction(selector=_xp("(//*[@id='nav_jobs_link' or @id='nav_jobs' or @id='nav-careers'])[1]")),
+        WaitAction(time_seconds=0.6),
+    ]
+
+
+def _user_search_input() -> Selector:
+    return _xp("(//*[@id='search-input' or @id='user-search' or @id='people-search'])[1]")
+
+
+def _post_article_contains_text(fragment: str) -> str:
+    """Scope to a feed ``article`` whose body contains ``fragment`` (substring match)."""
+    if "'" in fragment:
+        escaped = fragment.replace("'", "',\"'\",'")
+        pred = f"contains(normalize-space(.),concat({escaped}))"
+    else:
+        pred = f"contains(normalize-space(.), '{fragment}')"
+    return f"(//article[.//p[{pred}]])[1]"
+
+
+def _like_in_article(article_xpath: str) -> list[BaseAction]:
+    return [
+        ClickAction(selector=_xp(f"{article_xpath}//button[.//path[contains(@d,'M12 21.35')]][1]")),
+        WaitAction(time_seconds=0.45),
+    ]
+
+
+def _save_in_article(article_xpath: str) -> list[BaseAction]:
+    return [
+        ClickAction(selector=_xp(f"{article_xpath}//button[.//path[contains(@d,'M6 3h12a1')]][1]")),
+        WaitAction(time_seconds=0.45),
+    ]
+
+
+def _hide_in_article(article_xpath: str) -> list[BaseAction]:
+    return [
+        ClickAction(selector=_xp(f"{article_xpath}//button[.//path[contains(@d,'M3 12s3.5-6')]][1]")),
+        WaitAction(time_seconds=0.45),
+    ]
+
+
+def _comment_first_visible_post(text: str) -> list[BaseAction]:
+    ta = _xp("(//article//textarea[contains(@placeholder,'comment') or contains(@placeholder,'Comment') or contains(@placeholder,'reply') or contains(@placeholder,'Reply')])[1]")
+    return [
+        ClickAction(selector=ta),
+        WaitAction(time_seconds=0.25),
+        TypeAction(selector=ta, text=text),
+        WaitAction(time_seconds=0.2),
+        ClickAction(selector=_xp("(//article//button[@type='submit' and .//path[contains(@d,'M3 20l18')]])[1]")),
+        WaitAction(time_seconds=0.5),
+    ]
+
 
 _PROMPTS: dict[str, str] = {
     "VIEW_USER_PROFILE": "View the profile of user where name equals 'Brian Griffith'.",
@@ -226,136 +353,373 @@ def _uc(use_case: str, actions: list[BaseAction]) -> Trajectory:
     )
 
 
-# --- One trajectory per use case (canonical JSON order); fill ``actions`` later. ---
+# --- Flows: entry URL uses task seed; steps match UI in web_9_autoconnect. ---
+
+_x_weekend = _post_article_contains_text("Weekend getaway was exactly what I needed")
+_x_personal = _post_article_contains_text("Personal best today! Progress feels good.")
+_x_hide_candidate = f"(//article[not(contains(translate(normalize-space((.//div[contains(@class,'font-semibold')])[1]),'HJM','hjm'),'hjm')) and .//p[normalize-space(.)!='{_BIRTHDAY_POST}'])[1]"
 
 VIEW_USER_PROFILE = _uc(
     "VIEW_USER_PROFILE",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        *_task_entry(SEED_VIEW_USER_PROFILE),
+        ClickAction(selector=_xp("//a[contains(@href,'/profile/')][normalize-space(.)='Brian Griffith']")),
+        WaitAction(time_seconds=0.9),
+    ],
 )
 
 CONNECT_WITH_USER = _uc(
     "CONNECT_WITH_USER",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        *_task_entry(SEED_CONNECT_WITH_USER),
+        NavigateAction(url=_path(SEED_CONNECT_WITH_USER, "profile/jack.rogers")),
+        WaitAction(time_seconds=1.0),
+        ClickAction(selector=_xp("//button[contains(normalize-space(.),'Connect') or contains(normalize-space(.),'connect')][not(contains(normalize-space(.),'Pending'))]")),
+        WaitAction(time_seconds=0.6),
+    ],
 )
 
 POST_STATUS = _uc(
     "POST_STATUS",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        *_task_entry(SEED_POST_STATUS),
+        ClickAction(selector=_xp("(//div[contains(@class,'sticky')][contains(@class,'top-16')]//button[contains(@class,'border') or contains(@class,'rounded-full')])[1]")),
+        WaitAction(time_seconds=0.45),
+        TypeAction(
+            selector=_xp("//form[contains(@class,'max-w-2xl')]//textarea"),
+            text=_POST_STATUS_SAFE,
+        ),
+        WaitAction(time_seconds=0.2),
+        ClickAction(selector=_xp("//form[contains(@class,'max-w-2xl')]//button[@type='submit']")),
+        WaitAction(time_seconds=0.6),
+    ],
 )
 
 LIKE_POST = _uc(
     "LIKE_POST",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        *_task_entry(SEED_LIKE_POST),
+        *_like_in_article(_x_personal),
+    ],
 )
 
 COMMENT_ON_POST = _uc(
     "COMMENT_ON_POST",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        *_task_entry(SEED_COMMENT_ON_POST),
+        *_comment_first_visible_post("Great job, keep it up!"),
+    ],
 )
 
 SAVE_POST = _uc(
     "SAVE_POST",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        *_task_entry(SEED_SAVE_POST),
+        *_save_in_article(_x_weekend),
+    ],
 )
 
 HIDE_POST = _uc(
     "HIDE_POST",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        *_task_entry(SEED_HIDE_POST),
+        *_hide_in_article(_x_hide_candidate),
+    ],
 )
 
 VIEW_SAVED_POSTS = _uc(
     "VIEW_SAVED_POSTS",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        *_task_entry(SEED_VIEW_SAVED_POSTS),
+        ClickAction(selector=_xp("//a[contains(@href,'/saved')]")),
+        WaitAction(time_seconds=0.8),
+    ],
 )
 
 VIEW_APPLIED_JOBS = _uc(
     "VIEW_APPLIED_JOBS",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_path(SEED_VIEW_APPLIED_JOBS, "jobs/applied")),
+        WaitAction(time_seconds=1.0),
+    ],
 )
 
 CANCEL_APPLICATION = _uc(
     "CANCEL_APPLICATION",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_path(SEED_CANCEL_APPLICATION, "jobs/j5")),
+        WaitAction(time_seconds=1.0),
+        ClickAction(selector=_xp("//button[contains(normalize-space(.),'Apply Now') or contains(normalize-space(.),'Apply')][not(contains(@class,'green'))]")),
+        WaitAction(time_seconds=0.5),
+        ClickAction(selector=_xp("//button[contains(normalize-space(.),'Cancel application')]")),
+        WaitAction(time_seconds=0.5),
+    ],
 )
+
+_EDIT_PROFILE_HEADER_BTN = _xp("//div[contains(@class,'rounded-xl shadow-lg')]//button[contains(normalize-space(.),'Edit profile') or contains(normalize-space(.),'Save profile')][1]")
+_ABOUT_EDIT_BTN = _xp("//h3[contains(normalize-space(.),'About')]/following::button[contains(.,'Edit') or contains(.,'Save')][1]")
+_ABOUT_TEXTAREA = _xp("//textarea[contains(@placeholder,'Tell us about yourself') or contains(@class,'border-2')][1]")
 
 EDIT_PROFILE = _uc(
     "EDIT_PROFILE",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_path(SEED_EDIT_PROFILE, "profile/me")),
+        WaitAction(time_seconds=1.2),
+        ClickAction(selector=_EDIT_PROFILE_HEADER_BTN),
+        WaitAction(time_seconds=0.35),
+        TypeAction(
+            selector=_xp("(//div[contains(@class,'text-2xl')]//input[@class])[1]"),
+            text="Andrew Kim",
+        ),
+        TypeAction(
+            selector=_xp("(//div[contains(@class,'text-blue-600')]//input[@class])[1]"),
+            text="Senior UX Designer",
+        ),
+        TypeAction(
+            selector=_xp("(//div[contains(@class,'text-gray-600 text-base')]//input[@class])[1]"),
+            text="Product design and systems thinking.",
+        ),
+        ClickAction(selector=_EDIT_PROFILE_HEADER_BTN),
+        WaitAction(time_seconds=0.4),
+        ClickAction(selector=_ABOUT_EDIT_BTN),
+        WaitAction(time_seconds=0.35),
+        TypeAction(selector=_ABOUT_TEXTAREA, text=_ABOUT_TARGET),
+        ClickAction(selector=_ABOUT_EDIT_BTN),
+        WaitAction(time_seconds=0.5),
+    ],
 )
+
+_EXP_EDIT_BTN = _xp("//h3[contains(normalize-space(.),'Experience')]/following::button[contains(.,'Edit') or contains(.,'Save')][1]")
+_SAVE_EXP_BTN = _xp("//button[contains(normalize-space(.),'Save experience')]")
 
 EDIT_EXPERIENCE = _uc(
     "EDIT_EXPERIENCE",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_path(SEED_EDIT_EXPERIENCE, "profile/me")),
+        WaitAction(time_seconds=1.2),
+        ClickAction(selector=_EXP_EDIT_BTN),
+        WaitAction(time_seconds=0.4),
+        TypeAction(
+            selector=_xp("(//div[contains(@class,'border-b')][.//input[@placeholder='Title']])[1]//input[@placeholder='Title']"),
+            text="Product Designer",
+        ),
+        TypeAction(
+            selector=_xp("(//div[contains(@class,'border-b')][.//input[@placeholder='Duration']])[1]//input[@placeholder='Duration']"),
+            text="Jan 2020 - Present",
+        ),
+        TypeAction(
+            selector=_xp("(//div[contains(@class,'border-b')][.//input[@placeholder='Location']])[1]//input[@placeholder='Location']"),
+            text="San Francisco, CA",
+        ),
+        TypeAction(
+            selector=_xp("(//div[contains(@class,'border-b')][.//textarea[@placeholder='Description']])[1]//textarea[@placeholder='Description']"),
+            text="Leading design sprints and signal quality for releases.",
+        ),
+        ClickAction(selector=_SAVE_EXP_BTN),
+        WaitAction(time_seconds=0.6),
+    ],
 )
 
 ADD_EXPERIENCE = _uc(
     "ADD_EXPERIENCE",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_path(SEED_ADD_EXPERIENCE, "profile/me")),
+        WaitAction(time_seconds=1.2),
+        ClickAction(selector=_xp("//button[contains(normalize-space(.),'Add experience')]")),
+        WaitAction(time_seconds=0.45),
+        TypeAction(
+            selector=_xp("(//input[@placeholder='Title'])[last()]"),
+            text="Software Engineer",
+        ),
+        TypeAction(
+            selector=_xp("(//input[@placeholder='Company'])[last()]"),
+            text="Apple",
+        ),
+        TypeAction(
+            selector=_xp("(//input[@placeholder='Duration'])[last()]"),
+            text="Sep 2022 - Present • 3 yrs 4 mos",
+        ),
+        TypeAction(
+            selector=_xp("(//input[@placeholder='Location'])[last()]"),
+            text="Raleigh, NC",
+        ),
+        TypeAction(
+            selector=_xp("(//textarea[@placeholder='Description'])[last()]"),
+            text="iOS features and performance work.",
+        ),
+        ClickAction(selector=_SAVE_EXP_BTN),
+        WaitAction(time_seconds=0.7),
+    ],
 )
 
 REMOVE_POST = _uc(
     "REMOVE_POST",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_path(SEED_REMOVE_POST, "saved")),
+        WaitAction(time_seconds=1.0),
+        ClickAction(
+            selector=_xp(
+                "(//div[contains(@class,'rounded-xl')]"
+                "[.//div[contains(@class,'whitespace-pre-line')]"
+                "[contains(normalize-space(.),'Friday vibes! Another productive week')]]"
+                "//button[contains(normalize-space(.),'Remove')])[1]"
+            )
+        ),
+        WaitAction(time_seconds=0.5),
+    ],
 )
 
 VIEW_HIDDEN_POSTS = _uc(
     "VIEW_HIDDEN_POSTS",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_path(SEED_VIEW_HIDDEN_POSTS, "hidden")),
+        WaitAction(time_seconds=1.0),
+    ],
 )
+
+_x_personal_proj = _post_article_contains_text("personal projec")
 
 UNHIDE_POST = _uc(
     "UNHIDE_POST",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        *_task_entry(SEED_UNHIDE_POST),
+        *_hide_in_article(_x_personal_proj),
+        NavigateAction(url=_path(SEED_UNHIDE_POST, "hidden")),
+        WaitAction(time_seconds=0.9),
+        ClickAction(
+            selector=_xp(
+                "(//div[contains(@class,'whitespace-pre-line')]"
+                "[contains(translate(normalize-space(.),'PERSONALPROJC','personalprojc'),'personal projec')]"
+                "/ancestor::div[contains(@class,'rounded-xl')][1]"
+                "//button[contains(normalize-space(.),'Restore') "
+                "or contains(normalize-space(.),'Unhide') "
+                "or contains(normalize-space(.),'Show again')])[1]"
+            )
+        ),
+        WaitAction(time_seconds=0.5),
+    ],
 )
 
 SEARCH_USERS = _uc(
     "SEARCH_USERS",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        *_task_entry(SEED_SEARCH_USERS),
+        ClickAction(selector=_user_search_input()),
+        TypeAction(selector=_user_search_input(), text="Mobile Developer (iOS/Android)"),
+        WaitAction(time_seconds=0.45),
+    ],
 )
 
 FOLLOW_PAGE = _uc(
     "FOLLOW_PAGE",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_path(SEED_FOLLOW_PAGE, "recommendations")),
+        WaitAction(time_seconds=1.0),
+        ClickAction(
+            selector=_xp(
+                "(//li[contains(@class,'shadow')]"
+                "[not(contains(translate(.//div[contains(@class,'font-semibold')][1],"
+                "'JOQ','joq'),'joq'))]"
+                "//button[contains(normalize-space(.),'Follow') and not(contains(.,'Following'))])[1]"
+            )
+        ),
+        WaitAction(time_seconds=0.5),
+    ],
 )
 
 UNFOLLOW_PAGE = _uc(
     "UNFOLLOW_PAGE",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_path(SEED_UNFOLLOW_PAGE, "recommendations")),
+        WaitAction(time_seconds=1.0),
+        ClickAction(
+            selector=_xp(
+                "(//li[contains(@class,'shadow')]"
+                "[.//div[contains(@class,'font-semibold')][contains(translate(.,'MANAG','manag'),'manag')]]"
+                "//button[contains(normalize-space(.),'Follow') and not(contains(.,'Following'))])[1]"
+            )
+        ),
+        WaitAction(time_seconds=0.35),
+        ClickAction(
+            selector=_xp(
+                "(//li[contains(@class,'shadow')][.//div[contains(@class,'font-semibold')][contains(translate(.,'MANAG','manag'),'manag')]]//button[contains(normalize-space(.),'Following')])[1]"
+            )
+        ),
+        WaitAction(time_seconds=0.5),
+    ],
 )
 
 VIEW_JOB = _uc(
     "VIEW_JOB",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_path(SEED_VIEW_JOB, "jobs/j34")),
+        WaitAction(time_seconds=1.0),
+    ],
 )
+
+_JOBS_LOC_SELECT = _xp("//label[contains(normalize-space(.),'Location')]/following::select[1]")
+_JOBS_SALARY_SELECT = _xp("//label[contains(normalize-space(.),'Salary')]/following::select[1]")
 
 FILTER_JOBS = _uc(
     "FILTER_JOBS",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_path(SEED_FILTER_JOBS, "jobs")),
+        WaitAction(time_seconds=1.0),
+        SelectDropDownOptionAction(selector=_JOBS_LOC_SELECT, text="San Francisco, CA"),
+        WaitAction(time_seconds=0.4),
+        SelectDropDownOptionAction(selector=_JOBS_SALARY_SELECT, text="Under $50,000"),
+        WaitAction(time_seconds=0.6),
+    ],
 )
 
 BACK_TO_ALL_JOBS = _uc(
     "BACK_TO_ALL_JOBS",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_path(SEED_BACK_TO_ALL_JOBS, "jobs/j9")),
+        WaitAction(time_seconds=1.0),
+        ClickAction(selector=_xp("//a[contains(@href,'/jobs')][contains(normalize-space(.),'Back')]")),
+        WaitAction(time_seconds=0.6),
+    ],
 )
 
 APPLY_FOR_JOB = _uc(
     "APPLY_FOR_JOB",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_path(SEED_APPLY_FOR_JOB, "jobs")),
+        WaitAction(time_seconds=1.0),
+        ClickAction(selector=_xp("//a[contains(@href,'/jobs/j5')]//button[contains(normalize-space(.),'Apply')]")),
+        WaitAction(time_seconds=0.55),
+    ],
 )
+
+_JOBS_SEARCH = _xp("(//*[@id='jobs_search_input' or contains(@id,'jobs-search') or contains(@id,'job_search')])[1]")
 
 SEARCH_JOBS = _uc(
     "SEARCH_JOBS",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_path(SEED_SEARCH_JOBS, "jobs")),
+        WaitAction(time_seconds=1.0),
+        ClickAction(selector=_JOBS_SEARCH),
+        TypeAction(selector=_JOBS_SEARCH, text="Innovation Studio"),
+        WaitAction(time_seconds=0.45),
+    ],
 )
 
 HOME_NAVBAR = _uc(
     "HOME_NAVBAR",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        NavigateAction(url=_path(SEED_HOME_NAVBAR, "jobs")),
+        WaitAction(time_seconds=0.7),
+        *_nav_home_click(),
+    ],
 )
 
 JOBS_NAVBAR = _uc(
     "JOBS_NAVBAR",
-    [],  # TODO: scripted actions (use task URL / seed from when tasks were materialized)
+    [
+        *_task_entry(SEED_JOBS_NAVBAR),
+        *_nav_jobs_click(),
+    ],
 )
 
 
