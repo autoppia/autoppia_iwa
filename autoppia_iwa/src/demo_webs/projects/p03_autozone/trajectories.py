@@ -5,12 +5,7 @@ WEB_PROJECT_ID = "autozone"
 
 from autoppia_iwa.src.data_generation.tests.classes import BaseTaskTest
 from autoppia_iwa.src.demo_webs.classes import Trajectory
-from autoppia_iwa.src.execution.actions.actions import (
-    ClickAction,
-    NavigateAction,
-    SendKeysIWAAction,
-    TypeAction,
-)
+from autoppia_iwa.src.execution.actions.actions import ClickAction, NavigateAction, TypeAction, WaitAction
 from autoppia_iwa.src.execution.actions.base import BaseAction, Selector, SelectorType
 
 ACTIONS = [
@@ -1239,27 +1234,11 @@ VIEW_DETAIL = _uc(
     prompt="Show details for a product with a rating of 4.3 or less and a category that contains 'en'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_VIEW_DETAIL}"),
-        ClickAction(
-            selector=_xp(
-                "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
-            )
-        ),
-        TypeAction(
-            selector=_xp(
-                "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
-            ),
-            text="Premium Drone",
-        ),
-        ClickAction(
-            selector=_xp(
-                "//*[@id='execute-search' or @id='search-btn' or @id='submit-search' or @id='go-search' or @id='search-action' or @id='find-btn' or @id='query-btn' or @id='search-submit' or @id='do-search' or @id='run-search']"
-            )
-        ),
-        ClickAction(
-            selector=_xp(
-                "(//*[@id='view-details-btn' or @id='details-btn' or @id='view-btn' or @id='open-details' or @id='view-details' or @id='details-action' or @id='product-details-btn' or @id='item-details-btn' or @id='more-details-btn' or @id='details-link'])[1]"
-            )
-        ),
+        ClickAction(selector=_xp("//*[@id='categories-btn']/span")),
+        ClickAction(selector=_xp("//button[@id='cat-btn' and contains(normalize-space(), 'Kitchen')]")),
+        WaitAction(time_seconds=2.0),
+        ClickAction(selector=_xp("(//button[@id='item-details-btn'])[7]")),
+        WaitAction(time_seconds=2.0),
     ],
 )
 
@@ -1270,14 +1249,14 @@ DETAILS_TOGGLE = _uc(
         NavigateAction(url=f"{BASE}/?seed={SEED_DETAILS_TOGGLE}"),
         ClickAction(
             selector=_xp(
-                "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
+                "//input[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
             )
         ),
         TypeAction(
             selector=_xp(
-                "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
+                "//input[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
             ),
-            text="Premium Drone",
+            text="Drybar Buttercup Hair Dryer",
         ),
         ClickAction(
             selector=_xp(
@@ -1304,20 +1283,21 @@ SEARCH_PRODUCT = _uc(
         NavigateAction(url=f"{BASE}/?seed={SEED_SEARCH_PRODUCT}"),
         ClickAction(
             selector=_xp(
-                "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
+                "//input[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
             )
         ),
         TypeAction(
             selector=_xp(
-                "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
+                "//input[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
             ),
-            text="Premium Drone",
+            text="Ninja Foodi 8-in-1",
         ),
         ClickAction(
             selector=_xp(
                 "//*[@id='execute-search' or @id='search-btn' or @id='submit-search' or @id='go-search' or @id='search-action' or @id='find-btn' or @id='query-btn' or @id='search-submit' or @id='do-search' or @id='run-search']"
             )
         ),
+        WaitAction(time_seconds=0.3),
     ],
 )
 
@@ -1328,14 +1308,10 @@ CATEGORY_FILTER = _uc(
         NavigateAction(url=f"{BASE}/?seed={SEED_CATEGORY_FILTER}"),
         ClickAction(
             selector=_xp(
-                "//*[@id='browse-all-button' or @id='browse-all-btn' or @id='browse-btn' or @id='browse-button' or @id='browse-all-items-btn' or @id='browse-items-btn' or @id='browse-catalog-btn' or @id='browse-list-btn' or @id='open-browse-btn' or @id='browse-more-btn']"
+                "(//button[@id='browse-all-button' or @id='browse-all-btn' or @id='browse-btn' or @id='browse-button' or @id='browse-all-items-btn' or @id='browse-items-btn' or @id='browse-catalog-btn' or @id='browse-list-btn' or @id='open-browse-btn' or @id='browse-more-btn' or @id='category-selector-button'])[1]"
             )
         ),
-        ClickAction(
-            selector=_xp(
-                "(//*[@id='category-link' or @id='cat-link' or @id='category-btn' or @id='cat-btn' or @id='category-action' or @id='cat-action' or @id='browse-category' or @id='view-category' or @id='goto-category' or @id='category-nav'][contains(translate(normalize-space(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'technology')])[1]"
-            )
-        ),
+        ClickAction(selector=_xp("(//button[@id='cat-link' and contains(normalize-space(), 'Electronics')])[1]")),
     ],
 )
 
@@ -1346,18 +1322,7 @@ ADD_TO_CART = _uc(
         NavigateAction(url=f"{BASE}/?seed={SEED_ADD_TO_CART}"),
         ClickAction(
             selector=_xp(
-                "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
-            )
-        ),
-        TypeAction(
-            selector=_xp(
-                "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
-            ),
-            text="Premium Drone",
-        ),
-        ClickAction(
-            selector=_xp(
-                "//*[@id='execute-search' or @id='search-btn' or @id='submit-search' or @id='go-search' or @id='search-action' or @id='find-btn' or @id='query-btn' or @id='search-submit' or @id='do-search' or @id='run-search']"
+                "(//*[@id='view-details-btn' or @id='details-btn' or @id='view-btn' or @id='open-details' or @id='view-details' or @id='details-action' or @id='product-details-btn' or @id='item-details-btn' or @id='more-details-btn' or @id='details-link'])[1]"
             )
         ),
         ClickAction(
@@ -1373,28 +1338,18 @@ ADD_TO_WISHLIST = _uc(
     prompt="Add to wishlist an item where the brand does NOT CONTAIN 'NinjaXYZ184', the rating equals '4.6', and the price is NOT '92.0'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_ADD_TO_WISHLIST}"),
+        ClickAction(selector=_xp("//button[@id='browse-all-btn']")),
         ClickAction(
             selector=_xp(
-                "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
-            )
-        ),
-        TypeAction(
-            selector=_xp(
-                "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
-            ),
-            text="Premium Drone",
-        ),
-        SendKeysIWAAction(keys="Enter"),
-        ClickAction(
-            selector=_xp(
-                "(//*[@id='view-details-btn' or @id='details-btn' or @id='view-btn' or @id='open-details' or @id='view-details' or @id='details-action' or @id='product-details-btn' or @id='item-details-btn' or @id='more-details-btn' or @id='details-link'])[1]"
+                "(//button[@id='view-details-btn' or @id='details-btn' or @id='view-btn' or @id='open-details' or @id='view-details' or @id='details-action' or @id='product-details-btn' or @id='item-details-btn' or @id='more-details-btn' or @id='details-link'])[8]"
             )
         ),
         ClickAction(
             selector=_xp(
-                "//*[@id='wishlist-btn' or @id='add-wishlist' or @id='save-later' or @id='wishlist-add' or @id='favorite-btn' or @id='save-item' or @id='add-favorite' or @id='wishlist-action' or @id='save-product' or @id='favorite-action']"
+                "(//button[@id='wishlist-btn' or @id='add-wishlist' or @id='save-later' or @id='wishlist-add' or @id='favorite-btn' or @id='save-item' or @id='add-favorite' or @id='wishlist-action' or @id='save-product' or @id='favorite-action'])[1]"
             )
         ),
+        WaitAction(time_seconds=1.0),
     ],
 )
 
@@ -1405,7 +1360,7 @@ VIEW_WISHLIST = _uc(
         NavigateAction(url=f"{BASE}/?seed={SEED_VIEW_WISHLIST}"),
         ClickAction(
             selector=_xp(
-                "//*[@id='view-wishlist-button' or @id='wishlist-btn' or @id='wishlist-link' or @id='go-wishlist' or @id='view-wishlist-btn' or @id='wishlist-button' or @id='show-wishlist-btn' or @id='open-wishlist-btn' or @id='wishlist-view-btn' or @id='all-wishlist-btn' or @id='save-later']"
+                "(//a[@id='view-wishlist-button' or @id='wishlist-btn' or @id='wishlist-link' or @id='go-wishlist' or @id='view-wishlist-btn' or @id='wishlist-button' or @id='show-wishlist-btn' or @id='open-wishlist-btn' or @id='wishlist-view-btn' or @id='all-wishlist-btn' or @id='save-later'])[1]"
             )
         ),
     ],
@@ -1418,7 +1373,7 @@ VIEW_CART = _uc(
         NavigateAction(url=f"{BASE}/?seed={SEED_VIEW_CART}"),
         ClickAction(
             selector=_xp(
-                "//*[@id='cart-btn' or @id='shopping-cart' or @id='basket-btn' or @id='cart-action' or @id='view-cart' or @id='goto-cart' or @id='cart-link' or @id='basket-link' or @id='cart-icon' or @id='shopping-basket']"
+                "(//a[@id='cart-btn' or @id='shopping-cart' or @id='basket-btn' or @id='cart-action' or @id='view-cart' or @id='goto-cart' or @id='cart-link' or @id='basket-link' or @id='cart-icon' or @id='shopping-basket'])[1]"
             )
         ),
     ],
@@ -1436,9 +1391,9 @@ QUANTITY_CHANGED = _uc(
         ),
         TypeAction(
             selector=_xp(
-                "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
+                "//input[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
             ),
-            text="Premium Drone",
+            text="Instant Pot Duo Plus",
         ),
         ClickAction(
             selector=_xp(
@@ -1447,16 +1402,18 @@ QUANTITY_CHANGED = _uc(
         ),
         ClickAction(
             selector=_xp(
-                "(//*[@id='view-details-btn' or @id='details-btn' or @id='view-btn' or @id='open-details' or @id='view-details' or @id='details-action' or @id='product-details-btn' or @id='item-details-btn' or @id='more-details-btn' or @id='details-link'])[1]"
+                "(//button[@id='view-details-btn' or @id='details-btn' or @id='view-btn' or @id='open-details' or @id='view-details' or @id='details-action' or @id='product-details-btn' or @id='item-details-btn' or @id='more-details-btn' or @id='details-link'])[1]"
             )
         ),
+        ClickAction(selector=_xp("//button[@id='add-item']")),
         ClickAction(
             selector=_xp(
-                "//*[@id='qty-input' or @id='quantity-field' or @id='qty-field' or @id='amount-input' or @id='qty-box' or @id='quantity-box' or @id='qty-select' or @id='quantity-select' or @id='item-qty' or @id='product-qty']"
+                "(//a[@id='cart-btn' or @id='shopping-cart' or @id='basket-btn' or @id='cart-action' or @id='view-cart' or @id='goto-cart' or @id='cart-link' or @id='basket-link' or @id='cart-icon' or @id='shopping-basket'])[1]"
             )
         ),
-        SendKeysIWAAction(keys="ArrowDown"),
-        SendKeysIWAAction(keys="Enter"),
+        ClickAction(selector=_xp("(//button[@id='qty-up'])[1]")),
+        ClickAction(selector=_xp("(//button[@id='qty-up'])[1]")),
+        ClickAction(selector=_xp("(//button[@id='qty-up'])[1]")),
     ],
 )
 
@@ -1465,30 +1422,11 @@ PROCEED_TO_CHECKOUT = _uc(
     prompt="Proceed to checkout with a total amount of '189.99'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_PROCEED_TO_CHECKOUT}"),
+        ClickAction(selector=_xp("//button[@id='browse-catalog-btn']")),
+        ClickAction(selector=_xp("(//button[@id='add-to-basket'])[34]")),
         ClickAction(
             selector=_xp(
-                "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
-            )
-        ),
-        TypeAction(
-            selector=_xp(
-                "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
-            ),
-            text="Premium Drone",
-        ),
-        ClickAction(
-            selector=_xp(
-                "//*[@id='execute-search' or @id='search-btn' or @id='submit-search' or @id='go-search' or @id='search-action' or @id='find-btn' or @id='query-btn' or @id='search-submit' or @id='do-search' or @id='run-search']"
-            )
-        ),
-        ClickAction(
-            selector=_xp(
-                "(//*[@id='view-details-btn' or @id='details-btn' or @id='view-btn' or @id='open-details' or @id='view-details' or @id='details-action' or @id='product-details-btn' or @id='item-details-btn' or @id='more-details-btn' or @id='details-link'])[1]"
-            )
-        ),
-        ClickAction(
-            selector=_xp(
-                "(//*[@id='add-cart-btn' or @id='cart-add' or @id='add-basket' or @id='add-to-basket' or @id='cart-action' or @id='basket-action' or @id='add-item' or @id='cart-item-add' or @id='basket-add-item' or @id='add-product'])[1]"
+                "(//a[@id='cart-btn' or @id='shopping-cart' or @id='basket-btn' or @id='cart-action' or @id='view-cart' or @id='goto-cart' or @id='cart-link' or @id='basket-link' or @id='cart-icon' or @id='shopping-basket'])[1]"
             )
         ),
         ClickAction(
@@ -1504,22 +1442,7 @@ CHECKOUT_STARTED = _uc(
     prompt="Click on Buy now to initiate the checkout process with a total amount less equal to '349.0'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_CHECKOUT_STARTED}"),
-        ClickAction(
-            selector=_xp(
-                "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
-            )
-        ),
-        TypeAction(
-            selector=_xp(
-                "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
-            ),
-            text="Premium Drone",
-        ),
-        ClickAction(
-            selector=_xp(
-                "//*[@id='execute-search' or @id='search-btn' or @id='submit-search' or @id='go-search' or @id='search-action' or @id='find-btn' or @id='query-btn' or @id='search-submit' or @id='do-search' or @id='run-search']"
-            )
-        ),
+        ClickAction(selector=_xp("//button[@id='browse-all-items-btn']")),
         ClickAction(
             selector=_xp(
                 "(//*[@id='view-details-btn' or @id='details-btn' or @id='view-btn' or @id='open-details' or @id='view-details' or @id='details-action' or @id='product-details-btn' or @id='item-details-btn' or @id='more-details-btn' or @id='details-link'])[1]"
@@ -1527,7 +1450,7 @@ CHECKOUT_STARTED = _uc(
         ),
         ClickAction(
             selector=_xp(
-                "//*[@id='order-now' or @id='checkout-btn' or @id='proceed-checkout' or @id='goto-checkout' or @id='checkout-action' or @id='checkout-now' or @id='proceed-btn' or @id='finalize-order' or @id='complete-order' or @id='checkout-link' or @id='order-btn']"
+                "//*[@id='order-now' or @id='checkout-btn' or @id='proceed-checkout' or @id='goto-checkout' or @id='checkout-action' or @id='checkout-now' or @id='proceed-btn' or @id='finalize-order' or @id='complete-order' or @id='checkout-link' or @id='order-btn' or @id='buy-now-btn']"
             )
         ),
     ],
@@ -1540,23 +1463,7 @@ SHARE_PRODUCT = _uc(
         NavigateAction(url=f"{BASE}/?seed={SEED_SHARE_PRODUCT}"),
         ClickAction(
             selector=_xp(
-                "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
-            )
-        ),
-        TypeAction(
-            selector=_xp(
-                "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
-            ),
-            text="Premium Drone",
-        ),
-        ClickAction(
-            selector=_xp(
-                "//*[@id='execute-search' or @id='search-btn' or @id='submit-search' or @id='go-search' or @id='search-action' or @id='find-btn' or @id='query-btn' or @id='search-submit' or @id='do-search' or @id='run-search']"
-            )
-        ),
-        ClickAction(
-            selector=_xp(
-                "(//*[@id='view-details-btn' or @id='details-btn' or @id='view-btn' or @id='open-details' or @id='view-details' or @id='details-action' or @id='product-details-btn' or @id='item-details-btn' or @id='more-details-btn' or @id='details-link'])[1]"
+                "(//button[@id='view-details-btn' or @id='details-btn' or @id='view-btn' or @id='open-details' or @id='view-details' or @id='details-action' or @id='product-details-btn' or @id='item-details-btn' or @id='more-details-btn' or @id='details-link'])[1]"
             )
         ),
         ClickAction(
@@ -1572,11 +1479,7 @@ CAROUSEL_SCROLL = _uc(
     prompt="Scroll through the carousel titled 'Top Sellers In Fitness' where the direction is NOT 'RIGHT'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_CAROUSEL_SCROLL}"),
-        ClickAction(
-            selector=_xp(
-                "//*[@id='carousel-right-btn' or @id='carousel-next' or @id='carousel-forward' or @id='carousel-right' or @id='carousel-next-btn' or @id='carousel-arrow-right' or @id='carousel-control-right' or @id='carousel-nav-right' or @id='carousel-right-control' or @id='carousel-right-arrow']"
-            )
-        ),
+        ClickAction(selector=_xp("//h2[contains(normalize-space(),'Fitness')]/parent::div/following-sibling::div//button[contains(@id,'left') or contains(@id,'back')]")),
     ],
 )
 
@@ -1592,9 +1495,9 @@ ORDER_COMPLETED = _uc(
         ),
         TypeAction(
             selector=_xp(
-                "//*[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
+                "//input[@id='type-to-search' or @id='search-input' or @id='query-box' or @id='filter-input' or @id='product-search' or @id='item-search' or @id='search-field' or @id='lookup-input' or @id='find-input' or @id='search-box']"
             ),
-            text="Premium Drone",
+            text="ple",
         ),
         ClickAction(
             selector=_xp(
@@ -1603,7 +1506,7 @@ ORDER_COMPLETED = _uc(
         ),
         ClickAction(
             selector=_xp(
-                "(//*[@id='view-details-btn' or @id='details-btn' or @id='view-btn' or @id='open-details' or @id='view-details' or @id='details-action' or @id='product-details-btn' or @id='item-details-btn' or @id='more-details-btn' or @id='details-link'])[1]"
+                "(//button[@id='view-details-btn' or @id='details-btn' or @id='view-btn' or @id='open-details' or @id='view-details' or @id='details-action' or @id='product-details-btn' or @id='item-details-btn' or @id='more-details-btn' or @id='details-link'])[1]"
             )
         ),
         ClickAction(
@@ -1621,6 +1524,7 @@ ORDER_COMPLETED = _uc(
                 "//*[@id='finalize-order-button' or @id='place-order-btn' or @id='complete-order-button' or @id='confirm-order-btn' or @id='submit-order-button' or @id='finish-order-btn' or @id='order-now-button' or @id='checkout-button' or @id='place-order-button' or @id='confirm-purchase-button']"
             )
         ),
+        WaitAction(time_seconds=3.0),
     ],
 )
 
