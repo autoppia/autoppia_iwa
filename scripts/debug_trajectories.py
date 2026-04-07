@@ -1,25 +1,28 @@
 #!/usr/bin/env python3
 """
-Run one concrete trajectory (scripted actions + CheckEventTests) for a project use case.
+Run concrete trajectories (scripted actions + CheckEventTests) for a web project.
 
 CLI (from autoppia_iwa repo root):
 
   python scripts/debug_trajectories.py --project autodrive --use-case SELECT_DATE
+  python scripts/debug_trajectories.py -p autodrive
+      # all registered trajectories for the project (registry order)
   python scripts/debug_trajectories.py -p autohealth -u OPEN_APPOINTMENT_FORM \\
       --frontend-url http://127.0.0.1:8013
 
-Prints a single SUCCESS or FAIL line and exits 0 / 1.
+With a single ``-u``, prints one SUCCESS or FAIL line. With no ``-u`` or multiple ``-u`` flags,
+prints one line per use case and exits 0 only if every run succeeded.
 
 PyCharm:
   1. Working directory: autoppia_iwa repo root (parent of ``scripts/``).
   2. Python interpreter: this repo's ``.venv`` (or equivalent with ``autoppia_iwa`` installed).
   3. Script path: ``scripts/debug_trajectories.py`` (or the absolute path to this file).
-  4. Script parameters: e.g. ``-p autodrive -u SELECT_DATE --no-headless`` (optional ``--frontend-url``).
+  4. Script parameters: e.g. ``-p autodrive --no-headless`` or ``-p autodrive -u SELECT_DATE --no-headless``
+     (optional ``--frontend-url``).
   5. Run → Debug (set breakpoints in this file or in ``stateful_evaluator`` / actions as needed).
 
 If you start Debug with **no** script parameters, this script applies a small default argv
-(``autodrive`` / ``SELECT_DATE`` / ``--no-headless``) so the debugger still enters ``main()`` with a
-valid run. Override by always setting Script parameters in the run configuration.
+(``autodrive`` / ``--no-headless``, no ``-u``) so all autodrive trajectories run unless you override.
 """
 
 from __future__ import annotations
@@ -32,6 +35,7 @@ from typing import Any
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.tasks.classes import BrowserSpecification, Task
+from autoppia_iwa.src.demo_webs.classes import Trajectory
 from autoppia_iwa.src.demo_webs.trajectory_registry import (
     get_trajectory_map,
     remap_url_to_frontend,
@@ -70,12 +74,14 @@ def _build_task(*, project_id: str, prompt: str, entry_url: str, tests: list[Any
     )
 
 
-async def _run(project_id: str, use_case: str, frontend_url: str | None, *, headless: bool) -> tuple[bool, str]:
-    flows = get_trajectory_map(project_id)
-    if flows is None:
-        supported = ", ".join(sorted(supported_trajectory_project_ids()))
-        return False, f"unknown project {project_id!r}; supported: {supported}"
-
+async def _run_one(
+    flows: dict[str, Trajectory],
+    project_id: str,
+    use_case: str,
+    frontend_url: str | None,
+    *,
+    headless: bool,
+) -> tuple[bool, str]:
     tr = flows.get(use_case)
     if tr is None:
         names = ", ".join(sorted(flows.keys()))
@@ -116,21 +122,59 @@ async def _run(project_id: str, use_case: str, frontend_url: str | None, *, head
     return False, f"tests_passed={details.tests_passed}/{details.total_tests} score={details.raw_score:.2f}"
 
 
+async def _run_selected(
+    project_id: str,
+    use_case_filter: list[str] | None,
+    frontend_url: str | None,
+    *,
+    headless: bool,
+) -> tuple[bool, list[tuple[str, bool, str]]]:
+    flows = get_trajectory_map(project_id)
+    if flows is None:
+        supported = ", ".join(sorted(supported_trajectory_project_ids()))
+        return False, [("", False, f"unknown project {project_id!r}; supported: {supported}")]
+
+    if use_case_filter is None:
+        names = list(flows.keys())
+    else:
+        unknown = [u for u in use_case_filter if u not in flows]
+        if unknown:
+            avail = ", ".join(sorted(flows.keys()))
+            return False, [("", False, f"unknown use case(s) {unknown!r}; available: {avail}")]
+        names = list(use_case_filter)
+
+    if not names:
+        return False, [("", False, "no trajectories registered for this project")]
+
+    results: list[tuple[str, bool, str]] = []
+    for uc in names:
+        ok, detail = await _run_one(flows, project_id, uc, frontend_url, headless=headless)
+        results.append((uc, ok, detail))
+    all_ok = all(ok for _, ok, _ in results)
+    return all_ok, results
+
+
 def main() -> int:
     if len(sys.argv) == 1:
         sys.argv.extend(
             [
                 "-p",
-                "autolist",
+                "autocalendar.txt",
                 "-u",
-                "AUTOLIST_CANCEL_TASK_CREATION",
+                "ADD_NEW_CALENDAR",
                 # "--no-headless",
             ]
         )
 
-    parser = argparse.ArgumentParser(description="Run one IWA concrete trajectory and report success or failure.")
+    parser = argparse.ArgumentParser(description="Run IWA concrete trajectory(ies) and report success or failure.")
     parser.add_argument("--project", "-p", required=True, help="Web project id (e.g. autodrive, autohealth, autolist)")
-    parser.add_argument("--use-case", "-u", required=True, help="Use case name (e.g. SELECT_DATE, OPEN_APPOINTMENT_FORM)")
+    parser.add_argument(
+        "--use-case",
+        "-u",
+        action="append",
+        default=None,
+        help="Use case name (repeatable). If omitted, every registered trajectory for the project is run.",
+    )
     parser.add_argument(
         "--frontend-url",
         default=None,
@@ -146,12 +190,16 @@ def main() -> int:
     AppBootstrap()
 
     headless = not args.no_headless
-    ok, detail = asyncio.run(_run(args.project, args.use_case, args.frontend_url, headless=headless))
-    if ok:
-        print(f"SUCCESS ({detail})")
-        return 0
-    print(f"FAIL ({detail})")
-    return 1
+    all_ok, results = asyncio.run(_run_selected(args.project, args.use_case, args.frontend_url, headless=headless))
+
+    if len(results) == 1:
+        _, ok, detail = results[0]
+        print(f"{'SUCCESS' if ok else 'FAIL'} ({detail})")
+        return 0 if ok else 1
+
+    for uc, ok, detail in results:
+        print(f"{uc}: {'SUCCESS' if ok else 'FAIL'} ({detail})")
+    return 0 if all_ok else 1
 
 
 if __name__ == "__main__":
