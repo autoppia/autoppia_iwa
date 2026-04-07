@@ -19,6 +19,7 @@ from autoppia_iwa.src.execution.actions import (
     EvaluateAction,
     NavigateAction,
     SelectDropDownOptionAction,
+    SendKeysIWAAction,
     TypeAction,
     WaitAction,
 )
@@ -379,6 +380,10 @@ def _xp(expr: str) -> Selector:
     return Selector(type=SelectorType.XPATH_SELECTOR, value=expr)
 
 
+def _id(element_id: str) -> Selector:
+    return Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value=element_id)
+
+
 def _home(seed: int) -> str:
     return f"{BASE}/?seed={seed}"
 
@@ -407,11 +412,11 @@ SEARCH_HOTEL = _uc(
     [
         NavigateAction(url=_home(SEED_SEARCH_HOTEL)),
         WaitAction(time_seconds=0.4),
-        ClickAction(selector=_xp('//*[@id="search_field" or contains(@id, "search-input")]')),
+        ClickAction(selector=_id("find-movie")),
         WaitAction(time_seconds=0.2),
-        ClickAction(selector=_xp('//*[@id="where-input" or contains(@id, "where_input")]')),
-        TypeAction(selector=_xp('//*[@id="where-input" or contains(@id, "where_input")]'), text="Bali, Indonesia"),
-        ClickAction(selector=_xp('//*[@id="search_button" or contains(@id, "search-submit")]')),
+        TypeAction(selector=_id("destination-input"), text="Bali, Indonesia"),
+        SendKeysIWAAction(keys="Enter"),
+        ClickAction(selector=_id("find-button")),
     ],
 )
 
@@ -428,7 +433,10 @@ EDIT_NUMBER_OF_GUESTS = _uc(
     [
         NavigateAction(url=_stay(HID_EDIT_GUESTS, SEED_EDIT_NUMBER_OF_GUESTS)),
         WaitAction(time_seconds=0.6),
-        TypeAction(selector=_xp('//*[@id="guests-count" or contains(@id, "guests_count")]'), text="2"),
+        # SendKeysIWAAction(keys='Backspace'),
+        ClickAction(selector=_xp('//*[@id="people-count" or @id="guests-count"]')),
+        TypeAction(selector=_xp('//*[@id="people-count" or @id="guests-count"]'), text="12"),
+        WaitAction(time_seconds=0.7),
     ],
 )
 
