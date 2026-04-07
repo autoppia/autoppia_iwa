@@ -620,8 +620,8 @@ AUTOLIST_TEAM_CREATED = _uc(
         WaitAction(time_seconds=0.3),
         *_select_ant_option_containing("Developer"),
         SendKeysIWAAction(keys="Escape"),
-        ClickAction(selector=_xp("html/body/div[4]/div/div[2]/div/div[1]/div/div[3]/button[2]")),
-        WaitAction(time_seconds=0.55),
+        ClickAction(selector=_xp("*[@id='new-team-button']/span")),
+        WaitAction(time_seconds=1.0),
     ],
 )
 
