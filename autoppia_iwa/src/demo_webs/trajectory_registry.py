@@ -54,8 +54,22 @@ def _load_autocalendar() -> dict[str, Trajectory]:
     return load_autocalendar_use_case_completion_flows()
 
 
+def _load_autolodge() -> dict[str, Trajectory]:
+    from autoppia_iwa.src.demo_webs.projects.p08_autolodge.trajectories import load_autolodge_use_case_completion_flows
+
+    return load_autolodge_use_case_completion_flows()
+
+
+def _load_autoconnect() -> dict[str, Trajectory]:
+    from autoppia_iwa.src.demo_webs.projects.p09_autoconnect.trajectories import load_autoconnect_use_case_completion_flows
+
+    return load_autoconnect_use_case_completion_flows()
+
+
 # Project ``id`` (WebProject.id) -> lazy loader
 TRAJECTORY_LOADERS_BY_PROJECT_ID: dict[str, TrajectoryLoader] = {
+    "autolodge": _load_autolodge,
+    "autoconnect": _load_autoconnect,
     "autocalendar": _load_autocalendar,
     "autolist": _load_autolist,
     "autodrive": _load_autodrive,
