@@ -224,7 +224,7 @@ class ViewRestaurantEvent(Event, BaseEventValidator):
     restaurant_id: str
     name: str
     desc: str
-    rating: int
+    rating: float
     reviews: int
     bookings: int
     cuisine: str
@@ -233,7 +233,7 @@ class ViewRestaurantEvent(Event, BaseEventValidator):
         restaurant_id: str | CriterionValue | None = None
         name: str | CriterionValue | None = None
         desc: str | CriterionValue | None = None
-        rating: int | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
         reviews: int | CriterionValue | None = None
         bookings: int | CriterionValue | None = None
         cuisine: str | CriterionValue | None = None
@@ -269,7 +269,7 @@ class ViewRestaurantEvent(Event, BaseEventValidator):
             restaurant_id=data.get("restaurantId", ""),
             name=data.get("restaurantName", ""),
             desc=data.get("desc", ""),
-            rating=data.get("rating", 0),
+            rating=data.get("rating", 0.0),
             cuisine=data.get("cuisine", ""),
             reviews=data.get("reviews", 0),
             bookings=data.get("bookings", 0),
@@ -283,7 +283,7 @@ class ViewFullMenuEvent(Event, BaseEventValidator):
     restaurant_id: str
     name: str
     desc: str
-    rating: int
+    rating: float
     reviews: int
     bookings: int
     cuisine: str
@@ -301,7 +301,7 @@ class ViewFullMenuEvent(Event, BaseEventValidator):
         date: date | CriterionValue | None = None
         people: int | CriterionValue | None = None
         desc: str | CriterionValue | None = None
-        rating: int | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
         reviews: int | CriterionValue | None = None
         bookings: int | CriterionValue | None = None
         cuisine: str | CriterionValue | None = None
@@ -354,7 +354,7 @@ class ViewFullMenuEvent(Event, BaseEventValidator):
             time=data.get("time", ""),
             date=parsed_date,
             desc=data.get("desc", ""),
-            rating=data.get("rating", 0),
+            rating=data.get("rating", 0.0),
             cuisine=data.get("cuisine", ""),
             reviews=data.get("reviews", 0),
             bookings=data.get("bookings", 0),
@@ -370,7 +370,7 @@ class CollapseMenuEvent(Event, BaseEventValidator):
     restaurant_id: str
     name: str
     desc: str
-    rating: int
+    rating: float
     reviews: int
     bookings: int
     cuisine: str
@@ -385,7 +385,7 @@ class CollapseMenuEvent(Event, BaseEventValidator):
         restaurant_id: str | CriterionValue | None = None
         name: str | CriterionValue | None = None
         desc: str | CriterionValue | None = None
-        rating: int | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
         reviews: int | CriterionValue | None = None
         bookings: int | CriterionValue | None = None
         cuisine: str | CriterionValue | None = None
@@ -437,7 +437,7 @@ class CollapseMenuEvent(Event, BaseEventValidator):
             time=data.get("time", ""),
             date=parsed_date,
             desc=data.get("desc", ""),
-            rating=data.get("rating", 0),
+            rating=data.get("rating", 0.0),
             cuisine=data.get("cuisine", ""),
             reviews=data.get("reviews", 0),
             bookings=data.get("bookings", 0),
@@ -452,7 +452,7 @@ class BookRestaurantEvent(Event, BaseEventValidator):
     event_name: str = "BOOK_RESTAURANT"
     name: str
     desc: str
-    rating: int
+    rating: float
     reviews: int
     bookings: int
     cuisine: str
@@ -465,7 +465,7 @@ class BookRestaurantEvent(Event, BaseEventValidator):
     class ValidationCriteria(BaseModel):
         name: str | CriterionValue | None = None
         desc: str | CriterionValue | None = None
-        rating: int | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
         reviews: int | CriterionValue | None = None
         bookings: int | CriterionValue | None = None
         cuisine: str | CriterionValue | None = None
@@ -558,7 +558,7 @@ class BookRestaurantEvent(Event, BaseEventValidator):
             date=parsed_date,
             people=int(data.get("people", 0)),
             desc=data.get("desc", ""),
-            rating=data.get("rating", 0),
+            rating=data.get("rating", 0.0),
             cuisine=data.get("cuisine", ""),
             reviews=data.get("reviews", 0),
             bookings=data.get("bookings", 0),
@@ -573,7 +573,7 @@ class CountrySelectedEvent(Event, BaseEventValidator):
     code: str  # e.g., "IN"
     country: str  # e.g., "India"
     desc: str
-    rating: int
+    rating: float
     reviews: int
     bookings: int
     cuisine: str
@@ -583,7 +583,7 @@ class CountrySelectedEvent(Event, BaseEventValidator):
         country: str | CriterionValue | None = None
         name: str | CriterionValue | None = None
         desc: str | CriterionValue | None = None
-        rating: int | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
         reviews: int | CriterionValue | None = None
         bookings: int | CriterionValue | None = None
         cuisine: str | CriterionValue | None = None
@@ -621,7 +621,7 @@ class CountrySelectedEvent(Event, BaseEventValidator):
             country=data.get("countryName", ""),
             name=data.get("restaurantName", ""),
             desc=data.get("desc", ""),
-            rating=data.get("rating", 0),
+            rating=data.get("rating", 0.0),
             cuisine=data.get("cuisine", ""),
             reviews=data.get("reviews", 0),
             bookings=data.get("bookings", 0),
@@ -635,7 +635,7 @@ class OccasionSelectedEvent(Event, BaseEventValidator):
     occasion: str  # e.g., "birthday"
     name: str
     desc: str | CriterionValue | None = None
-    rating: int | CriterionValue | None = None
+    rating: float | CriterionValue | None = None
     reviews: int | CriterionValue | None = None
     bookings: int | CriterionValue | None = None
     cuisine: str | CriterionValue | None = None
@@ -644,7 +644,7 @@ class OccasionSelectedEvent(Event, BaseEventValidator):
         occasion: str | CriterionValue | None = None
         name: str | CriterionValue | None = None
         desc: str | CriterionValue | None = None
-        rating: int | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
         reviews: int | CriterionValue | None = None
         bookings: int | CriterionValue | None = None
         cuisine: str | CriterionValue | None = None
@@ -671,7 +671,7 @@ class OccasionSelectedEvent(Event, BaseEventValidator):
             occasion=data.get("occasion", ""),
             desc=data.get("desc", ""),
             name=data.get("restaurantName", ""),
-            rating=data.get("rating", 0),
+            rating=data.get("rating", 0.0),
             cuisine=data.get("cuisine", ""),
             reviews=data.get("reviews", 0),
             bookings=data.get("bookings", 0),
@@ -781,7 +781,7 @@ class ScrollViewEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             direction=data.get("direction", "").lower(),
-            section=data.get("sectionTitle", ""),
+            section=data.get("title", ""),
         )
 
 
@@ -910,7 +910,9 @@ class ContactEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "ContactEvent":
         base_event = Event.parse(backend_event)
         event_data = backend_event.data
-        form_data = event_data.get("data", {})
+        nested = event_data.get("data")
+        form_data = nested if isinstance(nested, dict) else event_data
+
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,

@@ -8,7 +8,9 @@ from autoppia_iwa.src.demo_webs.classes import Trajectory
 from autoppia_iwa.src.execution.actions.actions import (
     ClickAction,
     NavigateAction,
+    SelectAction,
     TypeAction,
+    WaitAction,
 )
 from autoppia_iwa.src.execution.actions.base import BaseAction, Selector, SelectorType
 
@@ -1406,7 +1408,7 @@ _RAW_TESTS: dict[str, list[dict]] = {
         {
             "type": "CheckEventTest",
             "event_name": "SCROLL_VIEW",
-            "event_criteria": {"section": {"operator": "contains", "value": "Introducing OpenDinning Icons"}, "direction": "right"},
+            "event_criteria": {"section": {"operator": "contains", "value": "Popular"}, "direction": "right"},
             "description": "Check if specific event was triggered",
         }
     ],
@@ -1503,7 +1505,9 @@ _RAW_TESTS: dict[str, list[dict]] = {
             "description": "Check if specific event was triggered",
         }
     ],
-    "HELP_FAQ_TOGGLED": [{"type": "CheckEventTest", "event_name": "HELP_FAQ_TOGGLED", "event_criteria": {"question": "Can I get a refund?"}, "description": "Check if specific event was triggered"}],
+    "HELP_FAQ_TOGGLED": [
+        {"type": "CheckEventTest", "event_name": "HELP_FAQ_TOGGLED", "event_criteria": {"question": "How do I make a reservation?"}, "description": "Check if specific event was triggered"}
+    ],
 }
 
 _TESTS: dict[str, list[BaseTaskTest]] = {uc: [BaseTaskTest.deserialize(p) for p in pl] for uc, pl in _RAW_TESTS.items()}
@@ -1551,20 +1555,10 @@ VIEW_RESTAURANT = _uc(
         NavigateAction(url=f"{BASE}/?seed={SEED_VIEW_RESTAURANT}"),
         ClickAction(
             selector=_xp(
-                "//*[@id='search-input' or @id='search-input-help' or @id='search-box' or @id='search-field' or @id='query-box' or @id='restaurant-search' or @id='search-restaurants' or @id='search-text']"
+                "(//span[@id='view_details_button' or @id='dining-view-details-button' or @id='resto-view-details-button' or @id='view-details-btn' or @id='dining-view-details-btn' or @id='resto-view-details-btn' or @id='view-details-action' or @id='dining-details-button'])[2]"
             )
         ),
-        TypeAction(
-            selector=_xp(
-                "//input[@id='search-input' or @id='search-input-help' or @id='search-box' or @id='search-field' or @id='query-box' or @id='restaurant-search' or @id='search-restaurants' or @id='search-text']"
-            ),
-            text="Thai Garden",
-        ),
-        ClickAction(
-            selector=_xp(
-                "(//*[@id='view_details_button' or @id='dining-view-details-button' or @id='resto-view-details-button' or @id='view-details-btn' or @id='dining-view-details-btn' or @id='resto-view-details-btn' or @id='view-details-action'])[1]"
-            )
-        ),
+        WaitAction(time_seconds=0.5),
     ],
 )
 
@@ -1573,6 +1567,16 @@ VIEW_FULL_MENU = _uc(
     prompt="Show me the full menu for a restaurant with cuisine equals 'Indian' that does NOT have '5679' reviews.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_VIEW_FULL_MENU}"),
+        TypeAction(
+            selector=_xp("//input[@id='filter-input']"),
+            text="Indian",
+        ),
+        WaitAction(time_seconds=0.3),
+        ClickAction(
+            selector=_xp(
+                "(//span[@id='view_details_button' or @id='dining-view-details-button' or @id='resto-view-details-button' or @id='view-details-btn' or @id='dining-view-details-btn' or @id='resto-view-details-btn' or @id='view-details-action' or @id='dining-details-button'])[1]"
+            )
+        ),
         ClickAction(
             selector=_xp(
                 "(//*[@id='menu-toggle-button' or @id='dining-menu-toggle' or @id='resto-menu-toggle' or @id='menu-expand-button' or @id='dining-menu-expand' or @id='resto-menu-expand' or @id='menu-collapse-button' or @id='dining-menu-collapse' or @id='resto-menu-collapse' or @id='menu-view-toggle'])[1]"
@@ -1586,6 +1590,11 @@ COLLAPSE_MENU = _uc(
     prompt="Please collapse the menu for the restaurant where the cuisine is NOT 'mhydqx'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_COLLAPSE_MENU}"),
+        ClickAction(
+            selector=_xp(
+                "(//span[@id='view_details_button' or @id='dining-view-details-button' or @id='resto-view-details-button' or @id='view-details-btn' or @id='dining-view-details-btn' or @id='resto-view-details-btn' or @id='view-details-action' or @id='dining-details-button'])[1]"
+            )
+        ),
         ClickAction(
             selector=_xp(
                 "(//*[@id='menu-toggle-button' or @id='dining-menu-toggle' or @id='resto-menu-toggle' or @id='menu-expand-button' or @id='dining-menu-expand' or @id='resto-menu-expand' or @id='menu-collapse-button' or @id='dining-menu-collapse' or @id='resto-menu-collapse' or @id='menu-view-toggle'])[1]"
@@ -1622,10 +1631,10 @@ TIME_DROPDOWN_OPENED = _uc(
         NavigateAction(url=f"{BASE}/?seed={SEED_TIME_DROPDOWN_OPENED}"),
         ClickAction(
             selector=_xp(
-                "//*[@id='time_picker' or @id='time-picker' or @id='time-selector' or @id='time-input' or @id='booking-time' or @id='reservation-time' or @id='time-trigger' or @id='checkin-time' or @id='time-field']"
+                "//*[@id='time_picker' or @id='time-picker' or @id='time-selector' or @id='time-input' or @id='booking-time' or @id='reservation-time' or @id='time-trigger' or @id='checkin-time' or @id='time-field' or @id='resto-time-selector']"
             )
         ),
-        ClickAction(selector=_xp("(//button[normalize-space()='2:30 PM'])[1]")),
+        ClickAction(selector=_xp("(//button[normalize-space()='12:00 PM'])[1]")),
     ],
 )
 
@@ -1636,10 +1645,10 @@ PEOPLE_DROPDOWN_OPENED = _uc(
         NavigateAction(url=f"{BASE}/?seed={SEED_PEOPLE_DROPDOWN_OPENED}"),
         ClickAction(
             selector=_xp(
-                "//*[@id='people_picker' or @id='people-picker' or @id='guest-picker' or @id='guests-picker' or @id='people-selector' or @id='guest-selector' or @id='booking-people' or @id='reservation-people' or @id='people-input' or @id='guests-input']"
+                "//*[@id='people_picker' or @id='people-picker' or @id='guest-picker' or @id='guests-picker' or @id='people-selector' or @id='guest-selector' or @id='booking-people' or @id='reservation-people' or @id='people-input' or @id='guests-input' or @id='dining-people-picker']"
             )
         ),
-        ClickAction(selector=_xp("(//button[contains(normalize-space(), '4') and (contains(normalize-space(), 'Guest') or contains(normalize-space(), 'Guests'))])[1]")),
+        ClickAction(selector=_xp("(//button[contains(normalize-space(), '7') and (contains(normalize-space(), 'Guest') or contains(normalize-space(), 'Guests'))])[1]")),
     ],
 )
 
@@ -1650,14 +1659,14 @@ SEARCH_RESTAURANT = _uc(
         NavigateAction(url=f"{BASE}/?seed={SEED_SEARCH_RESTAURANT}"),
         ClickAction(
             selector=_xp(
-                "//*[@id='search-input' or @id='search-input-help' or @id='search-box' or @id='search-field' or @id='query-box' or @id='restaurant-search' or @id='search-restaurants' or @id='search-text']"
+                "//*[@id='search-input' or @id='search-input-help' or @id='search-box' or @id='search-field' or @id='query-box' or @id='restaurant-search' or @id='search-restaurants' or @id='search-text' or @id='query-box']"
             )
         ),
         TypeAction(
             selector=_xp(
                 "//input[@id='search-input' or @id='search-input-help' or @id='search-box' or @id='search-field' or @id='query-box' or @id='restaurant-search' or @id='search-restaurants' or @id='search-text']"
             ),
-            text="Thai Garden",
+            text="Jay Fai",
         ),
     ],
 )
@@ -1667,11 +1676,7 @@ SCROLL_VIEW = _uc(
     prompt="Scroll in the direction 'right' where section contains 'Introducing OpenDinning Icons'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_SCROLL_VIEW}"),
-        ClickAction(
-            selector=_xp(
-                "(//*[@data-testid='scroll-right-1' or @id='scroll-right-button' or @id='scroll-right' or @id='scroll-right-btn' or @id='carousel-right' or @id='carousel-right-button' or @id='carousel-right-btn' or @id='next-button' or @id='next-slide' or @id='right-arrow'])[1]"
-            )
-        ),
+        ClickAction(selector=_xp("//p[contains(normalize-space(),'Popular')]/ancestor::section[1]//button[contains(@id,'right') or contains(@id,'next')]")),
     ],
 )
 
@@ -1682,34 +1687,23 @@ BOOK_RESTAURANT = _uc(
         NavigateAction(url=f"{BASE}/?seed={SEED_BOOK_RESTAURANT}"),
         ClickAction(
             selector=_xp(
-                "//*[@id='search-input' or @id='search-input-help' or @id='search-box' or @id='search-field' or @id='query-box' or @id='restaurant-search' or @id='search-restaurants' or @id='search-text']"
+                "(//span[@id='view_details_button' or @id='dining-view-details-button' or @id='resto-view-details-button' or @id='view-details-btn' or @id='dining-view-details-btn' or @id='resto-view-details-btn' or @id='view-details-action' or @id='dining-details-button'])[1]"
             )
         ),
-        TypeAction(
-            selector=_xp(
-                "//input[@id='search-input' or @id='search-input-help' or @id='search-box' or @id='search-field' or @id='query-box' or @id='restaurant-search' or @id='search-restaurants' or @id='search-text']"
-            ),
-            text="Thai Garden",
-        ),
-        ClickAction(selector=_xp("(//*[normalize-space()='Thai Garden'])[1]")),
+        ClickAction(selector=_xp("//*[@id='resto-party-size-picker']")),
+        ClickAction(selector=_xp("(//button[contains(normalize-space(), '5') and (contains(normalize-space(), 'Guest') or contains(normalize-space(), 'Guests'))])[1]")),
         ClickAction(
             selector=_xp(
-                "//*[@id='people_picker' or @id='dining-people-picker' or @id='resto-people-picker' or @id='guests-picker' or @id='dining-guests-picker' or @id='resto-guests-picker' or @id='party-size-picker' or @id='dining-party-size-picker' or @id='resto-party-size-picker' or @id='people-selector']"
+                "//*[@id='date_picker' or @id='date-picker' or @id='date-selector' or @id='date-input' or @id='booking-date' or @id='reservation-date' or @id='calendar-trigger' or @id='date-trigger' or @id='checkin-date' or @id='date-field']"
             )
         ),
-        ClickAction(selector=_xp("(//button[contains(normalize-space(), '2') and (contains(normalize-space(), 'Guest') or contains(normalize-space(), 'Guests'))])[1]")),
+        ClickAction(selector=_xp("(//button[normalize-space()='8' and not(@disabled)])[1]")),
         ClickAction(
             selector=_xp(
-                "//*[@id='date_picker' or @id='dining-date-picker' or @id='resto-date-picker' or @id='booking-date-picker' or @id='dining-booking-date-picker' or @id='resto-booking-date-picker' or @id='date-selector' or @id='dining-date-selector' or @id='resto-date-selector' or @id='date-field']"
+                "//*[@id='time_picker' or @id='time-picker' or @id='time-selector' or @id='time-input' or @id='booking-time' or @id='reservation-time' or @id='time-trigger' or @id='checkin-time' or @id='time-field' or @id='resto-time-selector']"
             )
         ),
-        ClickAction(selector=_xp("(//button[normalize-space()='3' and not(@disabled)])[1]")),
-        ClickAction(
-            selector=_xp(
-                "//*[@id='time_picker' or @id='dining-time-picker' or @id='resto-time-picker' or @id='booking-time-picker' or @id='dining-booking-time-picker' or @id='resto-booking-time-picker' or @id='time-selector' or @id='dining-time-selector' or @id='resto-time-selector' or @id='time-field']"
-            )
-        ),
-        ClickAction(selector=_xp("(//button[normalize-space()='12:00 PM'])[1]")),
+        ClickAction(selector=_xp("(//button[normalize-space()='2:00 PM'])[1]")),
         ClickAction(
             selector=_xp(
                 "//*[@id='book_button' or @id='dining-book-button' or @id='resto-book-button' or @id='booking-button' or @id='dining-booking-button' or @id='resto-booking-button' or @id='reserve-button' or @id='dining-reserve-button' or @id='resto-reserve-button' or @id='book-action-button']"
@@ -1725,14 +1719,33 @@ COUNTRY_SELECTED = _uc(
         NavigateAction(url=f"{BASE}/?seed={SEED_COUNTRY_SELECTED}"),
         ClickAction(
             selector=_xp(
-                "//*[@id='country-select' or @id='country-dropdown' or @id='country-picker' or @id='country-selector' or @id='country-choice' or @id='country-option' or @id='country-field' or @id='country-input' or @id='country-selection' or @id='country-picker-dropdown']"
+                "(//span[@id='view_details_button' or @id='dining-view-details-button' or @id='resto-view-details-button' or @id='view-details-btn' or @id='dining-view-details-btn' or @id='resto-view-details-btn' or @id='view-details-action' or @id='dining-details-button'])[1]"
             )
         ),
+        ClickAction(selector=_xp("//*[@id='resto-party-size-picker' or @id='party-size-picker']")),
+        ClickAction(selector=_xp("(//button[contains(normalize-space(), '8') and (contains(normalize-space(), 'Guest') or contains(normalize-space(), 'Guests'))])[1]")),
         ClickAction(
             selector=_xp(
-                "(//*[@id='country-select' or @id='country-dropdown' or @id='country-picker' or @id='country-selector' or @id='country-choice' or @id='country-option' or @id='country-field' or @id='country-input' or @id='country-selection' or @id='country-picker-dropdown']/option[@value='IN'])[1]"
+                "//*[@id='date_picker' or @id='date-picker' or @id='date-selector' or @id='date-input' or @id='booking-date' or @id='reservation-date' or @id='calendar-trigger' or @id='date-trigger' or @id='checkin-date' or @id='date-field' or @id='dining-date-selector']"
             )
         ),
+        ClickAction(selector=_xp("(//button[normalize-space()='10' and not(@disabled)])[1]")),
+        ClickAction(
+            selector=_xp(
+                "//*[@id='time_picker' or @id='time-picker' or @id='time-selector' or @id='time-input' or @id='booking-time' or @id='reservation-time' or @id='time-trigger' or @id='checkin-time' or @id='time-field' or @id='resto-time-selector' or @id='dining-booking-time-picker']"
+            )
+        ),
+        ClickAction(selector=_xp("(//button[normalize-space()='2:00 PM'])[1]")),
+        ClickAction(
+            selector=_xp(
+                "//*[@id='book_button' or @id='dining-book-button' or @id='resto-book-button' or @id='booking-button' or @id='dining-booking-button' or @id='resto-booking-button' or @id='reserve-button' or @id='dining-reserve-button' or @id='resto-reserve-button' or @id='book-action-button']"
+            )
+        ),
+        SelectAction(
+            selector=_xp("//*[@id='country-dropdown']"),
+            value="CN",
+        ),
+        WaitAction(time_seconds=0.5),
     ],
 )
 
@@ -1743,13 +1756,47 @@ OCCASION_SELECTED = _uc(
         NavigateAction(url=f"{BASE}/?seed={SEED_OCCASION_SELECTED}"),
         ClickAction(
             selector=_xp(
-                "//*[@id='occasion-select' or @id='occasion-dropdown' or @id='occasion-picker' or @id='occasion-selector' or @id='occasion-choice' or @id='occasion-option' or @id='occasion-field' or @id='occasion-input' or @id='occasion-selection' or @id='occasion-picker-dropdown']"
+                "//*[@id='search-input' or @id='search-input-help' or @id='search-box' or @id='search-field' or @id='query-box' or @id='restaurant-search' or @id='search-restaurants' or @id='search-text' or @id='query-box']"
             )
+        ),
+        TypeAction(
+            selector=_xp(
+                "//input[@id='search-input' or @id='search-input-help' or @id='search-box' or @id='search-field' or @id='query-box' or @id='restaurant-search' or @id='search-restaurants' or @id='search-text']"
+            ),
+            text="Astrid y Gast",
         ),
         ClickAction(
             selector=_xp(
-                "(//*[@id='occasion-select' or @id='occasion-dropdown' or @id='occasion-picker' or @id='occasion-selector' or @id='occasion-choice' or @id='occasion-option' or @id='occasion-field' or @id='occasion-input' or @id='occasion-selection' or @id='occasion-picker-dropdown']/option[@value='birthday'])[1]"
+                "(//span[@id='view_details_button' or @id='dining-view-details-button' or @id='resto-view-details-button' or @id='view-details-btn' or @id='dining-view-details-btn' or @id='resto-view-details-btn' or @id='view-details-action' or @id='dining-details-button'])[1]"
             )
+        ),
+        ClickAction(selector=_xp("//*[@id='resto-party-size-picker' or @id='party-size-picker' or @id='dining-guests-picker']")),
+        ClickAction(selector=_xp("(//button[contains(normalize-space(), '5') and (contains(normalize-space(), 'Guest') or contains(normalize-space(), 'Guests'))])[1]")),
+        ClickAction(
+            selector=_xp(
+                "//*[@id='date_picker' or @id='date-picker' or @id='date-selector' or @id='date-input' or @id='booking-date' or @id='reservation-date' or @id='calendar-trigger' or @id='date-trigger' or @id='checkin-date' or @id='date-field' or @id='dining-date-selector' or @id='resto-booking-date-picker']"
+            )
+        ),
+        ClickAction(selector=_xp("(//button[normalize-space()='7' and not(@disabled)])[1]")),
+        ClickAction(
+            selector=_xp(
+                "//*[@id='time_picker' or @id='time-picker' or @id='time-selector' or @id='time-input' or @id='booking-time' or @id='reservation-time' or @id='time-trigger' or @id='checkin-time' or @id='time-field' or @id='resto-time-selector' or @id='dining-booking-time-picker' or @id='resto-time-picker']"
+            )
+        ),
+        ClickAction(selector=_xp("(//button[normalize-space()='12:30 PM'])[1]")),
+        ClickAction(
+            selector=_xp(
+                "//*[@id='book_button' or @id='dining-book-button' or @id='resto-book-button' or @id='booking-button' or @id='dining-booking-button' or @id='resto-booking-button' or @id='reserve-button' or @id='dining-reserve-button' or @id='resto-reserve-button' or @id='book-action-button']"
+            )
+        ),
+        SelectAction(
+            selector=_xp("//*[@id='country-picker-dropdown']"),
+            value="CN",
+        ),
+        WaitAction(time_seconds=0.5),
+        SelectAction(
+            selector=_xp("//*[@id='occasion-choice']"),
+            value="birthday",
         ),
     ],
 )
@@ -1761,63 +1808,39 @@ RESERVATION_COMPLETE = _uc(
         NavigateAction(url=f"{BASE}/?seed={SEED_RESERVATION_COMPLETE}"),
         ClickAction(
             selector=_xp(
-                "//*[@id='full-name-input' or @id='name-input' or @id='full-name' or @id='booking-name' or @id='reservation-name' or @id='customer-name' or @id='fullname-input' or @id='name-field' or @id='guest-name' or @id='full-name-field']"
+                "(//span[@id='view_details_button' or @id='dining-view-details-button' or @id='resto-view-details-button' or @id='view-details-btn' or @id='dining-view-details-btn' or @id='resto-view-details-btn' or @id='view-details-action' or @id='dining-details-button'])[1]"
             )
         ),
-        TypeAction(
-            selector=_xp(
-                "//input[@id='full-name-input' or @id='name-input' or @id='full-name' or @id='booking-name' or @id='reservation-name' or @id='customer-name' or @id='fullname-input' or @id='name-field' or @id='guest-name' or @id='full-name-field']"
-            ),
-            text="agent1",
-        ),
+        ClickAction(selector=_xp("//*[@id='resto-party-size-picker' or @id='party-size-picker' or @id='dining-guests-picker']")),
+        ClickAction(selector=_xp("(//button[contains(normalize-space(), '8') and (contains(normalize-space(), 'Guest') or contains(normalize-space(), 'Guests'))])[1]")),
         ClickAction(
             selector=_xp(
-                "//*[@id='phone-number-input' or @id='phone-input' or @id='booking-phone' or @id='reservation-phone' or @id='customer-phone' or @id='phone-field' or @id='mobile-input' or @id='contact-phone' or @id='phone-number' or @id='phone']"
+                "//*[@id='date_picker' or @id='date-picker' or @id='date-selector' or @id='date-input' or @id='booking-date' or @id='reservation-date' or @id='calendar-trigger' or @id='date-trigger' or @id='checkin-date' or @id='date-field' or @id='dining-date-selector' or @id='resto-booking-date-picker']"
             )
         ),
-        TypeAction(
-            selector=_xp(
-                "//input[@id='phone-number-input' or @id='phone-input' or @id='booking-phone' or @id='reservation-phone' or @id='customer-phone' or @id='phone-field' or @id='mobile-input' or @id='contact-phone' or @id='phone-number' or @id='phone']"
-            ),
-            text="666777888",
-        ),
+        ClickAction(selector=_xp("(//button[normalize-space()='13' and not(@disabled)])[1]")),
         ClickAction(
             selector=_xp(
-                "//*[@id='email-input' or @id='booking-email' or @id='reservation-email' or @id='customer-email' or @id='email-field' or @id='contact-email' or @id='email-address-input' or @id='email-address' or @id='email']"
+                "//*[@id='time_picker' or @id='time-picker' or @id='time-selector' or @id='time-input' or @id='booking-time' or @id='reservation-time' or @id='time-trigger' or @id='checkin-time' or @id='time-field' or @id='resto-time-selector' or @id='dining-booking-time-picker' or @id='resto-time-picker']"
             )
         ),
-        TypeAction(
-            selector=_xp(
-                "//input[@id='email-input' or @id='booking-email' or @id='reservation-email' or @id='customer-email' or @id='email-field' or @id='contact-email' or @id='email-address-input' or @id='email-address' or @id='email']"
-            ),
-            text="user_name@gmail.com",
-        ),
+        ClickAction(selector=_xp("(//button[normalize-space()='12:30 PM'])[1]")),
         ClickAction(
             selector=_xp(
-                "//*[@id='occasion-select' or @id='occasion-dropdown' or @id='occasion-picker' or @id='occasion-selector' or @id='occasion-choice' or @id='occasion-option' or @id='occasion-field' or @id='occasion-input' or @id='occasion-selection' or @id='occasion-picker-dropdown']"
+                "//*[@id='book_button' or @id='dining-book-button' or @id='resto-book-button' or @id='booking-button' or @id='dining-booking-button' or @id='resto-booking-button' or @id='reserve-button' or @id='dining-reserve-button' or @id='resto-reserve-button' or @id='book-action-button']"
             )
         ),
-        ClickAction(
-            selector=_xp(
-                "(//*[@id='occasion-select' or @id='occasion-dropdown' or @id='occasion-picker' or @id='occasion-selector' or @id='occasion-choice' or @id='occasion-option' or @id='occasion-field' or @id='occasion-input' or @id='occasion-selection' or @id='occasion-picker-dropdown']/option[@value='anniversary'])[1]"
-            )
+        SelectAction(
+            selector=_xp("//*[@id='country-dropdown' or @id='country-picker-dropdown']"),
+            value="CN",
         ),
-        ClickAction(
-            selector=_xp(
-                "//*[@id='special-requests-textarea' or @id='special-request-textarea' or @id='special-request' or @id='special-requests' or @id='request-textarea' or @id='booking-request' or @id='reservation-request' or @id='notes-textarea' or @id='comments-textarea' or @id='special-notes']"
-            )
+        WaitAction(time_seconds=0.5),
+        SelectAction(
+            selector=_xp("//*[@id='occasion-choice']"),
+            value="anniversary",
         ),
-        TypeAction(
-            selector=_xp(
-                "//textarea[@id='special-requests-textarea' or @id='special-request-textarea' or @id='special-request' or @id='special-requests' or @id='request-textarea' or @id='booking-request' or @id='reservation-request' or @id='notes-textarea' or @id='comments-textarea' or @id='special-notes']"
-            ),
-            text="delicious",
-        ),
-        ClickAction(
-            selector=_xp(
-                "//*[@id='confirm_button' or @id='confirm-booking-button' or @id='complete-reservation-button' or @id='finalize-reservation-button' or @id='submit-reservation-button' or @id='reservation-confirm-button' or @id='finish-booking-button' or @id='complete-booking-button' or @id='confirm-reservation-button' or @id='reservation-submit-button']"
-            )
-        ),
+        TypeAction(selector=_xp("//*[@id='phone-entry']"), text="123456789"),
+        ClickAction(selector=_xp("(//button[normalize-space()='Confirm Reservation'])[1]")),
     ],
 )
 
@@ -1840,7 +1863,7 @@ CONTACT_FORM_SUBMIT = _uc(
             selector=_xp(
                 "//input[@id='contact-name-input' or @id='name-input-contact' or @id='contact-name-field' or @id='name-field-contact' or @id='contact-name-text-input' or @id='name-text-input-contact' or @id='contact-name-entry' or @id='name-entry-contact' or @id='contact-name-textbox' or @id='name-textbox-contact']"
             ),
-            text="agent1",
+            text="Dennis",
         ),
         ClickAction(
             selector=_xp(
@@ -1851,7 +1874,7 @@ CONTACT_FORM_SUBMIT = _uc(
             selector=_xp(
                 "//input[@id='contact-email-input' or @id='email-input-contact' or @id='contact-email-field' or @id='email-field-contact' or @id='contact-email-text-input' or @id='email-text-input-contact' or @id='contact-email-entry' or @id='email-entry-contact' or @id='contact-email-textbox' or @id='email-textbox-contact']"
             ),
-            text="gg@hairmail.com",
+            text="den@example.com",
         ),
         ClickAction(
             selector=_xp(
@@ -1862,7 +1885,7 @@ CONTACT_FORM_SUBMIT = _uc(
             selector=_xp(
                 "//input[@id='contact-subject-input' or @id='subject-input-contact' or @id='contact-subject-field' or @id='subject-field-contact' or @id='contact-subject-text-input' or @id='subject-text-input-contact' or @id='contact-subject-entry' or @id='subject-entry-contact' or @id='contact-subject-textbox' or @id='subject-textbox-contact']"
             ),
-            text="hesitations",
+            text="Website Issue Report",
         ),
         ClickAction(
             selector=_xp(
@@ -1877,7 +1900,7 @@ CONTACT_FORM_SUBMIT = _uc(
         ),
         ClickAction(
             selector=_xp(
-                "//*[@id='send-message-button' or @id='send-message-btn' or @id='submit-contact-form' or @id='contact-submit-button' or @id='message-submit-button' or @id='send-contact-button' or @id='contact-send-button' or @id='submit-message-button' or @id='contact-form-submit' or @id='send-btn']"
+                "//*[@id='send-message-button' or @id='send-message-btn' or @id='submit-contact-form' or @id='contact-submit-button' or @id='message-submit-button' or @id='send-contact-button' or @id='contact-send-button' or @id='submit-message-button' or @id='contact-form-submit' or @id='send-btn' or @id='dining-submit-message-button']"
             )
         ),
     ],
@@ -1978,11 +2001,7 @@ HELP_FAQ_TOGGLED = _uc(
                 "//*[@id='nav-help' or @id='help-link' or @id='support-link' or @id='help-nav' or @id='support-nav' or @id='help-button' or @id='support-button' or @id='help-menu-item' or @id='support-menu-item' or @id='help-navigation']"
             )
         ),
-        ClickAction(
-            selector=_xp(
-                "(//*[@id='faq-item-4' or @id='faq-tile-4' or @id='faq-card-4' or @id='faq-item-0' or @id='faq-tile-0' or @id='faq-card-0']//button | //button[.//*[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'refund')] or .//*[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'cancellation policy')]])[1]"
-            )
-        ),
+        ClickAction(selector=_xp("(//*[@id='faq-question-2'])[1]")),
     ],
 )
 
