@@ -121,10 +121,10 @@ def main() -> int:
         sys.argv.extend(
             [
                 "-p",
-                "autohealth",
+                "autolist",
                 "-u",
-                "OPEN_APPOINTMENT_FORM  ",
-                "--no-headless",
+                "AUTOLIST_CANCEL_TASK_CREATION",
+                # "--no-headless",
             ]
         )
 

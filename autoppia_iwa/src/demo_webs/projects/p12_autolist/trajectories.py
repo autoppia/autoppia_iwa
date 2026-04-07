@@ -283,7 +283,7 @@ _RAW_TESTS: dict[str, list[dict]] = {
                 "name": {"operator": "not_contains", "value": "mvk"},
                 "description": {"operator": "not_equals", "value": "Create user communication plan for important announcements"},
                 "date": {"operator": "less_than", "value": "2026-04-24"},
-                "priority": {"operator": "not_equals", "value": "Low"},
+                "priority": {"operator": "not_equals", "value": 4},
             },
             "description": "Check if specific event was triggered",
         }
@@ -309,7 +309,7 @@ _RAW_TESTS: dict[str, list[dict]] = {
                 "name": {"operator": "not_equals", "value": "Implement data anonymization"},
                 "description": "Review pull requests and provide feedback to development team",
                 "date": {"operator": "less_than", "value": "2026-04-25"},
-                "priority": {"operator": "not_equals", "value": "Low"},
+                "priority": {"operator": "not_equals", "value": 4},
             },
             "description": "Check if specific event was triggered",
         }
@@ -322,7 +322,7 @@ _RAW_TESTS: dict[str, list[dict]] = {
                 "name": {"operator": "contains", "value": "t"},
                 "description": {"operator": "not_equals", "value": "Plan tasks and priorities for the next development sprint"},
                 "date": {"operator": "less_than", "value": "2026-04-22"},
-                "priority": {"operator": "not_equals", "value": "Low"},
+                "priority": {"operator": "not_equals", "value": 4},
             },
             "description": "Check if specific event was triggered",
         }

@@ -75,6 +75,8 @@ TEAM_MEMBERS_OPTIONS = [
 ]
 DATES_QUICK_OPTIONS = ["today", "tomorrow", "nextweek", "weekend"]
 PRIORITIES = ["Highest", "High", "Medium", "Low"]
+# web_12_autolist priority keys: 1 = highest … 4 = low (aligned with PRIORITIES order).
+TASK_PRIORITY_KEY_TO_LABEL = {i + 1: label for i, label in enumerate(PRIORITIES)}
 LOGICAL_OPERATORS = [EQUALS, NOT_EQUALS, GREATER_EQUAL, GREATER_THAN, LESS_EQUAL, LESS_THAN]
 STRING_OPERATORS = [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]
 ARRAY_OPERATORS = [CONTAINS, NOT_CONTAINS, IN_LIST, NOT_IN_LIST]

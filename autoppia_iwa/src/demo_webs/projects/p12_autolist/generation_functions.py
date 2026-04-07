@@ -17,6 +17,7 @@ from .data import (
     FIELD_OPERATORS_TEAM_ROLE_ASSIGNED_MAP,
     PRIORITIES,
     ROLES,
+    TASK_PRIORITY_KEY_TO_LABEL,
     TEAM_MEMBERS_OPTIONS,
     TEAMS,
 )
@@ -47,6 +48,23 @@ def _collect_field_values_from_dataset_flat(dataset: list[dict[str, Any]], sourc
             elif val is not None:
                 all_values.append(val)
     return list(set(all_values))
+
+
+def _task_priority_to_label(raw: Any) -> str | None:
+    """Map numeric priority (1=highest, 4=low) or label text to a canonical PRIORITIES string."""
+    if raw is None:
+        return None
+    if isinstance(raw, int):
+        return TASK_PRIORITY_KEY_TO_LABEL.get(raw)
+    if isinstance(raw, str):
+        s = raw.strip()
+        if s.isdigit():
+            return TASK_PRIORITY_KEY_TO_LABEL.get(int(s))
+        if raw in PRIORITIES:
+            return raw
+        by_lower = {p.lower(): p for p in PRIORITIES}
+        return by_lower.get(s.lower())
+    return None
 
 
 def _pick_different_value_from_dataset(dataset: list[dict[str, Any]], source_key: str, exclude_value: Any, fallback: Any = None) -> Any:
@@ -141,6 +159,15 @@ def _generate_constraints_for_event(field_map: dict[str, dict[str, Any]], operat
         if field_value is None and not config.get("is_date"):
             if "values" in config:
                 field_value = random.choice(config["values"])
+            else:
+                continue
+
+        if field == "priority" and source_key == "priority":
+            normalized = _task_priority_to_label(field_value)
+            if normalized is not None:
+                field_value = normalized
+            elif dataset:
+                field_value = random.choice(dataset)[source_key]
             else:
                 continue
 
