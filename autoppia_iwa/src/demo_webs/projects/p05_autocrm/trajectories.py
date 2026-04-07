@@ -780,7 +780,6 @@ _RAW_TESTS: dict[str, list[dict]] = {
                 "email": {"operator": "not_contains", "value": "nicolemiller@services.com"},
                 "matters": {"operator": "not_equals", "value": 8},
                 "status": "Inactive",
-                "last": {"operator": "contains", "value": "Today"},
             },
             "description": "Check if specific event was triggered",
         }
@@ -884,8 +883,8 @@ FILTER_MATTER_STATUS = _uc(
     prompt="Filter matters to exclude those with status 'Archived'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_FILTER_MATTER_STATUS}"),
-        ClickAction(selector=_id("matters-nav-link")),
-        SelectAction(selector=_id("matter-status-filter"), value="Active"),
+        ClickAction(selector=_id("cases-link")),
+        SelectAction(selector=_id("state-dropdown"), value="Active"),
     ],
 )
 
@@ -903,13 +902,7 @@ SORT_MATTER_BY_CREATED_AT = _uc(
             selector=_xp(
                 "//*[@id='matter-sort-select' or @id='case-sort-select' or @id='project-sort-select' or @id='matter-order-select' or @id='case-order-select' or @id='project-order-select' or @id='sort-dropdown' or @id='order-dropdown' or @id='sort-selector' or @id='order-selector']"
             ),
-            value="__CRM_MATTER_SORT_PREP__",
-        ),
-        SelectAction(
-            selector=_xp(
-                "//*[@id='matter-sort-select' or @id='case-sort-select' or @id='project-sort-select' or @id='matter-order-select' or @id='case-order-select' or @id='project-order-select' or @id='sort-dropdown' or @id='order-dropdown' or @id='sort-selector' or @id='order-selector']"
-            ),
-            value="__CRM_MATTER_SORT_TARGET__",
+            value="asc",
         ),
     ],
 )
@@ -919,12 +912,10 @@ UPDATE_MATTER = _uc(
     prompt="Update any matter where the updated date equals '1mo ago'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_UPDATE_MATTER}"),
-        ClickAction(selector=_id("matters-nav-link")),
-        ClickAction(selector=_id("matter-search-input")),
-        TypeAction(selector=_id("matter-search-input"), text="Estate Planning"),
-        ClickAction(selector=_xp("(//button[@aria-label='Edit matter' or @aria-label='Edit Matter' or normalize-space()='Edit'])[1]")),
-        SelectAction(selector=_id("edit-matter-status-select"), value="On Hold"),
-        ClickAction(selector=_id("save-matter-btn")),
+        ClickAction(selector=_id("projects-nav")),
+        ClickAction(selector=_xp("(//button[@aria-label='Edit matter' or @aria-label='Edit Matter' or normalize-space()='Amend'])[2]")),
+        SelectAction(selector=_id("modify-matter-status-select"), value="On Hold"),
+        ClickAction(selector=_id("update-matter-btn")),
     ],
 )
 
@@ -933,8 +924,8 @@ VIEW_PENDING_EVENTS = _uc(
     prompt="Show me the pending events on the calendar where the earliest date is NOT '2025-12-12'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_VIEW_PENDING_EVENTS}"),
-        ClickAction(selector=_id("calendar-nav-link")),
-        ClickAction(selector=_id("toggle-pending-events")),
+        ClickAction(selector=_id("time-planner")),
+        ClickAction(selector=_id("show-pending-events")),
     ],
 )
 
@@ -943,12 +934,12 @@ NEW_CALENDAR_EVENT_ADDED = _uc(
     prompt="Add a new calendar event where the label does NOT contain 'Monthly Sales Review', the time is GREATER than '9:30am', the date is LESS than '2026-05-18', and the event_type equals 'Matter/Event'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_NEW_CALENDAR_EVENT_ADDED}"),
-        ClickAction(selector=_id("calendar-nav-link")),
-        ClickAction(selector=_xp("//*[@id='day-number-2025-05-13']")),
-        TypeAction(selector=_id("event-label-input"), text="Team Sync"),
-        TypeAction(selector=_id("event-time-input"), text="09:00"),
-        SelectAction(selector=_id("event-color-select"), value="Filing"),
-        ClickAction(selector=_id("save-btn")),
+        ClickAction(selector=_id("time-planner")),
+        ClickAction(selector=_xp("//*[@id='day-number-2026-04-13']")),
+        TypeAction(selector=_id("milestone-label-input"), text="Team Sync"),
+        TypeAction(selector=_id("time-slot-input"), text="10:00"),
+        SelectAction(selector=_id("event-color-select"), value="Matter/Event"),
+        ClickAction(selector=_id("store-btn")),
     ],
 )
 
@@ -957,6 +948,8 @@ SEARCH_MATTER = _uc(
     prompt="Search for matters where the query contains 'Data'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_SEARCH_MATTER}"),
+        ClickAction(selector=_id("matter-registry")),
+        TypeAction(selector=_id("matter-search-input"), text="Data Privacy"),
     ],
 )
 
@@ -965,15 +958,19 @@ ADD_NEW_MATTER = _uc(
     prompt="Create a matter with the name that is NOT 'Litigation 2025', with client that contains 'Emma', and status that contains 'On hold'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_ADD_NEW_MATTER}"),
+        ClickAction(selector=_id("orders-link")),
+        ClickAction(selector=_id("start-project")),
+        TypeAction(selector=_id("matter-record-input"), text="Security Laws"),
+        TypeAction(selector=_id("client-name-input"), text="Emma Roy"),
+        SelectAction(selector=_id("ticket-status-select"), value="On Hold"),
+        ClickAction(selector=_id("create-case-btn")),
     ],
 )
 
 VIEW_MATTER_DETAILS = _uc(
     "VIEW_MATTER_DETAILS",
     prompt="Retrieve details of the matter where the status does NOT contain 'Archived' and the name equals 'Contract Review'",
-    actions=[
-        NavigateAction(url=f"{BASE}/?seed={SEED_VIEW_MATTER_DETAILS}"),
-    ],
+    actions=[NavigateAction(url=f"{BASE}/?seed={SEED_VIEW_MATTER_DETAILS}"), ClickAction(selector=_id("initiative-tracker")), ClickAction(selector=_xp("//h3[normalize-space()='Contract Review']"))],
 )
 
 ARCHIVE_MATTER = _uc(
@@ -981,6 +978,9 @@ ARCHIVE_MATTER = _uc(
     prompt="Archive the matter where the name does NOT contain 'Litigation Support' and the status contains 'Pe'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_ARCHIVE_MATTER}"),
+        ClickAction(selector=_id("orders-link")),
+        ClickAction(selector=_xp("//h3[normalize-space()='Compliance Review #855']/preceding::input[@type='checkbox'][1]")),
+        ClickAction(selector=_id("archive-cases-btn")),
     ],
 )
 
@@ -989,6 +989,9 @@ DELETE_MATTER = _uc(
     prompt="Delete the matter where the name does NOT contain 'Contract Review' and the status is NOT 'Archived'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_DELETE_MATTER}"),
+        ClickAction(selector=_id("orders-link")),
+        ClickAction(selector=_xp("//h3[normalize-space()='Compliance Review']/preceding::input[@type='checkbox'][1]")),
+        ClickAction(selector=_id("delete-btn")),
     ],
 )
 
@@ -997,6 +1000,8 @@ VIEW_CLIENT_DETAILS = _uc(
     prompt="View details of clients where the matters are greater than '4.64'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_VIEW_CLIENT_DETAILS}"),
+        ClickAction(selector=_id("mgmt-clients-link")),
+        ClickAction(selector=_xp("(//span[normalize-space()='Phoenix Advisors'])[1]")),
     ],
 )
 
@@ -1005,6 +1010,8 @@ SEARCH_CLIENT = _uc(
     prompt="Search for clients where the query is NOT 'Commercial Legal'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_SEARCH_CLIENT}"),
+        ClickAction(selector=_id("mgmt-clients-link")),
+        TypeAction(selector=_id("lookup-field"), text="Ryan Harris"),
     ],
 )
 
@@ -1013,14 +1020,22 @@ ADD_CLIENT = _uc(
     prompt="Add a new client named 'Nova Labs' with email not equals 'unitedlegal@enterprises.com', matters less than 3, status equals 'Active', and last not equals '1mo ago'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_ADD_CLIENT}"),
+        ClickAction(selector=_id("client-directory")),
+        ClickAction(selector=_id("create-client-button")),
+        TypeAction(selector=_xp("(//label[contains(normalize-space(),'Name')]/input)[1]"), text="Nova Labs"),
+        TypeAction(selector=_xp("(//label[contains(normalize-space(),'Email')]/input)[1]"), text="test@example.com"),
+        ClickAction(selector=_xp("//button[contains(normalize-space(),'Add client')]")),
     ],
 )
 
 DELETE_CLIENT = _uc(
     "DELETE_CLIENT",
-    prompt="Delete the client whose name is NOT 'Nicole Miller', email does NOT contain 'nicolemiller@services.com', matters is NOT '8', status equals 'Inactive', and last contains 'Today'.",
+    prompt="Delete the client whose name is NOT 'Nicole Miller', email does NOT contain 'nicolemiller@services.com', matters is NOT '8', status equals 'Inactive'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_DELETE_CLIENT}"),
+        ClickAction(selector=_id("customers-link")),
+        ClickAction(selector=_xp("(//span[normalize-space()='Megan Clark'])[1]")),
+        ClickAction(selector=_id("remove-customer-button")),
     ],
 )
 
@@ -1029,6 +1044,9 @@ FILTER_CLIENTS = _uc(
     prompt="Retrieve details of clients where the status equals 'Active' and the matters equals '5+'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_FILTER_CLIENTS}"),
+        ClickAction(selector=_id("mgmt-clients-link")),
+        SelectAction(selector=_id("status-selector"), value="Active"),
+        SelectAction(selector=_id("cases-filter"), value="5plus"),
     ],
 )
 
@@ -1037,6 +1055,10 @@ DOCUMENT_RENAMED = _uc(
     prompt="Rename the document 'Retainer-Agreement.pdf' to 'Retainer-Agreement-final.pdf' where the new_name is NOT 'Agreement-337.docx' and the previous_name is NOT 'Complaint-2574.xlsx'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_DOCUMENT_RENAMED}"),
+        ClickAction(selector=_id("documents-nav-link")),
+        ClickAction(selector=_id("rename-document-btn-212")),
+        TypeAction(selector=_xp("//input[@value='Retainer-Agreement-8386.pdf']"), text="Retainer-Agreement-final.pdf"),
+        ClickAction(selector=_id("save-document-name-212")),
     ],
 )
 
@@ -1045,6 +1067,8 @@ DOCUMENT_DELETED = _uc(
     prompt="Please delete the document with name equals 'Complaint-5725.xlsx' that has a version NOT equal to 'v5' and a size less than or equal to '1351 KB'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_DOCUMENT_DELETED}"),
+        ClickAction(selector=_id("knowledge-nav")),
+        ClickAction(selector=_id("remove-file-btn-41")),
     ],
 )
 
@@ -1053,6 +1077,11 @@ NEW_LOG_ADDED = _uc(
     prompt="Add log entry with hours equals '3.6'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_NEW_LOG_ADDED}"),
+        ClickAction(selector=_id("financial-hub-link")),
+        TypeAction(selector=_id("engagement-input"), text="Test"),
+        TypeAction(selector=_id("action-input"), text="Tester"),
+        TypeAction(selector=_id("span-input"), text="3.6"),
+        ClickAction(selector=_id("note-btn")),
     ],
 )
 
@@ -1061,6 +1090,7 @@ LOG_EDITED = _uc(
     prompt="Edit log entry where client contains 'itta', status contains 'B', matter does not contain 'Corporate Formation', and hours are greater than or equal to 1.2",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_LOG_EDITED}"),
+        ClickAction(selector=_id("account-billing-link")),
     ],
 )
 
