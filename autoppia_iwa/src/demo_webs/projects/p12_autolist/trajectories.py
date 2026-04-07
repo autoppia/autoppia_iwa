@@ -511,24 +511,8 @@ AUTOLIST_EDIT_TASK_MODAL_OPENED = _uc(
     ),
     actions=[
         NavigateAction(url=_home(SEED_EDIT_TASK_MODAL_OPENED)),
-        WaitAction(time_seconds=3.0),
-        # ClickAction(selector=_edit_task_card_button_for_pr_review_flow()),
-        # WaitAction(time_seconds=0.5),
-        # ClickAction(selector=_date_picker_button()),
-        ClickAction(selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="title", value="Edit")),
-        ClickAction(selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="due-button")),
-        ClickAction(selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="2026-04-07")),
-        WaitAction(time_seconds=0.45),
-        # ClickAction(
-        #     selector=_xp(
-        #         "(//div[contains(@class,'ant-picker-dropdown')]"
-        #         "//td[contains(@class,'ant-picker-cell-selected')]//div)[1]"
-        #     )
-        # ),
-        # WaitAction(time_seconds=0.25),
-        # SendKeysIWAAction(keys="Escape"),
-        WaitAction(time_seconds=0.25),
-        ClickAction(selector=_edit_modal_save_button()),
+        WaitAction(time_seconds=0.5),
+        ClickAction(selector=_xp("//html/body/div[2]/div/main/span[4]/div/div/div[10]/div/div[2]/button[1]")),
         WaitAction(time_seconds=0.5),
     ],
 )
@@ -636,16 +620,7 @@ AUTOLIST_TEAM_CREATED = _uc(
         WaitAction(time_seconds=0.3),
         *_select_ant_option_containing("Developer"),
         SendKeysIWAAction(keys="Escape"),
-        WaitAction(time_seconds=0.5),
-        EvaluateAction(
-            script=r"""() => {
-  const btn = document.querySelector(".ant-modal-footer .ant-btn-primary");
-  if (!btn) return "no-primary-btn";
-  btn.scrollIntoView({ block: "center", inline: "nearest" });
-  (btn).click();
-  return "clicked-save";
-}"""
-        ),
+        ClickAction(selector=_xp("html/body/div[4]/div/div[2]/div/div[1]/div/div[3]/button[2]")),
         WaitAction(time_seconds=0.55),
     ],
 )
