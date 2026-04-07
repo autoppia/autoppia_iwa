@@ -5,12 +5,7 @@ WEB_PROJECT_ID = "autobooks"
 
 from autoppia_iwa.src.data_generation.tests.classes import BaseTaskTest
 from autoppia_iwa.src.demo_webs.classes import Trajectory
-from autoppia_iwa.src.execution.actions.actions import (
-    ClickAction,
-    NavigateAction,
-    SendKeysIWAAction,
-    TypeAction,
-)
+from autoppia_iwa.src.execution.actions.actions import ClickAction, NavigateAction, SelectAction, TypeAction, WaitAction
 from autoppia_iwa.src.execution.actions.base import BaseAction, Selector, SelectorType
 
 ACTIONS = [
@@ -2939,7 +2934,7 @@ _RAW_TESTS: dict[str, list[dict]] = {
         {
             "type": "CheckEventTest",
             "event_name": "REGISTRATION_BOOK",
-            "event_criteria": {"username": "<signup_username>", "email": "<signup_email>", "password": "<signup_password>"},
+            "event_criteria": {"username": "Alex", "email": "alex@gmail.com", "password": "12345678"},
             "description": "Check if specific event was triggered",
         }
     ],
@@ -2947,7 +2942,7 @@ _RAW_TESTS: dict[str, list[dict]] = {
         {
             "type": "CheckEventTest",
             "event_name": "SEARCH_BOOK",
-            "event_criteria": {"query": {"operator": "not_equals", "value": "The Silent Patient"}},
+            "event_criteria": {"query": {"operator": "equals", "value": "The Silent Patient"}},
             "description": "Check if specific event was triggered",
         }
     ],
@@ -2967,20 +2962,14 @@ _RAW_TESTS: dict[str, list[dict]] = {
             "description": "Check if specific event was triggered",
         }
     ],
-    "LOGIN_BOOK": [
-        {"type": "CheckEventTest", "event_name": "LOGIN_BOOK", "event_criteria": {"username": "<username>", "password": "<password>"}, "description": "Check if specific event was triggered"}
-    ],
-    "LOGOUT_BOOK": [
-        {"type": "CheckEventTest", "event_name": "LOGOUT_BOOK", "event_criteria": {"username": "<username>", "password": "<password>"}, "description": "Check if specific event was triggered"}
-    ],
-    "DELETE_BOOK": [
-        {"type": "CheckEventTest", "event_name": "DELETE_BOOK", "event_criteria": {"username": "<username>", "password": "<password>"}, "description": "Check if specific event was triggered"}
-    ],
+    "LOGIN_BOOK": [{"type": "CheckEventTest", "event_name": "LOGIN_BOOK", "event_criteria": {"username": "user1", "password": "Passw0rd!"}, "description": "Check if specific event was triggered"}],
+    "LOGOUT_BOOK": [{"type": "CheckEventTest", "event_name": "LOGOUT_BOOK", "event_criteria": {"username": "user1", "password": "Passw0rd!"}, "description": "Check if specific event was triggered"}],
+    "DELETE_BOOK": [{"type": "CheckEventTest", "event_name": "DELETE_BOOK", "event_criteria": {"username": "user1", "password": "Passw0rd!"}, "description": "Check if specific event was triggered"}],
     "ADD_BOOK": [
         {
             "type": "CheckEventTest",
             "event_name": "ADD_BOOK",
-            "event_criteria": {"username": "<username>", "password": "<password>", "year": 2012, "rating": {"operator": "greater_equal", "value": 2.5}, "page_count": 1059},
+            "event_criteria": {"username": "user1", "password": "Passw0rd!", "year": 2012, "rating": {"operator": "greater_equal", "value": 2.5}, "page_count": 1059},
             "description": "Check if specific event was triggered",
         }
     ],
@@ -2996,7 +2985,7 @@ _RAW_TESTS: dict[str, list[dict]] = {
         {
             "type": "CheckEventTest",
             "event_name": "EDIT_USER_BOOK",
-            "event_criteria": {"username": "<username>", "password": "<password>", "first_name": {"operator": "contains", "value": "book"}, "website": {"operator": "contains", "value": "blue"}},
+            "event_criteria": {"username": "user5", "password": "Passw0rd!", "first_name": {"operator": "contains", "value": "book"}, "website": {"operator": "contains", "value": "blue"}},
             "description": "Check if specific event was triggered",
         }
     ],
@@ -3012,7 +3001,7 @@ _RAW_TESTS: dict[str, list[dict]] = {
         {
             "type": "CheckEventTest",
             "event_name": "EDIT_BOOK",
-            "event_criteria": {"username": "<username>", "password": "<password>", "book_author": "Franz Kafka", "book_year": 1975},
+            "event_criteria": {"username": "user3", "password": "Passw0rd!", "book_author": "Franz Kafka", "book_year": 1975},
             "description": "Check if specific event was triggered",
         }
     ],
@@ -3031,7 +3020,7 @@ _RAW_TESTS: dict[str, list[dict]] = {
         {
             "type": "CheckEventTest",
             "event_name": "OPEN_PREVIEW",
-            "event_criteria": {"price": 12.99, "name": {"operator": "contains", "value": "icide"}},
+            "event_criteria": {"name": {"operator": "contains", "value": "icide"}},
             "description": "Check if specific event was triggered",
         }
     ],
@@ -3042,8 +3031,8 @@ _RAW_TESTS: dict[str, list[dict]] = {
             "event_criteria": {
                 "genres": {"operator": "not_in_list", "value": ["Fantasy", "Thriller"]},
                 "rating": {"operator": "greater_equal", "value": 4.7},
-                "username": "<username>",
-                "password": "<password>",
+                "username": "user1",
+                "password": "Passw0rd!",
             },
             "description": "Check if specific event was triggered",
         }
@@ -3061,7 +3050,7 @@ _RAW_TESTS: dict[str, list[dict]] = {
         {
             "type": "CheckEventTest",
             "event_name": "ADD_TO_CART_BOOK",
-            "event_criteria": {"genres": {"operator": "not_in_list", "value": ["War", "Classic"]}, "username": "<username>", "password": "<password>"},
+            "event_criteria": {"genre": {"operator": "not_in_list", "value": ["War", "Classic"]}, "username": "user1", "password": "Passw0rd!"},
             "description": "Check if specific event was triggered",
         }
     ],
@@ -3073,8 +3062,8 @@ _RAW_TESTS: dict[str, list[dict]] = {
                 "author": {"operator": "not_equals", "value": "Kathryn Stockett"},
                 "rating": 4.4,
                 "year": {"operator": "not_equals", "value": 2019},
-                "username": "<username>",
-                "password": "<password>",
+                "username": "user1",
+                "password": "Passw0rd!",
             },
             "description": "Check if specific event was triggered",
         }
@@ -3125,14 +3114,14 @@ REGISTRATION_BOOK = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_REGISTRATION_BOOK}"),
         ClickAction(selector=_xp("//a[normalize-space()='Register']")),
-        ClickAction(selector=_id("username-input")),
-        TypeAction(selector=_id("username-input"), text="__SIGNUP_USERNAME__"),
         ClickAction(selector=_id("signup-email-input")),
-        TypeAction(selector=_id("signup-email-input"), text="__SIGNUP_EMAIL__"),
+        TypeAction(selector=_id("signup-email-input"), text="alex@gmail.com"),
         ClickAction(selector=_id("password-input")),
-        TypeAction(selector=_id("password-input"), text="__SIGNUP_PASSWORD__"),
+        TypeAction(selector=_id("password-input"), text="12345678"),
         ClickAction(selector=_id("confirm-password-input")),
-        TypeAction(selector=_id("confirm-password-input"), text="__SIGNUP_PASSWORD__"),
+        TypeAction(selector=_id("confirm-password-input"), text="12345678"),
+        ClickAction(selector=_id("username-input")),
+        TypeAction(selector=_id("username-input"), text="Alex"),
         ClickAction(selector=_id("signup-submit-button")),
     ],
 )
@@ -3143,8 +3132,8 @@ SEARCH_BOOK = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_SEARCH_BOOK}"),
         ClickAction(selector=_xp("//a[contains(@href,'/search')]")),
-        TypeAction(selector=_xp("//*[@id='search-field' or @id='search-input']"), text="__SEARCH_QUERY__"),
-        ClickAction(selector=_xp("//*[@id='submit-btn' or @id='search-submit-button' or @id='search-button']")),
+        TypeAction(selector=_xp("//*[@id='search-field' or @id='search-box']"), text="The Silent Patient"),
+        ClickAction(selector=_xp("//*[@id='submit-btn' or @id='search-submit-button' or @id='search-button' or @id='search-library-button']")),
     ],
 )
 
@@ -3154,12 +3143,8 @@ FILTER_BOOK = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_FILTER_BOOK}"),
         ClickAction(selector=_xp("//a[contains(@href,'/search')]")),
-        ClickAction(selector=_xp("__year_select__")),
-        SendKeysIWAAction(keys="__YEAR_KEY_1__"),
-        SendKeysIWAAction(keys="__YEAR_KEY_2__"),
-        SendKeysIWAAction(keys="__YEAR_KEY_3__"),
-        SendKeysIWAAction(keys="__YEAR_KEY_4__"),
-        SendKeysIWAAction(keys="Enter"),
+        SelectAction(selector=_xp('//*[@id="library"]/div/div[2]/select[1]'), value="1603"),
+        SelectAction(selector=_xp('//*[@id="library"]/div/div[2]/select[2]'), value="Drama"),
     ],
 )
 
@@ -3168,16 +3153,16 @@ CONTACT_BOOK = _uc(
     prompt="Go to the contact page and submit a form where the subject does NOT contain 'Complaint'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_CONTACT_BOOK}"),
-        ClickAction(selector=_xp("//a[normalize-space()='Contact']")),
-        ClickAction(selector=_id("contact-name-input")),
-        TypeAction(selector=_id("contact-name-input"), text="__CONTACT_NAME__"),
+        ClickAction(selector=_xp("//a[normalize-space()='Contact Us']")),
+        ClickAction(selector=_id("contact-us-name-input")),
+        TypeAction(selector=_id("contact-us-name-input"), text="Bob"),
         ClickAction(selector=_id("contact-email-input")),
-        TypeAction(selector=_id("contact-email-input"), text="__CONTACT_EMAIL__"),
-        ClickAction(selector=_id("contact-subject-input")),
-        TypeAction(selector=_id("contact-subject-input"), text="__CONTACT_SUBJECT__"),
-        ClickAction(selector=_id("contact-message-textarea")),
-        TypeAction(selector=_id("contact-message-textarea"), text="__CONTACT_MESSAGE__"),
-        ClickAction(selector=_id("send-message-button")),
+        TypeAction(selector=_id("contact-email-input"), text="bob@gmail.com"),
+        ClickAction(selector=_id("contact-details-subject-input")),
+        TypeAction(selector=_id("contact-details-subject-input"), text="Support"),
+        ClickAction(selector=_id("reach-out-message-textarea")),
+        TypeAction(selector=_id("reach-out-message-textarea"), text="I want to get help to know how to add movie."),
+        ClickAction(selector=_id("send-form-button")),
     ],
 )
 
@@ -3187,8 +3172,8 @@ LOGIN_BOOK = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_LOGIN_BOOK}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
-        TypeAction(selector=_id("username-input"), text="<username>"),
-        TypeAction(selector=_id("password-input"), text="<password>"),
+        TypeAction(selector=_id("username-input"), text="user1"),
+        TypeAction(selector=_id("password-input"), text="Passw0rd!"),
         ClickAction(selector=_id("login-submit-button")),
     ],
 )
@@ -3199,8 +3184,8 @@ LOGOUT_BOOK = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_LOGOUT_BOOK}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
-        TypeAction(selector=_id("username-input"), text="<username>"),
-        TypeAction(selector=_id("password-input"), text="<password>"),
+        TypeAction(selector=_id("password-input"), text="Passw0rd!"),
+        TypeAction(selector=_id("username-input"), text="user1"),
         ClickAction(selector=_id("login-submit-button")),
         ClickAction(selector=_xp("//button[normalize-space()='Logout']")),
     ],
@@ -3212,12 +3197,11 @@ DELETE_BOOK = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_DELETE_BOOK}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
-        TypeAction(selector=_id("username-input"), text="<username>"),
-        TypeAction(selector=_id("password-input"), text="<password>"),
+        TypeAction(selector=_id("password-input"), text="Passw0rd!"),
+        TypeAction(selector=_id("username-input"), text="user1"),
         ClickAction(selector=_id("login-submit-button")),
-        ClickAction(selector=_xp("//a[contains(@href,'/profile')]")),
-        ClickAction(selector=_id("profile-tab-books")),
-        ClickAction(selector=_xp("(//*[starts-with(@id,'delete-book-button')])[1]")),
+        ClickAction(selector=_id("my-books-tab")),
+        ClickAction(selector=_id("remove-title-button")),
     ],
 )
 
@@ -3227,16 +3211,15 @@ ADD_BOOK = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_ADD_BOOK}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
-        TypeAction(selector=_id("username-input"), text="<username>"),
-        TypeAction(selector=_id("password-input"), text="<password>"),
+        TypeAction(selector=_id("username-input"), text="user1"),
+        TypeAction(selector=_id("password-input"), text="Passw0rd!"),
         ClickAction(selector=_id("login-submit-button")),
-        ClickAction(selector=_id("profile-tab-add-books")),
-        TypeAction(selector=_xp("(//label[contains(normalize-space(),'Author')]/input)[1]"), text="__AUTHOR__"),
-        TypeAction(selector=_xp("(//label[contains(normalize-space(),'Year')]/input)[1]"), text="__YEAR__"),
-        TypeAction(selector=_xp("(//label[contains(normalize-space(),'Pages')]/input)[1]"), text="__PAGES__"),
-        TypeAction(selector=_xp("(//label[contains(normalize-space(),'Rating')]/input)[1]"), text="__RATING__"),
-        TypeAction(selector=_xp("(//input[@placeholder='Custom genre list'])[1]"), text="__GENRE__"),
-        ClickAction(selector=_xp("(//button[normalize-space()='Add Book'])[1]")),
+        ClickAction(selector=_id("user-add-books-settings-tab")),
+        TypeAction(selector=_xp("(//label[contains(normalize-space(),'Year')]/input)[1]"), text="2012"),
+        TypeAction(selector=_xp("(//label[contains(normalize-space(),'Pages')]/input)[1]"), text="1059"),
+        TypeAction(selector=_xp("(//label[contains(normalize-space(),'Rating')]/input)[1]"), text="2.5"),
+        # TypeAction(selector=_xp("(//input[@placeholder='Custom genre list'])[1]"), text="__GENRE__"),
+        ClickAction(selector=_xp("//button[normalize-space()='New Title']")),
     ],
 )
 
@@ -3246,14 +3229,14 @@ ADD_COMMENT_BOOK = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_ADD_COMMENT_BOOK}"),
         ClickAction(selector=_xp("//a[contains(@href,'/search')]")),
-        TypeAction(selector=_xp("//*[@id='search-field' or @id='search-input']"), text="__SEARCH_QUERY__"),
-        ClickAction(selector=_xp("//*[@id='submit-btn' or @id='search-submit-button' or @id='search-button']")),
-        ClickAction(selector=_xp("(//a[contains(@href,'/books/')])[1]")),
-        ClickAction(selector=_id("comment-author-input")),
-        TypeAction(selector=_id("comment-author-input"), text="__COMMENTER_NAME__"),
-        ClickAction(selector=_id("comment-message-textarea")),
-        TypeAction(selector=_id("comment-message-textarea"), text="__COMMENT_MESSAGE__"),
-        ClickAction(selector=_id("share-feedback-button")),
+        TypeAction(selector=_xp("//*[@id='search-field' or @id='search-input']"), text="The Four Winds"),
+        ClickAction(selector=_xp("//*[@id='submit-btn' or @id='search-submit-button' or @id='search-button' or @id='book-finder-button']")),
+        ClickAction(selector=_xp("//a[contains(@href,'/book-156')]")),
+        ClickAction(selector=_id("comment-name-box")),
+        TypeAction(selector=_id("comment-name-box"), text="Alex"),
+        ClickAction(selector=_id("comment-message-field")),
+        TypeAction(selector=_id("comment-message-field"), text="a true literary experience"),
+        ClickAction(selector=_id("submit-feedback-btn")),
     ],
 )
 
@@ -3263,16 +3246,14 @@ EDIT_USER_BOOK = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_EDIT_USER_BOOK}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
-        TypeAction(selector=_id("username-input"), text="<username>"),
-        TypeAction(selector=_id("password-input"), text="<password>"),
+        TypeAction(selector=_id("username-input"), text="user5"),
+        TypeAction(selector=_id("password-input"), text="Passw0rd!"),
         ClickAction(selector=_id("login-submit-button")),
-        ClickAction(selector=_id("first-name-input")),
-        TypeAction(selector=_id("first-name-input"), text="__FIRST_NAME__"),
-        ClickAction(selector=_id("last-name-input")),
-        TypeAction(selector=_id("last-name-input"), text="__LAST_NAME__"),
-        ClickAction(selector=_id("website-input")),
-        TypeAction(selector=_id("website-input"), text="__WEBSITE__"),
-        ClickAction(selector=_id("save-profile-button")),
+        ClickAction(selector=_id("first-name-form-input")),
+        TypeAction(selector=_id("first-name-form-input"), text="Books writer"),
+        ClickAction(selector=_id("website-url-input")),
+        TypeAction(selector=_id("website-url-input"), text="blue.sky@example.com"),
+        ClickAction(selector=_id("user-account-save-button")),
     ],
 )
 
@@ -3282,10 +3263,8 @@ BOOK_DETAIL = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_BOOK_DETAIL}"),
         ClickAction(selector=_xp("//a[contains(@href,'/search')]")),
-        TypeAction(selector=_xp("//*[@id='search-field' or @id='search-input']"), text="__SEARCH_QUERY__"),
-        ClickAction(selector=_xp("//*[@id='submit-btn' or @id='search-submit-button' or @id='search-button']")),
-        ClickAction(selector=_xp("(//a[contains(@href,'/books/')])[1]")),
-        ClickAction(selector=_xp("//*[@id='share-detail-button']")),
+        ClickAction(selector=_xp("(//a[@id='view-button'])[1]")),
+        WaitAction(time_seconds=0.5),
     ],
 )
 
@@ -3295,16 +3274,13 @@ EDIT_BOOK = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_EDIT_BOOK}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
-        TypeAction(selector=_id("username-input"), text="<username>"),
-        TypeAction(selector=_id("password-input"), text="<password>"),
+        TypeAction(selector=_id("password-input"), text="Passw0rd!"),
+        TypeAction(selector=_id("username-input"), text="user3"),
         ClickAction(selector=_id("login-submit-button")),
-        ClickAction(selector=_xp("//*[@id='books-view-tab' or @id='profile-tab-books']")),
-        TypeAction(selector=_xp("(//label[contains(normalize-space(),'Rating')]/input)[1]"), text="__RATING__"),
-        ClickAction(selector=_xp("(//label[contains(normalize-space(),'Pages')]/input)[1]")),
-        TypeAction(selector=_xp("(//label[contains(normalize-space(),'Pages')]/input)[1]"), text="__PAGES__"),
-        ClickAction(selector=_xp("(//input[@placeholder='Custom genre list'])[1]")),
-        TypeAction(selector=_xp("(//input[@placeholder='Custom genre list'])[1]"), text="__GENRE__"),
-        ClickAction(selector=_xp("(//form[.//label[contains(normalize-space(),'Rating')]]//button[@type='submit'])[1]")),
+        ClickAction(selector=_xp("//*[@id='books-view-tab' or @id='profile-tab-books' or @id='user-books-tab']")),
+        TypeAction(selector=_xp("(//label[contains(normalize-space(),'Author')]/input)[1]"), text="Franz Kafka"),
+        TypeAction(selector=_xp("(//label[contains(normalize-space(),'Year')]/input)[1]"), text="1975"),
+        ClickAction(selector=_xp("(//button[@type='submit'])[1]")),
     ],
 )
 
@@ -3314,14 +3290,12 @@ PURCHASE_BOOK = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_PURCHASE_BOOK}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
-        TypeAction(selector=_id("username-input"), text="<username>"),
-        TypeAction(selector=_id("password-input"), text="<password>"),
+        TypeAction(selector=_id("username-input"), text="user2"),
+        TypeAction(selector=_id("password-input"), text="Passw0rd!"),
         ClickAction(selector=_id("login-submit-button")),
         ClickAction(selector=_xp("//a[contains(@href,'/search')]")),
-        TypeAction(selector=_xp("//*[@id='search-field' or @id='search-input']"), text="__SEARCH_QUERY__"),
-        ClickAction(selector=_xp("//*[@id='submit-btn' or @id='search-submit-button' or @id='search-button']")),
         ClickAction(selector=_xp("(//a[contains(@href,'/books/')])[1]")),
-        ClickAction(selector=_xp("//*[@id='add-to-cart-detail-button' or @id='add-cart-button' or @id='cart-button']")),
+        ClickAction(selector=_xp("//*[@id='add-to-cart-detail-button' or @id='add-cart-button' or @id='cart-button' or @id='purchase-btn']")),
         ClickAction(selector=_xp("//a[contains(@href,'/cart')]")),
         ClickAction(selector=_xp("//*[@id='purchase-button' or @id='buy-now-button']")),
     ],
@@ -3333,7 +3307,7 @@ SHARE_BOOK = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_SHARE_BOOK}"),
         ClickAction(selector=_xp("(//a[contains(@href,'/books/')])[1]")),
-        ClickAction(selector=_id("share-detail-button")),
+        ClickAction(selector=_id("share-link-button")),
     ],
 )
 
@@ -3342,8 +3316,11 @@ OPEN_PREVIEW = _uc(
     prompt="Open preview of book where the price equals '12.99' and the name contains 'icide'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_OPEN_PREVIEW}"),
+        ClickAction(selector=_xp("//a[contains(@href,'/search')]")),
+        TypeAction(selector=_xp("//input[@id='query-box']"), text="icide"),
+        ClickAction(selector=_xp("//button[@id='submit-btn' or @id='search-submit-button' or @id='search-button' or @id='book-finder-button' or @id='query-books-button']")),
         ClickAction(selector=_xp("(//a[contains(@href,'/books/')])[1]")),
-        ClickAction(selector=_id("read-book-button")),
+        ClickAction(selector=_id("start-btn")),
     ],
 )
 
@@ -3353,15 +3330,12 @@ ADD_TO_READING_LIST = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_ADD_TO_READING_LIST}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
-        TypeAction(selector=_id("username-input"), text="<username>"),
-        TypeAction(selector=_id("password-input"), text="<password>"),
+        TypeAction(selector=_id("username-input"), text="user1"),
+        TypeAction(selector=_id("password-input"), text="Passw0rd!"),
         ClickAction(selector=_id("login-submit-button")),
         ClickAction(selector=_xp("//a[contains(@href,'/search')]")),
-        TypeAction(selector=_xp("//*[@id='search-field' or @id='search-input']"), text="__READING_LIST_QUERY__"),
-        ClickAction(selector=_xp("//*[@id='submit-btn' or @id='search-submit-button' or @id='search-button']")),
         ClickAction(selector=_xp("(//a[contains(@href,'/books/')])[1]")),
-        ClickAction(selector=_xp("//*[@id='reading-list-button']")),
-        ClickAction(selector=_xp("//*[@id='reading-list-button']")),
+        ClickAction(selector=_xp("//*[@id='reading-list-button' or @id='bookmark-btn']")),
     ],
 )
 
@@ -3371,12 +3345,12 @@ REMOVE_FROM_READING_LIST = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_REMOVE_FROM_READING_LIST}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
-        TypeAction(selector=_id("username-input"), text="<username>"),
-        TypeAction(selector=_id("password-input"), text="<password>"),
+        TypeAction(selector=_id("username-input"), text="user1"),
+        TypeAction(selector=_id("password-input"), text="Passw0rd!"),
         ClickAction(selector=_id("login-submit-button")),
         ClickAction(selector=_xp("//a[contains(@href,'/search')]")),
-        TypeAction(selector=_xp("//*[@id='search-field' or @id='search-input']"), text="__READING_LIST_QUERY__"),
-        ClickAction(selector=_xp("//*[@id='submit-btn' or @id='search-submit-button' or @id='search-button']")),
+        TypeAction(selector=_xp("//*[@id='search-field' or @id='search-input']"), text="yr"),
+        ClickAction(selector=_xp("//*[@id='submit-btn' or @id='search-submit-button' or @id='search-button' or @id='find-books-button']")),
         ClickAction(selector=_xp("(//a[contains(@href,'/books/')])[1]")),
         ClickAction(selector=_xp("//*[@id='reading-list-button']")),
         ClickAction(selector=_xp("//*[@id='reading-list-button']")),
@@ -3389,11 +3363,11 @@ VIEW_CART_BOOK = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_VIEW_CART_BOOK}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
-        TypeAction(selector=_id("username-input"), text="<username>"),
-        TypeAction(selector=_id("password-input"), text="<password>"),
+        TypeAction(selector=_id("username-input"), text="user1"),
+        TypeAction(selector=_id("password-input"), text="Passw0rd!"),
         ClickAction(selector=_id("login-submit-button")),
         ClickAction(selector=_xp("//a[contains(@href,'/cart')]")),
-        ClickAction(selector=_xp("//a[contains(@href,'/search')][1]")),
+        WaitAction(time_seconds=0.5),
     ],
 )
 
@@ -3403,14 +3377,12 @@ ADD_TO_CART_BOOK = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_ADD_TO_CART_BOOK}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
-        TypeAction(selector=_id("username-input"), text="<username>"),
-        TypeAction(selector=_id("password-input"), text="<password>"),
+        TypeAction(selector=_id("username-input"), text="user1"),
+        TypeAction(selector=_id("password-input"), text="Passw0rd!"),
         ClickAction(selector=_id("login-submit-button")),
         ClickAction(selector=_xp("//a[contains(@href,'/search')]")),
-        TypeAction(selector=_xp("//*[@id='search-field' or @id='search-input']"), text="__CART_QUERY__"),
-        ClickAction(selector=_xp("//*[@id='submit-btn' or @id='search-submit-button' or @id='search-button']")),
-        ClickAction(selector=_xp("(//a[contains(@href,'/books/')])[1]")),
-        ClickAction(selector=_xp("//*[@id='add-to-cart-detail-button' or @id='add-cart-button' or @id='cart-button']")),
+        ClickAction(selector=_xp("//a[contains(@href,'/book-72')]")),
+        ClickAction(selector=_xp("//*[@id='add-to-cart-detail-button' or @id='add-cart-button' or @id='cart-button' or @id='cart-add-btn']")),
     ],
 )
 
@@ -3420,16 +3392,16 @@ REMOVE_FROM_CART_BOOK = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_REMOVE_FROM_CART_BOOK}"),
         ClickAction(selector=_xp("//a[normalize-space()='Login']")),
-        TypeAction(selector=_id("username-input"), text="<username>"),
-        TypeAction(selector=_id("password-input"), text="<password>"),
+        TypeAction(selector=_id("password-input"), text="Passw0rd!"),
+        TypeAction(selector=_id("username-input"), text="user1"),
         ClickAction(selector=_id("login-submit-button")),
         ClickAction(selector=_xp("//a[contains(@href,'/search')]")),
-        TypeAction(selector=_xp("//*[@id='search-field' or @id='search-input']"), text="__CART_QUERY__"),
-        ClickAction(selector=_xp("//*[@id='submit-btn' or @id='search-submit-button' or @id='search-button']")),
+        TypeAction(selector=_xp("//*[@id='search-field' or @id='search-input' or @id='lookup-input']"), text="The Death Cure"),
+        ClickAction(selector=_xp("//*[@id='submit-btn' or @id='search-submit-button' or @id='search-button' or @id='book-query-button']")),
         ClickAction(selector=_xp("(//a[contains(@href,'/books/')])[1]")),
-        ClickAction(selector=_xp("//*[@id='add-to-cart-detail-button' or @id='add-cart-button' or @id='cart-button']")),
+        ClickAction(selector=_xp("//*[@id='add-to-cart-detail-button' or @id='add-cart-button' or @id='cart-button' or @id='add-to-cart-btn']")),
         ClickAction(selector=_xp("//a[contains(@href,'/cart')]")),
-        ClickAction(selector=_xp("(//*[contains(@id,'remove-from-cart-button') or contains(@id,'delete-cart-item-button') or contains(@id,'remove-cart')])[1]")),
+        ClickAction(selector=_xp("(//*[contains(@id,'remove-from-cart-button') or contains(@id,'delete-cart-item-button') or contains(@id,'remove-cart') or @id='delete-button'])[1]")),
     ],
 )
 
