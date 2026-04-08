@@ -5,12 +5,7 @@ WEB_PROJECT_ID = "autocrm"
 
 from autoppia_iwa.src.data_generation.tests.classes import BaseTaskTest
 from autoppia_iwa.src.demo_webs.classes import Trajectory
-from autoppia_iwa.src.execution.actions.actions import (
-    ClickAction,
-    NavigateAction,
-    SelectAction,
-    TypeAction,
-)
+from autoppia_iwa.src.execution.actions.actions import ClickAction, NavigateAction, SelectAction, TypeAction, WaitAction
 from autoppia_iwa.src.execution.actions.base import BaseAction, Selector, SelectorType
 
 ACTIONS = [
@@ -1091,6 +1086,11 @@ LOG_EDITED = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_LOG_EDITED}"),
         ClickAction(selector=_id("account-billing-link")),
+        TypeAction(selector=_id("invoicing-search"), text="itta"),
+        ClickAction(selector=_xp("//*[contains(@aria-label,'Amend Compliance Review')]")),
+        TypeAction(selector=_id("edit-description-85"), text="Edited"),
+        ClickAction(selector=_xp("(//button[@id='LOG_EDITED-button'])[2]")),
+        WaitAction(time_seconds=0.5),
     ],
 )
 
@@ -1099,6 +1099,8 @@ LOG_DELETE = _uc(
     prompt="Delete the time log where hours is NOT equal to '6.0', matter does NOT CONTAIN 'Franchise Agreement', status CONTAINS 'Bill', and client is NOT equal to 'Strategic Partners'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_LOG_DELETE}"),
+        ClickAction(selector=_id("ledger-system")),
+        ClickAction(selector=_id("delete-log-btn-98")),
     ],
 )
 
@@ -1107,6 +1109,10 @@ BILLING_SEARCH = _uc(
     prompt="Retrieve billing entries where the query equals 'Regulatory Approval' and the date_filter contains 'Previous 2 weeks'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_BILLING_SEARCH}"),
+        ClickAction(selector=_id("billing-nav-link")),
+        TypeAction(selector=_id("finances-filter"), text="Regulatory Approval"),
+        SelectAction(selector=_id("time-selector"), value="Previous 2 weeks"),
+        WaitAction(time_seconds=0.3),
     ],
 )
 
@@ -1115,6 +1121,9 @@ CHANGE_USER_NAME = _uc(
     prompt="Change user name to 'John Smith' that does NOT contain 'Builder'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_CHANGE_USER_NAME}"),
+        ClickAction(selector=_id("settings-nav-link")),
+        TypeAction(selector=_id("user-name-input"), text="John Smith"),
+        ClickAction(selector=_id("save-details-btn")),
     ],
 )
 
@@ -1123,6 +1132,7 @@ HELP_VIEWED = _uc(
     prompt="Open the help/FAQ page.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_HELP_VIEWED}"),
+        ClickAction(selector=_id("support-link")),
     ],
 )
 
