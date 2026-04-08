@@ -80,6 +80,10 @@ def _xp(expr: str) -> Selector:
     return Selector(type=SelectorType.XPATH_SELECTOR, value=expr)
 
 
+def _id(element_id: str) -> Selector:
+    return Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value=element_id)
+
+
 def _task_entry(seed: int) -> list[BaseAction]:
     return [NavigateAction(url=_home(seed)), WaitAction(time_seconds=1.0)]
 
@@ -363,7 +367,7 @@ VIEW_USER_PROFILE = _uc(
     "VIEW_USER_PROFILE",
     [
         *_task_entry(SEED_VIEW_USER_PROFILE),
-        ClickAction(selector=_xp("//a[contains(@href,'/profile/')][normalize-space(.)='Brian Griffith']")),
+        ClickAction(selector=_id("nav_profile")),
         WaitAction(time_seconds=0.9),
     ],
 )
@@ -372,9 +376,9 @@ CONNECT_WITH_USER = _uc(
     "CONNECT_WITH_USER",
     [
         *_task_entry(SEED_CONNECT_WITH_USER),
-        NavigateAction(url=_path(SEED_CONNECT_WITH_USER, "profile/jack.rogers")),
-        WaitAction(time_seconds=1.0),
-        ClickAction(selector=_xp("//button[contains(normalize-space(.),'Connect') or contains(normalize-space(.),'connect')][not(contains(normalize-space(.),'Pending'))]")),
+        NavigateAction(url=_path(SEED_CONNECT_WITH_USER, "profile/bella.hernandez")),
+        WaitAction(time_seconds=0.5),
+        ClickAction(selector=_xp("html/body/div[2]/main/span/section/div[1]/div/div[1]/button")),
         WaitAction(time_seconds=0.6),
     ],
 )
@@ -383,14 +387,14 @@ POST_STATUS = _uc(
     "POST_STATUS",
     [
         *_task_entry(SEED_POST_STATUS),
-        ClickAction(selector=_xp("(//div[contains(@class,'sticky')][contains(@class,'top-16')]//button[contains(@class,'border') or contains(@class,'rounded-full')])[1]")),
+        ClickAction(selector=_xp("//html/body/div[2]/main/div/main/section/div[1]/div/button[1]")),
         WaitAction(time_seconds=0.45),
         TypeAction(
-            selector=_xp("//form[contains(@class,'max-w-2xl')]//textarea"),
+            selector=_xp("//html/body/div[2]/main/div/div/form/div[2]/textarea"),
             text=_POST_STATUS_SAFE,
         ),
         WaitAction(time_seconds=0.2),
-        ClickAction(selector=_xp("//form[contains(@class,'max-w-2xl')]//button[@type='submit']")),
+        ClickAction(selector=_xp("//html/body/div[2]/main/div/div/form/div[3]/button")),
         WaitAction(time_seconds=0.6),
     ],
 )
@@ -399,7 +403,9 @@ LIKE_POST = _uc(
     "LIKE_POST",
     [
         *_task_entry(SEED_LIKE_POST),
-        *_like_in_article(_x_personal),
+        # *_like_in_article(_x_personal),
+        ClickAction(selector=_xp("//html/body/div[3]/main/div/main/section/div[2]/article[45]/div[3]/button")),
+        WaitAction(time_seconds=0.3),
     ],
 )
 
@@ -407,7 +413,10 @@ COMMENT_ON_POST = _uc(
     "COMMENT_ON_POST",
     [
         *_task_entry(SEED_COMMENT_ON_POST),
-        *_comment_first_visible_post("Great job, keep it up!"),
+        # *_comment_first_visible_post("Great job, keep it up!"),
+        TypeAction(selector=_xp("//html/body/div[2]/main/div/main/section/div[2]/article[1]/form/textarea"), text="Great job, keep it up!"),
+        ClickAction(selector=_xp("//html/body/div[2]/main/div/main/section/div[2]/article[1]/form/button")),
+        WaitAction(time_seconds=0.2),
     ],
 )
 
@@ -415,7 +424,9 @@ SAVE_POST = _uc(
     "SAVE_POST",
     [
         *_task_entry(SEED_SAVE_POST),
-        *_save_in_article(_x_weekend),
+        # *_save_in_article(_x_weekend),
+        ClickAction(selector=_xp("//html/body/div[2]/main/div/main/section/div[2]/article[1]/div[1]/div[2]/button[1]")),
+        WaitAction(time_seconds=0.3),
     ],
 )
 
@@ -423,7 +434,9 @@ HIDE_POST = _uc(
     "HIDE_POST",
     [
         *_task_entry(SEED_HIDE_POST),
-        *_hide_in_article(_x_hide_candidate),
+        # *_hide_in_article(_x_hide_candidate),
+        ClickAction(selector=_xp("//html/body/div[2]/main/div/main/section/div[2]/article[1]/div[1]/div[2]/button[2]")),
+        WaitAction(time_seconds=0.3),
     ],
 )
 
@@ -431,7 +444,7 @@ VIEW_SAVED_POSTS = _uc(
     "VIEW_SAVED_POSTS",
     [
         *_task_entry(SEED_VIEW_SAVED_POSTS),
-        ClickAction(selector=_xp("//a[contains(@href,'/saved')]")),
+        ClickAction(selector=_xp("//html/body/div[3]/main/div/aside[1]/aside/a[1]")),
         WaitAction(time_seconds=0.8),
     ],
 )
@@ -439,7 +452,8 @@ VIEW_SAVED_POSTS = _uc(
 VIEW_APPLIED_JOBS = _uc(
     "VIEW_APPLIED_JOBS",
     [
-        NavigateAction(url=_path(SEED_VIEW_APPLIED_JOBS, "jobs/applied")),
+        NavigateAction(url=_path(SEED_VIEW_APPLIED_JOBS, "jobs/")),
+        ClickAction(selector=_xp("//html/body/div[2]/main/section/div[1]/a")),
         WaitAction(time_seconds=1.0),
     ],
 )
@@ -447,11 +461,11 @@ VIEW_APPLIED_JOBS = _uc(
 CANCEL_APPLICATION = _uc(
     "CANCEL_APPLICATION",
     [
-        NavigateAction(url=_path(SEED_CANCEL_APPLICATION, "jobs/j5")),
+        NavigateAction(url=_path(SEED_CANCEL_APPLICATION, "jobs/j1")),
         WaitAction(time_seconds=1.0),
-        ClickAction(selector=_xp("//button[contains(normalize-space(.),'Apply Now') or contains(normalize-space(.),'Apply')][not(contains(@class,'green'))]")),
+        ClickAction(selector=_xp("//html/body/div[2]/main/section/div[1]/div/div[2]/div[4]/div[2]/button")),
         WaitAction(time_seconds=0.5),
-        ClickAction(selector=_xp("//button[contains(normalize-space(.),'Cancel application')]")),
+        ClickAction(selector=_xp("//html/body/div[2]/main/section/div[1]/div/div[2]/div[4]/div[2]/button[2]")),
         WaitAction(time_seconds=0.5),
     ],
 )
