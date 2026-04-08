@@ -67,38 +67,61 @@ _MESSAGE_TEXT = "Is there parking available nearby?"
 _SHARE_EMAIL = "friend@example.com"
 _REVIEW_COMMENT = "Great stay"
 
-# react-day-picker v8: pick checkout-aligned range (check-in > 2025-06-19, checkout 2025-12-31) on confirm calendar
+
 _EDIT_STAY_CALENDAR_JS = """async () => {
   const root = document.getElementById('dateRangeCalendar');
   if (!root) return false;
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-  const cap = () => root.querySelector('.rdp-caption_label')?.textContent?.trim() || '';
+  const monthBlocks = () => {
+    const multi = [...root.querySelectorAll('.rdp-caption_start, .rdp-caption_end')];
+    return multi.length ? multi : [root];
+  };
+  const captionOf = (block) => {
+    const lab = block.querySelector('.rdp-caption_label') || block.querySelector('[aria-live="polite"]');
+    return lab?.textContent?.trim() || '';
+  };
+  const hasVisibleMonth = (mon, yr) =>
+    monthBlocks().some((b) => {
+      const t = captionOf(b);
+      return t.includes(mon) && t.includes(yr);
+    });
+  const prevMonth = async () => {
+    const btn = root.querySelector('button[name="previous-month"]');
+    if (btn && !btn.disabled) btn.click();
+    await sleep(150);
+  };
   const nextMonth = async () => {
     const btn = root.querySelector('button[name="next-month"]');
     if (btn && !btn.disabled) btn.click();
     await sleep(150);
   };
   for (let i = 0; i < 28; i++) {
-    if (cap().includes('July') && cap().includes('2025')) break;
-    await nextMonth();
+    if (hasVisibleMonth('July', '2025')) break;
+    await prevMonth();
   }
-  const pickDay = (n) => {
-    for (const b of root.querySelectorAll('button[name="day"]')) {
-      if (b.textContent?.trim() !== String(n)) continue;
-      if (b.disabled) continue;
-      if (b.className.includes('day_outside')) continue;
-      b.click();
-      return true;
+  const pickDayInMonth = (n, mon, yr) => {
+    for (const block of monthBlocks()) {
+      const t = captionOf(block);
+      if (!t.includes(mon) || !t.includes(yr)) continue;
+      const grid = block.querySelector('table[role="grid"]') || block;
+      for (const b of grid.querySelectorAll('button[name="day"]')) {
+        if (b.textContent?.trim() !== String(n)) continue;
+        if (b.disabled) continue;
+        if (b.className.includes('day-outside') || b.className.includes('day_outside')) continue;
+        b.click();
+        return true;
+      }
     }
     return false;
   };
-  pickDay(20);
+  pickDayInMonth(20, 'July', '2025');
   await sleep(200);
   for (let i = 0; i < 28; i++) {
-    if (cap().includes('December') && cap().includes('2025')) break;
+    if (hasVisibleMonth('December', '2025')) break;
     await nextMonth();
   }
-  pickDay(31);
+  pickDayInMonth(31, 'December', '2025');
+  await sleep(200);
   return true;
 }"""
 
@@ -433,9 +456,9 @@ EDIT_NUMBER_OF_GUESTS = _uc(
     [
         NavigateAction(url=_stay(HID_EDIT_GUESTS, SEED_EDIT_NUMBER_OF_GUESTS)),
         WaitAction(time_seconds=0.6),
-        # SendKeysIWAAction(keys='Backspace'),
-        ClickAction(selector=_xp('//*[@id="people-count" or @id="guests-count"]')),
-        TypeAction(selector=_xp('//*[@id="people-count" or @id="guests-count"]'), text="12"),
+        ClickAction(selector=_xp('*[@id="people-count" or @id="guests-count"]')),
+        SendKeysIWAAction(keys="Backspace"),
+        TypeAction(selector=_xp('*[@id="people-count" or @id="guests-count"]'), text="12"),
         WaitAction(time_seconds=0.7),
     ],
 )
@@ -444,8 +467,9 @@ RESERVE_HOTEL = _uc(
     "RESERVE_HOTEL",
     [
         NavigateAction(url=_stay(HID_RESERVE, SEED_RESERVE_HOTEL)),
-        WaitAction(time_seconds=0.7),
-        ClickAction(selector=_xp('//*[@id="reserve-button" or contains(@id, "reserve_button")]')),
+        WaitAction(time_seconds=0.4),
+        ClickAction(selector=_id("book-button")),
+        WaitAction(time_seconds=0.6),
     ],
 )
 
@@ -454,10 +478,10 @@ EDIT_CHECK_IN_OUT_DATES = _uc(
     [
         NavigateAction(url=_confirm(HID_EDIT_DATES, SEED_EDIT_CHECK_IN_OUT_DATES, "guests=1")),
         WaitAction(time_seconds=1.0),
-        ClickAction(selector=_xp('//*[@id="edit_dates_button" or contains(@id, "edit-dates")]')),
+        ClickAction(selector=_id("dates-edit")),
         WaitAction(time_seconds=0.4),
         EvaluateAction(script=_EDIT_STAY_CALENDAR_JS),
-        WaitAction(time_seconds=0.5),
+        WaitAction(time_seconds=2),
     ],
 )
 
