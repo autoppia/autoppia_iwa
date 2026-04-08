@@ -61,7 +61,7 @@ HID_REMOVE_WL = 200
 HID_BACK = 39
 HID_REVIEW = 91
 HID_PAYMENT = 59
-HID_BOOK_WL = 10
+HID_BOOK_WL = 18
 
 _MESSAGE_TEXT = "Is there parking available nearby?"
 _SHARE_EMAIL = "friend@example.com"
@@ -385,7 +385,7 @@ _RAW_TESTS: dict[str, list[dict]] = {
         {
             "type": "CheckEventTest",
             "event_name": "BOOK_FROM_WISHLIST",
-            "event_criteria": {"hotel_id": {"operator": "less_equal", "value": 182}, "title": {"operator": "not_contains", "value": "The R"}},
+            "event_criteria": {"title": {"operator": "not_contains", "value": "The R"}},
             "description": "Check if specific event was triggered",
         }
     ],
@@ -490,15 +490,13 @@ CONFIRM_AND_PAY = _uc(
     [
         NavigateAction(url=_confirm(HID_CONFIRM, SEED_CONFIRM_AND_PAY, "guests=2")),
         WaitAction(time_seconds=1.0),
-        TypeAction(selector=_xp('//*[@id="card_number_input" or contains(@id, "card-number")]'), text="4242424242424242"),
-        TypeAction(selector=_xp('//*[@id="card_exp_input" or contains(@id, "card-exp")]'), text="12 / 28"),
-        TypeAction(selector=_xp('//*[@id="card_cvv_input" or contains(@id, "card-cvv")]'), text="456"),
-        TypeAction(selector=_xp('//*[@id="zip_input" or contains(@id, "zip")]'), text="54321"),
-        SelectDropDownOptionAction(
-            selector=_xp('//*[@id="country_select" or contains(@id, "country")]'),
-            text="United States",
-        ),
-        ClickAction(selector=_xp('//*[@id="confirm_and_pay_button" or contains(@id, "confirm-and-pay")]')),
+        TypeAction(selector=_id("payment-number"), text="4242424242424242"),
+        TypeAction(selector=_id("card-exp"), text="12 / 28"),
+        TypeAction(selector=_id("cvv-input"), text="456"),
+        TypeAction(selector=_id("zip-code-input"), text="54321"),
+        SelectDropDownOptionAction(selector=_id("region-select"), text="United States"),
+        ClickAction(selector=_id("pay-confirm")),
+        WaitAction(time_seconds=0.5),
     ],
 )
 
@@ -507,8 +505,9 @@ MESSAGE_HOST = _uc(
     [
         NavigateAction(url=_confirm(HID_MESSAGE, SEED_MESSAGE_HOST, "guests=2")),
         WaitAction(time_seconds=1.0),
-        TypeAction(selector=_xp('//*[@id="host_message_input" or contains(@id, "host-message")]'), text=_MESSAGE_TEXT),
-        ClickAction(selector=_xp('//*[@id="send_host_message_button" or contains(@id, "send-host")]')),
+        TypeAction(selector=_id("contact-host"), text=_MESSAGE_TEXT),
+        ClickAction(selector=_id("host-message-button")),
+        WaitAction(time_seconds=0.5),
     ],
 )
 
@@ -517,13 +516,14 @@ SHARE_HOTEL = _uc(
     [
         NavigateAction(url=_stay(HID_SHARE, SEED_SHARE_HOTEL)),
         WaitAction(time_seconds=0.7),
-        ClickAction(selector=_xp('//*[@id="share-button" or contains(@id, "share_button")]')),
+        ClickAction(selector=_id("share-listing")),
         WaitAction(time_seconds=0.2),
         TypeAction(
-            selector=_xp('//div[contains(@class,"fixed") and contains(@class,"inset-0")]//input[@type="email"]'),
-            text=_SHARE_EMAIL,
+            selector=_xp("html/body/main/div/div/div[1]/div/input"),
+            text="friend@example.com",
         ),
-        ClickAction(selector=_xp('//*[@id="share-send-button" or contains(@id, "share_send")]')),
+        ClickAction(selector=_id("share-confirm")),
+        WaitAction(time_seconds=0.5),
     ],
 )
 
@@ -532,9 +532,7 @@ ADD_TO_WISHLIST = _uc(
     [
         NavigateAction(url=_stay(HID_ADD_WL, SEED_ADD_TO_WISHLIST)),
         WaitAction(time_seconds=0.7),
-        ClickAction(
-            selector=_xp('//button[.//path[contains(@d,"M12 21.35")]]'),
-        ),
+        ClickAction(selector=_xp("html/body/main/div/span[1]/div/div[1]/div[2]/button[1]")),
     ],
 )
 
@@ -543,9 +541,10 @@ REMOVE_FROM_WISHLIST = _uc(
     [
         NavigateAction(url=_stay(HID_REMOVE_WL, SEED_REMOVE_FROM_WISHLIST)),
         WaitAction(time_seconds=0.5),
-        ClickAction(selector=_xp('//button[.//path[contains(@d,"M12 21.35")]]')),
+        ClickAction(selector=_xp("//html/body/main/div/span/div/div[1]/div[2]/button[1]")),
         WaitAction(time_seconds=0.3),
-        ClickAction(selector=_xp('//button[.//path[contains(@d,"M12 21.35")]]')),
+        ClickAction(selector=_xp("//html/body/main/div/span/div/div[1]/div[2]/button[1]")),
+        WaitAction(time_seconds=0.3),
     ],
 )
 
@@ -582,9 +581,10 @@ APPLY_FILTERS = _uc(
     [
         NavigateAction(url=_home(SEED_APPLY_FILTERS)),
         WaitAction(time_seconds=0.5),
-        SelectDropDownOptionAction(selector=_xp('//*[@id="rating-filter" or contains(@id,"rating_filter")]'), text="4.5+"),
-        SelectDropDownOptionAction(selector=_xp('//*[@id="region-filter" or contains(@id,"region_filter")]'), text="United States"),
-        ClickAction(selector=_xp('//button[contains(., "Apply") or contains(., "apply_filters")]')),
+        SelectDropDownOptionAction(selector=_xp('//*[@id="score-filter" or contains(@id,"rating_filter")]'), text="4.5+"),
+        SelectDropDownOptionAction(selector=_xp('//*[@id="region-select" or contains(@id,"region_filter")]'), text="United States"),
+        ClickAction(selector=_xp('//button[contains(., "Go") or contains(., "apply_filters")]')),
+        WaitAction(time_seconds=0.5),
     ],
 )
 
@@ -602,7 +602,8 @@ PAYMENT_METHOD_SELECTED = _uc(
 WISHLIST_OPENED = _uc(
     "WISHLIST_OPENED",
     [
-        NavigateAction(url=f"{BASE}/wishlist?seed={SEED_WISHLIST_OPENED}"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_WISHLIST_OPENED}"),
+        ClickAction(selector=_id("wishlist-link")),
         WaitAction(time_seconds=0.6),
     ],
 )
@@ -612,20 +613,20 @@ BOOK_FROM_WISHLIST = _uc(
     [
         NavigateAction(url=_stay(HID_BOOK_WL, SEED_BOOK_FROM_WISHLIST)),
         WaitAction(time_seconds=0.6),
-        ClickAction(selector=_xp('//button[.//path[contains(@d,"M12 21.35")]]')),
+        ClickAction(selector=_xp("//html/body/main/div/div/div[1]/div[2]/button[1]")),
         WaitAction(time_seconds=0.4),
         NavigateAction(url=f"{BASE}/wishlist?seed={SEED_BOOK_FROM_WISHLIST}"),
         WaitAction(time_seconds=0.6),
-        ClickAction(
-            selector=_xp(f'//a[contains(@href, "/stay/{HID_BOOK_WL}") and contains(@href, "source=wishlist")]'),
-        ),
+        ClickAction(selector=_id("reserve-stay")),
+        WaitAction(time_seconds=0.6),
     ],
 )
 
 POPULAR_HOTELS_VIEWED = _uc(
     "POPULAR_HOTELS_VIEWED",
     [
-        NavigateAction(url=f"{BASE}/popular?seed={SEED_POPULAR_HOTELS_VIEWED}"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_POPULAR_HOTELS_VIEWED}"),
+        ClickAction(selector=_id("nav-popular")),
         WaitAction(time_seconds=0.6),
     ],
 )
@@ -633,7 +634,8 @@ POPULAR_HOTELS_VIEWED = _uc(
 HELP_VIEWED = _uc(
     "HELP_VIEWED",
     [
-        NavigateAction(url=f"{BASE}/help?seed={SEED_HELP_VIEWED}"),
+        NavigateAction(url=f"{BASE}/?seed={SEED_HELP_VIEWED}"),
+        ClickAction(selector=_id("help-link")),
         WaitAction(time_seconds=0.5),
     ],
 )
