@@ -5,11 +5,7 @@ WEB_PROJECT_ID = "automail"
 
 from autoppia_iwa.src.data_generation.tests.classes import BaseTaskTest
 from autoppia_iwa.src.demo_webs.classes import Trajectory
-from autoppia_iwa.src.execution.actions.actions import (
-    ClickAction,
-    NavigateAction,
-    TypeAction,
-)
+from autoppia_iwa.src.execution.actions.actions import ClickAction, NavigateAction, TypeAction, WaitAction
 from autoppia_iwa.src.execution.actions.base import BaseAction, Selector, SelectorType
 
 ACTIONS = [
@@ -1444,8 +1440,8 @@ SEARCH_EMAIL = _uc(
     prompt="Search for emails where the query is NOT '13'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_SEARCH_EMAIL}"),
-        ClickAction(selector=_id("search-input")),
-        TypeAction(selector=_id("search-input"), text="__SEARCH_QUERY__"),
+        ClickAction(selector=_id("mail-search")),
+        TypeAction(selector=_id("mail-search"), text="Weekend plans?"),
     ],
 )
 
@@ -1454,7 +1450,8 @@ VIEW_TEMPLATES = _uc(
     prompt="Open the email templates section.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_VIEW_TEMPLATES}"),
-        ClickAction(selector=_id("sidebar-templates")),
+        ClickAction(selector=_id("nav-templates")),
+        WaitAction(time_seconds=0.3),
     ],
 )
 
@@ -1463,8 +1460,8 @@ TEMPLATE_SELECTED = _uc(
     prompt="Select the template where template_name does NOT contain 'aui' and subject equals 'Quick follow-up on our last conversation'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_TEMPLATE_SELECTED}"),
-        ClickAction(selector=_id("sidebar-templates")),
-        ClickAction(selector=_xp("__TEMPLATE_OPTION__")),
+        ClickAction(selector=_id("nav-templates")),
+        ClickAction(selector=_xp("//button[div[2][contains(normalize-space(),'Quick follow-up on our last conversation')]]")),
     ],
 )
 
@@ -1474,10 +1471,9 @@ TEMPLATE_BODY_EDITED = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_TEMPLATE_BODY_EDITED}"),
         ClickAction(selector=_id("sidebar-templates")),
-        ClickAction(selector=_xp("__TEMPLATE_OPTION__")),
-        ClickAction(selector=_xp("//*[@id='template-body' or @id='template-content' or @aria-label='Body']")),
-        TypeAction(selector=_xp("//*[@id='template-body' or @id='template-content' or @aria-label='Body']"), text="__EMAIL_BODY__"),
-        ClickAction(selector=_xp("//*[@id='template-body' or @id='template-content' or @aria-label='Body']")),
+        ClickAction(selector=_xp("//button[div[2][contains(normalize-space(),'Recap: key notes from our meeting')]]")),
+        ClickAction(selector=_id("template-textarea")),
+        TypeAction(selector=_id("template-textarea"), text="Body edited."),
     ],
 )
 

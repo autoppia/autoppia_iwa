@@ -84,6 +84,12 @@ def _load_autocrm() -> dict[str, Trajectory]:
     return load_autocrm_use_case_completion_flows()
 
 
+def _load_automail() -> dict[str, Trajectory]:
+    from autoppia_iwa.src.demo_webs.projects.p06_automail.trajectories import load_automail_use_case_completion_flows
+
+    return load_automail_use_case_completion_flows()
+
+
 # Project ``id`` (WebProject.id) -> lazy loader
 TRAJECTORY_LOADERS_BY_PROJECT_ID: dict[str, TrajectoryLoader] = {
     "autocalendar": _load_autocalendar,
@@ -95,6 +101,7 @@ TRAJECTORY_LOADERS_BY_PROJECT_ID: dict[str, TrajectoryLoader] = {
     "autozone": _load_autozone,
     "autodining": _load_autodining,
     "autocrm": _load_autocrm,
+    "automail": _load_automail,
 }
 
 
