@@ -580,7 +580,9 @@ REMOVE_POST = _uc(
     [
         NavigateAction(url=_path(SEED_REMOVE_POST, "/profile/jack.rogers")),
         WaitAction(time_seconds=0.5),
-        ClickAction(selector=_xp("//html/body/div[3]/main/span[1]/section/div[4]/div[2]/article/div[1]/div[2]/button[3]")),
+        ClickAction(selector=_xp("//html/body/div[2]/main/span[1]/section/div[4]/div[2]/article/div[1]/div[2]/button[1]")),
+        NavigateAction(url=_path(SEED_REMOVE_POST, "saved")),
+        ClickAction(selector=_xp("//html/body/div[2]/main/section/div/div/span[2]/div/button")),
         WaitAction(time_seconds=0.5),
     ],
 )
@@ -598,20 +600,11 @@ _x_personal_proj = _post_article_contains_text("personal projec")
 UNHIDE_POST = _uc(
     "UNHIDE_POST",
     [
-        *_task_entry(SEED_UNHIDE_POST),
-        *_hide_in_article(_x_personal_proj),
-        NavigateAction(url=_path(SEED_UNHIDE_POST, "hidden")),
+        NavigateAction(url=_path(SEED_UNHIDE_POST, "/profile/stephanie.hansen")),
         WaitAction(time_seconds=0.9),
-        ClickAction(
-            selector=_xp(
-                "(//div[contains(@class,'whitespace-pre-line')]"
-                "[contains(translate(normalize-space(.),'PERSONALPROJC','personalprojc'),'personal projec')]"
-                "/ancestor::div[contains(@class,'rounded-xl')][1]"
-                "//button[contains(normalize-space(.),'Restore') "
-                "or contains(normalize-space(.),'Unhide') "
-                "or contains(normalize-space(.),'Show again')])[1]"
-            )
-        ),
+        ClickAction(selector=_xp("//html/body/div[2]/main/span/section/div[4]/div[2]/article/div[1]/div[2]/button[2]")),
+        NavigateAction(url=_path(SEED_UNHIDE_POST, "hidden")),
+        ClickAction(selector=_xp("//html/body/div[2]/main/section/div[2]/div/div[1]/button")),
         WaitAction(time_seconds=0.5),
     ],
 )
