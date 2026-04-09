@@ -34,7 +34,7 @@ def test_get_trajectory_map_returns_dict_for_autodrive():
 
 
 def test_get_trajectory_map_unknown_project_returns_none():
-    assert get_trajectory_map("autocinema") is None
+    assert get_trajectory_map("__unknown_demo_web__") is None
 
 
 def test_get_trajectory_map_autolodge_loads_from_python():

@@ -159,9 +159,9 @@ def main() -> int:
         sys.argv.extend(
             [
                 "-p",
-                "autocalendar.txt",
-                "-u",
-                "ADD_NEW_CALENDAR",
+                "autocinema",
+                # "-u",
+                # "ADD_NEW_CALENDAR",
                 # "--no-headless",
             ]
         )
