@@ -88,20 +88,6 @@ def _task_entry(seed: int) -> list[BaseAction]:
     return [NavigateAction(url=_home(seed)), WaitAction(time_seconds=1.0)]
 
 
-def _nav_home_click() -> list[BaseAction]:
-    return [
-        ClickAction(selector=_xp("(//header//nav//a)[1]")),
-        WaitAction(time_seconds=0.6),
-    ]
-
-
-def _nav_jobs_click() -> list[BaseAction]:
-    return [
-        ClickAction(selector=_xp("(//header//nav//a)[2]")),
-        WaitAction(time_seconds=0.6),
-    ]
-
-
 def _user_search_input() -> Selector:
     return _xp("(//*[@id='search-input' or @id='user-search' or @id='people-search'])[1]")
 
@@ -413,7 +399,9 @@ LIKE_POST = _uc(
     "LIKE_POST",
     [
         *_task_entry(SEED_LIKE_POST),
-        *_like_in_article(_x_personal),
+        # *_like_in_article(_x_personal),
+        ClickAction(selector=_xp("//html/body/div[3]/main/div/main/section/div[2]/article[45]/div[3]/button")),
+        WaitAction(time_seconds=0.3),
     ],
 )
 
@@ -469,11 +457,11 @@ VIEW_APPLIED_JOBS = _uc(
 CANCEL_APPLICATION = _uc(
     "CANCEL_APPLICATION",
     [
-        NavigateAction(url=_path(SEED_CANCEL_APPLICATION, "jobs/j1")),
+        NavigateAction(url=_path(SEED_CANCEL_APPLICATION, "jobs/j62")),
         WaitAction(time_seconds=0.4),
         ClickAction(selector=_xp("//html/body/div[2]/main/section/div[1]/div/div[2]/div[4]/div[2]/button")),
         WaitAction(time_seconds=0.55),
-        NavigateAction(url=_path(SEED_CANCEL_APPLICATION, "jobs/applied")),
+        # NavigateAction(url=_path(SEED_CANCEL_APPLICATION, "jobs/applied")),
         ClickAction(selector=_CANCEL_APP_ON_DETAIL),
         WaitAction(time_seconds=0.6),
     ],
@@ -640,20 +628,10 @@ UNFOLLOW_PAGE = _uc(
     "UNFOLLOW_PAGE",
     [
         NavigateAction(url=_path(SEED_UNFOLLOW_PAGE, "recommendations")),
-        WaitAction(time_seconds=1.0),
-        ClickAction(
-            selector=_xp(
-                "(//li[contains(@class,'shadow')]"
-                "[.//div[contains(@class,'font-semibold')][contains(translate(.,'MANAG','manag'),'manag')]]"
-                "//button[contains(normalize-space(.),'Follow') and not(contains(.,'Following'))])[1]"
-            )
-        ),
+        WaitAction(time_seconds=0.5),
+        ClickAction(selector=_xp("//html/body/div[2]/main/div/main/section/ul/div[2]/li/button")),
         WaitAction(time_seconds=0.55),
-        ClickAction(
-            selector=_xp(
-                "(//li[contains(@class,'shadow')][.//div[contains(@class,'font-semibold')][contains(translate(.,'MANAG','manag'),'manag')]]//button[contains(normalize-space(.),'Following')])[1]"
-            )
-        ),
+        ClickAction(selector=_xp("//html/body/div[2]/main/div/main/section/ul/div[2]/li/button")),
         WaitAction(time_seconds=0.5),
     ],
 )
@@ -695,8 +673,8 @@ APPLY_FOR_JOB = _uc(
     "APPLY_FOR_JOB",
     [
         NavigateAction(url=_path(SEED_APPLY_FOR_JOB, "jobs")),
-        WaitAction(time_seconds=1.0),
-        ClickAction(selector=_APPLY_JOB_J5_BTN),
+        WaitAction(time_seconds=0.5),
+        ClickAction(selector=_xp("//html/body/div[2]/main/section/div[6]/a[12]/span[3]/button")),
         WaitAction(time_seconds=0.55),
     ],
 )
@@ -719,7 +697,8 @@ HOME_NAVBAR = _uc(
     [
         NavigateAction(url=_path(SEED_HOME_NAVBAR, "jobs")),
         WaitAction(time_seconds=0.7),
-        *_nav_home_click(),
+        ClickAction(selector=_id("nav-feed")),
+        WaitAction(time_seconds=0.4),
     ],
 )
 
@@ -727,7 +706,8 @@ JOBS_NAVBAR = _uc(
     "JOBS_NAVBAR",
     [
         *_task_entry(SEED_JOBS_NAVBAR),
-        *_nav_jobs_click(),
+        ClickAction(selector=_id("nav-careers")),
+        WaitAction(time_seconds=0.4),
     ],
 )
 
