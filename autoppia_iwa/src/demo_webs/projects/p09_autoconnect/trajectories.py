@@ -90,14 +90,14 @@ def _task_entry(seed: int) -> list[BaseAction]:
 
 def _nav_home_click() -> list[BaseAction]:
     return [
-        ClickAction(selector=_xp("(//*[@id='nav_home_link' or @id='nav_home' or @id='nav-feed'])[1]")),
+        ClickAction(selector=_xp("(//header//nav//a)[1]")),
         WaitAction(time_seconds=0.6),
     ]
 
 
 def _nav_jobs_click() -> list[BaseAction]:
     return [
-        ClickAction(selector=_xp("(//*[@id='nav_jobs_link' or @id='nav_jobs' or @id='nav-careers'])[1]")),
+        ClickAction(selector=_xp("(//header//nav//a)[2]")),
         WaitAction(time_seconds=0.6),
     ]
 
@@ -361,7 +361,17 @@ def _uc(use_case: str, actions: list[BaseAction]) -> Trajectory:
 
 _x_weekend = _post_article_contains_text("Weekend getaway was exactly what I needed")
 _x_personal = _post_article_contains_text("Personal best today! Progress feels good.")
+_x_friday = _post_article_contains_text("Friday vibes! Another productive week")
 _x_hide_candidate = f"(//article[not(contains(translate(normalize-space((.//div[contains(@class,'font-semibold')])[1]),'HJM','hjm'),'hjm')) and .//p[normalize-space(.)!='{_BIRTHDAY_POST}'])[1]"
+
+_JOBS_APPLIED_LINK = _xp("(//a[contains(@href,'/jobs/applied')])[1]")
+_APPLY_JOB_J5_BTN = _xp("(//*[contains(@href,'/jobs/j5') or contains(@id,'job_card_j5')])[1]//button[contains(normalize-space(.),'Apply') and not(contains(normalize-space(.),'Applied'))]")
+_APPLY_NOW_ON_DETAIL = _xp(
+    "(//section//button[contains(normalize-space(.),'Apply Now') "
+    "or (contains(normalize-space(.),'Apply') or (contains(normalize-space(.),'Submit Application') and not(contains(normalize-space(.),'Applied')))])[1]"
+)
+_CANCEL_APP_ON_DETAIL = _xp("//button[contains(normalize-space(.),'Cancel application')]")
+_BACK_TO_ALL_JOBS_LINK = _xp("//a[contains(@href,'/jobs')][contains(normalize-space(.),'Back')]")
 
 VIEW_USER_PROFILE = _uc(
     "VIEW_USER_PROFILE",
@@ -403,9 +413,7 @@ LIKE_POST = _uc(
     "LIKE_POST",
     [
         *_task_entry(SEED_LIKE_POST),
-        # *_like_in_article(_x_personal),
-        ClickAction(selector=_xp("//html/body/div[3]/main/div/main/section/div[2]/article[45]/div[3]/button")),
-        WaitAction(time_seconds=0.3),
+        *_like_in_article(_x_personal),
     ],
 )
 
@@ -423,9 +431,8 @@ COMMENT_ON_POST = _uc(
 SAVE_POST = _uc(
     "SAVE_POST",
     [
-        *_task_entry(SEED_SAVE_POST),
-        # *_save_in_article(_x_weekend),
-        ClickAction(selector=_xp("//html/body/div[2]/main/div/main/section/div[2]/article[1]/div[1]/div[2]/button[1]")),
+        NavigateAction(url="http://localhost:8008/profile/michelle.romero?seed=13"),
+        ClickAction(selector=_xp('//*[@id="feed-card"]/div[1]/div[2]/button[1]')),
         WaitAction(time_seconds=0.3),
     ],
 )
@@ -443,9 +450,9 @@ HIDE_POST = _uc(
 VIEW_SAVED_POSTS = _uc(
     "VIEW_SAVED_POSTS",
     [
-        *_task_entry(SEED_VIEW_SAVED_POSTS),
-        ClickAction(selector=_xp("//html/body/div[3]/main/div/aside[1]/aside/a[1]")),
-        WaitAction(time_seconds=0.8),
+        NavigateAction(url=_path(SEED_VIEW_SAVED_POSTS, "/")),
+        ClickAction(selector=_xp("//*[@id='left_sidebar']/a[1]")),
+        WaitAction(time_seconds=1.0),
     ],
 )
 
@@ -453,8 +460,9 @@ VIEW_APPLIED_JOBS = _uc(
     "VIEW_APPLIED_JOBS",
     [
         NavigateAction(url=_path(SEED_VIEW_APPLIED_JOBS, "jobs/")),
-        ClickAction(selector=_xp("//html/body/div[2]/main/section/div[1]/a")),
-        WaitAction(time_seconds=1.0),
+        WaitAction(time_seconds=0.5),
+        ClickAction(selector=_xp('//*[@id="all-jobs-link"]')),
+        WaitAction(time_seconds=0.4),
     ],
 )
 
@@ -462,17 +470,18 @@ CANCEL_APPLICATION = _uc(
     "CANCEL_APPLICATION",
     [
         NavigateAction(url=_path(SEED_CANCEL_APPLICATION, "jobs/j1")),
-        WaitAction(time_seconds=1.0),
+        WaitAction(time_seconds=0.4),
         ClickAction(selector=_xp("//html/body/div[2]/main/section/div[1]/div/div[2]/div[4]/div[2]/button")),
-        WaitAction(time_seconds=0.5),
-        ClickAction(selector=_xp("//html/body/div[2]/main/section/div[1]/div/div[2]/div[4]/div[2]/button[2]")),
-        WaitAction(time_seconds=0.5),
+        WaitAction(time_seconds=0.55),
+        NavigateAction(url=_path(SEED_CANCEL_APPLICATION, "jobs/applied")),
+        ClickAction(selector=_CANCEL_APP_ON_DETAIL),
+        WaitAction(time_seconds=0.6),
     ],
 )
 
-_EDIT_PROFILE_HEADER_BTN = _xp("//div[contains(@class,'rounded-xl shadow-lg')]//button[contains(normalize-space(.),'Edit profile') or contains(normalize-space(.),'Save profile')][1]")
+_EDIT_PROFILE_HEADER_BTN = _xp("//div[contains(@class,'rounded-xl shadow-lg')]//button[contains(normalize-space(.),'Modify profile') or contains(normalize-space(.),'Save profile')][1]")
 _ABOUT_EDIT_BTN = _xp("//h3[contains(normalize-space(.),'About')]/following::button[contains(.,'Edit') or contains(.,'Save')][1]")
-_ABOUT_TEXTAREA = _xp("//textarea[contains(@placeholder,'Tell us about yourself') or contains(@class,'border-2')][1]")
+_ABOUT_TEXTAREA = _xp("//html/body/div[2]/main/span[2]/section/div[2]/textarea")
 
 EDIT_PROFILE = _uc(
     "EDIT_PROFILE",
@@ -482,7 +491,7 @@ EDIT_PROFILE = _uc(
         ClickAction(selector=_EDIT_PROFILE_HEADER_BTN),
         WaitAction(time_seconds=0.35),
         TypeAction(
-            selector=_xp("(//div[contains(@class,'text-2xl')]//input[@class])[1]"),
+            selector=_xp("//html/body/div[2]/main/span[2]/section/div[1]/div/div[1]/div[1]/input"),
             text="Andrew Kim",
         ),
         TypeAction(
@@ -503,14 +512,14 @@ EDIT_PROFILE = _uc(
     ],
 )
 
-_EXP_EDIT_BTN = _xp("//h3[contains(normalize-space(.),'Experience')]/following::button[contains(.,'Edit') or contains(.,'Save')][1]")
-_SAVE_EXP_BTN = _xp("//button[contains(normalize-space(.),'Save experience')]")
+_EXP_EDIT_BTN = _xp("//h3[contains(normalize-space(.),'Career')]/following::button[contains(.,'Edit') or contains(.,'Save')][1]")
+_SAVE_EXP_BTN = _xp("//button[contains(normalize-space(.),'Save changes')]")
 
 EDIT_EXPERIENCE = _uc(
     "EDIT_EXPERIENCE",
     [
         NavigateAction(url=_path(SEED_EDIT_EXPERIENCE, "profile/me")),
-        WaitAction(time_seconds=1.2),
+        WaitAction(time_seconds=0.5),
         ClickAction(selector=_EXP_EDIT_BTN),
         WaitAction(time_seconds=0.4),
         TypeAction(
@@ -543,7 +552,7 @@ ADD_EXPERIENCE = _uc(
         WaitAction(time_seconds=0.45),
         TypeAction(
             selector=_xp("(//input[@placeholder='Title'])[last()]"),
-            text="Software Engineer",
+            text="DevOps Engineer",
         ),
         TypeAction(
             selector=_xp("(//input[@placeholder='Company'])[last()]"),
@@ -561,7 +570,7 @@ ADD_EXPERIENCE = _uc(
             selector=_xp("(//textarea[@placeholder='Description'])[last()]"),
             text="iOS features and performance work.",
         ),
-        ClickAction(selector=_SAVE_EXP_BTN),
+        ClickAction(selector=_xp("//button[contains(normalize-space(.),'Save experience')]")),
         WaitAction(time_seconds=0.7),
     ],
 )
@@ -569,16 +578,9 @@ ADD_EXPERIENCE = _uc(
 REMOVE_POST = _uc(
     "REMOVE_POST",
     [
-        NavigateAction(url=_path(SEED_REMOVE_POST, "saved")),
-        WaitAction(time_seconds=1.0),
-        ClickAction(
-            selector=_xp(
-                "(//div[contains(@class,'rounded-xl')]"
-                "[.//div[contains(@class,'whitespace-pre-line')]"
-                "[contains(normalize-space(.),'Friday vibes! Another productive week')]]"
-                "//button[contains(normalize-space(.),'Remove')])[1]"
-            )
-        ),
+        NavigateAction(url=_path(SEED_REMOVE_POST, "/profile/jack.rogers")),
+        WaitAction(time_seconds=0.5),
+        ClickAction(selector=_xp("//html/body/div[3]/main/span[1]/section/div[4]/div[2]/article/div[1]/div[2]/button[3]")),
         WaitAction(time_seconds=0.5),
     ],
 )
@@ -653,7 +655,7 @@ UNFOLLOW_PAGE = _uc(
                 "//button[contains(normalize-space(.),'Follow') and not(contains(.,'Following'))])[1]"
             )
         ),
-        WaitAction(time_seconds=0.35),
+        WaitAction(time_seconds=0.55),
         ClickAction(
             selector=_xp(
                 "(//li[contains(@class,'shadow')][.//div[contains(@class,'font-semibold')][contains(translate(.,'MANAG','manag'),'manag')]]//button[contains(normalize-space(.),'Following')])[1]"
@@ -701,7 +703,7 @@ APPLY_FOR_JOB = _uc(
     [
         NavigateAction(url=_path(SEED_APPLY_FOR_JOB, "jobs")),
         WaitAction(time_seconds=1.0),
-        ClickAction(selector=_xp("//a[contains(@href,'/jobs/j5')]//button[contains(normalize-space(.),'Apply')]")),
+        ClickAction(selector=_APPLY_JOB_J5_BTN),
         WaitAction(time_seconds=0.55),
     ],
 )
