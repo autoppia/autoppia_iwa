@@ -20,7 +20,10 @@ class WebVerificationConfig:
     llm_review_enabled: bool = True
     llm_timeout_seconds: float = 30.0
 
-    # IWAP client
+    # Step 3 reference solution: registered trajectories preferred over IWAP when enabled
+    trajectory_doability_enabled: bool = True
+
+    # IWAP client (fallback when no trajectory is registered for the use case)
     iwap_enabled: bool = True
     iwap_base_url: str | None = None  # Will be set from env or default
     iwap_api_key: str = "AIagent2025"  # API key for IWAP

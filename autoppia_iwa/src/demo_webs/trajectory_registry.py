@@ -4,6 +4,11 @@ with the active WebProject.frontend_url.
 
 Lives under ``demo_webs/`` (not ``web_verification/``) so imports avoid loading the
 full verification pipeline package ``__init__``.
+
+Registered ``WebProject.id`` values (see ``projects/p*/trajectories.py``):
+
+- ``autolodge`` (web_8), ``autoconnect`` (web_9), ``autocalendar`` (web_11),
+  ``autolist`` (web_12), ``autodrive`` (web_13), ``autohealth`` (web_14).
 """
 
 from __future__ import annotations
@@ -28,6 +33,24 @@ def remap_url_to_frontend(url: str, frontend_url: str) -> str:
     src = urlsplit(url)
     base = urlsplit(frontend_url)
     return urlunsplit((base.scheme, base.netloc, src.path, src.query, src.fragment))
+
+
+def _load_autolodge() -> dict[str, Trajectory]:
+    from autoppia_iwa.src.demo_webs.projects.p08_autolodge.trajectories import load_autolodge_use_case_completion_flows
+
+    return load_autolodge_use_case_completion_flows()
+
+
+def _load_autoconnect() -> dict[str, Trajectory]:
+    from autoppia_iwa.src.demo_webs.projects.p09_autoconnect.trajectories import load_autoconnect_use_case_completion_flows
+
+    return load_autoconnect_use_case_completion_flows()
+
+
+def _load_autocalendar() -> dict[str, Trajectory]:
+    from autoppia_iwa.src.demo_webs.projects.p11_autocalendar.trajectories import load_autocalendar_use_case_completion_flows
+
+    return load_autocalendar_use_case_completion_flows()
 
 
 def _load_autolist() -> dict[str, Trajectory]:
@@ -91,7 +114,10 @@ def _load_automail() -> dict[str, Trajectory]:
 
 
 # Project ``id`` (WebProject.id) -> lazy loader
+# Project ``id`` (WebProject.id) -> lazy loader (order: demo web number p08 → p14)
 TRAJECTORY_LOADERS_BY_PROJECT_ID: dict[str, TrajectoryLoader] = {
+    "autolodge": _load_autolodge,
+    "autoconnect": _load_autoconnect,
     "autocalendar": _load_autocalendar,
     "autolist": _load_autolist,
     "autodrive": _load_autodrive,

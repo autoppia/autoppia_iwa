@@ -20,6 +20,8 @@ def test_remap_url_to_frontend_empty_returns_original():
 
 def test_supported_trajectory_project_ids_contains_known_demo_projects():
     ids = supported_trajectory_project_ids()
+    assert "autolodge" in ids
+    assert "autoconnect" in ids
     assert "autolist" in ids
     assert "autodrive" in ids
     assert "autohealth" in ids
@@ -33,3 +35,27 @@ def test_get_trajectory_map_returns_dict_for_autodrive():
 
 def test_get_trajectory_map_unknown_project_returns_none():
     assert get_trajectory_map("autocinema") is None
+
+
+def test_get_trajectory_map_autolodge_loads_from_python():
+    from autoppia_iwa.src.execution.actions import NavigateAction
+
+    m = get_trajectory_map("autolodge")
+    assert m is not None
+    assert len(m) == 19
+    t = m["SEARCH_HOTEL"]
+    assert len(t.actions) >= 2
+    assert isinstance(t.actions[0], NavigateAction)
+    assert t.tests and t.tests[0].type == "CheckEventTest"
+
+
+def test_get_trajectory_map_autoconnect_loads_from_python():
+    from autoppia_iwa.src.execution.actions import NavigateAction
+
+    m = get_trajectory_map("autoconnect")
+    assert m is not None
+    assert len(m) == 26
+    t = m["VIEW_USER_PROFILE"]
+    assert len(t.actions) >= 2
+    assert isinstance(t.actions[0], NavigateAction)
+    assert t.tests and t.tests[0].type == "CheckEventTest"

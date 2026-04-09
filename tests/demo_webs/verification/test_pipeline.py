@@ -63,6 +63,21 @@ class _DummyDynamicVerifier:
             "trajectory_name": "ENTER_LOCATION",
         }
 
+    async def verify_task_with_seeds(self, **kwargs):
+        use_case = kwargs.get("use_case")
+        name = getattr(use_case, "name", "") if use_case is not None else ""
+        seeds = kwargs.get("seed_values") or []
+        return {
+            "use_case_name": name,
+            "seeds_tested": seeds,
+            "results": {s: {"evaluation": {"final_score": 1.0}} for s in seeds},
+            "all_passed": True,
+            "passed_count": len(seeds) if seeds else 1,
+            "total_count": len(seeds) if seeds else 1,
+            "summary": "dynamic verify stub",
+            "needs_review": False,
+        }
+
 
 def _build_project(use_cases):
     return WebProject(

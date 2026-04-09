@@ -31,6 +31,10 @@ def _xp(expr: str) -> Selector:
     return Selector(type=SelectorType.XPATH_SELECTOR, value=expr)
 
 
+def _id(element_id: str) -> Selector:
+    return Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value=element_id)
+
+
 def _nav_home() -> list[BaseAction]:
     return [
         NavigateAction(url=f"{BASE}/?seed={DEFAULT_SEED}"),
@@ -190,7 +194,7 @@ _ADD_CAL_SUBMIT = "//button[@id='add-calendar-modal-submit' or @id='new-calendar
 _ADD_NEW_CALENDAR = Trajectory(
     name="ADD_NEW_CALENDAR",
     prompt="Click add calendar.",
-    actions=[*_nav_home(), ClickAction(selector=_xp("(//button[contains(normalize-space(.),'Add calendar')])[1]")), WaitAction(time_seconds=0.5)],
+    actions=[*_nav_home(), ClickAction(selector=_id("sidebar-cta")), WaitAction(time_seconds=0.5)],
     tests=_ct("ADD_NEW_CALENDAR", _RAW_TESTS["ADD_NEW_CALENDAR"]),
 )
 
@@ -199,13 +203,11 @@ _CREATE_CALENDAR = Trajectory(
     prompt="Create calendar named 'IWA Trajectory Calendar' with a description for trajectory seed calendar.",
     actions=[
         *_nav_home(),
-        ClickAction(selector=_xp("(//button[contains(normalize-space(.),'Add calendar')])[1]")),
+        ClickAction(selector=_id("sidebar-cta")),
         WaitAction(time_seconds=0.55),
-        ClickAction(selector=_xp(_ADD_CAL_MODAL_NAME)),
-        TypeAction(selector=_xp(_ADD_CAL_MODAL_NAME), text="IWA Trajectory Calendar"),
-        ClickAction(selector=_xp(_ADD_CAL_MODAL_DESC)),
-        TypeAction(selector=_xp(_ADD_CAL_MODAL_DESC), text="Trajectory seed calendar"),
-        ClickAction(selector=_xp(_ADD_CAL_SUBMIT)),
+        TypeAction(selector=_id("new-calendar-modal-name"), text="IWA Trajectory Calendar"),
+        TypeAction(selector=_id("new-calendar-modal-description"), text="Trajectory seed calendar"),
+        ClickAction(selector=_id("new-calendar-modal-submit")),
         WaitAction(time_seconds=0.55),
     ],
     tests=_ct("CREATE_CALENDAR", _RAW_TESTS["CREATE_CALENDAR"]),
@@ -282,9 +284,8 @@ _CANCEL_ADD_EVENT = Trajectory(
         *_nav_home(),
         ClickAction(selector=_xp("//button[@aria-label='Create new event']")),
         WaitAction(time_seconds=0.55),
-        ClickAction(selector=_xp(_EVENT_NAME_INPUT)),
         TypeAction(selector=_xp(_EVENT_NAME_INPUT), text="Cancel Me"),
-        ClickAction(selector=_xp("//div[contains(@class,'DialogFooter')]//button[contains(normalize-space(.),'Cancel')][not(contains(normalize-space(.),'Delete'))][1]")),
+        ClickAction(selector=_id("planner-cancel")),
         WaitAction(time_seconds=0.45),
     ],
     tests=_ct("CANCEL_ADD_EVENT", _RAW_TESTS["CANCEL_ADD_EVENT"]),
@@ -303,7 +304,7 @@ _DELETE_ADDED_EVENT = Trajectory(
         WaitAction(time_seconds=0.35),
         ClickAction(selector=_xp(_EVENT_MODAL_NEXT)),
         WaitAction(time_seconds=0.35),
-        ClickAction(selector=_xp("//button[contains(normalize-space(.),'Delete')]")),
+        ClickAction(selector=_id("planner-cancel")),
         WaitAction(time_seconds=0.55),
     ],
     tests=_ct("DELETE_ADDED_EVENT", _RAW_TESTS["DELETE_ADDED_EVENT"]),
@@ -328,7 +329,7 @@ _EVENT_ADD_REMINDER = Trajectory(
         WaitAction(time_seconds=0.35),
         SelectDropDownOptionAction(selector=_SEL_MINUTES, text="30m before"),
         WaitAction(time_seconds=0.25),
-        ClickAction(selector=_xp(_REM_ADD_BTN)),
+        ClickAction(selector=_id("reminder-item-add")),
         WaitAction(time_seconds=0.4),
     ],
     tests=_ct("EVENT_ADD_REMINDER", _RAW_TESTS["EVENT_ADD_REMINDER"]),
@@ -347,7 +348,7 @@ _EVENT_REMOVE_REMINDER = Trajectory(
         WaitAction(time_seconds=0.35),
         SelectDropDownOptionAction(selector=_SEL_MINUTES, text="30m before"),
         WaitAction(time_seconds=0.25),
-        ClickAction(selector=_xp(_REM_ADD_BTN)),
+        ClickAction(selector=_id("reminder-item-add")),
         WaitAction(time_seconds=0.3),
         ClickAction(selector=_xp("//button[normalize-space(.)='Remove']")),
         WaitAction(time_seconds=0.4),

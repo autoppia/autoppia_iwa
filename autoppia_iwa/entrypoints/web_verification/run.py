@@ -35,6 +35,11 @@ def _parse_args():
         action="store_true",
         help="Trajectory replay only: skips task generation, LLM, bulk V2 dataset seed sweep, and IWAP (no OPENAI_API_KEY)",
     )
+    parser.add_argument(
+        "--no-trajectory-doability",
+        action="store_true",
+        help="Do not use registered trajectories for Step 3 reference solution; use IWAP only when IWAP is enabled",
+    )
     parser.add_argument("--verbose", "-v", action="store_true")
     return parser.parse_args()
 
@@ -48,6 +53,7 @@ async def run(
     verbose: bool = False,
     evaluate_trajectories: bool = False,
     trajectories_only: bool = False,
+    trajectory_doability_enabled: bool = True,
     use_cases: list[str] | None = None,
 ):
     from autoppia_iwa.src.bootstrap import AppBootstrap
@@ -67,6 +73,7 @@ async def run(
         use_case_filter=use_cases,
         tasks_per_use_case=tasks_per_use_case,
         llm_review_enabled=(not trajectories_only) and (not no_llm_review),
+        trajectory_doability_enabled=trajectory_doability_enabled,
         iwap_enabled=not trajectories_only,
         seed_values=[int(s.strip()) for s in seeds.split(",")],
         output_dir=output_dir,
@@ -97,6 +104,7 @@ async def _main_async(args) -> int:
             verbose=args.verbose,
             evaluate_trajectories=args.evaluate_trajectories,
             trajectories_only=args.trajectories_only,
+            trajectory_doability_enabled=not args.no_trajectory_doability,
             use_cases=args.use_case,
         )
     except ValueError as exc:

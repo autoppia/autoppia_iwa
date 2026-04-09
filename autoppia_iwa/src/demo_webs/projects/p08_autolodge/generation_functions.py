@@ -768,14 +768,11 @@ async def generate_book_from_wishlist_constraints(task_url: str | None = None, d
         return []
     sample = random.choice(data)
     constraints: list[dict[str, Any]] = []
-    for field in ["hotel_id", "title"]:
-        allowed_ops = FIELD_OPERATORS_BOOK_FROM_WISHLIST_MAP.get(field, [])
-        if not allowed_ops:
-            continue
-        op = ComparisonOperator(random.choice(allowed_ops))
-        # Extract nested conditional expression
-        value = sample.get("id", 0) if field == "hotel_id" else (sample.get("title") or "")[:5]
-        constraints.append(create_constraint_dict(field, op, value))
+    field = "title"
+    allowed_ops = FIELD_OPERATORS_BOOK_FROM_WISHLIST_MAP.get(field, [])
+    op = ComparisonOperator(random.choice(allowed_ops))
+    value = sample.get(field)
+    constraints.append(create_constraint_dict(field, op, value))
     return constraints
 
 

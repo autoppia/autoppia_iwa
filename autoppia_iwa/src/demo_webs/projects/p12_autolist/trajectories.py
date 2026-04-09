@@ -161,11 +161,29 @@ _TASK_FORM_SUBMIT_IDS = (
     "confirm-task-button",
     "task-submit",
 )
+_EDIT_MODAL_SAVE_IDS = (
+    "save-changes-button",
+    "update-task-button",
+    "confirm-edit-button",
+    "save-edit-button",
+    "apply-changes-button",
+)
 
 
 def _task_form_submit_button() -> Selector:
     union = " | ".join(f"//button[@id='{i}']" for i in _TASK_FORM_SUBMIT_IDS)
     return _xp(f"({union})[1]")
+
+
+def _edit_modal_save_button() -> Selector:
+    """Submit in task **edit** mode (V3 id pool from web_12 id-variants.json)."""
+    union = " | ".join(f"//button[@id='{i}']" for i in _EDIT_MODAL_SAVE_IDS)
+    return _xp(f"({union})[1]")
+
+
+def _edit_task_card_button_for_pr_review_flow() -> Selector:
+    """Edit control on the inbox card matched by ``EDIT_TARGET_DESC`` (seed 641 flow)."""
+    return _xp("//div[@data-dyn-key='task-card'][.//div[contains(.,'" + EDIT_TARGET_DESC.replace("'", "\\'") + "')]]//button[@title='Edit'][1]")
 
 
 def _open_add_task_form() -> list[BaseAction]:
@@ -266,6 +284,34 @@ def _select_ant_option_containing(text: str) -> list[BaseAction]:
     ]
 
 
+def recording_edit_task_date_save_actions(*, seed: int = SEED_EDIT_TASK_MODAL_OPENED) -> list[BaseAction]:
+    """
+    IWA equivalent of a Chrome DevTools recording (e.g. ``Recording 4/7/2026``).
+
+    Skipped from the recorder JSON: ``setViewport``; spurious ``Alt``/``Tab`` key
+    events. The recorder's ``waitForElement`` with selector ``.cls`` is replaced
+    with a short settle wait (``.cls`` is not a stable app selector).
+
+    Maps: ``navigate ?seed=…`` → open edit on the PR-review task card →
+    ``data-dyn-key=date-picker-button`` (covers ``due-button`` id variant) →
+    click selected Ant Design calendar cell → ``Escape`` → save-changes id pool.
+    """
+    return [
+        NavigateAction(url=_home(seed)),
+        WaitAction(time_seconds=3.0),
+        ClickAction(selector=_edit_task_card_button_for_pr_review_flow()),
+        WaitAction(time_seconds=0.5),
+        ClickAction(selector=_date_picker_button()),
+        WaitAction(time_seconds=0.45),
+        ClickAction(selector=_xp("(//div[contains(@class,'ant-picker-dropdown')]//td[contains(@class,'ant-picker-cell-selected')]//div)[1]")),
+        WaitAction(time_seconds=0.25),
+        SendKeysIWAAction(keys="Escape"),
+        WaitAction(time_seconds=0.25),
+        ClickAction(selector=_edit_modal_save_button()),
+        WaitAction(time_seconds=1.0),
+    ]
+
+
 # --- Flows: names match autolist_tasks.json use_case.name (AUTOLIST_*); tests below. ---
 
 
@@ -296,7 +342,7 @@ _RAW_TESTS: dict[str, list[dict]] = {
                 "name": {"operator": "not_contains", "value": "vqs"},
                 "description": {"operator": "contains", "value": "ate"},
                 "date": {"operator": "greater_than", "value": "2026-04-28"},
-                "priority": 1,
+                "priority": "Highest",
             },
             "description": "Check if specific event was triggered",
         }
@@ -335,7 +381,7 @@ _RAW_TESTS: dict[str, list[dict]] = {
                 "name": {"operator": "not_equals", "value": "Review vendor contracts"},
                 "description": {"operator": "not_contains", "value": "uwv"},
                 "date": {"operator": "less_equal", "value": "2026-04-27"},
-                "priority": 3,
+                "priority": "Medium",
             },
             "description": "Check if specific event was triggered",
         }
@@ -444,7 +490,7 @@ AUTOLIST_TASK_ADDED = _uc(
 
 AUTOLIST_CANCEL_TASK_CREATION = _uc(
     "AUTOLIST_CANCEL_TASK_CREATION",
-    prompt=("Please cancel the task creation where the name does NOT contain 'vqs', the description contains 'ate', the date is AFTER '2026-04-28', and the priority equals '1'."),
+    prompt=("Please cancel the task creation where the name does NOT contain 'vqs', the description contains 'ate', the date is AFTER '2026-04-28', and the priority equals 'Highest'."),
     actions=[
         NavigateAction(url=_home(SEED_CANCEL_TASK_CREATION)),
         *_open_add_task_form(),
@@ -465,8 +511,8 @@ AUTOLIST_EDIT_TASK_MODAL_OPENED = _uc(
     ),
     actions=[
         NavigateAction(url=_home(SEED_EDIT_TASK_MODAL_OPENED)),
-        WaitAction(time_seconds=3.0),
-        ClickAction(selector=_xp("//div[@data-dyn-key='task-card'][.//div[contains(.,'" + EDIT_TARGET_DESC.replace("'", "\\'") + "')]]//button[@title='Edit'][1]")),
+        WaitAction(time_seconds=0.5),
+        ClickAction(selector=_xp("//html/body/div[2]/div/main/span[4]/div/div/div[10]/div/div[2]/button[1]")),
         WaitAction(time_seconds=0.5),
     ],
 )
@@ -494,7 +540,7 @@ AUTOLIST_COMPLETE_TASK = _uc(
 
 AUTOLIST_DELETE_TASK = _uc(
     "AUTOLIST_DELETE_TASK",
-    prompt=("Delete task whose name not equals 'Review vendor contracts' and description not contains 'uwv' and date less equal '2026-04-27' and priority equals '3'."),
+    prompt=("Delete task whose name not equals 'Review vendor contracts' and description not contains 'uwv' and date less equal '2026-04-27' and priority equals 'Medium'."),
     actions=[
         NavigateAction(url=_home(SEED_DELETE_TASK)),
         WaitAction(time_seconds=3.0),
@@ -574,17 +620,8 @@ AUTOLIST_TEAM_CREATED = _uc(
         WaitAction(time_seconds=0.3),
         *_select_ant_option_containing("Developer"),
         SendKeysIWAAction(keys="Escape"),
-        WaitAction(time_seconds=0.5),
-        EvaluateAction(
-            script=r"""() => {
-  const btn = document.querySelector(".ant-modal-footer .ant-btn-primary");
-  if (!btn) return "no-primary-btn";
-  btn.scrollIntoView({ block: "center", inline: "nearest" });
-  (btn).click();
-  return "clicked-save";
-}"""
-        ),
-        WaitAction(time_seconds=0.55),
+        ClickAction(selector=_xp("*[@id='new-team-button']/span")),
+        WaitAction(time_seconds=1.0),
     ],
 )
 

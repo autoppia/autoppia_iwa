@@ -6,6 +6,7 @@ import pytest
 
 from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator
 from autoppia_iwa.src.demo_webs.projects.p12_autolist import generation_functions as gf
+from autoppia_iwa.src.demo_webs.projects.p12_autolist.data import PRIORITIES
 
 TASKS = [
     {"name": "Write report", "description": "Finish quarterly report", "date": datetime(2026, 4, 1), "priority": "high"},
@@ -39,6 +40,15 @@ def patched_tasks(monkeypatch: pytest.MonkeyPatch) -> None:
 async def test_ensure_task_dataset_uses_dataset_or_fetches(patched_tasks):
     assert await gf._ensure_task_dataset("http://localhost", {"tasks": TASKS}) == TASKS
     assert await gf._ensure_task_dataset("http://localhost/?seed=1", None) == TASKS
+
+
+def test_task_priority_to_label():
+    assert gf._task_priority_to_label(1) == "Highest"
+    assert gf._task_priority_to_label(4) == "Low"
+    assert gf._task_priority_to_label("3") == "Medium"
+    assert gf._task_priority_to_label("High") == "High"
+    assert gf._task_priority_to_label("high") == "High"
+    assert gf._task_priority_to_label(99) is None
 
 
 def test_collection_and_pick_helpers():
@@ -88,6 +98,19 @@ def test_generate_select_task_priority_constraints(deterministic_random):
 async def test_generate_task_constraints(deterministic_random, patched_tasks):
     constraints = await gf.generate_task_constraints("http://localhost/?seed=1")
     assert {c["field"] for c in constraints} >= {"name", "description", "priority"}
+    priority_c = next(c for c in constraints if c["field"] == "priority")
+    assert priority_c["value"] in PRIORITIES
+
+
+def test_generate_constraints_maps_numeric_task_priority_to_label():
+    field_map = {
+        "_dataset": [{"name": "N", "description": "D", "date": datetime(2026, 4, 1), "priority": 2}],
+        "priority": {"dataset": PRIORITIES},
+    }
+    constraints = gf._generate_constraints_for_event(field_map, {"priority": ["equals"]})
+    assert len(constraints) == 1
+    assert constraints[0]["field"] == "priority"
+    assert constraints[0]["value"] == "High"
 
 
 def test_generate_team_members_added_constraints(deterministic_random):
