@@ -399,8 +399,7 @@ LIKE_POST = _uc(
     "LIKE_POST",
     [
         *_task_entry(SEED_LIKE_POST),
-        # *_like_in_article(_x_personal),
-        ClickAction(selector=_xp("//html/body/div[3]/main/div/main/section/div[2]/article[45]/div[3]/button")),
+        ClickAction(selector=_id("post_like_button_p170")),
         WaitAction(time_seconds=0.3),
     ],
 )
