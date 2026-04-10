@@ -1,5 +1,4 @@
 from .all_actions.assert_action import AssertAction
-from .base import ActionRegistry, BaseAction, BaseActionWithSelector, Selector, SelectorType
 from .all_actions.base_click import BaseClickAction
 from .all_actions.click_action import ClickAction
 from .all_actions.done_action import DoneAction
@@ -40,8 +39,10 @@ from .all_actions.triple_click_action import TripleClickAction
 from .all_actions.type_action import TypeAction
 from .all_actions.undefined_action import UndefinedAction
 from .all_actions.wait_action import WaitAction
+from .base import ActionRegistry, BaseAction, BaseActionWithSelector, Selector, SelectorType
 
 __all__ = [
+    "SELECTOR_OR_COORDS_REQUIRED_MSG",
     "ActionRegistry",
     "AssertAction",
     "BaseAction",
@@ -73,7 +74,6 @@ __all__ = [
     "SelectDropDownOptionAction",
     "Selector",
     "SelectorType",
-    "SELECTOR_OR_COORDS_REQUIRED_MSG",
     "SendKeysIWAAction",
     "SubmitAction",
     "TripleClickAction",

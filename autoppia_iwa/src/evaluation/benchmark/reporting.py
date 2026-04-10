@@ -71,10 +71,7 @@ def aggregate_project_results(
     project_report = {
         "project_id": project.id,
         "summary": summary,
-        "tasks_by_agent": {
-            agent.name: task_entries.get(agent.id, [])
-            for agent in agents
-        },
+        "tasks_by_agent": {agent.name: task_entries.get(agent.id, []) for agent in agents},
     }
     return summary, project_report
 
@@ -112,10 +109,7 @@ def build_terminal_report(run_report: dict[str, Any], *, config: BenchmarkConfig
     for project_name, project_data in run_report["projects"].items():
         lines.append(project_name)
         for agent_name, stats in project_data["summary"].items():
-            lines.append(
-                f"  {agent_name}: {stats['passed']}/{stats['total']} "
-                f"({stats['success_rate'] * 100:.1f}%) avg={stats['avg_score']:.3f}"
-            )
+            lines.append(f"  {agent_name}: {stats['passed']}/{stats['total']} ({stats['success_rate'] * 100:.1f}%) avg={stats['avg_score']:.3f}")
         lines.append("")
 
     if results_path:

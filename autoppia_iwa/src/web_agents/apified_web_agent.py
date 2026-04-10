@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import base64
+import re
 from typing import Any
 from urllib.parse import urlparse, urlunparse
 
@@ -59,6 +61,20 @@ class ApifiedWebAgent(IWebAgent):
         self.last_act_response: dict[str, Any] | None = None
         self.tools: list[dict[str, Any]] = self._build_tools() if self.send_allowed_tools else []
         self.allowed_tools = self.tools
+        self._step_rewrite_page_url: str | None = None
+
+    @staticmethod
+    def _screenshot_for_json(screenshot: str | bytes | None) -> str | None:
+        """PNG bytes cannot be JSON-encoded for /step; use a data URL string."""
+        if screenshot is None:
+            return None
+        if isinstance(screenshot, bytes):
+            if not screenshot:
+                return None
+            b64 = base64.b64encode(screenshot).decode("ascii")
+            return f"data:image/png;base64,{b64}"
+        s = str(screenshot).strip()
+        return s or None
 
     async def step(
         self,
@@ -74,12 +90,13 @@ class ApifiedWebAgent(IWebAgent):
         """Call the remote /step endpoint and translate the response into BaseAction instances."""
         if snapshot_html is not None:
             html = snapshot_html
+        self._step_rewrite_page_url = url
         request = StepRequest(
             task_id=getattr(task, "id", None),
             prompt=getattr(task, "prompt", None),
             url=self._force_localhost(url),
             html=html,
-            screenshot=screenshot,
+            screenshot=self._screenshot_for_json(screenshot),
             step_index=int(step_index),
             history=history,
             tools=self.tools,
@@ -265,20 +282,52 @@ class ApifiedWebAgent(IWebAgent):
         rewritten = parsed._replace(netloc=netloc)
         return urlunparse(rewritten)
 
-    @staticmethod
-    def _rewrite_to_remote(original_url: str | None) -> str | None:
+    _BARE_LOOPBACK = re.compile(r"^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$", re.I)
+
+    def _rewrite_to_remote(self, original_url: str | None) -> str | None:
         if not original_url:
             return original_url
+        s = str(original_url).strip()
+        if s and "://" not in s and not s.startswith("/") and "/" not in s and self._BARE_LOOPBACK.match(s):
+            s = f"http://{s}/"
         remote = DEMO_WEBS_ENDPOINT if DEMO_WEBS_ENDPOINT.startswith("http") else f"http://{DEMO_WEBS_ENDPOINT}"
         remote_parsed = urlparse(remote)
-        if original_url.startswith("/"):
-            return f"{remote_parsed.scheme}://{remote_parsed.netloc}{original_url}"
-        parsed = urlparse(original_url)
-        if not parsed.scheme and not parsed.netloc:
-            cleaned_path = original_url if original_url.startswith("/") else f"/{original_url}"
-            return f"{remote_parsed.scheme}://{remote_parsed.netloc}{cleaned_path}"
-        new_url = parsed._replace(scheme=remote_parsed.scheme or parsed.scheme, netloc=remote_parsed.netloc)
-        return urlunparse(new_url)
+        if s.startswith("/"):
+            out = f"{remote_parsed.scheme}://{remote_parsed.netloc}{s}"
+        else:
+            parsed = urlparse(s)
+            if not parsed.scheme and not parsed.netloc:
+                cleaned_path = s if s.startswith("/") else f"/{s}"
+                out = f"{remote_parsed.scheme}://{remote_parsed.netloc}{cleaned_path}"
+            else:
+                new_url = parsed._replace(scheme=remote_parsed.scheme or parsed.scheme, netloc=remote_parsed.netloc)
+                out = urlunparse(new_url)
+        return self._merge_loopback_origin_with_page(out)
+
+    def _merge_loopback_origin_with_page(self, rewritten: str | None) -> str | None:
+        """
+        If the operator returns http://localhost/... without a port but the browser is on
+        localhost:8013, keep the page origin so NavigateAction targets the demo frontend.
+        """
+        if not rewritten or not self._step_rewrite_page_url:
+            return rewritten
+        page = urlparse(self._step_rewrite_page_url)
+        cur = urlparse(rewritten)
+        if cur.port is not None:
+            return rewritten
+        if not self._is_loopback_hostname(cur.hostname):
+            return rewritten
+        if not self._is_loopback_hostname(page.hostname) or page.port is None:
+            return rewritten
+        merged = cur._replace(netloc=page.netloc)
+        return urlunparse(merged)
+
+    @staticmethod
+    def _is_loopback_hostname(hostname: str | None) -> bool:
+        if not hostname:
+            return False
+        h = str(hostname).lower()
+        return h in ("localhost", "127.0.0.1", "::1") or h == "[::1]"
 
 
 ApifiedIterativeWebAgent = ApifiedWebAgent

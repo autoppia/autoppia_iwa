@@ -14,8 +14,8 @@ from autoppia_iwa.src.data_generation.tasks.classes import BrowserSpecification,
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStats
-from autoppia_iwa.src.evaluation.legacy.concurrent_config import EvaluatorConfig
 from autoppia_iwa.src.evaluation.interfaces import IEvaluator
+from autoppia_iwa.src.evaluation.legacy.concurrent_config import EvaluatorConfig
 from autoppia_iwa.src.evaluation.shared.utils import (
     display_single_evaluation_summary,
     extract_seed_from_url,
@@ -28,8 +28,8 @@ from autoppia_iwa.src.evaluation.shared.utils import (
 )
 from autoppia_iwa.src.execution.actions.actions import NavigateAction
 from autoppia_iwa.src.execution.actions.base import BaseAction
-from autoppia_iwa.src.execution.playwright_browser_executor import PlaywrightBrowserExecutor
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
+from autoppia_iwa.src.execution.playwright_browser_executor import PlaywrightBrowserExecutor
 from autoppia_iwa.src.shared.logging import log_event
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 

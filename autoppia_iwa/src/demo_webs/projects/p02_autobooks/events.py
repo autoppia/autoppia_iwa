@@ -63,6 +63,16 @@ def _validate_genre_criteria(book_genres: list[str], criteria_genre: str | Crite
             val_list = []
         val_lower = [str(v).lower() for v in val_list]
         return any(genre.lower() in val_lower for genre in book_genres)
+    if crit.operator == ComparisonOperator.NOT_IN_LIST:
+        val = crit.value
+        if isinstance(val, str):
+            val_list = [val]
+        elif isinstance(val, list):
+            val_list = val
+        else:
+            val_list = []
+        val_lower = [str(v).lower() for v in val_list]
+        return not any(genre.lower() in val_lower for genre in book_genres)
     return False
 
 
@@ -609,6 +619,8 @@ class ViewCartBookEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
+        # This event has no fields to validate; presence of the event is enough.
+        return True
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "ViewCartBookEvent":

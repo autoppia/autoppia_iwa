@@ -24,4 +24,3 @@ class TripleClickAction(BaseClickAction):
             return
 
         raise ValueError(SELECTOR_OR_COORDS_REQUIRED_MSG)
-

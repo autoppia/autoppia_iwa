@@ -34,8 +34,9 @@ class OpenAppointmentFormEvent(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "OpenAppointmentFormEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data
-        data = data.get("data") or {}
+        raw = backend_event.data or {}
+        nested = raw.get("data")
+        data = nested if isinstance(nested, dict) else raw
         doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
         appointment = data.get("appointment") if isinstance(data.get("appointment"), dict) else {}
         return cls(
@@ -107,7 +108,6 @@ class AppointmentBookedSuccessfullyEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "AppointmentBookedSuccessfullyEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") or {}
         appointment = data.get("appointment") if isinstance(data.get("appointment"), dict) else {}
         return cls(
             event_name=base_event.event_name,
@@ -178,13 +178,11 @@ class SearchAppointmentEvent(Event, BaseEventValidator):
     """Fired when user clicks Search on the Appointments page (applies doctor/speciality/date filters)."""
 
     event_name: str = "SEARCH_APPOINTMENT"
-    filter_type: str | None = None
     doctor_name: str | None = None
     speciality: str | None = None
     date: str | None = None
 
     class ValidationCriteria(BaseModel):
-        filter_type: str | CriterionValue | None = None
         doctor_name: str | CriterionValue | None = None
         speciality: str | CriterionValue | None = None
         date: str | CriterionValue | None = None
@@ -194,7 +192,6 @@ class SearchAppointmentEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.filter_type, criteria.filter_type),
                 self._validate_field(self.doctor_name, criteria.doctor_name),
                 self._validate_field(self.speciality, criteria.speciality),
                 self._validate_field(self.date, criteria.date),
@@ -205,18 +202,14 @@ class SearchAppointmentEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "SearchAppointmentEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") if isinstance(data, dict) else {}
-        data = data or {}
-        doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            filter_type=data.get("filterType"),
-            doctor_name=data.get("doctorName") or doctor.get("name"),
-            speciality=data.get("specialty") or doctor.get("specialty"),
-            date=data.get("date"),
+            doctor_name=data.get("doctorName", ""),
+            speciality=data.get("specialty", ""),
+            date=data.get("date", ""),
         )
 
 
@@ -245,15 +238,13 @@ class SearchPrescriptionEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "SearchPrescriptionEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") or {}
-        prescription = data.get("prescription") if isinstance(data.get("prescription"), dict) else {}
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            medicine_name=data.get("medicine") or prescription.get("medicineName"),
-            doctor_name=data.get("doctor") or prescription.get("doctorName"),
+            medicine_name=data.get("medicine"),
+            doctor_name=data.get("doctor"),
         )
 
 
@@ -292,7 +283,6 @@ class ViewPrescriptionEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "ViewPrescriptionEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") or {}
         prescription = data.get("prescription") if isinstance(data.get("prescription"), dict) else {}
         return cls(
             event_name=base_event.event_name,
@@ -331,7 +321,6 @@ class RefillRequestEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "RefillRequestEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") or {}
         prescription = data.get("prescription") if isinstance(data.get("prescription"), dict) else {}
         return cls(
             event_name=base_event.event_name,
@@ -349,14 +338,10 @@ class SearchMedicalAnalysisEvent(Event, BaseEventValidator):
     event_name: str = "SEARCH_MEDICAL_ANALYSIS"
     record_title: str | None = None
     doctor_name: str | None = None
-    source: str | None = None
-    action: str | None = None
 
     class ValidationCriteria(BaseModel):
         record_title: str | CriterionValue | None = None
         doctor_name: str | CriterionValue | None = None
-        source: str | CriterionValue | None = None
-        action: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if criteria is None:
@@ -365,8 +350,6 @@ class SearchMedicalAnalysisEvent(Event, BaseEventValidator):
             [
                 self._validate_field(self.record_title, criteria.record_title),
                 self._validate_field(self.doctor_name, criteria.doctor_name),
-                self._validate_field(self.source, criteria.source),
-                self._validate_field(self.action, criteria.action),
             ]
         )
 
@@ -374,7 +357,6 @@ class SearchMedicalAnalysisEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "SearchMedicalAnalysisEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") or {}
         record = data.get("record") if isinstance(data.get("record"), dict) else {}
         return cls(
             event_name=base_event.event_name,
@@ -383,8 +365,6 @@ class SearchMedicalAnalysisEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             record_title=data.get("title") or record.get("title"),
             doctor_name=data.get("doctor") or record.get("doctorName"),
-            source=data.get("source"),
-            action=data.get("action"),
         )
 
 
@@ -419,7 +399,7 @@ class ViewMedicalAnalysisEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "ViewMedicalAnalysisEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") or {}
+        data = data.get("data") or data
         record = data.get("record") if isinstance(data.get("record"), dict) else {}
         return cls(
             event_name=base_event.event_name,
@@ -468,8 +448,6 @@ class ViewDoctorProfileEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "ViewDoctorProfileEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") if isinstance(data, dict) else {}
-        data = data or {}
         doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
         langs = data.get("languages") if data.get("languages") is not None else doctor.get("languages")
         return cls(
@@ -486,18 +464,13 @@ class ViewDoctorProfileEvent(Event, BaseEventValidator):
 
 
 class ViewDoctorEducationEvent(Event, BaseEventValidator):
-    """Evento que la web dispara cuando se abre la pestaña Education (lo que Playwright provoca al ejecutar acciones)."""
-
-    # Tipo de evento: en el paso 5 del evaluation flow se filtran los backend_events por este event_name (igual al del test de la Task).
     event_name: str = "VIEW_DOCTOR_EDUCATION"
-    # Datos del evento: lo que la web envió al backend cuando disparó este evento (evidencia de lo que hizo el agente en Playwright).
     doctor_name: str | None = None
     speciality: str | None = None
     rating: float | None = None
     consultation_fee: float | None = None
     languages: list[str] | None = None
 
-    # Plantilla de lo que puede pedir el test de la Task: event_criteria = constraints (campo, operador, valor).
     class ValidationCriteria(BaseModel):
         doctor_name: str | CriterionValue | None = None
         speciality: str | CriterionValue | None = None
@@ -506,15 +479,11 @@ class ViewDoctorEducationEvent(Event, BaseEventValidator):
         language: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        """Paso 5 evaluación: compara los datos de este evento (lo que guardó el backend) con lo que pide el test de la Task (event_criteria). Si todo coincide → True; si falta una → False."""
-        # Si el test no tiene criterios, damos el test por pasado.
         if not criteria:
             return True
-        # Criterio idioma: por defecto OK; si el test pide idioma, hay que comprobarlo.
         lang_ok = True
         if criteria.language is not None:
             lang_ok = any(self._validate_field(lang, criteria.language) for lang in self.languages) if self.languages else False
-        # Todas las condiciones del test deben cumplirse: valor del evento vs valor que pide el test, campo a campo.
         return all(
             [
                 self._validate_field(self.doctor_name, criteria.doctor_name),
@@ -527,16 +496,9 @@ class ViewDoctorEducationEvent(Event, BaseEventValidator):
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "ViewDoctorEducationEvent":
-        """Paso 5 evaluación: convierte un evento crudo (de get_backend_events) en este objeto con doctor_name, speciality, etc., para poder compararlo con las event_criteria del test."""
-        # Campos base del evento (tipo, timestamp, web_agent_id).
         base_event = Event.parse(backend_event)
-        # Payload que guardó el backend cuando la web disparó el evento (tras las acciones de Playwright).
         data = backend_event.data
-        data = data.get("data") if isinstance(data, dict) else {}
-        data = data or {}
-        # Si el payload trae objeto doctor, usarlo para rellenar campos.
         doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
-        # Construir el evento con los datos que luego se compararán con las constraints del test.
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
@@ -587,8 +549,6 @@ class ViewDoctorAvailabilityEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "ViewDoctorAvailabilityEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") if isinstance(data, dict) else {}
-        data = data or {}
         doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
         return cls(
             event_name=base_event.event_name,
@@ -631,9 +591,6 @@ class SearchDoctorsEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "SearchDoctorsEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") if isinstance(data, dict) else {}
-        data = data or {}
-        # Frontend sends searchTerm (doctor name searched); map to doctor_name for consistency
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
@@ -682,7 +639,6 @@ class OpenContactDoctorFormEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "OpenContactDoctorFormEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") or {}
         doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
         return cls(
             event_name=base_event.event_name,
@@ -698,54 +654,70 @@ class OpenContactDoctorFormEvent(Event, BaseEventValidator):
 
 
 class ContactDoctorEvent(Event, BaseEventValidator):
-    """Payload has doctor; event stores same fields as map so validation checks what we store."""
-
     event_name: str = "CONTACT_DOCTOR"
     doctor_name: str | None = None
+    message: str | None = None
+    patient_email: str | None = None
+    patient_name: str | None = None
+    patient_phone: str | None = None
+    preferred_contact_method: str | None = None
     speciality: str | None = None
-    rating: float | None = None
-    consultation_fee: float | None = None
-    languages: list[str] | None = None
+    subject: str | None = None
+    urgency: str | None = None
+    appointment_request: bool | None = None
 
     class ValidationCriteria(BaseModel):
         doctor_name: str | CriterionValue | None = None
-        rating: float | CriterionValue | None = None
+        message: str | CriterionValue | None = None
+        patient_email: str | CriterionValue | None = None
+        patient_name: str | CriterionValue | None = None
+        patient_phone: str | CriterionValue | None = None
+        preferred_contact_method: str | CriterionValue | None = None
         speciality: str | CriterionValue | None = None
-        consultation_fee: float | CriterionValue | None = None
-        language: str | CriterionValue | None = None
+        subject: str | CriterionValue | None = None
+        urgency: str | CriterionValue | None = None
+        appointment_request: bool | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        lang_ok = True
-        if criteria.language is not None:
-            lang_ok = bool(self.languages and any(self._validate_field(lang, criteria.language) for lang in self.languages))
         return all(
             [
                 self._validate_field(self.doctor_name, criteria.doctor_name),
-                self._validate_field(self.rating, criteria.rating),
+                self._validate_field(self.message, criteria.message),
+                self._validate_field(self.patient_email, criteria.patient_email),
+                self._validate_field(self.patient_name, criteria.patient_name),
+                self._validate_field(self.patient_phone, criteria.patient_phone),
+                self._validate_field(self.preferred_contact_method, criteria.preferred_contact_method),
                 self._validate_field(self.speciality, criteria.speciality),
-                self._validate_field(self.consultation_fee, criteria.consultation_fee),
-                lang_ok,
+                self._validate_field(self.subject, criteria.subject),
+                self._validate_field(self.urgency, criteria.urgency),
+                self._validate_field(self.appointment_request, criteria.appointment_request),
             ]
         )
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "ContactDoctorEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data
-        data = data.get("data") or {}
+        raw = backend_event.data or {}
+        nested = raw.get("data")
+        data = nested if isinstance(nested, dict) else raw
         doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
         return cls(
             event_name=base_event.event_name,
-            timestamp=base_event.timestamp,
-            user_id=base_event.user_id,
             web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            timestamp=base_event.timestamp,
             doctor_name=data.get("doctorName") or doctor.get("name"),
-            rating=data.get("rating") if data.get("rating") is not None else doctor.get("rating"),
+            message=data.get("message"),
+            patient_email=data.get("patientEmail"),
+            patient_name=data.get("patientName"),
+            patient_phone=data.get("patientPhone"),
+            preferred_contact_method=data.get("preferredContactMethod"),
             speciality=data.get("specialty") or doctor.get("specialty"),
-            consultation_fee=data.get("consultationFee") if data.get("consultationFee") is not None else doctor.get("consultationFee"),
-            languages=data.get("languages") if data.get("languages") is not None else doctor.get("languages"),
+            subject=data.get("subject"),
+            urgency=data.get("urgency"),
+            appointment_request=data.get("appointmentRequest"),
         )
 
 
@@ -795,20 +767,22 @@ class DoctorContactedSuccessfullyEvent(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "DoctorContactedSuccessfullyEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data
-        data = data.get("data")
+        raw = backend_event.data or {}
+        nested = raw.get("data")
+        data = nested if isinstance(nested, dict) else raw
+        doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
         return cls(
             event_name=base_event.event_name,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             timestamp=base_event.timestamp,
-            doctor_name=data.get("doctorName"),
+            doctor_name=data.get("doctorName") or doctor.get("name"),
             message=data.get("message"),
             patient_email=data.get("patientEmail"),
             patient_name=data.get("patientName"),
             patient_phone=data.get("patientPhone"),
             preferred_contact_method=data.get("preferredContactMethod"),
-            speciality=data.get("specialty"),
+            speciality=data.get("specialty") or doctor.get("specialty"),
             subject=data.get("subject"),
             urgency=data.get("urgency"),
             appointment_request=data.get("appointmentRequest"),
@@ -846,7 +820,6 @@ class FilterDoctorReviewsEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "FilterDoctorReviewsEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        data = data.get("data") or {}
         doctor = data.get("doctor") if isinstance(data.get("doctor"), dict) else {}
         return cls(
             event_name=base_event.event_name,

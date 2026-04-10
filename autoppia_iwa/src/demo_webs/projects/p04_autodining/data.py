@@ -39,7 +39,7 @@ RESTAURANT_COUNTRIES = [
 ]
 RESTAURANT_OCCASIONS = ["birthday", "anniversary", "business", "other"]
 SCROLL_DIRECTIONS = ["left", "right"]
-SCROLL_SECTIONS_TITLES = ["Available for lunch now", "Introducing OpenDinning Icons", "Award Winners"]
+SCROLL_SECTIONS_TITLES = ["Premium", "Popular", "Great value"]
 
 CUISINE = ["Japanese", "Mexican", "American"]
 NAMES = [
@@ -140,11 +140,12 @@ HELP_CATEGORIES = [
 ]
 
 FAQ_QUESTIONS = [
-    "How do I modify a reservation?",
-    "Can I get a refund?",
-    "How do I change my password?",
-    "Is there a cancellation fee?",
-    "How do I contact support?",
+    "How do I make a reservation?",
+    "What is your cancellation policy?",
+    "How do I create account?",
+    "How do I search for restaurants?",
+    "Can I leave a review?",
+    "How do I update my profile information?Is there a booking fee?",
 ]
 
 ABOUT_FEATURES = [

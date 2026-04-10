@@ -14,8 +14,8 @@ from autoppia_iwa.config.config import (
     OPENAI_MODEL,
     OPENAI_TEMPERATURE,
 )
-from autoppia_iwa.src.llms.interfaces import LLMConfig
 from autoppia_iwa.src.llms.factory import LLMFactory
+from autoppia_iwa.src.llms.interfaces import LLMConfig
 
 
 class DIContainer(containers.DeclarativeContainer):
@@ -65,7 +65,7 @@ class DIContainer(containers.DeclarativeContainer):
         try:
             provider = providers[LLM_PROVIDER]
         except KeyError:
-            raise ValueError(f"Unsupported LLM_PROVIDER: {LLM_PROVIDER}")
+            raise ValueError(f"Unsupported LLM_PROVIDER: {LLM_PROVIDER}") from None
 
         return LLMFactory.create_llm(
             llm_type=LLM_PROVIDER,

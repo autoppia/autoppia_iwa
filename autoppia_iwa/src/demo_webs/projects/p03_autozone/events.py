@@ -3,8 +3,8 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.base_events import BaseEventValidator, Event
+from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 
 from ...shared_utils import parse_price
@@ -537,6 +537,10 @@ class CarouselScrollEvent(Event, BaseEventValidator):
         """Parse a carousel scroll event from backend data."""
         base_event = Event.parse(backend_event)
         data = backend_event.data
+        derived_title = data.get("title", "")
+        title = derived_title.split()[0] if derived_title else ""
+
+        title = f"Top Sellers In {title}"
 
         return cls(
             event_name=base_event.event_name,
@@ -544,7 +548,7 @@ class CarouselScrollEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             direction=data.get("direction", "").upper(),
-            title=data.get("title", ""),
+            title=title,
         )
 
 

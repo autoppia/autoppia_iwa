@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 
-from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.base_events import BaseEventValidator, Event
+from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.criterion_helper import CriterionValue
 
 
@@ -528,8 +528,7 @@ class EmailsNextPageEvent(Event, BaseEventValidator):
         pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
+        return True
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "EmailsNextPageEvent":
@@ -560,6 +559,7 @@ class TemplatesViewedEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
+        return True
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "TemplatesViewedEvent":

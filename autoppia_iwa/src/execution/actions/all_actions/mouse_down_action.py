@@ -16,4 +16,3 @@ class MouseDownAction(BaseClickAction):
         sel = self.get_playwright_selector() if self.selector else None
         await _move_mouse_to(page, sel, self.x, self.y)
         await page.mouse.down(button="left")
-

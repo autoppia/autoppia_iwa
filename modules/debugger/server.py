@@ -19,11 +19,10 @@ import difflib
 import json
 import os
 import time
-from datetime import datetime, UTC
 from pathlib import Path
 from typing import Any
 
-from fastapi import Body, FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -32,6 +31,10 @@ app = FastAPI(title="IWA Debugger")
 ROOT = Path(__file__).resolve().parent
 STATIC_DIR = ROOT / "static"
 DEFAULT_TRACE_DIR = os.getenv("IWA_DEBUG_TRACE_DIR", "").strip()
+
+# Extra allowed roots for trace_dir (query param / env), separated by os.pathsep.
+# Without this, trace_dir must resolve under cwd, under TRACE_SCAN_ROOTS, or equal IWA_DEBUG_TRACE_DIR.
+_TRACE_ALLOW_EXTRA_RAW = os.getenv("IWA_DEBUG_TRACE_ALLOW_ROOTS", "").strip()
 
 # Scan these directories for trace_index.json files
 TRACE_SCAN_ROOTS = [
@@ -44,6 +47,7 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 # ── Helpers ─────────────────────────────────────────────────────────────
 
+
 def _jsonable(value: Any) -> Any:
     if isinstance(value, Path):
         return str(value)
@@ -54,11 +58,105 @@ def _jsonable(value: Any) -> Any:
     return value
 
 
+def _allowed_trace_roots() -> tuple[Path, ...]:
+    """Resolved directories under which a user-supplied trace_dir may lie."""
+    candidates: list[Path] = []
+    seen: set[str] = set()
+
+    def add(p: Path) -> None:
+        try:
+            r = p.expanduser().resolve()
+        except (OSError, RuntimeError):
+            return
+        key = str(r)
+        if key not in seen:
+            seen.add(key)
+            candidates.append(r)
+
+    add(Path.cwd())
+    for root in TRACE_SCAN_ROOTS:
+        add(root)
+    if DEFAULT_TRACE_DIR:
+        add(Path(DEFAULT_TRACE_DIR))
+    for part in _TRACE_ALLOW_EXTRA_RAW.split(os.pathsep):
+        part = part.strip()
+        if part:
+            add(Path(part))
+    return tuple(candidates)
+
+
+def _is_under_allowed_root(resolved: Path, roots: tuple[Path, ...]) -> bool:
+    for root in roots:
+        try:
+            resolved.relative_to(root)
+            return True
+        except ValueError:
+            continue
+    return False
+
+
+def _windows_drive_absolute(s: str) -> bool:
+    t = s.strip()
+    return len(t) >= 3 and t[0].isalpha() and t[1] == ":" and t[2] in "/\\"
+
+
+def _join_segments_from_base(base: Path, relative: str) -> Path:
+    """Build a path under base from a relative string without passing the raw string to Path()."""
+    rel = relative.replace("\\", "/").strip("/")
+    if not rel:
+        try:
+            return base.resolve()
+        except (OSError, RuntimeError):
+            raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
+    out = base
+    for part in rel.split("/"):
+        if part in ("", "."):
+            continue
+        if part == "..":
+            raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
+        out = out / part
+    try:
+        return out.resolve()
+    except (OSError, RuntimeError):
+        raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
+
+
+def _safe_path_under(base: Path, *parts: str) -> Path:
+    """Join path parts under base; reject absolute paths and traversal."""
+    if any(Path(p).is_absolute() for p in parts):
+        raise HTTPException(status_code=400, detail="path_not_allowed")
+    candidate = Path(base, *parts).resolve()
+    try:
+        candidate.relative_to(base.resolve())
+    except ValueError:
+        raise HTTPException(status_code=400, detail="path_traversal") from None
+    return candidate
+
+
 def _resolve_trace_dir(raw: str | None = None) -> Path:
     value = str(raw or DEFAULT_TRACE_DIR or "").strip()
-    if not value:
+    if not value or "\x00" in value:
         raise HTTPException(status_code=400, detail="trace_dir_missing")
-    path = Path(value).expanduser().resolve()
+
+    roots = _allowed_trace_roots()
+    slash = value.replace("\\", "/")
+
+    if slash in ("~", "~/"):
+        path = Path.home().resolve()
+    elif slash.startswith("~/"):
+        path = _join_segments_from_base(Path.home(), slash[2:])
+    elif slash.startswith("/") or _windows_drive_absolute(value):
+        # lgtm[py/path-injection] -- resolved path must pass _is_under_allowed_root below.
+        # codeql[py/path-injection]
+        try:
+            path = Path(value).expanduser().resolve()
+        except (OSError, RuntimeError):
+            raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
+    else:
+        path = _join_segments_from_base(Path.cwd(), slash)
+
+    if not _is_under_allowed_root(path, roots):
+        raise HTTPException(status_code=403, detail="trace_dir_forbidden")
     if not path.exists() or not path.is_dir():
         raise HTTPException(status_code=404, detail=f"trace_dir_not_found:{path}")
     if not (path / "trace_index.json").exists():
@@ -79,13 +177,18 @@ def _pretty_json(value: Any) -> str:
 
 
 def _unified_diff(before: str, after: str, *, from_label: str, to_label: str, limit: int = 400) -> str:
-    lines = list(difflib.unified_diff(
-        str(before or "").splitlines(),
-        str(after or "").splitlines(),
-        fromfile=from_label, tofile=to_label, lineterm="", n=2,
-    ))
+    lines = list(
+        difflib.unified_diff(
+            str(before or "").splitlines(),
+            str(after or "").splitlines(),
+            fromfile=from_label,
+            tofile=to_label,
+            lineterm="",
+            n=2,
+        )
+    )
     if len(lines) > limit:
-        lines = lines[:limit] + [f"... truncated ({len(lines) - limit} more lines)"]
+        lines = [*lines[:limit], f"... truncated ({len(lines) - limit} more lines)"]
     return "\n".join(lines)
 
 
@@ -106,19 +209,22 @@ def _scan_trace_dirs() -> list[dict[str, Any]]:
             with contextlib.suppress(Exception):
                 idx = _load_json(idx_path)
                 episodes = idx.get("episodes") if isinstance(idx.get("episodes"), list) else []
-                items.append({
-                    "trace_dir": str(trace_dir),
-                    "name": trace_dir.name,
-                    "project": str(idx.get("project") or idx.get("web_project_id") or ""),
-                    "model": str(idx.get("model") or ""),
-                    "created_at_utc": str(idx.get("created_at_utc") or ""),
-                    "episodes": len(episodes),
-                })
+                items.append(
+                    {
+                        "trace_dir": str(trace_dir),
+                        "name": trace_dir.name,
+                        "project": str(idx.get("project") or idx.get("web_project_id") or ""),
+                        "model": str(idx.get("model") or ""),
+                        "created_at_utc": str(idx.get("created_at_utc") or ""),
+                        "episodes": len(episodes),
+                    }
+                )
     items.sort(key=lambda x: x.get("created_at_utc", ""), reverse=True)
     return items
 
 
 # ── Trace loading ───────────────────────────────────────────────────────
+
 
 def _load_trace_bundle(trace_dir: Path) -> dict[str, Any]:
     idx = _load_json(trace_dir / "trace_index.json")
@@ -127,7 +233,8 @@ def _load_trace_bundle(trace_dir: Path) -> dict[str, Any]:
     for item in raw_episodes:
         if not isinstance(item, dict):
             continue
-        ep_file = trace_dir / str(item.get("file") or "")
+        file_name = str(item.get("file") or "").strip()
+        ep_file = _safe_path_under(trace_dir, file_name) if file_name else trace_dir / "__episode_file_unset__"
         summary = {
             "episode_task_id": str(item.get("episode_task_id") or ""),
             "task_id": str(item.get("task_id") or ""),
@@ -170,7 +277,7 @@ def _compact_step(step: dict[str, Any]) -> dict[str, Any]:
 def _annotate_step(step: dict[str, Any]) -> dict[str, Any]:
     before = step.get("before") or {}
     after = step.get("after") or {}
-    agent = step.get("agent") or {}
+    step.get("agent") or {}
     out = dict(step)
     out["before"] = dict(before)
     out["after"] = dict(after)
@@ -187,7 +294,10 @@ def _load_episode(trace_dir: Path, episode_task_id: str) -> dict[str, Any]:
     for item in bundle["episodes"]:
         if str(item.get("episode_task_id") or "") != episode_task_id:
             continue
-        path = trace_dir / str(item.get("file") or "")
+        file_name = str(item.get("file") or "").strip()
+        if not file_name:
+            raise HTTPException(status_code=404, detail=f"episode_file_missing:{episode_task_id}")
+        path = _safe_path_under(trace_dir, file_name)
         payload = _load_json(path)
         steps = payload.get("steps") if isinstance(payload.get("steps"), list) else []
         annotated = [_annotate_step(s) for s in steps if isinstance(s, dict)]
@@ -199,6 +309,7 @@ def _load_episode(trace_dir: Path, episode_task_id: str) -> dict[str, Any]:
 
 
 # ── Replay manager ──────────────────────────────────────────────────────
+
 
 class ReplayManager:
     def __init__(self) -> None:
@@ -218,7 +329,7 @@ class ReplayManager:
                 raise HTTPException(status_code=409, detail="replay_already_running")
             self._paused = False
             self._step_tokens = 0
-            self._status = {"state": "starting", "episode_task_id": str(((episode_payload.get("episode") or {}).get("episode_task_id") or ""))}
+            self._status = {"state": "starting", "episode_task_id": str((episode_payload.get("episode") or {}).get("episode_task_id") or "")}
             self._task = asyncio.create_task(self._run(trace_dir=trace_dir, episode_payload=episode_payload))
             return self.status()
 
@@ -286,7 +397,7 @@ class ReplayManager:
                 actions = step.get("actions") if isinstance(step, dict) else []
                 self._status.update({"current_step": idx, "state": "running"})
 
-                for action_item in (actions if isinstance(actions, list) else []):
+                for action_item in actions if isinstance(actions, list) else []:
                     await self._wait_turn()
                     raw = (action_item.get("raw") if isinstance(action_item, dict) else None) or action_item
                     action = BaseAction.create_action(raw) if isinstance(raw, dict) else None
@@ -313,6 +424,7 @@ REPLAY = ReplayManager()
 
 
 # ── Routes ──────────────────────────────────────────────────────────────
+
 
 @app.get("/health")
 def health():
@@ -345,8 +457,13 @@ def api_replay_status():
 
 
 @app.post("/api/replay/start")
-async def api_replay_start(payload: dict[str, Any] = Body(default_factory=dict), trace_dir: str | None = Query(default=None)):
+async def api_replay_start(request: Request, trace_dir: str | None = Query(default=None)):
     path = _resolve_trace_dir(trace_dir)
+    try:
+        raw = await request.json()
+    except json.JSONDecodeError:
+        raw = {}
+    payload = raw if isinstance(raw, dict) else {}
     eid = str(payload.get("episode_task_id") or "").strip()
     if not eid:
         raise HTTPException(status_code=400, detail="episode_task_id_required")
@@ -376,8 +493,10 @@ async def api_replay_reset():
 
 # ── CLI ─────────────────────────────────────────────────────────────────
 
+
 def main():
     import argparse
+
     import uvicorn
 
     parser = argparse.ArgumentParser(prog="iwa debug", description="IWA Debugger — inspect benchmark traces")

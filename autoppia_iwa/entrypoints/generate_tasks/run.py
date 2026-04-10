@@ -23,6 +23,21 @@ def _parse_args():
     return parser.parse_args()
 
 
+def _require_llm_credentials() -> None:
+    """Task generation needs an LLM; load .env first, then validate provider credentials."""
+    from autoppia_iwa.config.config import HAS_CHUTES_CREDENTIALS, HAS_OPENAI_CREDENTIALS, LLM_PROVIDER
+
+    if LLM_PROVIDER == "openai" and not HAS_OPENAI_CREDENTIALS:
+        raise ValueError(
+            "OPENAI_API_KEY is not set. Task generation calls an LLM.\n"
+            "  • Export OPENAI_API_KEY, or\n"
+            "  • Set LLM_PROVIDER=chutes with CHUTES_API_KEY (and CHUTES_BASE_URL if needed), or\n"
+            "  • Add credentials to a .env file in the autoppia_iwa repo root (see .env.example)."
+        )
+    if LLM_PROVIDER == "chutes" and not HAS_CHUTES_CREDENTIALS:
+        raise ValueError("CHUTES_API_KEY is not set while LLM_PROVIDER=chutes. Set CHUTES_API_KEY in your environment or .env (see .env.example).")
+
+
 async def run(
     project_ids: list[str] | None = None,
     use_cases: list[str] | None = None,
@@ -30,6 +45,11 @@ async def run(
     output: str = "tasks.json",
     dynamic: bool = False,
 ):
+    from autoppia_iwa.config.env import init_env
+
+    init_env()
+    _require_llm_credentials()
+
     from autoppia_iwa.src.bootstrap import AppBootstrap
     from autoppia_iwa.src.data_generation.tasks.classes import TaskGenerationConfig
     from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline

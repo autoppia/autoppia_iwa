@@ -17,4 +17,3 @@ class MouseUpAction(BaseClickAction):
         if sel or (self.x is not None and self.y is not None):
             await _move_mouse_to(page, sel, self.x, self.y)
         await page.mouse.up(button="left")
-

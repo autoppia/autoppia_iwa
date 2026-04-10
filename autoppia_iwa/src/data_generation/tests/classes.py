@@ -15,16 +15,12 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
 from autoppia_iwa.src.di_container import DIContainer
-
-
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.llms.interfaces import ILLM
 
 # Avoid importing heavy optional deps (e.g., Pillow) at module import time.
 # Import helpers locally inside methods that need them.
 from .prompts import OPINION_BASED_HTML_TEST_SYS_MSG, SCREENSHOT_TEST_SYSTEM_PROMPT
-
-# Moved from schemas.py - consolidated into classes.py
 
 
 class ITest(ABC):

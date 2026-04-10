@@ -28,8 +28,8 @@ from autoppia_iwa.src.evaluation.scoring import ScoreDetails, TaskExecutionScore
 from autoppia_iwa.src.evaluation.shared.utils import extract_seed_from_url
 from autoppia_iwa.src.execution.actions.actions import NavigateAction
 from autoppia_iwa.src.execution.actions.base import BaseAction
-from autoppia_iwa.src.execution.playwright_browser_executor import PlaywrightBrowserExecutor
 from autoppia_iwa.src.execution.classes import ActionExecutionResult, BrowserSnapshot as ExecutionBrowserSnapshot
+from autoppia_iwa.src.execution.playwright_browser_executor import PlaywrightBrowserExecutor
 from autoppia_iwa.src.web_agents.classes import replace_credentials_in_action
 from autoppia_iwa.src.web_agents.interfaces import AsyncTaskExecutionSession
 
@@ -382,11 +382,11 @@ AsyncStatefulEvaluator = TaskExecutionSession
 StatefulEvaluator = TaskExecutionSession
 
 __all__ = [
+    "AsyncStatefulEvaluator",
     "BrowserSnapshot",
     "ScoreDetails",
-    "TaskExecutionSession",
-    "TaskExecutionSessionConfig",
-    "AsyncStatefulEvaluator",
     "StatefulEvaluator",
     "StepResult",
+    "TaskExecutionSession",
+    "TaskExecutionSessionConfig",
 ]

@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
-from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.base_events import BaseEventValidator, Event
+from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.criterion_helper import CriterionValue
 
 
@@ -80,8 +80,7 @@ class HomeNavbarEvent(Event, BaseEventValidator):
         pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
+        return True
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "HomeNavbarEvent":
@@ -310,15 +309,20 @@ class BackToAllJobsEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: BackendEvent) -> "BackToAllJobsEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
-        job_data = data.get("data", {})
+        nested = data.get("data") if isinstance(data.get("data"), dict) else {}
+
+        def pick(key: str):
+            v = data.get(key)
+            return v if v is not None else nested.get(key)
+
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            company=job_data.get("company"),
-            title=job_data.get("title"),
-            location=job_data.get("location"),
+            company=pick("company"),
+            title=pick("title"),
+            location=pick("location"),
         )
 
 
@@ -397,14 +401,17 @@ class FollowPageEvent(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "FollowPageEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data
-        recommendation_data = data.get("data", "")
+        data = backend_event.data or {}
+        rec = data.get("recommendation")
+        if rec is None:
+            nested = data.get("data")
+            rec = nested.get("recommendation", "") if isinstance(nested, dict) else ""
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            recommendation=recommendation_data.get("recommendation", ""),
+            recommendation=str(rec or ""),
         )
 
 
@@ -548,8 +555,7 @@ class ViewSavedPostsEvent(Event, BaseEventValidator):
         pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
+        return True
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "ViewSavedPostsEvent":
@@ -647,7 +653,7 @@ class EditProfileEvent(Event, BaseEventValidator):
 
 class experiences(BaseModel):
     company: str | None = None
-    destination: str | None = None
+    description: str | None = None
     duration: str | None = None
     location: str | None = None
     title: str | None = None
@@ -736,8 +742,7 @@ class ViewHiddenPostsEvent(Event, BaseEventValidator):
         pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
+        return True
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "ViewHiddenPostsEvent":

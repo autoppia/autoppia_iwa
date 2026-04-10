@@ -22,9 +22,9 @@ from autoppia_iwa.src.evaluation.shared import (
     run_partial_tests,
 )
 from autoppia_iwa.src.evaluation.stateful_evaluator import (
-    TaskExecutionSession,
     AsyncStatefulEvaluator,
     StatefulEvaluator,
+    TaskExecutionSession,
     TaskExecutionSessionConfig,
 )
 

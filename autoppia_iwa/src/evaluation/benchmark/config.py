@@ -2,8 +2,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
-from autoppia_iwa.config.config import VALIDATOR_ID
-from autoppia_iwa.config.config import PROJECT_BASE_DIR
+from autoppia_iwa.config.config import PROJECT_BASE_DIR, VALIDATOR_ID
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.web_agents.classes import IWebAgent
 

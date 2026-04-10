@@ -155,3 +155,22 @@ def test_task_assign_seed_to_url_exception_fallback():
     with patch("autoppia_iwa.src.data_generation.tasks.classes.urlparse", side_effect=Exception("parse error")):
         task.assign_seed_to_url(seed_value=100)
     assert "seed=100" in task.url
+
+
+def test_task_serialize_drops_top_level_seed_legacy():
+    """Seed is only in url; a legacy top-level seed key must not appear in output."""
+    task = Task(url="https://example.com/?seed=77", prompt="p")
+    assert "seed" not in task.serialize()
+
+
+def test_task_deserialize_ignores_top_level_seed():
+    data = {
+        "url": "https://example.com/?seed=88",
+        "prompt": "p",
+        "tests": [],
+        "use_case": None,
+        "seed": 999,
+    }
+    restored = Task.deserialize(data)
+    assert restored.url == "https://example.com/?seed=88"
+    assert "seed" not in restored.serialize()

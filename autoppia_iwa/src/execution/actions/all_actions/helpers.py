@@ -1,5 +1,4 @@
 from functools import wraps
-from typing import Any
 
 from loguru import logger
 from playwright.async_api import Page, TimeoutError as PWTimeout
@@ -63,4 +62,3 @@ async def _move_mouse_to(page: Page, selector: str | None, x: int | None, y: int
         await page.mouse.move(x, y, steps=steps)
         return
     raise ValueError(SELECTOR_OR_COORDS_REQUIRED_MSG)
-

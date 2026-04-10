@@ -39,7 +39,11 @@ from autoppia_iwa.src.evaluation.benchmark.reporting import (
 from autoppia_iwa.src.evaluation.benchmark.trace_writer import TraceWriter
 from autoppia_iwa.src.evaluation.benchmark.utils.logging import setup_logging
 from autoppia_iwa.src.evaluation.benchmark.utils.metrics import TimingMetrics
-from autoppia_iwa.src.evaluation.benchmark.utils.task_generation import load_tasks_from_json, save_tasks_to_json
+from autoppia_iwa.src.evaluation.benchmark.utils.task_generation import (
+    filter_tasks_by_use_cases,
+    load_tasks_from_json,
+    save_tasks_to_json,
+)
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStats
 from autoppia_iwa.src.evaluation.stateful_evaluator import TaskExecutionSession
 from autoppia_iwa.src.web_agents.classes import IWebAgent, sanitize_html
@@ -76,9 +80,9 @@ class Benchmark:
         self.last_run_report: dict[str, Any] | None = None
         self.last_results_path: str | None = None
 
-        self._validate()
         config.log_file.parent.mkdir(parents=True, exist_ok=True)
         setup_logging(str(config.log_file))
+        self._validate()
 
     def _validate(self) -> None:
         if not self.config.projects:
@@ -143,8 +147,12 @@ class Benchmark:
         if self.config.use_cached_tasks:
             cached = await load_tasks_from_json(project, cache_dir)
             if cached:
-                logger.info(f"Using {len(cached)} cached tasks for {project.name}")
-                return cached
+                filtered = filter_tasks_by_use_cases(cached, self.config.use_cases)
+                if self.config.use_cases:
+                    logger.info(f"use_cases {self.config.use_cases!r}: {len(filtered)}/{len(cached)} cached tasks for {project.name}")
+                else:
+                    logger.info(f"Using {len(filtered)} cached tasks for {project.name}")
+                return filtered
 
         config = TaskGenerationConfig(
             prompts_per_use_case=self.config.prompts_per_use_case,
@@ -170,19 +178,18 @@ class Benchmark:
         # Create trace writer for this run
         ts = datetime.now().strftime("%Y%m%dT%H%M%S")
         trace_dir = self.config.traces_dir / f"{project.id}_{ts}_r{run_idx}"
-        self._trace_writer = TraceWriter(trace_dir, run_metadata={
-            "project": project.id,
-            "evaluator_mode": self.config.evaluator_mode,
-            "max_steps": self.config.max_steps_per_task,
-            "agents": [a.name for a in self.config.agents],
-        })
+        self._trace_writer = TraceWriter(
+            trace_dir,
+            run_metadata={
+                "project": project.id,
+                "evaluator_mode": self.config.evaluator_mode,
+                "max_steps": self.config.max_steps_per_task,
+                "agents": [a.name for a in self.config.agents],
+            },
+        )
 
         # Build all (agent, task) jobs and run them with concurrency control
-        jobs = [
-            (agent, task)
-            for task in tasks
-            for agent in self.config.agents
-        ]
+        jobs = [(agent, task) for task in tasks for agent in self.config.agents]
 
         total = len(jobs)
         logger.info(f"Running {total} evaluations ({len(tasks)} tasks x {len(self.config.agents)} agents) with max {self.config.max_parallel_evaluations} parallel")
@@ -196,10 +203,7 @@ class Benchmark:
             return agent, task, await self._run_eval_job(agent, task, run_idx, idx, total)
 
         results: dict[str, dict[str, dict[str, Any]]] = {}
-        pending = [
-            asyncio.create_task(_run_job_with_context(agent=agent, task=task, idx=idx))
-            for idx, (agent, task) in enumerate(jobs, 1)
-        ]
+        pending = [asyncio.create_task(_run_job_with_context(agent=agent, task=task, idx=idx)) for idx, (agent, task) in enumerate(jobs, 1)]
 
         for future in asyncio.as_completed(pending):
             try:
@@ -237,10 +241,7 @@ class Benchmark:
         async with self._sem:
             eval_id = _make_eval_id(self.config.web_agent_id_prefix or agent.id, task.id, run_idx)
             validator_id = _make_validator_id(self.config.validator_id_prefix, run_idx)
-            logger.info(
-                f"[{job_num}/{total_jobs}] {agent.name} x {task.id} "
-                f"(eval_id={eval_id}, validator_id={validator_id})"
-            )
+            logger.info(f"[{job_num}/{total_jobs}] {agent.name} x {task.id} (eval_id={eval_id}, validator_id={validator_id})")
 
             return await self._run_stateful(task, agent, eval_id, validator_id)
 
@@ -259,12 +260,16 @@ class Benchmark:
 
         # Start episode trace
         uc_name = getattr(task.use_case, "name", "Unknown") if task.use_case else "Unknown"
-        episode_trace = self._trace_writer.start_episode(
-            episode_task_id=eval_id,
-            task_id=task.id,
-            use_case=uc_name,
-            task_data=task.serialize() if hasattr(task, "serialize") else {"id": task.id, "prompt": task.prompt, "url": task.url},
-        ) if self._trace_writer else None
+        episode_trace = (
+            self._trace_writer.start_episode(
+                episode_task_id=eval_id,
+                task_id=task.id,
+                use_case=uc_name,
+                task_data=task.serialize() if hasattr(task, "serialize") else {"id": task.id, "prompt": task.prompt, "url": task.url},
+            )
+            if self._trace_writer
+            else None
+        )
 
         start = time.time()
         history: list = []
@@ -381,12 +386,14 @@ class Benchmark:
                 raw = getattr(event, "action", None)
                 if raw and hasattr(raw, "model_dump"):
                     action_data = raw.model_dump()
-            out.append({
-                "index": i,
-                "action": action_data,
-                "success": bool(getattr(event, "successfully_executed", False)),
-                "error": getattr(event, "error", None),
-            })
+            out.append(
+                {
+                    "index": i,
+                    "action": action_data,
+                    "success": bool(getattr(event, "successfully_executed", False)),
+                    "error": getattr(event, "error", None),
+                }
+            )
         return out
 
     # ── Results aggregation ─────────────────────────────────────────────

@@ -10,6 +10,7 @@ def __getattr__(name: str):
         return save_results_to_json
     raise AttributeError(name)
 
+
 __all__ = [
     "TimingMetrics",
     "compute_statistics",

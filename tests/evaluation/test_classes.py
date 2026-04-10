@@ -29,9 +29,9 @@ def test_feedback():
         failed_tests=0,
         total_execution_time=10.0,
         time_penalty=0.0,
-            critical_test_penalty=0,
-            test_results=[EvalTestResult(success=True)],
-            execution_history=[],
+        critical_test_penalty=0,
+        test_results=[EvalTestResult(success=True)],
+        execution_history=[],
     )
     out = feedback.model_dump()
     assert out["task_prompt"] == "Do X"

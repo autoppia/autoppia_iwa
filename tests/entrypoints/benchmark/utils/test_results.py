@@ -65,9 +65,11 @@ def test_print_performance_statistics(capsys):
 
 
 def test_entrypoint_results_module_re_exports_canonical_objects():
-    from autoppia_iwa.entrypoints.benchmark.utils.results import _has_zero_score as entry_has_zero_score
-    from autoppia_iwa.entrypoints.benchmark.utils.results import print_performance_statistics as entry_print_performance_statistics
-    from autoppia_iwa.entrypoints.benchmark.utils.results import save_results_to_json as entry_save_results_to_json
+    from autoppia_iwa.entrypoints.benchmark.utils.results import (
+        _has_zero_score as entry_has_zero_score,
+        print_performance_statistics as entry_print_performance_statistics,
+        save_results_to_json as entry_save_results_to_json,
+    )
 
     assert entry_has_zero_score is _has_zero_score
     assert entry_print_performance_statistics is print_performance_statistics

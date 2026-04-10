@@ -6,29 +6,16 @@ Test rápido para verificar que TODOS los 15 proyectos tienen get_seed_from_url.
 import asyncio
 import json
 
+from autoppia_iwa.src.demo_webs.project_package_registry import WEB_PROJECT_ID_TO_PACKAGE_DIR
+
 
 async def test_all_projects_have_optimization():
     print("\n" + "=" * 80)
     print("🔍 VERIFICANDO QUE TODOS LOS 15 PROYECTOS ESTÁN ACTUALIZADOS")
     print("=" * 80)
 
-    projects = [
-        ("autocinema_1", "movies"),
-        ("autobooks_2", "books"),
-        ("autozone_3", "products"),
-        ("autodining_4", "restaurants"),
-        ("autocrm_5", "clients"),
-        ("automail_6", "emails"),
-        ("autodelivery_7", "restaurants"),
-        ("autolodge_8", "hotels"),
-        ("autoconnect_9", "connections"),
-        ("autowork_10", "experts"),
-        ("autocalendar_11", "events"),
-        ("autolist_12", "tasks"),
-        ("autodrive_13", "trips"),
-        ("autohealth_14", "health"),
-        ("autostats_15", "stats"),
-    ]
+    # On-disk package dirs (p01_autocinema, …) — legacy autocinema_1 paths no longer exist.
+    projects = [(pkg, "") for pkg in sorted(WEB_PROJECT_ID_TO_PACKAGE_DIR.values())]
 
     results = []
 

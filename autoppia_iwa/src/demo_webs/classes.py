@@ -1,9 +1,17 @@
+from __future__ import annotations
+
 import asyncio
 import inspect
 from collections.abc import Callable, Coroutine
-from typing import Any
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field, ValidationError
+
+if TYPE_CHECKING:
+    from autoppia_iwa.src.data_generation.tests.classes import BaseTaskTest
+from autoppia_iwa.src.execution.actions.all_actions.navigate_action import NavigateAction
+from autoppia_iwa.src.execution.actions.base import BaseAction
 
 # Constants
 CONSTRAINTS_INFO_PLACEHOLDER = "<constraints_info>"
@@ -226,7 +234,7 @@ class UseCase(BaseModel):
         return serialized
 
     @classmethod
-    def deserialize(cls, data: dict) -> "UseCase":
+    def deserialize(cls, data: dict) -> UseCase:
         """Deserialize a dictionary to a UseCase object."""
         from autoppia_iwa.src.demo_webs.base_events import EventRegistry
 
@@ -279,3 +287,45 @@ class BackendEvent(BaseModel):
     user_id: int | None = None
     web_agent_id: str | None = None
     timestamp: Any | None = None
+
+
+@dataclass
+class Trajectory:
+    """
+    Per-use-case concrete flow: `name` is the use case id, `prompt` matches task cache text,
+    `actions` is the scripted solution, `tests` mirrors `tests` from `concrete_actions/*_tasks.json`.
+    """
+
+    name: str
+    prompt: str
+    actions: list[BaseAction] | None
+    tests: list[BaseTaskTest] | None = None
+
+    def to_dict(self):
+        """
+        Convert dataclass to a dictionary format, including a JSON-friendly version of `actions`.
+        """
+        dumped: dict[str, Any] = {
+            "name": self.name,
+            "prompt": self.prompt,
+            "actions": [action.to_tool_call() for action in (self.actions or [])],
+            "tests": [t.model_dump() for t in (self.tests or [])] if self.tests else [],
+        }
+        return dumped
+
+    def to_step_tool_calls_trajectory(self) -> dict[str, Any]:
+        actions = self.actions or []
+        url: str | None = None
+        for a in actions:
+            if isinstance(a, NavigateAction) and getattr(a, "url", None):
+                url = a.url
+                break
+        tool_actions = [x.to_tool_call() for x in actions]
+        return {
+            "url": url,
+            "prompt": self.prompt or None,
+            "actions": tool_actions,
+            "use_case": self.name,
+            "has_success": bool(tool_actions),
+            "action_format": "step_tool_calls",
+        }

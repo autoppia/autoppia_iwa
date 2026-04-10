@@ -5,7 +5,6 @@ from __future__ import annotations
 import sys
 from collections.abc import Callable
 
-
 COMMAND_HELP = {
     "check": "Health-check demo websites",
     "benchmark": "Run benchmark against a web agent",
@@ -13,6 +12,8 @@ COMMAND_HELP = {
     "verify": "Run web verification pipeline",
     "debug": "Launch debugger UI for trace inspection",
 }
+
+
 def _resolve_command(command: str) -> Callable[[], None]:
     if command == "check":
         from autoppia_iwa.entrypoints.check.run import main as cmd
