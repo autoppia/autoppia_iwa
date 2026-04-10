@@ -1497,7 +1497,6 @@ TEMPLATE_SAVED_DRAFT = _uc(
         NavigateAction(url=f"{BASE}/?seed={SEED_TEMPLATE_SAVED_DRAFT}"),
         ClickAction(selector=_id("sidebar-templates")),
         ClickAction(selector=_xp("//html/body/span[1]/div/div[2]/div[1]/div/button[4]")),
-        # ClickAction(selector=_xp("//*[@id='template-to' or @id='template-recipient' or @aria-label='To']")),
         TypeAction(selector=_xp("//*[@id='template-to' or @id='template-recipient' or @aria-label='To']"), text="__EMAIL_TO__"),
         ClickAction(selector=_xp("//*[@id='template-save' or @id='save-draft-button' or @aria-label='Save draft' or normalize-space()='Save draft']")),
     ],
@@ -1510,7 +1509,6 @@ TEMPLATE_CANCELED = _uc(
         NavigateAction(url=f"{BASE}/?seed={SEED_TEMPLATE_CANCELED}"),
         ClickAction(selector=_id("sidebar-templates")),
         ClickAction(selector=_xp("//html/body/div[2]/div[2]/div[1]/div/button[3]")),
-        # ClickAction(selector=_xp("//*[@id='template-to' or @id='template-recipient' or @aria-label='To']")),
         TypeAction(selector=_xp("//*[@id='template-to' or @id='template-recipient' or @aria-label='To']"), text="harper.adams@newsdaily.com"),
         ClickAction(selector=_xp("//*[@id='template-cancel' or @id='cancel-button' or @aria-label='Cancel' or normalize-space()='Cancel']")),
     ],
@@ -1574,7 +1572,6 @@ ADD_LABEL = _uc(
     prompt="Add a label to the email where the label_name is NOT 'Finance', the body contains 'zing day filled with joy and cele', and the subject contains 'Birthday'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_ADD_LABEL}"),
-        # ClickAction(selector=_id("mail-search")),
         TypeAction(selector=_id("mail-search"), text="zing day filled with joy and cele"),
         ClickAction(selector=_xp("(//*[@id='view-email'])[1]")),
         ClickAction(selector=_xp("(//*[@id='email-label-selector']//*[self::button][1] | //*[@id='label-selector' or @id='tag-selector' or @id='label-picker'])[1]")),
@@ -1588,11 +1585,8 @@ SEND_EMAIL = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_SEND_EMAIL}"),
         ClickAction(selector=_xp("(//button[@aria-label='Compose' or normalize-space()='Compose'])[1]")),
-        # ClickAction(selector=_xp("//input[@id='to-input' or @id='recipient-input' or @id='mail-to' or @aria-label='Recipient email address']")),
         TypeAction(selector=_xp("//input[@id='to-input' or @id='recipient-input' or @id='mail-to' or @aria-label='Recipient email address']"), text="john.doe@gmail.com"),
-        # ClickAction(selector=_xp("//input[@id='subject-input' or @id='topic-input' or @id='mail-subject' or @aria-label='Subject']")),
         TypeAction(selector=_xp("//input[@id='subject-input' or @id='topic-input' or @id='mail-subject' or @aria-label='Subject']"), text="Here we go again!"),
-        # ClickAction(selector=_xp("//textarea[@id='body-input' or @id='message-textarea' or @id='content-textarea' or @id='mail-body' or @aria-label='Type your message...']")),
         TypeAction(selector=_xp("//textarea[@id='body-input' or @id='message-textarea' or @id='content-textarea' or @id='mail-body' or @aria-label='Type your message...']"), text="Nice to meet you!"),
         ClickAction(selector=_xp("//button[@id='send-button' or @id='deliver-button' or @id='dispatch-button' or @aria-label='Send' or normalize-space()='Send']")),
     ],
@@ -1604,11 +1598,8 @@ EMAIL_SAVE_AS_DRAFT = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_EMAIL_SAVE_AS_DRAFT}"),
         ClickAction(selector=_xp("(//button[@aria-label='Compose' or normalize-space()='Compose'])[1]")),
-        # ClickAction(selector=_xp("//input[@id='to-input' or @id='recipient-input' or @id='mail-to' or @aria-label='Recipient email address']")),
         TypeAction(selector=_xp("//input[@id='to-input' or @id='recipient-input' or @id='mail-to' or @aria-label='Recipient email address']"), text="ava.wilson@healthcare.org"),
-        # ClickAction(selector=_xp("//input[@id='subject-input' or @id='topic-input' or @id='mail-subject' or @aria-label='Subject']")),
         TypeAction(selector=_xp("//input[@id='subject-input' or @id='topic-input' or @id='mail-subject' or @aria-label='Subject']"), text="April fool!"),
-        # ClickAction(selector=_xp("//textarea[@id='body-input' or @id='message-textarea' or @id='content-textarea' or @id='mail-body' or @aria-label='Type your message...']")),
         TypeAction(
             selector=_xp("//textarea[@id='body-input' or @id='message-textarea' or @id='content-textarea' or @id='mail-body' or @aria-label='Type your message...']"),
             text="Hi,\n\nHere's your monthly digest with the latest updates, articles, and insights from our team.\n\nBest,\nJordan",
@@ -1623,11 +1614,8 @@ EDIT_DRAFT_EMAIL = _uc(
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_EDIT_DRAFT_EMAIL}"),
         ClickAction(selector=_xp("//html/body/div[2]/div[2]/aside/div/div[1]/button")),
-        # ClickAction(selector=_xp("//input[@id='to-input' or @id='recipient-input' or @id='mail-to' or @aria-label='Recipient email address']")),
         TypeAction(selector=_xp("//input[@id='to-input' or @id='recipient-input' or @id='mail-to' or @aria-label='Recipient email address']"), text="zoe.baker@civicgroup.org"),
-        # ClickAction(selector=_xp("//input[@id='subject-input' or @id='topic-input' or @id='mail-subject' or @aria-label='Subject']")),
         TypeAction(selector=_xp("//input[@id='subject-input' or @id='topic-input' or @id='mail-subject' or @aria-label='Subject']"), text="__EMAIL_SUBJECT__"),
-        # ClickAction(selector=_xp("//textarea[@id='body-input' or @id='message-textarea' or @id='content-textarea' or @id='mail-body' or @aria-label='Type your message...']")),
         TypeAction(
             selector=_xp("//textarea[@id='body-input' or @id='message-textarea' or @id='content-textarea' or @id='mail-body' or @aria-label='Type your message...']"),
             text="Hello,\n\nAs a valued customer, we're offering you 50% off an annual subscription. This offer expires December 31st. Don't miss out!\n\nBest,\nMichelle",
@@ -1644,11 +1632,9 @@ REPLY_EMAIL = _uc(
     prompt="Reply to the email where from_email NOT equals 'isabella.clark@freelancer.dev' and subject contains 'Welcome to TaskMas'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_REPLY_EMAIL}"),
-        ClickAction(selector=_id("search-input")),
-        TypeAction(selector=_id("search-input"), text="__REPLY_QUERY__"),
+        TypeAction(selector=_id("message-search"), text="Welcome to TaskMas"),
         ClickAction(selector=_xp("(//*[@id='view-email'])[1]")),
         ClickAction(selector=_xp("//*[@id='email-reply' or @id='reply-button' or @id='respond-button' or @id='answer-button' or @aria-label='Reply to this email']")),
-        ClickAction(selector=_xp("//button[@id='send-button' or @id='deliver-button' or @id='dispatch-button' or @aria-label='Send' or normalize-space()='Send']")),
     ],
 )
 
@@ -1657,12 +1643,10 @@ FORWARD_EMAIL = _uc(
     prompt="Forward the email where to contains 'inte' and body contains 'l on An'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_FORWARD_EMAIL}"),
-        ClickAction(selector=_id("search-input")),
-        TypeAction(selector=_id("search-input"), text="__FORWARD_QUERY__"),
+        TypeAction(selector=_id("mail-search"), text="l on An"),
         ClickAction(selector=_xp("(//*[@id='view-email'])[1]")),
         ClickAction(selector=_xp("//*[@id='email-forward' or @id='forward-button' or @id='share-button' or @aria-label='Forward this email']")),
-        ClickAction(selector=_xp("//input[@id='to-input' or @id='recipient-input' or @id='mail-to' or @aria-label='Recipient email address']")),
-        TypeAction(selector=_xp("//input[@id='to-input' or @id='recipient-input' or @id='mail-to' or @aria-label='Recipient email address']"), text="__EMAIL_TO__"),
+        TypeAction(selector=_xp("//input[@id='to-input' or @id='recipient-input' or @id='mail-to' or @aria-label='Recipient email address']"), text="internet@gmail.com"),
         ClickAction(selector=_xp("//button[@id='send-button' or @id='deliver-button' or @id='dispatch-button' or @aria-label='Send' or normalize-space()='Send']")),
     ],
 )
@@ -1672,8 +1656,7 @@ VIEW_EMAIL = _uc(
     prompt="View the email where from_email equals 'noah.turner@compliance.com' and subject contains 'cember'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_VIEW_EMAIL}"),
-        ClickAction(selector=_id("search-input")),
-        TypeAction(selector=_id("search-input"), text="__SEARCH_QUERY__"),
+        TypeAction(selector=_id("mail-search"), text="noah.turner@compliance.com"),
         ClickAction(selector=_xp("(//*[@id='view-email'])[1]")),
     ],
 )
@@ -1683,8 +1666,7 @@ STAR_AN_EMAIL = _uc(
     prompt="Star the email where is_starred equals False and from_email not contains 'vzc'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_STAR_AN_EMAIL}"),
-        ClickAction(selector=_id("search-input")),
-        TypeAction(selector=_id("search-input"), text="__SEARCH_QUERY__"),
+        TypeAction(selector=_id("search-input"), text="Dev"),
         ClickAction(selector=_xp("(//*[@id='view-email'])[1]")),
         ClickAction(
             selector=_xp(
@@ -1699,14 +1681,9 @@ MARK_EMAIL_AS_IMPORTANT = _uc(
     prompt="Mark the email as important where is_important equals 'True' and from_email not equals 'ashley.wright@outlook.com' and subject equals 'Hey! Long time no see'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_MARK_EMAIL_AS_IMPORTANT}"),
-        ClickAction(selector=_id("search-input")),
-        TypeAction(selector=_id("search-input"), text="__SEARCH_QUERY__"),
-        ClickAction(selector=_xp("(//*[@id='view-email'])[1]")),
-        ClickAction(
-            selector=_xp(
-                "//*[@id='important-button' or @id='email-important' or contains(@id,'important-button') or contains(@id,'email-important') or (contains(@title,'important') and contains(@aria-label,'important'))]"
-            )
-        ),
+        TypeAction(selector=_id("mail-search"), text="Hey! Long time no see"),
+        ClickAction(selector=_xp("(//*[@id='view-email'])[2]")),
+        ClickAction(selector=_id("important-button")),
     ],
 )
 
@@ -1715,8 +1692,7 @@ MARK_AS_UNREAD = _uc(
     prompt="Mark the email as unread where is_read equals False and subject contains 'Ju' and from_email contains 'y.walker@offers.com'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_MARK_AS_UNREAD}"),
-        ClickAction(selector=_id("search-input")),
-        TypeAction(selector=_id("search-input"), text="__SEARCH_QUERY__"),
+        TypeAction(selector=_id("mail-search"), text="y.walker@offers.com"),
         ClickAction(selector=_xp("(//*[@id='view-email'])[1]")),
         ClickAction(selector=_xp("//*[@id='email-mark-unread' or @id='mark-unread-button' or contains(@id,'mark-unread') or @aria-label='Mark unread' or contains(@title,'unread')]")),
     ],
@@ -1727,8 +1703,7 @@ DELETE_EMAIL = _uc(
     prompt="Delete the email from sender whose email contains 'garcia@deals.com' with the subject containing 'ly Digest - June'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_DELETE_EMAIL}"),
-        ClickAction(selector=_id("search-input")),
-        TypeAction(selector=_id("search-input"), text="__SEARCH_QUERY__"),
+        TypeAction(selector=_id("search-input"), text="garcia@deals.com"),
         ClickAction(selector=_xp("(//*[@id='view-email'])[1]")),
         ClickAction(
             selector=_xp("//*[@id='email-delete' or @id='delete-button' or contains(@id,'email-delete') or contains(@id,'delete-email') or @aria-label='Delete' or contains(@title,'Delete')]")
@@ -1741,8 +1716,7 @@ MARK_AS_SPAM = _uc(
     prompt="Mark as spam the email with subject that CONTAINS 'nd pl' and is_spam equals True.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_MARK_AS_SPAM}"),
-        ClickAction(selector=_id("search-input")),
-        TypeAction(selector=_id("search-input"), text="__SEARCH_QUERY__"),
+        TypeAction(selector=_id("message-search"), text="nd pl"),
         ClickAction(selector=_xp("(//*[@id='view-email'])[1]")),
         ClickAction(
             selector=_xp("//*[@id='email-mark-spam' or @id='mark-spam-button' or contains(@id,'mark-spam') or contains(@id,'email-mark-spam') or @aria-label='Mark spam' or contains(@title,'spam')]")
@@ -1755,8 +1729,7 @@ ARCHIVE_EMAIL = _uc(
     prompt="Archive the email whose subject equals 'Weekly Newsletter - December 19'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_ARCHIVE_EMAIL}"),
-        ClickAction(selector=_id("search-input")),
-        TypeAction(selector=_id("search-input"), text="__SEARCH_QUERY__"),
+        TypeAction(selector=_id("search-input"), text="Weekly Newsletter - December 19"),
         ClickAction(selector=_xp("(//*[@id='archive-button' or contains(@id,'archive-button') or contains(@id,'archive_button')])[1]")),
     ],
 )
