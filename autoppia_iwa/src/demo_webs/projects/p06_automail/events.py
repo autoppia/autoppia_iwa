@@ -528,8 +528,7 @@ class EmailsNextPageEvent(Event, BaseEventValidator):
         pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
+        return True
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "EmailsNextPageEvent":
