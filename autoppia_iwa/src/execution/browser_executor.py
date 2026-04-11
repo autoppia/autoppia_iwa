@@ -114,8 +114,6 @@ class PlaywrightBrowserExecutor:
             # backend_events = await self._get_backend_events(web_agent_id, is_web_real)
             if should_record:
                 snapshot_after = await self._capture_snapshot()
-            else:
-                snapshot_after = await self._get_minimal_snapshot_from_page()
 
             backend_events = await self._get_backend_events_for_action(web_agent_id, start_time, is_web_real)
 
