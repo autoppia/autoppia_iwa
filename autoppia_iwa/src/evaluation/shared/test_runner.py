@@ -111,7 +111,7 @@ class TestRunner:
                     _log_backend_test(f"         - Event attributes: {vars(event)}", web_agent_id=web_agent_id)
 
             success = await test.execute_global_test(
-                backend_events=backend_events,
+                backend_events=backend_events or [],
             )
 
             _log_backend_test(f"      - Result: {'✅ PASSED' if success else '❌ FAILED'}", web_agent_id=web_agent_id)
