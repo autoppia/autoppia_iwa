@@ -382,7 +382,8 @@ async def _resolve_autocinema_film_placeholders_in_tests(task: Task, tests_for_r
 
     assigned_film_name = str(assigned_movie.get("name", assigned_movie.get("title", "")))
     assigned_film_id_in_str = str(assigned_movie.get("id", ""))
-    assigned_film_id = str(int(assigned_film_id_in_str.rsplit("-", 1)[-1]))
+    suffix = assigned_film_id_in_str.rsplit("-", 1)[-1]
+    assigned_film_id = str(int(suffix)) if suffix.isdigit() else assigned_film_id_in_str
 
     assigned_film_director = str(assigned_movie.get("director", ""))
     if not assigned_film_name and not assigned_film_id:
