@@ -10,6 +10,7 @@ from autoppia_iwa.src.execution.actions.actions import (
     NavigateAction,
     SendKeysIWAAction,
     TypeAction,
+    WaitAction,
 )
 from autoppia_iwa.src.execution.actions.base import BaseAction, Selector, SelectorType
 
@@ -1303,8 +1304,7 @@ SEARCH_DELIVERY_RESTAURANT = _uc(
     prompt="Search for restaurants where the query is NOT 'Casa Saltshaker'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_SEARCH_DELIVERY_RESTAURANT}"),
-        ClickAction(selector=_id("search-input")),
-        TypeAction(selector=_id("search-input"), text="__DELIVERY_SEARCH_QUERY__"),
+        TypeAction(selector=_id("lookup-input"), text="__DELIVERY_SEARCH_QUERY__"),
         SendKeysIWAAction(keys="Enter"),
     ],
 )
@@ -1325,9 +1325,13 @@ RESTAURANT_FILTER = _uc(
     prompt="Show me restaurants with a rating LESS THAN 4.7 that do NOT have a cuisine that CONTAINS 'Austrian'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_RESTAURANT_FILTER}"),
-        ClickAction(selector=_xp("//*[@id='search-filters']/div[3]/button[2]")),
-        TypeAction(selector=_id("search-input"), text="__DELIVERY_SEARCH_QUERY__"),
+        ClickAction(selector=_xp("//*[@data-element-type='cuisine-select']")),
+        TypeAction(text="Indian"),
         SendKeysIWAAction(keys="Enter"),
+        ClickAction(selector=_xp("//*[@data-element-type='rating-select']")),
+        TypeAction(text="4.5"),
+        SendKeysIWAAction(keys="Enter"),
+        WaitAction(time_seconds=0.45),
     ],
 )
 
@@ -1354,8 +1358,7 @@ BACK_TO_ALL_RESTAURANTS = _uc(
     prompt="Return to all restaurants where the name does NOT contain 'Nobu' and the cuisine does NOT equal 'Desserts'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_BACK_TO_ALL_RESTAURANTS}"),
-        ClickAction(selector=_id("search-input")),
-        TypeAction(selector=_id("search-input"), text="__DELIVERY_SEARCH_QUERY__"),
+        TypeAction(selector=_id("filter-input"), text="Maido"),
         ClickAction(
             selector=_xp(
                 "(//*[@id='restaurant-grid-item-0']//*[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'] | //*[@id='restaurant-image'] | //*[@id='restaurant-name'])[1]"
@@ -1363,7 +1366,7 @@ BACK_TO_ALL_RESTAURANTS = _uc(
         ),
         ClickAction(
             selector=_xp(
-                "(//*[@id='back-to-list' or @id='back-button' or contains(@id,'back-button')] | //button[contains(translate(@aria-label,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'back to all restaurants')] | //button[contains(normalize-space(),'Back to all')])[1]"
+                "(//*[@id='back-to-list' or @id='back-button' or @id='menu-return' or contains(@id,'back-button')] | //button[contains(translate(@aria-label,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'back to all restaurants')] | //button[contains(normalize-space(),'Back to all')])[1]"
             )
         ),
     ],
@@ -1374,18 +1377,13 @@ ADD_TO_CART_MODAL_OPEN = _uc(
     prompt="Open the add-to-cart modal where price equals '33.98' and restaurant contains 'ggan'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_ADD_TO_CART_MODAL_OPEN}"),
-        ClickAction(selector=_id("search-input")),
-        TypeAction(selector=_id("search-input"), text="__DELIVERY_RESTAURANT_QUERY__"),
+        TypeAction(selector=_id("filter-input"), text="ggan"),
         ClickAction(
             selector=_xp(
                 "(//*[@id='restaurant-grid-item-0']//*[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'] | //*[@id='restaurant-image'] | //*[@id='restaurant-name'])[1]"
             )
         ),
-        ClickAction(
-            selector=_xp(
-                "(//*[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '__DELIVERY_MENU_ITEM__')]/ancestor::*[self::div or self::article][1]//button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'add to cart')][1] | //*[@id='add-to-cart' or contains(@id,'add-to-cart') or contains(@id,'add-cart')][1])"
-            )
-        ),
+        ClickAction(selector=_xp("//html/body/div[2]/div/div/div[2]/div/div[4]/div[4]/button")),
     ],
 )
 
@@ -1394,8 +1392,7 @@ ADD_TO_CART_MENU_ITEM = _uc(
     prompt="Add a menu item to my cart where preferences is NOT one of ['vegetarian', 'mild'] and quantity is less equal '8' and price is NOT '25.98' and restaurant equals 'Waffle Works'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_ADD_TO_CART_MENU_ITEM}"),
-        ClickAction(selector=_id("search-input")),
-        TypeAction(selector=_id("search-input"), text="__DELIVERY_RESTAURANT_QUERY__"),
+        TypeAction(selector=_id("search-box"), text="Waffle Works"),
         ClickAction(
             selector=_xp(
                 "(//*[@id='restaurant-grid-item-1']//*[contains(@class,'absolute')] | //*[@id='restaurant-grid-item-0']//*[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'] | //*[@id='restaurant-image'] | //*[@id='restaurant-name'])[1]"
@@ -1403,14 +1400,10 @@ ADD_TO_CART_MENU_ITEM = _uc(
         ),
         ClickAction(
             selector=_xp(
-                "(//*[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '__DELIVERY_MENU_ITEM__')]/ancestor::*[self::div or self::article][1]//button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'add to cart')][1] | //*[@id='add-to-cart' or contains(@id,'add-to-cart') or contains(@id,'add-cart')][1])"
+                "(//*[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '__DELIVERY_MENU_ITEM__')]/ancestor::*[self::div or self::article][1]//button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'add to cart')][1] | //*[@id='add-to-cart' or contains(@id,'add-to-cart') or @id='menu-add' or contains(@id,'add-cart')][1])"
             )
         ),
-        ClickAction(
-            selector=_xp(
-                "(//*[@role='dialog']//button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'add to cart')] | //*[@id='add-to-cart' and ancestor::*[@role='dialog']] | //div[contains(@class,'sm:flex-row')]//button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'add to cart')])[1]"
-            )
-        ),
+        ClickAction(selector=Selector(type=SelectorType.TAG_CONTAINS_SELECTOR, value="Add Food $7.99", case_sensitive=True)),
     ],
 )
 
@@ -1421,7 +1414,7 @@ QUICK_ORDER_STARTED = _uc(
         NavigateAction(url=f"{BASE}/?seed={SEED_QUICK_ORDER_STARTED}"),
         ClickAction(
             selector=_xp(
-                "(//*[@id='quick-order' or @id='quick-order-header' or contains(@id,'quick-order')] | //button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'quick order')] | //button[contains(translate(@aria-label, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'quick order')])[1]"
+                "(//*[@id='quick-order' or @id='speedy-order' or @id='quick-order-header' or contains(@id,'quick-order')] | //button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'quick order')] | //button[contains(translate(@aria-label, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'quick order')])[1]"
             )
         ),
     ],
@@ -1432,14 +1425,17 @@ OPEN_CHECKOUT_PAGE = _uc(
     prompt="Go to the checkout page where preferences contains 'peanut-fre' and size not contains 'small' and quantity less equal '3' and item equals 'Chef's Special' and restaurant contains 'ik'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_OPEN_CHECKOUT_PAGE}"),
-        ClickAction(selector=_xp("(//*[@id='restaurant-grid-item-0']//div[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'])[1]")),
-        ClickAction(selector=_xp("(//*[@id='menu-item-1-1']//button | //*[@id='menu-item-1-0']//button | //*[@id='add-to-cart'][1])[1]")),
+        TypeAction(selector=_id("query-box"), text="ik"),
+        ClickAction(selector=_xp("//*[@id='restaurant-grid-item-2']")),
+        ClickAction(selector=_xp("//html/body/div[2]/div/span/div/span[2]/div/div/div[3]/div[4]/button")),
         ClickAction(
             selector=_xp(
                 "(//*[@role='dialog']//*[@id='add-to-cart'] | //*[@role='dialog']//button[contains(normalize-space(), 'Add to Cart')] | //div[contains(@class,'sm:flex-row')]//button[contains(normalize-space(), 'Add to Cart')])[1]"
             )
         ),
-        ClickAction(selector=_id("cart-total-button")),
+        TypeAction(selector=_id("preferences-textarea-1"), text="peanut-free"),
+        ClickAction(selector=Selector(type=SelectorType.TAG_CONTAINS_SELECTOR, value="Add Now $49.98", case_sensitive=True)),
+        ClickAction(selector=_xp("//html/body/div[2]/nav/div/div/div[2]")),
     ],
 )
 
