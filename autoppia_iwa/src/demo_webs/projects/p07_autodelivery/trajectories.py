@@ -1193,7 +1193,7 @@ _RAW_TESTS: dict[str, list[dict]] = {
             "event_name": "ADDRESS_ADDED",
             "event_criteria": {
                 "address": "404 Walnut Blvd, Brookside",
-                "size": {"operator": "contains", "value": "al"},
+                "size": {"operator": "contains", "value": "la"},
                 "preferences": {"operator": "contains", "value": "o-oni"},
                 "quantity": 3,
                 "price": {"operator": "not_equals", "value": 13.48},
@@ -1569,32 +1569,35 @@ ADDRESS_ADDED = _uc(
     prompt="Add an address that equals '404 Walnut Blvd, Brookside' with a size that contains 'al', preferences that contains 'o-oni', quantity equals '3', and price not equals '13.48' at a restaurant that contains 'Ba'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_ADDRESS_ADDED}"),
-        ClickAction(selector=_id("search-input")),
-        TypeAction(selector=_id("search-input"), text="__DELIVERY_RESTAURANT_QUERY__"),
-        ClickAction(
-            selector=_xp(
-                "(//*[@id='restaurant-grid-item-0']//div[contains(@class,'absolute')] | //*[@id='restaurant-grid-item-1']//div[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'])[1]"
-            )
+        TypeAction(selector=_id("search-input"), text="Ba"),
+        ClickAction(selector=_xp("//*[@id='restaurant-grid-item-2']")),
+        ClickAction(selector=_xp("//html/body/div[2]/div/div/div[2]/div/div[2]/div[4]/button")),
+        TypeAction(selector=_id("preferences-textarea-1"), text="no-onion"),
+        EvaluateAction(
+            script=r"""async (target) => {
+  const dialog = document.querySelector('[role="dialog"]');
+  if (!dialog) throw new Error('Add-to-cart dialog not found');
+  const plusBtn = dialog.querySelector('[id^="quantity-increase-"]');
+  if (!plusBtn) throw new Error('Increase quantity button not found');
+  const qtySpan = plusBtn.previousElementSibling;
+  if (!qtySpan || qtySpan.tagName !== 'SPAN') {
+    throw new Error('Quantity span not found (expected span before increase button per AddToCartModal layout)');
+  }
+  const getQty = () => {
+    const n = parseInt(String(qtySpan.textContent || '').trim(), 10);
+    return Number.isFinite(n) ? n : 0;
+  };
+  while (getQty() < target) {
+    plusBtn.click();
+    await new Promise((r) => setTimeout(r, 100));
+  }
+}""",
+            arg=3,
         ),
-        ClickAction(
-            selector=_xp(
-                "(//*[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '__DELIVERY_MENU_ITEM__')]/ancestor::*[self::div or self::article][1]//button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'add to cart')][1] | //*[@id='menu-item-1-0']//button | //*[@id='add-to-cart'][1])[1]"
-            )
-        ),
-        ClickAction(
-            selector=_xp(
-                "(//*[@id='quantity-increase-1' or starts-with(@id,'quantity-increase') or contains(@id,'quantity-increase') or @aria-label='Increase quantity' or contains(@aria-label,'Increase quantity')])[1]"
-            )
-        ),
-        ClickAction(
-            selector=_xp(
-                "(//*[@role='dialog']//*[@id='add-to-cart'] | //*[@role='dialog']//button[contains(normalize-space(), 'Add to Cart')] | //div[contains(@class,'sm:flex-row')]//button[contains(normalize-space(), 'Add to Cart')])[1]"
-            )
-        ),
-        ClickAction(selector=_id("cart-total-button")),
-        ClickAction(selector=_id("address-selector")),
-        ClickAction(selector=_id("custom-address-input")),
-        TypeAction(selector=_id("custom-address-input"), text="505 Cherry Circle, Fairview"),
+        ClickAction(selector=Selector(type=SelectorType.TAG_CONTAINS_SELECTOR, value="Add This $53.94", case_sensitive=True)),
+        NavigateAction(url=f"{BASE}/cart/?seed={SEED_ADDRESS_ADDED}"),
+        ClickAction(selector=_id("delivery-address-picker")),
+        TypeAction(selector=_id("custom-address-input"), text="404 Walnut Blvd, Brookside"),
         ClickAction(selector=_id("save-address-button")),
     ],
 )

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from autoppia_iwa.src.demo_webs.base_events import BaseEventValidator, Event
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
@@ -223,11 +223,13 @@ class AddToCartEvent(Event, BaseEventValidator):
 
 
 class CheckoutItem(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
     name: str
     quantity: int
     price: float
-    # size: str | None = None
-    # preferences: list[str] | None = None
+    size: str | None = None
+    preferences: str | None = None
 
 
 class OpenCheckoutPageEvent(Event, BaseEventValidator):
@@ -617,9 +619,9 @@ class AddressAddedEvent(Event, BaseEventValidator):
         mode: str | CriterionValue | None = None
         item: str | CriterionValue | None = None
         price: float | CriterionValue | None = None
-        # size: str | CriterionValue | None = None
+        size: str | CriterionValue | None = None
         restaurant: str | CriterionValue | None = None
-        # preferences: str | CriterionValue | None = None
+        preferences: str | CriterionValue | None = None
         quantity: int | CriterionValue | None = None
         total_price: float | CriterionValue | None = None
 
@@ -639,14 +641,16 @@ class AddressAddedEvent(Event, BaseEventValidator):
         if not base_validation:
             return False
 
-        if criteria.item is None and criteria.price is None and criteria.quantity is None:
+        if criteria.item is None and criteria.price is None and criteria.quantity is None and criteria.size is None and criteria.preferences is None:
             return True
 
         for item in self.items:
             if (
-                self._validate_field(item.name, criteria.item) and self._validate_field(item.price, criteria.price) and self._validate_field(item.quantity, criteria.quantity)
-                # and self._validate_field(item.size, criteria.size)
-                # and self._validate_field(item.preferences, criteria.preferences)
+                self._validate_field(item.name, criteria.item)
+                and self._validate_field(item.price, criteria.price)
+                and self._validate_field(item.quantity, criteria.quantity)
+                and self._validate_field(item.size or "", criteria.size)
+                and self._validate_field(item.preferences or "", criteria.preferences)
             ):
                 return True
         return False
