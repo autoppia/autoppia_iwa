@@ -5,13 +5,7 @@ WEB_PROJECT_ID = "autodining"
 
 from autoppia_iwa.src.data_generation.tests.classes import BaseTaskTest
 from autoppia_iwa.src.demo_webs.classes import Trajectory
-from autoppia_iwa.src.execution.actions.actions import (
-    ClickAction,
-    NavigateAction,
-    SelectAction,
-    TypeAction,
-    WaitAction,
-)
+from autoppia_iwa.src.execution.actions.actions import ClickAction, NavigateAction, SelectAction, SendKeysIWAAction, TypeAction, WaitAction
 from autoppia_iwa.src.execution.actions.base import BaseAction, Selector, SelectorType
 
 ACTIONS = [
@@ -1657,17 +1651,13 @@ SEARCH_RESTAURANT = _uc(
     prompt="Search for restaurants where the query contains 'Jay Fai'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_SEARCH_RESTAURANT}"),
-        ClickAction(
-            selector=_xp(
-                "//*[@id='search-input' or @id='search-input-help' or @id='search-box' or @id='search-field' or @id='query-box' or @id='restaurant-search' or @id='search-restaurants' or @id='search-text' or @id='query-box']"
-            )
-        ),
         TypeAction(
             selector=_xp(
                 "//input[@id='search-input' or @id='search-input-help' or @id='search-box' or @id='search-field' or @id='query-box' or @id='restaurant-search' or @id='search-restaurants' or @id='search-text']"
             ),
             text="Jay Fai",
         ),
+        SendKeysIWAAction(keys="Enter"),
     ],
 )
 
