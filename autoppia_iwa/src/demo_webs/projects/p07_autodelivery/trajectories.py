@@ -5,13 +5,7 @@ WEB_PROJECT_ID = "autodelivery"
 
 from autoppia_iwa.src.data_generation.tests.classes import BaseTaskTest
 from autoppia_iwa.src.demo_webs.classes import Trajectory
-from autoppia_iwa.src.execution.actions.actions import (
-    ClickAction,
-    NavigateAction,
-    SendKeysIWAAction,
-    TypeAction,
-    WaitAction,
-)
+from autoppia_iwa.src.execution.actions.actions import ClickAction, EvaluateAction, NavigateAction, SendKeysIWAAction, TypeAction, WaitAction
 from autoppia_iwa.src.execution.actions.base import BaseAction, Selector, SelectorType
 
 ACTIONS = [
@@ -1500,17 +1494,35 @@ EMPTY_CART = _uc(
     prompt="Clear my shopping cart of items where the quantity is greater than 9, the item equals 'Wagyu Beef', the price equals '91.98', and the restaurant contains 'suya's'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_EMPTY_CART}"),
+        TypeAction(selector=_id("find-food"), text="suya's"),
         ClickAction(selector=_xp("(//*[@id='restaurant-grid-item-0']//div[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'])[1]")),
-        ClickAction(selector=_xp("(//*[@id='menu-item-1-1']//button | //*[@id='menu-item-1-0']//button | //*[@id='add-to-cart'][1])[1]")),
-        ClickAction(
-            selector=_xp(
-                "(//*[@role='dialog']//*[@id='add-to-cart'] | //*[@role='dialog']//button[contains(normalize-space(), 'Add to Cart')] | //div[contains(@class,'sm:flex-row')]//button[contains(normalize-space(), 'Add to Cart')])[1]"
-            )
+        ClickAction(selector=_xp("html/body/div[2]/div/span[2]/div/span[3]/div/div/div[1]/div[4]/button")),
+        EvaluateAction(
+            script=r"""async (target) => {
+  const dialog = document.querySelector('[role="dialog"]');
+  if (!dialog) throw new Error('Add-to-cart dialog not found');
+  const plusBtn = dialog.querySelector('[id^="quantity-increase-"]');
+  if (!plusBtn) throw new Error('Increase quantity button not found');
+  const qtySpan = plusBtn.previousElementSibling;
+  if (!qtySpan || qtySpan.tagName !== 'SPAN') {
+    throw new Error('Quantity span not found (expected span before increase button per AddToCartModal layout)');
+  }
+  const getQty = () => {
+    const n = parseInt(String(qtySpan.textContent || '').trim(), 10);
+    return Number.isFinite(n) ? n : 0;
+  };
+  while (getQty() < target) {
+    plusBtn.click();
+    await new Promise((r) => setTimeout(r, 100));
+  }
+}""",
+            arg=10,
         ),
-        ClickAction(selector=_id("cart-total-button")),
+        ClickAction(selector=Selector(type=SelectorType.TAG_CONTAINS_SELECTOR, value="Add Selection $919.80", case_sensitive=True)),
+        NavigateAction(url=f"{BASE}/cart/?seed={SEED_EMPTY_CART}"),
         ClickAction(
             selector=_xp(
-                "(//*[@id='empty-cart-button-1-0'] | //*[@id='empty-cart-button'] | //button[contains(translate(@aria-label,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'remove item from cart')] | //button[contains(@title,'Remove item from cart')])[1]"
+                "(//*[@id='empty-cart-button-242-0'] | //*[@id='empty-cart-button'] | //button[contains(translate(@aria-label,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'remove item from cart')] | //button[contains(@title,'Remove item from cart')])[1]"
             )
         ),
     ],
