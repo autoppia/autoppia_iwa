@@ -1533,31 +1533,34 @@ DROPOFF_PREFERENCE = _uc(
     prompt="Set dropoff preference where quantity greater than 3 and price less equal 65.98 and item contains 'aisse' and restaurant equals 'Gordon Ramsay' and delivery_preference equals 'Meet in the lobby'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_DROPOFF_PREFERENCE}"),
-        ClickAction(selector=_id("search-input")),
-        TypeAction(selector=_id("search-input"), text="__DELIVERY_RESTAURANT_QUERY__"),
-        ClickAction(
-            selector=_xp(
-                "(//*[@id='restaurant-grid-item-0']//div[contains(@class,'absolute')] | //*[@id='restaurant-grid-item-1']//div[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'])[1]"
-            )
+        TypeAction(selector=_id("search-input"), text="Gordon Ramsay"),
+        ClickAction(selector=_xp("(//*[@id='restaurant-grid-item-0'] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'])[1]")),
+        ClickAction(selector=_xp("//html/body/div[2]/div/div/div[2]/div/div[3]/div[4]/button")),
+        EvaluateAction(
+            script=r"""async (target) => {
+  const dialog = document.querySelector('[role="dialog"]');
+  if (!dialog) throw new Error('Add-to-cart dialog not found');
+  const plusBtn = dialog.querySelector('[id^="quantity-increase-"]');
+  if (!plusBtn) throw new Error('Increase quantity button not found');
+  const qtySpan = plusBtn.previousElementSibling;
+  if (!qtySpan || qtySpan.tagName !== 'SPAN') {
+    throw new Error('Quantity span not found (expected span before increase button per AddToCartModal layout)');
+  }
+  const getQty = () => {
+    const n = parseInt(String(qtySpan.textContent || '').trim(), 10);
+    return Number.isFinite(n) ? n : 0;
+  };
+  while (getQty() < target) {
+    plusBtn.click();
+    await new Promise((r) => setTimeout(r, 100));
+  }
+}""",
+            arg=4,
         ),
-        ClickAction(
-            selector=_xp(
-                "(//*[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '__DELIVERY_MENU_ITEM__')]/ancestor::*[self::div or self::article][1]//button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'add to cart')][1] | //*[@id='menu-item-1-0']//button | //*[@id='add-to-cart'][1])[1]"
-            )
-        ),
-        ClickAction(
-            selector=_xp(
-                "(//*[@id='quantity-increase-1' or starts-with(@id,'quantity-increase') or contains(@id,'quantity-increase') or @aria-label='Increase quantity' or contains(@aria-label,'Increase quantity')])[1]"
-            )
-        ),
-        ClickAction(
-            selector=_xp(
-                "(//*[@role='dialog']//*[@id='add-to-cart'] | //*[@role='dialog']//button[contains(normalize-space(), 'Add to Cart')] | //div[contains(@class,'sm:flex-row')]//button[contains(normalize-space(), 'Add to Cart')])[1]"
-            )
-        ),
-        ClickAction(selector=_id("cart-total-button")),
-        ClickAction(selector=_xp("(//*[@id='dropoff-preferences-selector'] | //*[@id='dropoff-section'])[1]")),
-        ClickAction(selector=_xp("(//*[@id='dropoff-option-hand-it-to-me'] | //button[contains(normalize-space(), 'Hand it to me')])[1]")),
+        ClickAction(selector=Selector(type=SelectorType.TAG_CONTAINS_SELECTOR, value="Add This $263.92", case_sensitive=True)),
+        NavigateAction(url=f"{BASE}/cart/?seed={SEED_DROPOFF_PREFERENCE}"),
+        ClickAction(selector=_xp("(//*[@id='dropoff-instructions'] | //*[@id='dropoff-section'])[1]")),
+        ClickAction(selector=_xp("//*[@id='dropoff-option-meet-in-the-lobby']")),
     ],
 )
 
