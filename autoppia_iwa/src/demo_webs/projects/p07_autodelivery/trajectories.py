@@ -1607,30 +1607,23 @@ PLACE_ORDER = _uc(
     prompt="Place an order where address equals '202 Birch Lane, Lakeview' and username equals 'George Kim' and mode not equals 'delivery' and phone equals '+1-555-456-7890' and size not contains 'large' and preferences is not one of ['peanut-free', 'organic'] and quantity not equals '9' and item equals 'German Fried Potatoes' and restaurant equals 'Peter Luger Steak House'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_PLACE_ORDER}"),
-        ClickAction(selector=_id("search-input")),
-        TypeAction(selector=_id("search-input"), text="__DELIVERY_RESTAURANT_QUERY__"),
+        TypeAction(selector=_id("restaurant-search"), text="Peter Luger Steak House"),
         ClickAction(
             selector=_xp(
                 "(//*[@id='restaurant-grid-item-0']//div[contains(@class,'absolute')] | //*[@id='restaurant-grid-item-1']//div[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'])[1]"
             )
         ),
-        ClickAction(
-            selector=_xp(
-                "(//*[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'chicken teriyaki')]/ancestor::*[self::div or self::article][1]//button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'add to cart')][1] | //*[@id='menu-item-25-3']//button | //*[@id='menu-item-1-0']//button | //*[@id='add-to-cart'][1])[1]"
-            )
-        ),
-        ClickAction(
-            selector=_xp(
-                "(//*[@role='dialog']//*[@id='add-to-cart'] | //*[@role='dialog']//button[contains(normalize-space(), 'Add to Cart')] | //div[contains(@class,'sm:flex-row')]//button[contains(normalize-space(), 'Add to Cart')])[1]"
-            )
-        ),
-        ClickAction(selector=_id("cart-total-button")),
-        ClickAction(selector=_xp("(//*[@id='pickup-mode-button' or contains(@id,'pickup-mode-button')] | //button[contains(normalize-space(), 'Pickup')])[1]")),
-        ClickAction(selector=_xp("(//*[@id='customer-name' or contains(@id,'customer-name')])[1]")),
-        TypeAction(selector=_xp("(//*[@id='customer-name' or contains(@id,'customer-name')])[1]"), text="user"),
-        ClickAction(selector=_xp("(//*[@id='contact-phone' or contains(@id,'contact-phone')])[1]")),
-        TypeAction(selector=_xp("(//*[@id='contact-phone' or contains(@id,'contact-phone')])[1]"), text="123456432"),
-        ClickAction(selector=_xp("(//*[@id='place-order' or contains(@id,'place-order')] | //button[contains(normalize-space(),'Place Order')])[1]")),
+        ClickAction(selector=_xp("//html/body/div[2]/div/span[2]/div/span[3]/div/div/div[2]/div[4]/button")),
+        TypeAction(selector=_id("preferences-textarea-1"), text="make it fresh"),
+        ClickAction(selector=Selector(type=SelectorType.TAG_CONTAINS_SELECTOR, value="Add to Basket $23.98", case_sensitive=True)),
+        NavigateAction(url=f"{BASE}/cart/?seed={SEED_PLACE_ORDER}"),
+        ClickAction(selector=_xp("(//*[@id='collect-choice' or contains(@id,'pickup-mode-button')] | //button[contains(normalize-space(), 'Pickup')])[1]")),
+        ClickAction(selector=_xp("//*[@id='pickup-address-selector']")),
+        TypeAction(selector=_id("pickup-custom-address-input"), text="202 Birch Lane, Lakeview"),
+        ClickAction(selector=_id("save-pickup-address-button")),
+        TypeAction(selector=_xp("(//*[@id='order-name' or contains(@id,'customer-name')])[1]"), text="George Kim"),
+        TypeAction(selector=_xp("(//*[@id='phone-field' or contains(@id,'contact-phone')])[1]"), text="+1-555-456-7890"),
+        ClickAction(selector=_xp("(//*[@id='send-order' or contains(@id,'place-order')] | //button[contains(normalize-space(),'Place Order')])[1]")),
     ],
 )
 
