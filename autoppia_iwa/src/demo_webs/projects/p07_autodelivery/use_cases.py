@@ -30,7 +30,6 @@ from .generation_functions import (
     generate_delete_review_constraints,
     generate_delivery_priority_constraints,
     generate_dropoff_option_constraints,
-    generate_edit_cart_item_constraints,
     generate_increment_item_restaurant_constraints,
     generate_place_order_constraints,
     generate_quick_reorder_constraints,
@@ -232,7 +231,7 @@ EDIT_CART_ITEM_USE_CASE = UseCase(
     description="The user edits an existing cart item (size, preferences, or quantity).",
     event=EditCartItemEvent,
     event_source_code=EditCartItemEvent.get_source_code_of_class(),
-    constraints_generator=generate_edit_cart_item_constraints,
+    constraints_generator=generate_quick_reorder_constraints,
     examples=[
         {"prompt": "Edit the cart item 'Margherita Pizza' from Sushi Zen.", "prompt_for_task_generation": "Edit the cart item 'Margherita Pizza' from Sushi Zen."},
         {"prompt": "Open edit for the burger I added from Burger Barn.", "prompt_for_task_generation": "Open edit for the burger I added from Burger Barn."},

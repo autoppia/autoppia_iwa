@@ -1146,7 +1146,7 @@ _RAW_TESTS: dict[str, list[dict]] = {
         {
             "type": "CheckEventTest",
             "event_name": "EDIT_CART_ITEM",
-            "event_criteria": {"item": "Hummus", "restaurant": {"operator": "not_contains", "value": "Beirut Express"}},
+            "event_criteria": {"item": "Hummus", "restaurant": {"operator": "contains", "value": "Beirut Express"}},
             "description": "Check if specific event was triggered",
         }
     ],
@@ -1629,18 +1629,19 @@ PLACE_ORDER = _uc(
 
 EDIT_CART_ITEM = _uc(
     "EDIT_CART_ITEM",
-    prompt="Edit the cart item 'Hummus' from a restaurant that does NOT contain 'Beirut Express'.",
+    prompt="Edit the cart item 'Hummus' from a restaurant that contains 'Beirut Express'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_EDIT_CART_ITEM}"),
-        ClickAction(selector=_xp("(//*[@id='restaurant-grid-item-0']//div[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'])[1]")),
-        ClickAction(selector=_xp("(//*[@id='menu-item-1-0']//button | //*[@id='add-to-cart'][1])[1]")),
+        TypeAction(selector=_id("restaurant-search"), text="Beirut Expres"),
         ClickAction(
             selector=_xp(
-                "(//*[@role='dialog']//*[@id='add-to-cart'] | //*[@role='dialog']//button[contains(normalize-space(), 'Add to Cart')] | //div[contains(@class,'sm:flex-row')]//button[contains(normalize-space(), 'Add to Cart')])[1]"
+                "(//*[@id='restaurant-grid-item-0']//div[contains(@class,'absolute')] | //*[@id='restaurant-grid-item-1']//div[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'])[1]"
             )
         ),
-        ClickAction(selector=_id("cart-total-button")),
-        ClickAction(selector=_xp("(//*[@id='edit-cart'] | //*[@id='edit-cart-button-1-0'] | //*[@id='edit-cart-button'] | //button[contains(normalize-space(), 'Edit')])[1]")),
+        ClickAction(selector=_xp("//html/body/div[2]/div/span[2]/div/span[3]/div/div/div[2]/div[4]/button")),
+        ClickAction(selector=_xp("//html/body/div[4]/div/div[5]/div/button")),
+        NavigateAction(url=f"{BASE}/cart/?seed={SEED_EDIT_CART_ITEM}"),
+        ClickAction(selector=_xp("//html/body/div[2]/div/div/div[2]/div[1]/button[1]")),
     ],
 )
 
@@ -1649,31 +1650,17 @@ DELIVERY_PRIORITY_SELECTED = _uc(
     prompt="Select a delivery priority for my order that is NOT 'normal', with a quantity of items that is less than or equal to 7, a price that is greater than 15.45, and from a restaurant that contains 'Taco Fiesta', ensuring that my preferences do NOT contain 'paleo'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_DELIVERY_PRIORITY_SELECTED}"),
-        ClickAction(selector=_id("search-input")),
-        TypeAction(selector=_id("search-input"), text="__DELIVERY_RESTAURANT_QUERY__"),
+        TypeAction(selector=_id("food-search"), text="Taco Fiesta"),
         ClickAction(
             selector=_xp(
                 "(//*[@id='restaurant-grid-item-0']//div[contains(@class,'absolute')] | //*[@id='restaurant-grid-item-1']//div[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'])[1]"
             )
         ),
-        ClickAction(
-            selector=_xp(
-                "(//*[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '__DELIVERY_MENU_ITEM__')]/ancestor::*[self::div or self::article][1]//button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'add to cart')][1] | //*[@id='menu-item-1-0']//button | //*[@id='add-to-cart'][1])[1]"
-            )
-        ),
-        ClickAction(
-            selector=_xp(
-                "(//*[@role='dialog']//*[@id='add-to-cart'] | //*[@role='dialog']//button[contains(normalize-space(), 'Add to Cart')] | //div[contains(@class,'sm:flex-row')]//button[contains(normalize-space(), 'Add to Cart')])[1]"
-            )
-        ),
-        ClickAction(selector=_id("cart-total-button")),
-        ClickAction(
-            selector=_xp(
-                "(//*[@id='quantity-increase-1-0' or starts-with(@id,'quantity-increase') or contains(@id,'quantity-increase') or @aria-label='Increase quantity' or contains(@aria-label,'Increase quantity')])[1]"
-            )
-        ),
-        ClickAction(selector=_xp("(//label[contains(normalize-space(), 'Priority: ready')])[1]")),
-        ClickAction(selector=_xp("(//label[contains(normalize-space(), 'Normal: standard prep')] | //input[@name='delivery-priority' and @value='normal']/ancestor::label[1])[1]")),
+        ClickAction(selector=_xp("//html/body/div[2]/div/div/div[2]/div/div[1]/div[4]/button")),
+        TypeAction(selector=_xp("preferences-textarea-1"), text="no-onion"),
+        ClickAction(selector=Selector(type=SelectorType.TAG_CONTAINS_SELECTOR, value="Add Item $16.99", case_sensitive=True)),
+        NavigateAction(url=f"{BASE}/cart/?seed={SEED_DELIVERY_PRIORITY_SELECTED}"),
+        ClickAction(selector=_xp("//html/body/div[2]/div/span[1]/div/div[2]/div[3]/div[2]/label[1]/div")),
     ],
 )
 

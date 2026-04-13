@@ -145,11 +145,9 @@ async def test_quick_reorder_edit_review_and_priority(monkeypatch):
     monkeypatch.setattr(gen, "generate_add_to_cart_constraints", AsyncMock(return_value=[{"field": "item", "operator": ComparisonOperator.EQUALS, "value": "Margherita"}]))
 
     quick = await gen.generate_quick_reorder_constraints(dataset=RESTAURANTS)
-    edit = await gen.generate_edit_cart_item_constraints(dataset=RESTAURANTS)
     review = await gen.generate_review_submitted_constraints(dataset=RESTAURANTS)
     priority = await gen.generate_delivery_priority_constraints(dataset=RESTAURANTS)
 
     assert quick
-    assert edit
     assert review
     assert any(c["field"] == "priority" for c in priority)

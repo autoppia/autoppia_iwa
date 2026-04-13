@@ -11,7 +11,6 @@ from .data import (
     FIELD_OPERATORS_ADDRESS_ADDED_MAP,
     FIELD_OPERATORS_DELETE_REVIEW_MAP,
     FIELD_OPERATORS_DROPOFF_OPTION_MAP,
-    FIELD_OPERATORS_EDIT_CART_ITEM,
     FIELD_OPERATORS_INCREMENT_QUANTITY_MAP,
     FIELD_OPERATORS_PLACE_ORDER_MAP,
     FIELD_OPERATORS_QUICK_REORDER_MAP,
@@ -571,26 +570,6 @@ async def generate_quick_reorder_constraints(task_url: str | None = None, datase
         value = _generate_constraint_value(operator, value_source, field, field_dataset)
         if value is not None:
             constraints_list.append(create_constraint_dict(field, operator, value))
-    return constraints_list
-
-
-async def generate_edit_cart_item_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    constraints_list: list[dict[str, Any]] = []
-    restaurants = await _ensure_restaurant_dataset(task_url, dataset)
-    if not restaurants:
-        return constraints_list
-    restaurant = random.choice(restaurants)
-    menu = restaurant.get("menu", [])
-    if not menu:
-        return constraints_list
-    menu_item = random.choice(menu)
-    for field in ["item", "restaurant"]:
-        allowed_ops = FIELD_OPERATORS_EDIT_CART_ITEM.get(field, [])
-        op = ComparisonOperator(random.choice(allowed_ops))
-        if field == "item":
-            constraints_list.append(create_constraint_dict(field, op, menu_item.get("name", "")))
-        else:
-            constraints_list.append(create_constraint_dict(field, op, restaurant.get("name", "")))
     return constraints_list
 
 
