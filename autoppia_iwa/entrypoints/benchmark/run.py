@@ -41,60 +41,54 @@ REMOTE_AGENTS = [
 AGENTS = REMOTE_AGENTS if AGENT_TARGET == "remote" else [LOCAL_AGENTS[5]]
 
 # Projects and use cases (must exist in demo_web_projects / project use_cases)
-PROJECT_IDS = ["automail"]
-USE_CASES = [
-    "SEARCH_EMAIL",
-    # "VIEW_EMAIL",
-    # "ARCHIVE_EMAIL",
-    # "STAR_AN_EMAIL",
-    # "MARK_EMAIL_AS_IMPORTANT",
-]
+PROJECT_IDS = ["autocinema"]
+USE_CASES = None
 
 # =====================================================
 # CONFIGURATION: Choose the evaluation mode here
 # =====================================================
 
 # Run config
-CFG = BenchmarkConfig(
-    projects=get_projects_by_ids(demo_web_projects, PROJECT_IDS),
-    agents=AGENTS,
-    agent_target=AGENT_TARGET,
-    evaluator_mode="stateful",
-    max_steps_per_task=50,
-    use_cached_tasks=False,
-    prompts_per_use_case=1,
-    use_cases=USE_CASES,
-    runs=1,
-    max_parallel_agent_calls=1,
-    record_gif=True,
-    dynamic=False,
-    save_results_json=True,
-    headless=True,
-)
-
-
 # CFG = BenchmarkConfig(
 #     projects=get_projects_by_ids(demo_web_projects, PROJECT_IDS),
 #     agents=AGENTS,
-#     # Evaluator mode
-#     evaluator_mode="concurrent",  # ← Agent generates full action list
-#     # Tasks
+#     agent_target=AGENT_TARGET,
+#     evaluator_mode="stateful",
+#     max_steps_per_task=50,
+#     use_cached_tasks=False,
 #     prompts_per_use_case=1,
-#     # use_cases=None means all use-cases
-#     test_types="data_extraction_only",
-#     data_extraction_use_cases=None,
-#     # use_cases=USE_CASES,
-#     # Execution
-#     runs=1,  # single run is enough for this fixed agent
-#     max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
-#     record_gif=False,  # if your evaluator returns GIFs
-#     # Dynamic mode: disabled for this simple fixed-task test to avoid seed constraints.
-#     dynamic=True,
-#     # Persistence
+#     use_cases=USE_CASES,
+#     runs=1,
+#     max_parallel_agent_calls=1,
+#     record_gif=True,
+#     dynamic=False,
 #     save_results_json=True,
-#     headless=True,  # Show Chromium window (set True or omit to use EVALUATOR_HEADLESS env)
+#     headless=True,
 # )
-# -----------------------------------------------------------------------------
+
+
+CFG = BenchmarkConfig(
+    projects=get_projects_by_ids(demo_web_projects, PROJECT_IDS),
+    agents=AGENTS,
+    # Evaluator mode
+    evaluator_mode="concurrent",  # ← Agent generates full action list
+    # Tasks
+    prompts_per_use_case=1,
+    # use_cases=None means all use-cases
+    test_types="data_extraction_only",
+    data_extraction_use_cases=None,
+    # use_cases=USE_CASES,
+    # Execution
+    runs=1,  # single run is enough for this fixed agent
+    max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
+    record_gif=False,  # if your evaluator returns GIFs
+    # Dynamic mode: disabled for this simple fixed-task test to avoid seed constraints.
+    dynamic=True,
+    # Persistence
+    save_results_json=True,
+    headless=True,  # Show Chromium window (set True or omit to use EVALUATOR_HEADLESS env)
+)
+
 
 
 def main():

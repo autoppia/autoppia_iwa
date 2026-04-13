@@ -5,6 +5,7 @@ Main pipeline that orchestrates:
 0. Pre-validation (project setup, events, use cases)
 1. Task generation (2 tasks per use case with constraints) + LLM Review (V1)
 2. Dataset diversity verification - verify datasets differ with different seeds (V2)
+2.5. Data extraction trajectories verification (project-level, seed-filtered deterministic checks)
 3. IWAP doability check (find any successful solution for use case)
 4. Dynamic verification with different seeds (V3)
 """
@@ -26,6 +27,7 @@ from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
 from autoppia_iwa.src.di_container import DIContainer
 
 from .config import WebVerificationConfig
+from .data_extraction_verifier import DataExtractionTrajectoryVerifier
 from .dynamic_verifier import DynamicVerifier
 from .iwap_client import IWAPClient
 from .llm_reviewer import LLMReviewer
@@ -97,10 +99,21 @@ class WebVerificationPipeline:
             else None
         )
 
+        self.data_extraction_verifier = (
+            DataExtractionTrajectoryVerifier(
+                web_project=web_project,
+                frontend_url=web_project.frontend_url,
+                headless=True,
+            )
+            if config.data_extraction_verification_enabled
+            else None
+        )
+
         # Results storage
         self.results: dict[str, Any] = {
             "project_id": web_project.id,
             "project_name": web_project.name,
+            "data_extraction_project_verification": None,
             "use_cases": {},
         }
 
@@ -117,6 +130,9 @@ class WebVerificationPipeline:
             logger.warning(f"No use cases found for project {self.web_project.id}")
             return self.results
 
+        # Step 2.5: Project-level DE trajectories verification
+        await self._run_data_extraction_project_verification()
+
         # Process each use case
         for use_case in self.web_project.use_cases:
             logger.info(f"Processing use case: {use_case.name}")
@@ -128,6 +144,44 @@ class WebVerificationPipeline:
 
         logger.info("Web verification pipeline completed")
         return self.results
+
+    async def _run_data_extraction_project_verification(self) -> None:
+        """Run DE trajectories once per project and store a single boolean verdict."""
+        if not self.data_extraction_verifier:
+            self.results["data_extraction_project_verification"] = {
+                "skipped": True,
+                "reason": "Data extraction verification disabled by config",
+                "seed": self.config.data_extraction_seed,
+                "all_passed": None,
+                "total_count": 0,
+                "passed_count": 0,
+                "results": [],
+            }
+            return
+
+        self._print_step_banner(
+            "🔎 STEP 2.5: DATA EXTRACTION TRAJECTORIES VERIFICATION",
+            f"Project ID: {self.web_project.id}",
+            f"Seed to test: {self.config.data_extraction_seed}",
+            "Running all DE trajectories for this project and validating expected answers.",
+        )
+        de_result = await self.data_extraction_verifier.verify_for_project(seed=self.config.data_extraction_seed)
+        self.results["data_extraction_project_verification"] = de_result
+
+        if de_result.get("skipped", False):
+            print(f"DataExtraction trajectories passed: ⏭️ SKIPPED ({de_result.get('reason', UNKNOWN_REASON)})")
+        else:
+            passed_count = de_result.get("passed_count", 0)
+            total_count = de_result.get("total_count", 0)
+            all_passed = de_result.get("all_passed", False)
+            print(
+                f"DataExtraction trajectories passed: {'✅ YES' if all_passed else '❌ NO'} "
+                f"({passed_count}/{total_count}, seed={self.config.data_extraction_seed})"
+            )
+            for item in de_result.get("results", []):
+                status = "✓" if item.get("ok", False) else "✗"
+                print(f"  {status} [{item.get('use_case')}] {item.get('trajectory_id')}: {item.get('detail')}")
+        print("=" * 80 + "\n")
 
     async def _process_use_case(self, use_case: UseCase) -> dict[str, Any]:
         """
@@ -145,6 +199,7 @@ class WebVerificationPipeline:
             "tasks": [],
             "llm_reviews": [],
             "dataset_diversity_verification": None,  # V2: Will be set in Step 2
+            "data_extraction_verification": None,  # V2.5: deterministic DE trajectory check
             "doability_check": None,
             "dynamic_verification": None,  # V3: Will be set in Step 4 if solution is available
         }
@@ -365,6 +420,9 @@ class WebVerificationPipeline:
                 "reason": "Dynamic mode disabled or verifier unavailable",
                 "passed": None,
             }
+
+        # Step 2.5 (DE) runs once per project in run(); keep per-use-case slot empty.
+        use_case_results["data_extraction_verification"] = None
 
         # Step 3: IWAP API call - proceed if enabled and (LLM reviews are valid or review is disabled)
         if self.iwap_client:
@@ -596,6 +654,7 @@ class WebVerificationPipeline:
         formatted_results = {
             "project_id": self.web_project.id,
             "project_name": self.web_project.name,
+            "data_extraction_project_verification": self.results.get("data_extraction_project_verification"),
             "use_cases": {},
             "summary": {},
         }
@@ -612,6 +671,7 @@ class WebVerificationPipeline:
             llm_reviews = use_case_data.get("llm_reviews", [])
             match_result = use_case_data.get("iwap_match_result", {})
             dynamic_verification = use_case_data.get("dynamic_verification", {})
+            data_extraction_verification = use_case_data.get("data_extraction_verification", {})
 
             # Format each task
             for idx, task_info in enumerate(tasks):
@@ -686,6 +746,22 @@ class WebVerificationPipeline:
 
                 formatted_use_case["matched"] = matched_data
 
+            if data_extraction_verification:
+                if data_extraction_verification.get("skipped", False):
+                    formatted_use_case["data_extraction_verification"] = {
+                        "skipped": True,
+                        "reason": data_extraction_verification.get("reason", ""),
+                        "seed": data_extraction_verification.get("seed"),
+                    }
+                else:
+                    formatted_use_case["data_extraction_verification"] = {
+                        "seed": data_extraction_verification.get("seed"),
+                        "all_passed": data_extraction_verification.get("all_passed", False),
+                        "passed_count": data_extraction_verification.get("passed_count", 0),
+                        "total_count": data_extraction_verification.get("total_count", 0),
+                        "results": data_extraction_verification.get("results", []),
+                    }
+
             formatted_results["use_cases"][use_case_name] = formatted_use_case
 
         # Calculate and add summary
@@ -702,6 +778,7 @@ class WebVerificationPipeline:
             - task_generation: Pass | Fail
             - number_of_tasks_generated: int
             - llm_review: Pass | Fail
+            - data_extraction_verification: Pass | Fail | N/A
             - dynamic_verification: Pass | Fail
         """
         total_tasks = 0
@@ -749,11 +826,16 @@ class WebVerificationPipeline:
         dynamic_verification_status = "N/A"
         if has_dynamic_verification:
             dynamic_verification_status = "Pass" if all_dynamic_verification_passed else "Fail"
+        data_extraction_verification_status = "N/A"
+        data_extraction_project = self.results.get("data_extraction_project_verification")
+        if isinstance(data_extraction_project, dict) and not data_extraction_project.get("skipped", False):
+            data_extraction_verification_status = "Pass" if data_extraction_project.get("all_passed", False) else "Fail"
 
         summary = {
             "task_generation": "Pass" if all_tasks_generated and total_tasks > 0 else "Fail",
             "number_of_tasks_generated": total_tasks,
             "llm_review": "Pass" if (all_llm_reviews_passed or not self.llm_reviewer) else "Fail",
+            "data_extraction_verification": data_extraction_verification_status,
             "dynamic_verification": dynamic_verification_status,
         }
 
@@ -1248,6 +1330,8 @@ class WebVerificationPipeline:
             else:
                 summary_lines.append("  Step 2 (V2 Dataset): ⏭️ Skipped (no data)")
 
+            summary_lines.append("  Step 2.5 (Data Extraction): ↪ Project-level verification (see final conclusion)")
+
             # Step 3: IWAP API / Doability check
             iwap_status = use_case_data.get("iwap_status")
             if iwap_status:
@@ -1374,6 +1458,20 @@ class WebVerificationPipeline:
         if categories["dataset_untested"]:
             summary_lines.append(f"  ⏭️  Dataset diversity not tested ({len(categories['dataset_untested'])}): {', '.join(categories['dataset_untested'])}")
 
+        # Data extraction trajectories verification (project-level)
+        summary_lines.append(f"\n🧠 Data Extraction (Seed {self.config.data_extraction_seed}):")
+        data_extraction_project = self.results.get("data_extraction_project_verification")
+        if not isinstance(data_extraction_project, dict):
+            summary_lines.append("  DataExtraction trajectories passed: N/A (no data)")
+        elif data_extraction_project.get("skipped", False):
+            reason = data_extraction_project.get("reason", UNKNOWN_REASON)
+            summary_lines.append(f"  DataExtraction trajectories passed: N/A (skipped: {reason})")
+        else:
+            passed_count = data_extraction_project.get("passed_count", 0)
+            total_count = data_extraction_project.get("total_count", 0)
+            status = "✅ YES" if data_extraction_project.get("all_passed", False) else "❌ NO"
+            summary_lines.append(f"  DataExtraction trajectories passed: {status} ({passed_count}/{total_count})")
+
         # Solution Availability (IWAP)
         summary_lines.append("\n🔍 Solution Availability (IWAP):")
         if categories["has_solution"]:
@@ -1395,9 +1493,14 @@ class WebVerificationPipeline:
         # Overall Status
         summary_lines.append("\n📈 Overall Status:")
         total_use_cases = len(self.results["use_cases"])
+        data_extraction_project = self.results.get("data_extraction_project_verification")
+        data_extraction_status = "N/A"
+        if isinstance(data_extraction_project, dict) and not data_extraction_project.get("skipped", False):
+            data_extraction_status = "YES" if data_extraction_project.get("all_passed", False) else "NO"
         summary_lines.append(f"  Total Use Cases: {total_use_cases}")
         summary_lines.append(f"  - Good generation: {len(categories['generation_ok'])}/{total_use_cases}")
         summary_lines.append(f"  - Dataset diverse (V2): {len(categories['dataset_diverse'])}/{total_use_cases}")
+        summary_lines.append(f"  - DataExtraction trajectories passed: {data_extraction_status}")
         summary_lines.append(f"  - Has solutions: {len(categories['has_solution'])}/{total_use_cases}")
         summary_lines.append(f"  - Truly dynamic (V3): {len(categories['truly_dynamic'])}/{total_use_cases}")
         summary_lines.append(f"  - Needs review (not dynamic): {len(categories['not_dynamic'])}/{total_use_cases}")
@@ -1418,6 +1521,9 @@ class WebVerificationPipeline:
             "dataset_diverse": [],
             "dataset_not_diverse": [],
             "dataset_untested": [],
+            "data_extraction_passed": [],
+            "data_extraction_failed": [],
+            "data_extraction_untested": [],
             "has_solution": [],
             "no_solution": [],
             "truly_dynamic": [],
@@ -1455,6 +1561,16 @@ class WebVerificationPipeline:
                     categories["dataset_not_diverse"].append(use_case_name)
             else:
                 categories["dataset_untested"].append(use_case_name)
+
+            # Data extraction trajectories verification
+            data_extraction_verification = use_case_data.get("data_extraction_verification", {})
+            if data_extraction_verification and not data_extraction_verification.get("skipped", False):
+                if data_extraction_verification.get("all_passed", False):
+                    categories["data_extraction_passed"].append(use_case_name)
+                else:
+                    categories["data_extraction_failed"].append(use_case_name)
+            else:
+                categories["data_extraction_untested"].append(use_case_name)
 
             # Solution Availability (IWAP)
             iwap_status = use_case_data.get("iwap_status", {})

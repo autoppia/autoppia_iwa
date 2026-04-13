@@ -28,6 +28,10 @@ class WebVerificationConfig:
     dynamic_verification_enabled: bool = True
     seed_values: list[int] | None = None  # Default seeds to test
 
+    # Data extraction trajectories verification
+    data_extraction_verification_enabled: bool = True
+    data_extraction_seed: int = 1
+
     # Output
     output_dir: str = "./verification_results"
     verbose: bool = False
