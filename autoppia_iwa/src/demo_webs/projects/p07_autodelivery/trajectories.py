@@ -1446,7 +1446,7 @@ RESTAURANT_NEXT_PAGE = _uc(
         NavigateAction(url=f"{BASE}/?seed={SEED_RESTAURANT_NEXT_PAGE}"),
         ClickAction(
             selector=_xp(
-                "(//*[@id='pagination-next'] | //button[@id='pagination-next'] | //button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'next')])[1]"
+                "(//*[@id='pagination-next'] | //button[@id='go-forward-btn'] | //button[@id='pagination-next'] | //button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'next')])[1]"
             )
         ),
     ],
@@ -1459,12 +1459,12 @@ RESTAURANT_PREV_PAGE = _uc(
         NavigateAction(url=f"{BASE}/?seed={SEED_RESTAURANT_PREV_PAGE}"),
         ClickAction(
             selector=_xp(
-                "(//*[@id='pagination-next'] | //button[@id='pagination-next'] | //button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'next')])[1]"
+                "(//*[@id='pagination-next'] | //button[@id='go-forward-btn'] | //button[@id='pagination-next'] | //button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'next')])[1]"
             )
         ),
         ClickAction(
             selector=_xp(
-                "(//*[@id='pagination-prev'] | //button[@id='pagination-prev'] | //button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'prev')] | //button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'previous')])[1]"
+                "(//*[@id='pagination-prev'] | //button[@id='back-button'] | //button[@id='pagination-prev'] | //button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'prev')] | //button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'previous')])[1]"
             )
         ),
     ],
@@ -1475,10 +1475,10 @@ REVIEW_SUBMITTED = _uc(
     prompt="Submit a review for a restaurant where the comment does NOT contain 'Super friendly staff and delicious food at the hotel restaurant.'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_REVIEW_SUBMITTED}"),
-        ClickAction(selector=_xp("(//*[@id='restaurant-grid-item-0']//div[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'])[1]")),
-        ClickAction(selector=_id("review-name")),
-        TypeAction(selector=_id("review-name"), text="Agente"),
-        ClickAction(selector=_id("review-comment")),
+        ClickAction(selector=_xp("(//*[@id='restaurant-grid-item-12']//div[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'])[1]")),
+        # ClickAction(selector=_id("review-name")),
+        TypeAction(selector=_id("reviewer-name"), text="Agente"),
+        # ClickAction(selector=_id("review-comment")),
         TypeAction(selector=_id("review-comment"), text="good"),
         ClickAction(selector=_xp("(//button[contains(normalize-space(), 'Submit review')] | //*[@id='review-submit'] | //form//button[@type='submit'])[1]")),
     ],
@@ -1489,12 +1489,9 @@ DELETE_REVIEW = _uc(
     prompt="Delete the review for the restaurant with cuisine equals 'Healthy' where the rating is NOT '4.8' and the author is NOT 'Olivia M.'",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_DELETE_REVIEW}"),
-        ClickAction(selector=_xp("(//*[@id='restaurant-grid-item-0']//div[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'])[1]")),
-        ClickAction(
-            selector=_xp(
-                "(//*[@id='review-item-0']//button | //*[@id='delete-review-btn'] | //button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'delete')])[1]"
-            )
-        ),
+        TypeAction(selector=_id("search-box"), text="healthy"),
+        ClickAction(selector=_xp("//*[@id='restaurant-grid-item-0']")),
+        ClickAction(selector=_xp("//html/body/div[2]/div/span[2]/div/span[5]/section/div/div[2]/button")),
     ],
 )
 

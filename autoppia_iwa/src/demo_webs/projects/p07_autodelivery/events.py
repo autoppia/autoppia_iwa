@@ -676,8 +676,7 @@ class RestaurantNextPageEvent(Event, BaseEventValidator):
         pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
+        return True
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "RestaurantNextPageEvent":
@@ -737,9 +736,9 @@ class ReviewSubmittedEvent(Event, BaseEventValidator):
             author=data.get("author", ""),
             rating=data.get("rating", 0),
             comment=data.get("comment", ""),
-            restaurant_name=data.get("restaurantName"),
-            restaurant_rating=data.get("restaurantRating"),
-            cuisine=data.get("cuisine"),
+            restaurant_name=data.get("restaurantName", ""),
+            restaurant_rating=data.get("restaurantRating", ""),
+            cuisine=data.get("cuisine", ""),
         )
 
 
