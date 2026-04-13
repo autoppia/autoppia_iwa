@@ -1669,22 +1669,33 @@ ITEM_INCREMENTED = _uc(
     prompt="Increase the quantity of 'hef's Special' to 7 where the restaurant is NOT 'Cedar Middle Eastern Cafe'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_ITEM_INCREMENTED}"),
-        ClickAction(selector=_id("search-input")),
-        TypeAction(selector=_id("search-input"), text="__DELIVERY_RESTAURANT_QUERY__"),
+        TypeAction(selector=_id("find-food"), text="hef's Special"),
         ClickAction(
             selector=_xp(
                 "(//*[@id='restaurant-grid-item-0']//*[contains(@class,'absolute')] | //*[@data-element-type='VIEW_DELIVERY_RESTAURANT'] | //*[@id='restaurant-card'] | //*[@id='restaurant-image'] | //*[@id='restaurant-name'])[1]"
             )
         ),
-        ClickAction(
-            selector=_xp(
-                "(//*[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '__DELIVERY_MENU_ITEM__')]/ancestor::*[self::div or self::article][1]//button[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'add to cart')][1] | //*[@id='add-to-cart' or contains(@id,'add-to-cart') or contains(@id,'add-cart')][1])"
-            )
-        ),
-        ClickAction(
-            selector=_xp(
-                "(//*[@id='quantity-increase-1' or starts-with(@id,'quantity-increase') or contains(@id,'quantity-increase') or @aria-label='Increase quantity' or contains(@aria-label,'Increase quantity')])[1]"
-            )
+        ClickAction(selector=_xp("""//div[@aria-label="Chef's Special"]/ancestor::div[contains(@class,"menu-item")]//button[@aria-label="Add Selection"]""")),
+        EvaluateAction(
+            script=r"""async (target) => {
+          const dialog = document.querySelector('[role="dialog"]');
+          if (!dialog) throw new Error('Add-to-cart dialog not found');
+          const plusBtn = dialog.querySelector('[id^="quantity-increase-"]');
+          if (!plusBtn) throw new Error('Increase quantity button not found');
+          const qtySpan = plusBtn.previousElementSibling;
+          if (!qtySpan || qtySpan.tagName !== 'SPAN') {
+            throw new Error('Quantity span not found (expected span before increase button per AddToCartModal layout)');
+          }
+          const getQty = () => {
+            const n = parseInt(String(qtySpan.textContent || '').trim(), 10);
+            return Number.isFinite(n) ? n : 0;
+          };
+          while (getQty() < target) {
+            plusBtn.click();
+            await new Promise((r) => setTimeout(r, 100));
+          }
+        }""",
+            arg=7,
         ),
     ],
 )
