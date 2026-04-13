@@ -55,4 +55,3 @@ Explicit seed (only needed if you want another seed group):
 ```bash
 .venv/bin/python -m autoppia_iwa.entrypoints.web_verification.run --project-id autocinema --data-extraction-seed 1
 ```
-

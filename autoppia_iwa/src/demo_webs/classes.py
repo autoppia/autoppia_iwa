@@ -2,9 +2,9 @@ import asyncio
 import inspect
 import json
 import re
-from hashlib import sha1
 from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
+from hashlib import sha1
 from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field, ValidationError

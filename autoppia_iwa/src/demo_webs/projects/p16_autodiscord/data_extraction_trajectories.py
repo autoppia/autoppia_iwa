@@ -44,6 +44,7 @@ _TRAJECTORY_SPECS: list[dict[str, str | int]] = [
     },
 ]
 
+
 def _build_trajectory(spec: dict[str, str | int]) -> DataExtractionTrajectory:
     return DataExtractionTrajectory(
         web_project_id=PROJECT_ID,
@@ -56,6 +57,7 @@ def _build_trajectory(spec: dict[str, str | int]) -> DataExtractionTrajectory:
             ExtractAction(selector=_PAGE_SELECTOR, max_chars=50000),
         ],
     )
+
 
 def load_autodiscord_data_extraction_trajectories() -> list[DataExtractionTrajectory]:
     return [_build_trajectory(spec) for spec in _TRAJECTORY_SPECS]

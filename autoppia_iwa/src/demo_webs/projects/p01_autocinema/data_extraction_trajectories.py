@@ -49,6 +49,7 @@ _SPECS: list[dict[str, str | int]] = [
     },
 ]
 
+
 def _build(spec: dict[str, str | int]) -> DataExtractionTrajectory:
     return DataExtractionTrajectory(
         web_project_id="autocinema",
@@ -58,6 +59,7 @@ def _build(spec: dict[str, str | int]) -> DataExtractionTrajectory:
         expected_answer=spec["expected_answer"],
         actions=None,
     )
+
 
 def load_autocinema_data_extraction_trajectories() -> list[DataExtractionTrajectory]:
     return [_build(spec) for spec in _SPECS]

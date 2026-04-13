@@ -92,6 +92,7 @@ _TRAJECTORY_SPECS: list[dict[str, str | int]] = [
     },
 ]
 
+
 def _build_trajectory(spec: dict[str, str | int]) -> DataExtractionTrajectory:
     return DataExtractionTrajectory(
         web_project_id=PROJECT_ID,
@@ -101,6 +102,7 @@ def _build_trajectory(spec: dict[str, str | int]) -> DataExtractionTrajectory:
         expected_answer=spec["expected_answer"],
         actions=None,
     )
+
 
 def load_autohealth_data_extraction_trajectories() -> list[DataExtractionTrajectory]:
     return [_build_trajectory(spec) for spec in _TRAJECTORY_SPECS]

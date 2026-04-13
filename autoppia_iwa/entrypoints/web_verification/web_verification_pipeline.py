@@ -174,10 +174,7 @@ class WebVerificationPipeline:
             passed_count = de_result.get("passed_count", 0)
             total_count = de_result.get("total_count", 0)
             all_passed = de_result.get("all_passed", False)
-            print(
-                f"DataExtraction trajectories passed: {'✅ YES' if all_passed else '❌ NO'} "
-                f"({passed_count}/{total_count}, seed={self.config.data_extraction_seed})"
-            )
+            print(f"DataExtraction trajectories passed: {'✅ YES' if all_passed else '❌ NO'} ({passed_count}/{total_count}, seed={self.config.data_extraction_seed})")
             for item in de_result.get("results", []):
                 status = "✓" if item.get("ok", False) else "✗"
                 print(f"  {status} [{item.get('use_case')}] {item.get('trajectory_id')}: {item.get('detail')}")

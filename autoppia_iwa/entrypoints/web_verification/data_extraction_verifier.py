@@ -108,10 +108,7 @@ class DataExtractionTrajectoryVerifier:
 
         normalized_use_cases = {_normalize_use_case_name(use_case) for use_case in use_cases or []}
         selected = [
-            trajectory
-            for trajectory in trajectories
-            if int(trajectory.seed) == int(seed)
-            and (not normalized_use_cases or _normalize_use_case_name(trajectory.use_case) in normalized_use_cases)
+            trajectory for trajectory in trajectories if int(trajectory.seed) == int(seed) and (not normalized_use_cases or _normalize_use_case_name(trajectory.use_case) in normalized_use_cases)
         ]
         if not selected:
             use_case_suffix = ""
@@ -144,11 +141,7 @@ class DataExtractionTrajectoryVerifier:
                 "results": [],
             }
 
-        selected = [
-            trajectory
-            for trajectory in trajectories
-            if _normalize_use_case_name(trajectory.use_case) == _normalize_use_case_name(use_case_name) and int(trajectory.seed) == int(seed)
-        ]
+        selected = [trajectory for trajectory in trajectories if _normalize_use_case_name(trajectory.use_case) == _normalize_use_case_name(use_case_name) and int(trajectory.seed) == int(seed)]
         if not selected:
             return {
                 "skipped": True,

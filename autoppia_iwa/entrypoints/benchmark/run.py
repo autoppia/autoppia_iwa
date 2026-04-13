@@ -90,7 +90,6 @@ CFG = BenchmarkConfig(
 )
 
 
-
 def main():
     setup_logging(str(CFG.benchmark_log_file))
     if not CFG.projects:
