@@ -1549,11 +1549,9 @@ CREATE_LABEL = _uc(
     prompt="Create a new label with the name that does NOT contain 'bxn'.",
     actions=[
         NavigateAction(url=f"{BASE}/?seed={SEED_CREATE_LABEL}"),
-        ClickAction(selector=_id("label-selector-trigger")),
-        ClickAction(selector=_xp("//*[@id='label-selector-menu']//input[1]")),
-        TypeAction(selector=_xp("//*[@id='label-selector-menu']//input[1]"), text="__LABEL_NAME__"),
-        ClickAction(selector=_id("label-color-4285f4")),
-        ClickAction(selector=_id("create-label-button")),
+        ClickAction(selector=_id("label-trigger")),
+        TypeAction(selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="placeholder", value="Create label"), text="__LABEL_NAME__"),
+        ClickAction(selector=_id("create-label-btn-tertiary")),
     ],
 )
 
