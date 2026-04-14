@@ -196,7 +196,6 @@ class WebVerificationPipeline:
             "tasks": [],
             "llm_reviews": [],
             "dataset_diversity_verification": None,  # V2: Will be set in Step 2
-            "data_extraction_verification": None,  # V2.5: deterministic DE trajectory check
             "doability_check": None,
             "dynamic_verification": None,  # V3: Will be set in Step 4 if solution is available
         }
@@ -417,9 +416,6 @@ class WebVerificationPipeline:
                 "reason": "Dynamic mode disabled or verifier unavailable",
                 "passed": None,
             }
-
-        # Step 2.5 (DE) runs once per project in run(); keep per-use-case slot empty.
-        use_case_results["data_extraction_verification"] = None
 
         # Step 3: IWAP API call - proceed if enabled and (LLM reviews are valid or review is disabled)
         if self.iwap_client:
@@ -668,7 +664,6 @@ class WebVerificationPipeline:
             llm_reviews = use_case_data.get("llm_reviews", [])
             match_result = use_case_data.get("iwap_match_result", {})
             dynamic_verification = use_case_data.get("dynamic_verification", {})
-            data_extraction_verification = use_case_data.get("data_extraction_verification", {})
 
             # Format each task
             for idx, task_info in enumerate(tasks):
@@ -742,22 +737,6 @@ class WebVerificationPipeline:
                     }
 
                 formatted_use_case["matched"] = matched_data
-
-            if data_extraction_verification:
-                if data_extraction_verification.get("skipped", False):
-                    formatted_use_case["data_extraction_verification"] = {
-                        "skipped": True,
-                        "reason": data_extraction_verification.get("reason", ""),
-                        "seed": data_extraction_verification.get("seed"),
-                    }
-                else:
-                    formatted_use_case["data_extraction_verification"] = {
-                        "seed": data_extraction_verification.get("seed"),
-                        "all_passed": data_extraction_verification.get("all_passed", False),
-                        "passed_count": data_extraction_verification.get("passed_count", 0),
-                        "total_count": data_extraction_verification.get("total_count", 0),
-                        "results": data_extraction_verification.get("results", []),
-                    }
 
             formatted_results["use_cases"][use_case_name] = formatted_use_case
 
@@ -1518,9 +1497,6 @@ class WebVerificationPipeline:
             "dataset_diverse": [],
             "dataset_not_diverse": [],
             "dataset_untested": [],
-            "data_extraction_passed": [],
-            "data_extraction_failed": [],
-            "data_extraction_untested": [],
             "has_solution": [],
             "no_solution": [],
             "truly_dynamic": [],
@@ -1558,16 +1534,6 @@ class WebVerificationPipeline:
                     categories["dataset_not_diverse"].append(use_case_name)
             else:
                 categories["dataset_untested"].append(use_case_name)
-
-            # Data extraction trajectories verification
-            data_extraction_verification = use_case_data.get("data_extraction_verification", {})
-            if data_extraction_verification and not data_extraction_verification.get("skipped", False):
-                if data_extraction_verification.get("all_passed", False):
-                    categories["data_extraction_passed"].append(use_case_name)
-                else:
-                    categories["data_extraction_failed"].append(use_case_name)
-            else:
-                categories["data_extraction_untested"].append(use_case_name)
 
             # Solution Availability (IWAP)
             iwap_status = use_case_data.get("iwap_status", {})

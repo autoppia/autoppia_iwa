@@ -34,7 +34,6 @@ from autoppia_iwa.src.demo_webs.data_extraction_trajectory_registry import (
     supported_data_extraction_trajectory_project_ids,
 )
 from autoppia_iwa.src.demo_webs.trajectory_registry import remap_url_to_frontend
-from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.evaluation.stateful_evaluator import AsyncStatefulEvaluator
 from autoppia_iwa.src.execution.actions.actions import ExtractAction, NavigateAction
 from autoppia_iwa.src.execution.actions.base import BaseAction
@@ -264,7 +263,6 @@ async def _run_selected(
     task_generator = (
         SimpleTaskGenerator(
             web_project=project,
-            llm_service=DIContainer.llm_service(),
         )
         if project is not None
         else None

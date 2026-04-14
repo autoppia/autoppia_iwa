@@ -1,1 +1,1 @@
-"""Scripted trajectories for autocinema (project 01)."""
+"""Data-extraction trajectories for autocinema (project 01)."""

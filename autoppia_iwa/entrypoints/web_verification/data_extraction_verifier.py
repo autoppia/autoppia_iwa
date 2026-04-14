@@ -18,7 +18,6 @@ from autoppia_iwa.src.data_generation.tasks.simple.simple_task_generator import 
 from autoppia_iwa.src.demo_webs.classes import DataExtractionTrajectory, WebProject
 from autoppia_iwa.src.demo_webs.data_extraction_trajectory_registry import get_data_extraction_trajectories
 from autoppia_iwa.src.demo_webs.trajectory_registry import remap_url_to_frontend
-from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.evaluation.stateful_evaluator import AsyncStatefulEvaluator
 from autoppia_iwa.src.execution.actions.actions import ExtractAction, NavigateAction
 from autoppia_iwa.src.execution.actions.base import BaseAction
@@ -278,7 +277,6 @@ class DataExtractionTrajectoryVerifier:
         if self.task_generator is None:
             self.task_generator = SimpleTaskGenerator(
                 web_project=self.web_project,
-                llm_service=DIContainer.llm_service(),
             )
         return await self.task_generator._load_dataset(seed)
 

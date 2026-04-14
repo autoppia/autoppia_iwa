@@ -5,15 +5,12 @@ import re
 from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
 from hashlib import sha1
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from pydantic import BaseModel, Field, ValidationError
 
 from autoppia_iwa.src.execution.actions.actions import NavigateAction
 from autoppia_iwa.src.execution.actions.base import BaseAction
-
-if TYPE_CHECKING:
-    from autoppia_iwa.src.data_generation.tests.classes import BaseTaskTest
 
 # Constants
 CONSTRAINTS_INFO_PLACEHOLDER = "<constraints_info>"
@@ -315,54 +312,6 @@ class BackendEvent(BaseModel):
     user_id: int | None = None
     web_agent_id: str | None = None
     timestamp: Any | None = None
-
-
-@dataclass
-class Trajectory:
-    """
-    Per-use-case deterministic flow that replays a concrete sequence of browser actions.
-    """
-
-    name: str
-    prompt: str
-    actions: list[BaseAction] | None
-    tests: list["BaseTaskTest"] | None = None
-
-    @staticmethod
-    def _to_step_tool_call(action: BaseAction) -> dict[str, Any]:
-        tool_call = action.to_tool_call()
-        name = str(tool_call.get("name") or "").strip()
-        arguments = dict(tool_call.get("arguments") or {})
-        if name.startswith("browser.") or name.startswith("user."):
-            return {"name": name, "arguments": arguments}
-        namespaced = "user.request_input" if name == "request_user_input" else f"browser.{name}"
-        return {"name": namespaced, "arguments": arguments}
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "name": self.name,
-            "prompt": self.prompt,
-            "actions": [self._to_step_tool_call(action) for action in (self.actions or [])],
-            "tests": [t.model_dump() for t in (self.tests or [])] if self.tests else [],
-        }
-
-    def to_step_tool_calls_trajectory(self) -> dict[str, Any]:
-        actions = self.actions or []
-        url: str | None = None
-        for action in actions:
-            if isinstance(action, NavigateAction) and getattr(action, "url", None):
-                url = action.url
-                break
-
-        tool_actions = [self._to_step_tool_call(x) for x in actions]
-        return {
-            "url": url,
-            "prompt": self.prompt or None,
-            "actions": tool_actions,
-            "use_case": self.name,
-            "has_success": bool(tool_actions),
-            "action_format": "step_tool_calls",
-        }
 
 
 @dataclass
