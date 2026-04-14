@@ -427,12 +427,12 @@ class ChooseTimelineEvent(Event, BaseEventValidator):
 
 class SetRateRangeEvent(Event, BaseEventValidator):
     event_name: str = "SET_RATE_RANGE"
-    rate_from: str | None = None
-    rate_to: str | None = None
+    rate_from: int | None = None
+    rate_to: int | None = None
 
     class ValidationCriteria(BaseModel):
-        rate_from: str | CriterionValue | None = None
-        rate_to: str | CriterionValue | None = None
+        rate_from: int | CriterionValue | None = None
+        rate_to: int | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         return _validate_criteria_fields(self, criteria, ["rate_from", "rate_to"])
@@ -441,7 +441,7 @@ class SetRateRangeEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "SetRateRangeEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
-        return cls(**_base_event_kwargs(base_event, rate_from=data.get("rateFrom"), rate_to=data.get("rateTo")))
+        return cls(**_base_event_kwargs(base_event, rate_from=int(data.get("rateFrom")), rate_to=int(data.get("rateTo"))))
 
 
 class WriteJobDescriptionEvent(Event, BaseEventValidator):
