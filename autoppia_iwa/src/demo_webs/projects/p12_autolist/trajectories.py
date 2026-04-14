@@ -161,6 +161,14 @@ _TASK_FORM_SUBMIT_IDS = (
     "confirm-task-button",
     "task-submit",
 )
+# CreateTeamModal okButtonProps id pool (id-variants.json "create-team-button")
+_TEAM_MODAL_SAVE_IDS = (
+    "create-team-button",
+    "add-team-button",
+    "new-team-button",
+    "confirm-team-button",
+    "submit-team-button",
+)
 _EDIT_MODAL_SAVE_IDS = (
     "save-changes-button",
     "update-task-button",
@@ -178,6 +186,12 @@ def _task_form_submit_button() -> Selector:
 def _edit_modal_save_button() -> Selector:
     """Submit in task **edit** mode (V3 id pool from web_12 id-variants.json)."""
     union = " | ".join(f"//button[@id='{i}']" for i in _EDIT_MODAL_SAVE_IDS)
+    return _xp(f"({union})[1]")
+
+
+def _team_modal_save_button() -> Selector:
+    """Create team modal OK (V3 id pool; class e.g. team-save-button is seed-dependent)."""
+    union = " | ".join(f"//div[contains(@class,'ant-modal')]//button[@id='{i}']" for i in _TEAM_MODAL_SAVE_IDS)
     return _xp(f"({union})[1]")
 
 
@@ -619,8 +633,9 @@ AUTOLIST_TEAM_CREATED = _uc(
         ClickAction(selector=_team_modal_role_select_for_member("John Doe")),
         WaitAction(time_seconds=0.3),
         *_select_ant_option_containing("Developer"),
-        SendKeysIWAAction(keys="Escape"),
-        ClickAction(selector=_xp("*[@id='new-team-button']/span")),
+        # Do not send Escape here: the role Select closes on pick; Escape would hit the Modal
+        # and close it without saving (keyboard on Modal is on by default).
+        ClickAction(selector=_team_modal_save_button()),
         WaitAction(time_seconds=1.0),
     ],
 )
