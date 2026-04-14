@@ -100,7 +100,7 @@ async def _run_one(
 
     evaluator = AsyncStatefulEvaluator(
         task=task,
-        web_agent_id="debug-trajectory",
+        web_agent_id="1",
         should_record_gif=False,
         capture_screenshot=False,
         headless=headless,
@@ -159,10 +159,10 @@ def main() -> int:
         sys.argv.extend(
             [
                 "-p",
-                "autocinema",
-                # "-u",
-                # "ADD_NEW_CALENDAR",
-                # "--no-headless",
+                "autowork",
+                "-u",
+                "EDIT_ABOUT",
+                "--no-headless",
             ]
         )
 

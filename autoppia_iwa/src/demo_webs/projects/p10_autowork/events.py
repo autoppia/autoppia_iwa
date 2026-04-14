@@ -609,6 +609,12 @@ class EditProfileNameEvent(Event, BaseEventValidator):
 class EditAboutEvent(EditProfileNameEvent):
     event_name: str = "EDIT_ABOUT"
 
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "EditAboutEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(**_base_event_kwargs(base_event, value=data.get("about")))
+
 
 class EditProfileTitleEvent(EditProfileNameEvent):
     event_name: str = "EDIT_PROFILE_TITLE"
