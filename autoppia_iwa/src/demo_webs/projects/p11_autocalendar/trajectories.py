@@ -295,7 +295,7 @@ _DELETE_ADDED_EVENT = Trajectory(
     name="DELETE_ADDED_EVENT",
     prompt="Delete an added event from the month grid.",
     actions=[
-        *_nav_home(),
+        *_ADD_EVENT.actions,
         *_open_view_menu(),
         *_pick_view_aria("Month"),
         ClickAction(selector=_xp("(//button[starts-with(@aria-label,'Edit event:')])[1]")),
