@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import datetime
+
 from autoppia_iwa.src.data_generation.tests.classes import BaseTaskTest
 from autoppia_iwa.src.demo_webs.classes import Trajectory
 from autoppia_iwa.src.execution.actions import ClickAction, EvaluateAction, HoldKeyAction, NavigateAction, SendKeysIWAAction, TypeAction, WaitAction
@@ -39,6 +41,54 @@ _CAL_POP = "//div[@data-testid='date-picker-input-popover']"
 # shadcn DayPicker: day cells are ghost buttons with h-8 w-8 (see web_13 DatePickerInput).
 _CAL_DAY_BTN = f"{_CAL_POP}//button[contains(@class,'h-8')][contains(@class,'w-8')][not(@disabled)][not(contains(@class,'day-outside'))]"
 PICKUP_CARD_ID = "dyn-pickup-card-0-3061"
+PICK_DATE_JS = r"""async (params) => {
+  const { year, month, day } = params;
+  const MONTHS = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ];
+  const calendar = document.querySelector('[data-testid="date-picker-input-calendar"]');
+  if (!calendar) return { ok: false, error: "no calendar" };
+
+  const parseCaption = () => {
+    const el =
+      calendar.querySelector(".rdp-caption_start .text-sm.font-medium") ||
+      calendar.querySelector('[role="presentation"].text-sm.font-medium');
+    const text = el?.textContent?.trim() ?? "";
+    const m = text.match(/^(\w+)\s+(\d{4})$/);
+    if (!m) return null;
+    const mi = MONTHS.indexOf(m[1]);
+    if (mi < 0) return null;
+    return { monthIndex: mi, year: Number(m[2], 10) };
+  };
+
+  const targetKey = year * 12 + (month - 1);
+  for (let i = 0; i < 36; i++) {
+    const cur = parseCaption();
+    if (!cur) return { ok: false, error: "caption" };
+    const curKey = cur.year * 12 + cur.monthIndex;
+    if (curKey === targetKey) break;
+    const btn =
+      curKey > targetKey
+        ? calendar.querySelector('button[name="previous-month"]')
+        : calendar.querySelector('button[name="next-month"]');
+    if (!btn || btn.disabled) return { ok: false, error: "nav" };
+    btn.click();
+    await new Promise((r) => setTimeout(r, 0));
+  }
+
+  const dayBtn = [...calendar.querySelectorAll('button[name="day"]')].find(
+    (btn) =>
+      !btn.classList.contains("day-outside") &&
+      !btn.disabled &&
+      Number(btn.textContent.trim()) === day
+  );
+  if (!dayBtn) return { ok: false, error: "day not found" };
+
+  dayBtn.scrollIntoView({ block: "nearest", inline: "nearest" });
+  dayBtn.click();
+  return { ok: true };
+}"""
 
 
 def _trip(seed: int = DEFAULT_SEED) -> str:
@@ -292,14 +342,14 @@ _RAW_TESTS: dict[str, list[dict]] = {
         }
     ],
     "SELECT_DATE": [
-        {"type": "CheckEventTest", "event_name": "SELECT_DATE", "event_criteria": {"date": {"operator": "less_than", "value": "2026-04-06"}}, "description": "Check if specific event was triggered"}
+        {"type": "CheckEventTest", "event_name": "SELECT_DATE", "event_criteria": {"date": {"operator": "greater_than", "value": "2026-04-06"}}, "description": "Check if specific event was triggered"}
     ],
     "SELECT_TIME": [{"type": "CheckEventTest", "event_name": "SELECT_TIME", "event_criteria": {"time": "19:20:00"}, "description": "Check if specific event was triggered"}],
     "NEXT_PICKUP": [
         {
             "type": "CheckEventTest",
             "event_name": "NEXT_PICKUP",
-            "event_criteria": {"date": {"operator": "less_than", "value": "2026-04-06"}, "time": {"operator": "not_equals", "value": "23:10:00"}},
+            "event_criteria": {"date": {"operator": "greater_than", "value": "2026-04-06"}, "time": {"operator": "not_equals", "value": "23:10:00"}},
             "description": "Check if specific event was triggered",
         }
     ],
@@ -323,7 +373,7 @@ _RAW_TESTS: dict[str, list[dict]] = {
                 "location": {"operator": "contains", "value": "- Phoenix,"},
                 "destination": {"operator": "not_equals", "value": "Atlanta Medical Hospital - 3188 First Ave, Atlanta, GA 30348, USA"},
                 "ride_name": {"operator": "not_contains", "value": "pmc"},
-                "scheduled": "2026-04-05 15:30:00",
+                "scheduled": {"operator": "greater_than", "value": "2026-04-05 15:30:00"},
             },
             "description": "Check if specific event was triggered",
         }
@@ -336,7 +386,7 @@ _RAW_TESTS: dict[str, list[dict]] = {
                 "location": {"operator": "not_contains", "value": "fbs"},
                 "destination": {"operator": "not_equals", "value": "Chase Center - 1 Warriors Way, San Francisco, CA 94158, USA"},
                 "ride_name": {"operator": "contains", "value": "ed"},
-                "scheduled": {"operator": "less_equal", "value": "2026-04-08 16:30:00"},
+                "scheduled": {"operator": "greater_equal", "value": "2026-04-08 16:30:00"},
             },
             "description": "Check if specific event was triggered",
         }
@@ -362,7 +412,7 @@ _RAW_TESTS: dict[str, list[dict]] = {
                 "location": "Cafe Restaurant - 4629 Maple Dr, Chicago, IL 60608, USA",
                 "destination": "Cafe Restaurant - 4629 Maple Dr, Chicago, IL 60608, USA",
                 "ride_name": {"operator": "not_equals", "value": "Night 64"},
-                "scheduled": {"operator": "less_than", "value": "2026-04-04 15:30:00"},
+                "scheduled": {"operator": "greater_than", "value": "2026-04-04 15:30:00"},
             },
             "description": "Check if specific event was triggered",
         }
@@ -374,6 +424,9 @@ _TESTS: dict[str, list[BaseTaskTest]] = {uc: [BaseTaskTest.deserialize(p) for p 
 
 def _uc(use_case: str, prompt: str, actions: list[BaseAction]) -> Trajectory:
     return Trajectory(name=use_case, prompt=prompt, actions=actions, tests=_TESTS[use_case])
+
+
+TODAY = datetime.date.today()
 
 
 ENTER_LOCATION = _uc(
@@ -418,12 +471,13 @@ SEARCH_DESTINATION = _uc(
 
 SELECT_DATE = _uc(
     "SELECT_DATE",
-    prompt="Select date for your trip that is before '2026-04-06'.",
+    prompt="Select date for your trip that is after '2026-04-06'.",
     actions=[
         NavigateAction(url=_pickupnow(SEED_SELECT_DATE)),
         WaitAction(time_seconds=1.2),
         *_open_pickupnow_date_popover(),
-        *_pick_calendar_day_index(1),
+        EvaluateAction(script=PICK_DATE_JS, arg={"year": TODAY.year, "month": TODAY.month, "day": TODAY.day + 1}),
+        WaitAction(time_seconds=0.2),
     ],
 )
 
@@ -433,9 +487,6 @@ SELECT_TIME = _uc(
     actions=[
         NavigateAction(url=_pickupnow(SEED_SELECT_TIME)),
         WaitAction(time_seconds=1.2),
-        # *_open_pickupnow_date_popover(),
-        # *_pick_calendar_day_index(5),
-        # *_close_date_popover(),
         *_open_time_slot_panel(),
         *_click_time_label_contains("7:20 PM"),
     ],
@@ -443,12 +494,12 @@ SELECT_TIME = _uc(
 
 NEXT_PICKUP = _uc(
     "NEXT_PICKUP",
-    prompt=("Next pickup, please select a date that is BEFORE '2026-04-06' and a time that is NOT '23:10:00'."),
+    prompt=("Next pickup, please select a date that is AFTER '2026-04-06' and a time that is NOT '23:10:00'."),
     actions=[
         NavigateAction(url=_pickupnow(SEED_NEXT_PICKUP)),
         WaitAction(time_seconds=1.2),
         *_open_pickupnow_date_popover(),
-        *_pick_calendar_day_index(1),
+        EvaluateAction(script=PICK_DATE_JS, arg={"year": TODAY.year, "month": TODAY.month, "day": TODAY.day + 1}),
         *_close_date_popover(),
         *_open_time_slot_panel(),
         *_click_time_label_contains("10:00"),
@@ -478,7 +529,7 @@ SELECT_CAR = _uc(
     prompt=(
         "Select car options for a ride where the location CONTAINS 'Phoenix', the destination is NOT "
         "'Atlanta Medical Hospital - 3188 First Ave, Atlanta, GA 30348, USA', the ride_name does NOT CONTAIN 'pmc', "
-        "and the scheduled time is '2026-04-05 15:30:00'."
+        "and the scheduled time is after '2026-04-05 15:30:00'."
     ),
     actions=[
         NavigateAction(url=_trip(SEED_SELECT_CAR)),
@@ -490,11 +541,7 @@ SELECT_CAR = _uc(
             ),
         ),
         ClickAction(
-            selector=Selector(
-                type=SelectorType.ATTRIBUTE_VALUE_SELECTOR,
-                attribute="data-testid",
-                value="date-display",
-            ),
+            selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="data-testid", value="date-display"),
         ),
         ClickAction(
             selector=Selector(
@@ -504,30 +551,13 @@ SELECT_CAR = _uc(
         ),
         SendKeysIWAAction(keys="Escape"),
         ClickAction(
-            selector=Selector(
-                type=SelectorType.ATTRIBUTE_VALUE_SELECTOR,
-                attribute="id",
-                value=PICKUP_CARD_ID,
-            ),
+            selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value=PICKUP_CARD_ID),
         ),
-        ClickAction(
-            selector=Selector(
-                type=SelectorType.XPATH_SELECTOR,
-                value="//*[@id='slot-picker-div']/span",
-            ),
-        ),
+        ClickAction(selector=Selector(type=SelectorType.XPATH_SELECTOR, value="//*[@id='slot-picker-div']/span")),
         HoldKeyAction(key="Alt"),
-        ClickAction(
-            selector=Selector(type=SelectorType.TAG_CONTAINS_SELECTOR, value="03:30 PM", case_sensitive=True),
-        ),
+        ClickAction(selector=Selector(type=SelectorType.TAG_CONTAINS_SELECTOR, value="03:30 PM", case_sensitive=True)),
         HoldKeyAction(key="Alt", release=True),
-        ClickAction(
-            selector=Selector(
-                type=SelectorType.ATTRIBUTE_VALUE_SELECTOR,
-                attribute="id",
-                value="pickupnow-confirm-button",
-            ),
-        ),
+        ClickAction(selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="pickupnow-confirm-button")),
         *_enter_pickup("Phoenix Airport (IAH) - Phoenix, AZ 85023, USA"),
         *_enter_dropoff(LOC_CORPORATE_TOWER),
         *_click_search(),
@@ -541,7 +571,7 @@ RESERVE_RIDE = _uc(
     prompt=(
         "Reserve ride for a vehicle where the location does NOT contain 'fbs', the destination does NOT equal "
         "'Chase Center - 1 Warriors Way, San Francisco, CA 94158, USA', the ride_name contains 'ed', "
-        "and the scheduled time is less than or equal to '2026-04-08 16:30:00'."
+        "and the scheduled time is greater than or equal to '2026-04-08 16:30:00'."
     ),
     actions=[
         NavigateAction(url=_trip(SEED_RESERVE_RIDE)),
@@ -553,11 +583,7 @@ RESERVE_RIDE = _uc(
             ),
         ),
         ClickAction(
-            selector=Selector(
-                type=SelectorType.ATTRIBUTE_VALUE_SELECTOR,
-                attribute="data-testid",
-                value="date-picker-input-trigger",
-            ),
+            selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="data-testid", value="date-picker-input-trigger"),
         ),
         ClickAction(
             selector=Selector(
@@ -567,23 +593,13 @@ RESERVE_RIDE = _uc(
         ),
         SendKeysIWAAction(keys="Escape"),
         ClickAction(
-            selector=Selector(
-                type=SelectorType.ATTRIBUTE_VALUE_SELECTOR,
-                attribute="id",
-                value="time-select-wrapper",
-            ),
+            selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="time-select-wrapper"),
         ),
         HoldKeyAction(key="Alt"),
-        ClickAction(
-            selector=Selector(type=SelectorType.TAG_CONTAINS_SELECTOR, value="04:30 PM", case_sensitive=True),
-        ),
+        ClickAction(selector=Selector(type=SelectorType.TAG_CONTAINS_SELECTOR, value="04:30 PM", case_sensitive=True)),
         HoldKeyAction(key="Alt", release=True),
         ClickAction(
-            selector=Selector(
-                type=SelectorType.ATTRIBUTE_VALUE_SELECTOR,
-                attribute="id",
-                value="pickupnow-proceed-button",
-            ),
+            selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="pickupnow-proceed-button"),
         ),
         *_enter_pickup(LOC_1HOTEL),
         *_enter_dropoff(LOC_VAN_NESS),
@@ -598,24 +614,17 @@ TRIP_DETAILS = _uc(
     "TRIP_DETAILS",
     prompt=(
         "View trip details for a trip where the location equals 'Lincoln Garden - 7904 Lincoln Ave, Miami, FL 33200, USA', "
-        "the destination contains 'S', the ride_name contains 'V 14', and the scheduled time is less than or equal to "
+        "the destination contains 'S', the ride_name contains 'V 14', and the scheduled time is greater than or equal to "
         "'2026-04-03 14:20:00'."
     ),
     actions=[
         NavigateAction(url=_trip(SEED_TRIP_DETAILS)),
         WaitAction(time_seconds=0.65),
         ClickAction(
-            selector=Selector(
-                type=SelectorType.XPATH_SELECTOR,
-                value='//*[@id="layout-main"]/div/div/div[1]/section/div[5]',
-            ),
+            selector=Selector(type=SelectorType.XPATH_SELECTOR, value='//*[@id="layout-main"]/div/div/div[1]/section/div[5]'),
         ),
         ClickAction(
-            selector=Selector(
-                type=SelectorType.ATTRIBUTE_VALUE_SELECTOR,
-                attribute="data-testid",
-                value="date-display",
-            ),
+            selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="data-testid", value="date-display"),
         ),
         ClickAction(
             selector=Selector(
@@ -625,20 +634,12 @@ TRIP_DETAILS = _uc(
         ),
         SendKeysIWAAction(keys="Escape"),
         ClickAction(
-            selector=Selector(
-                type=SelectorType.ATTRIBUTE_VALUE_SELECTOR,
-                attribute="id",
-                value="time-picker-div",
-            ),
+            selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="time-picker-div"),
         ),
         HoldKeyAction(key="Alt"),
-        ClickAction(
-            selector=Selector(type=SelectorType.TAG_CONTAINS_SELECTOR, value="04:20 PM", case_sensitive=True),
-        ),
+        ClickAction(selector=Selector(type=SelectorType.TAG_CONTAINS_SELECTOR, value="04:20 PM", case_sensitive=True)),
         HoldKeyAction(key="Alt", release=True),
-        ClickAction(
-            selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="pickupnow-confirm-btn"),
-        ),
+        ClickAction(selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="pickupnow-confirm-btn")),
         *_enter_pickup(LOC_LINCOLN_GARDEN_MIAMI),
         *_enter_dropoff(LOC_SFO),
         *_click_search(),
@@ -650,7 +651,9 @@ TRIP_DETAILS = _uc(
         ClickAction(
             selector=Selector(
                 type=SelectorType.XPATH_SELECTOR,
-                value=("//div[contains(.,'Lincoln Garden')][contains(.,'7904')]//button[contains(normalize-space(.),'Detail')][1]"),
+                value=(
+                    "//div[contains(@class,'text-gray-500') and contains(.,'Lincoln Garden')]/ancestor::div[contains(@class,'rounded-2xl')][1]//button[contains(normalize-space(.),'View Information')]"
+                ),
             )
         ),
         WaitAction(time_seconds=0.6),
@@ -662,7 +665,7 @@ CANCEL_RESERVATION = _uc(
     prompt=(
         "Cancel reservation for the trip with ID where the location equals 'Cafe Restaurant - 4629 Maple Dr, Chicago, IL 60608, USA' "
         "and the destination equals 'Cafe Restaurant - 4629 Maple Dr, Chicago, IL 60608, USA' and the ride_name is NOT 'Night 64' "
-        "and the scheduled time is BEFORE '2026-04-04 15:30:00'."
+        "and the scheduled time is AFTER '2026-04-04 15:30:00'."
     ),
     actions=[
         NavigateAction(url=_trip(SEED_CANCEL_RESERVATION)),
