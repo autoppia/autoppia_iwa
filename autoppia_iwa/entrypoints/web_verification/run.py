@@ -354,6 +354,12 @@ async def main():
             if not skipped and data_extraction.get("all_passed") is False:
                 all_passed = False
 
+        data_extraction_task_generation = results.get("data_extraction_task_generation_verification", {})
+        if isinstance(data_extraction_task_generation, dict):
+            skipped = data_extraction_task_generation.get("skipped", False)
+            if not skipped and data_extraction_task_generation.get("all_passed") is False:
+                all_passed = False
+
         sys.exit(0 if all_passed else 1)
 
     except KeyboardInterrupt:

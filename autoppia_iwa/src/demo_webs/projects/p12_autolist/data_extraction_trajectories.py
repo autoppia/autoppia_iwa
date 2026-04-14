@@ -7,37 +7,37 @@ PROJECT_ID = "autolist"
 
 _TRAJECTORY_SPECS: list[dict[str, str | int]] = [
     {
-        "use_case": "AUTOLIST_ADD_TASK_CLICKED",
+        "use_case": "FIND_PROJECTS",
         "seed": SEED,
         "question": "What is the name of the task where created at is '2025-01-15'?",
         "expected_answer": "Complete project proposal",
     },
     {
-        "use_case": "AUTOLIST_SELECT_DATE_FOR_TASK",
+        "use_case": "FIND_TEAMS",
         "seed": SEED,
         "question": "What is the description of the task where name is 'Complete project proposal'?",
         "expected_answer": "Write and submit the quarterly project proposal with all required documentation",
     },
     {
-        "use_case": "AUTOLIST_SELECT_TASK_PRIORITY",
+        "use_case": "FIND_CHAT",
         "seed": SEED,
         "question": "What is the priority of the task where name is 'Complete project proposal'?",
         "expected_answer": "1",
     },
     {
-        "use_case": "AUTOLIST_EDIT_TASK_MODAL_OPENED",
+        "use_case": "FIND_TASK",
         "seed": SEED,
         "question": "What is the status of the task where name is 'Complete project proposal'?",
         "expected_answer": "pending",
     },
     {
-        "use_case": "AUTOLIST_COMPLETE_TASK",
+        "use_case": "FIND_PROJECTS",
         "seed": SEED,
         "question": "What is the created at of the task where name is 'Complete project proposal'?",
         "expected_answer": "2025-01-15",
     },
     {
-        "use_case": "AUTOLIST_DELETE_TASK",
+        "use_case": "FIND_TEAMS",
         "seed": SEED,
         "question": "What is the due date of the task where name is 'Complete project proposal'?",
         "expected_answer": "2025-01-20",

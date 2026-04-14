@@ -533,6 +533,19 @@ class Benchmark:
                 return cached_tasks
         return await self._generate_tasks_for_project(project)
 
+    def _get_task_cache_dir(self) -> str:
+        """
+        Return the cache directory for generated tasks.
+
+        Keeps event tasks and data-extraction tasks separated:
+        - event_only -> benchmark-output/cache/tasks
+        - data_extraction_only -> benchmark-output/cache/DataExtraction
+        """
+        cache_root = self.config.base_dir / "benchmark-output" / "cache"
+        if getattr(self.config, "test_types", "event_only") == "data_extraction_only":
+            return str(cache_root / "DataExtraction")
+        return str(cache_root / "tasks")
+
     async def _generate_tasks_for_project(self, project: WebProject) -> list[Task]:
         from autoppia_iwa.entrypoints.benchmark.utils.task_generation import load_tasks_from_json, save_tasks_to_json
         from autoppia_iwa.src.data_generation.tasks.classes import TaskGenerationConfig
@@ -540,8 +553,7 @@ class Benchmark:
 
         # Check if we should use cached tasks
         use_cached = getattr(self.config, "use_cached_tasks", False)
-        # Same path as config: benchmark-output/cache/tasks
-        cache_dir = str(self.config.base_dir / "benchmark-output" / "cache" / "tasks")
+        cache_dir = self._get_task_cache_dir()
 
         if use_cached:
             cached_tasks = await load_tasks_from_json(project, cache_dir)
@@ -627,7 +639,7 @@ class Benchmark:
 
             # Aggregate results by agent (include metrics for report) and log task_end
             for _idx, ev in enumerate(evaluations):
-                use_case_name = getattr(task.use_case, "name", "Unknown")
+                use_case_name = getattr(task.use_case, "name", getattr(task, "de_use_case_name", "Unknown"))
                 execution_history = getattr(ev, "execution_history", [])
                 # Store actions in IWA format (tool_calls: list of {name, arguments})
                 if execution_history:

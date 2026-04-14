@@ -26,7 +26,7 @@ def test_data_extraction_registry_supports_expected_projects() -> None:
 
 
 def test_data_extraction_registry_counts_match_supported_use_cases() -> None:
-    expected_counts = {
+    expected_trajectory_counts = {
         "autobooks": 8,
         "autocalendar": 11,
         "autocinema": 7,
@@ -44,12 +44,30 @@ def test_data_extraction_registry_counts_match_supported_use_cases() -> None:
         "autowork": 12,
         "autozone": 7,
     }
+    expected_unique_use_case_counts = {
+        "autobooks": 4,
+        "autocalendar": 1,
+        "autocinema": 4,
+        "autoconnect": 3,
+        "autocrm": 3,
+        "autodelivery": 3,
+        "autodining": 5,
+        "autodrive": 2,
+        "autodiscord": 5,
+        "autohealth": 6,
+        "autolist": 4,
+        "autolodge": 4,
+        "automail": 4,
+        "autostats": 5,
+        "autowork": 5,
+        "autozone": 4,
+    }
 
-    for project_id, expected_count in expected_counts.items():
+    for project_id, expected_count in expected_trajectory_counts.items():
         trajectories = get_data_extraction_trajectories(project_id)
         assert trajectories is not None
         assert len(trajectories) == expected_count
-        assert len({trajectory.use_case for trajectory in trajectories}) == expected_count
+        assert len({trajectory.use_case for trajectory in trajectories}) == expected_unique_use_case_counts[project_id]
 
 
 def test_data_extraction_registry_payload_shape_all_projects() -> None:
@@ -82,13 +100,10 @@ def test_data_extraction_trajectory_autocinema_seed1_payload_is_valid() -> None:
     assert len(trajectories) == 7
 
     expected_use_cases = {
-        "FILM_DETAIL",
-        "SEARCH_FILM",
-        "FILTER_FILM",
-        "ADD_TO_WATCHLIST",
-        "SHARE_MOVIE",
-        "WATCH_TRAILER",
-        "DELETE_FILM",
+        "FIND_DIRECTOR",
+        "FIND_MOVIE",
+        "FIND_ACTOR",
+        "FIND_YEAR",
     }
     assert {trajectory.use_case for trajectory in trajectories} == expected_use_cases
 

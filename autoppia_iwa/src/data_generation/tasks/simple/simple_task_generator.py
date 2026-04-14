@@ -101,6 +101,20 @@ class SimpleTaskGenerator:
         web_use_cases = self.web_project.use_cases
 
         if test_types == "data_extraction_only":
+            # Prefer dedicated DE use cases if the project provides them.
+            # This keeps DE task generation separated from regular event-use-case generation.
+            generated_from_de_use_cases = await self._generate_de_tasks_from_project_use_cases(
+                prompts_per_use_case=prompts_per_use_case,
+                dynamic=dynamic,
+                data_extraction_use_cases=data_extraction_use_cases,
+            )
+            if generated_from_de_use_cases is not None:
+                _log_task_generation(
+                    f"Generated {len(generated_from_de_use_cases)} DEtasks from dedicated DE use cases for project '{self.web_project.id}'",
+                    context="DATA_EXTRACTION",
+                )
+                return generated_from_de_use_cases
+
             if data_extraction_use_cases is not None:
                 web_use_cases = [uc for uc in self.web_project.use_cases if uc.name in data_extraction_use_cases]
             # Minimal extra filter: when running data_extraction_only without an explicit whitelist,
@@ -148,6 +162,46 @@ class SimpleTaskGenerator:
                 continue
 
         return all_tasks
+
+    async def _generate_de_tasks_from_project_use_cases(
+        self,
+        *,
+        prompts_per_use_case: int,
+        dynamic: bool,
+        data_extraction_use_cases: list[str] | None,
+    ) -> list[Task] | None:
+        project_module_name = self._get_project_module_name()
+        if not project_module_name:
+            return None
+
+        module_path = f"autoppia_iwa.src.demo_webs.projects.{project_module_name}.dataExtractionUseCases"
+        try:
+            de_module = importlib.import_module(module_path)
+        except ImportError:
+            return None
+
+        generate_fn = getattr(de_module, "generate_de_tasks", None)
+        if not callable(generate_fn):
+            return None
+
+        selected_use_cases = {name.strip().upper() for name in data_extraction_use_cases or [] if str(name).strip()}
+        selected_use_cases = selected_use_cases or None
+
+        iterations = int(prompts_per_use_case) if prompts_per_use_case and int(prompts_per_use_case) > 0 else 1
+        tasks: list[Task] = []
+        for _ in range(iterations):
+            task_url = self._build_task_url_with_seed(dynamic=dynamic)
+            seed = get_seed_from_url(task_url) if dynamic else 1
+            generated = generate_fn(
+                seed=seed,
+                task_url=task_url,
+                selected_use_cases=selected_use_cases,
+            )
+            de_tasks = await generated if inspect.isawaitable(generated) else generated
+            if isinstance(de_tasks, list):
+                tasks.extend([task for task in de_tasks if isinstance(task, Task)])
+
+        return tasks
 
     async def generate_tasks_for_use_case(
         self,

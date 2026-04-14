@@ -7,49 +7,49 @@ PROJECT_ID = "autobooks"
 
 _TRAJECTORY_SPECS: list[dict[str, str | int]] = [
     {
-        "use_case": "SEARCH_BOOK",
+        "use_case": "FIND_BOOK",
         "seed": SEED,
         "question": "What is the name of the book where year is '-800'?",
         "expected_answer": "The Odyssey",
     },
     {
-        "use_case": "FILTER_BOOK",
+        "use_case": "FIND_AUTHOR",
         "seed": SEED,
         "question": "What is the year of the book where name is 'The Odyssey'?",
         "expected_answer": "-800",
     },
     {
-        "use_case": "DELETE_BOOK",
+        "use_case": "FIND_PAGES",
         "seed": SEED,
         "question": "What is the img of the book where name is 'The Odyssey'?",
         "expected_answer": "/media/gallery/9780140268867.webp",
     },
     {
-        "use_case": "BOOK_DETAIL",
+        "use_case": "FIND_RATING",
         "seed": SEED,
         "question": "Who is the director for the book where name is 'The Odyssey'?",
         "expected_answer": "Homer",
     },
     {
-        "use_case": "SHARE_BOOK",
+        "use_case": "FIND_BOOK",
         "seed": SEED,
         "question": "What is the duration of the book where name is 'The Odyssey'?",
         "expected_answer": "541",
     },
     {
-        "use_case": "OPEN_PREVIEW",
+        "use_case": "FIND_AUTHOR",
         "seed": SEED,
         "question": "What is the trailer url of the book where name is 'The Odyssey'?",
         "expected_answer": "https://www.bookstores.com/books/edition/_/9780140268867?hl=en&gbpv=1",
     },
     {
-        "use_case": "ADD_TO_READING_LIST",
+        "use_case": "FIND_PAGES",
         "seed": SEED,
         "question": "What is the rating of the book where name is 'The Odyssey'?",
         "expected_answer": "4.7",
     },
     {
-        "use_case": "ADD_TO_CART_BOOK",
+        "use_case": "FIND_RATING",
         "seed": SEED,
         "question": "What is the price of the book where name is 'The Odyssey'?",
         "expected_answer": "12.99",

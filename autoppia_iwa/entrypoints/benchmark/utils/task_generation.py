@@ -18,7 +18,10 @@ from autoppia_iwa.src.demo_webs.classes import WebProject
 def get_cache_filename(project: WebProject, task_cache_dir: str) -> Path:
     """Generate a project-specific cache filename based on the project's name or ID."""
     safe_name = project.id.replace("/", "_").replace("\\", "_")
-    return Path(task_cache_dir) / f"{safe_name}_tasks.json"
+    cache_dir = Path(task_cache_dir)
+    is_data_extraction_cache = "dataextraction" in cache_dir.as_posix().lower()
+    filename = f"{safe_name}_DE_tasks.json" if is_data_extraction_cache else f"{safe_name}_tasks.json"
+    return cache_dir / filename
 
 
 def _write_tasks_to_file(filename: Path, cache_data: dict) -> None:

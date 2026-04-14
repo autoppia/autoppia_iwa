@@ -7,43 +7,43 @@ PROJECT_ID = "autozone"
 
 _TRAJECTORY_SPECS: list[dict[str, str | int]] = [
     {
-        "use_case": "VIEW_DETAIL",
+        "use_case": "FIND_PRODUCT",
         "seed": SEED,
         "question": "What is the title of the product where price is '$89.99'?",
         "expected_answer": "Professional Blender",
     },
     {
-        "use_case": "DETAILS_TOGGLE",
+        "use_case": "FIND_PRICE",
         "seed": SEED,
         "question": "What is the price of the product where title is 'Professional Blender'?",
         "expected_answer": "$89.99",
     },
     {
-        "use_case": "SHARE_PRODUCT",
+        "use_case": "FIND_BRAND",
         "seed": SEED,
         "question": "What is the image of the product where price is '$89.99'?",
         "expected_answer": "/images/homepage_categories/blender.jpg",
     },
     {
-        "use_case": "SEARCH_PRODUCT",
+        "use_case": "FIND_CATEGORY",
         "seed": SEED,
         "question": "What is the description of the product where price is '$89.99'?",
         "expected_answer": "High-speed professional blender with multiple speed settings and durable stainless steel blades.",
     },
     {
-        "use_case": "CATEGORY_FILTER",
+        "use_case": "FIND_PRODUCT",
         "seed": SEED,
         "question": "What is the category of the product where price is '$89.99'?",
         "expected_answer": "Kitchen",
     },
     {
-        "use_case": "ADD_TO_CART",
+        "use_case": "FIND_PRICE",
         "seed": SEED,
         "question": "What is the rating of the product where price is '$89.99'?",
         "expected_answer": "4.5",
     },
     {
-        "use_case": "ADD_TO_WISHLIST",
+        "use_case": "FIND_BRAND",
         "seed": SEED,
         "question": "What is the brand of the product where price is '$89.99'?",
         "expected_answer": "BlendPro",

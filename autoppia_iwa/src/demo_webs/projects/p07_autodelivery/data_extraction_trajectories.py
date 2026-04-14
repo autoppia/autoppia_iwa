@@ -7,43 +7,43 @@ PROJECT_ID = "autodelivery"
 
 _TRAJECTORY_SPECS: list[dict[str, str | int]] = [
     {
-        "use_case": "SEARCH_DELIVERY_RESTAURANT",
+        "use_case": "FIND_RESTAURANT",
         "seed": SEED,
         "question": "What is the name of the restaurant where description is 'Authentic Italian cuisine with fresh ingredients and traditional recipes.'?",
         "expected_answer": "Bella Vista",
     },
     {
-        "use_case": "VIEW_DELIVERY_RESTAURANT",
+        "use_case": "FIND_RATING",
         "seed": SEED,
         "question": "What is the description of the restaurant where name is 'Bella Vista'?",
         "expected_answer": "Authentic Italian cuisine with fresh ingredients and traditional recipes.",
     },
     {
-        "use_case": "RESTAURANT_FILTER",
+        "use_case": "FIND_PLATE",
         "seed": SEED,
         "question": "What is the image of the restaurant where name is 'Bella Vista'?",
         "expected_answer": "/images/restaurant1.jpg",
     },
     {
-        "use_case": "DELETE_REVIEW",
+        "use_case": "FIND_RESTAURANT",
         "seed": SEED,
         "question": "What is the cuisine of the restaurant where name is 'Bella Vista'?",
         "expected_answer": "Italian",
     },
     {
-        "use_case": "ADD_TO_CART_MODAL_OPEN",
+        "use_case": "FIND_RATING",
         "seed": SEED,
         "question": "What is the rating of the restaurant where name is 'Bella Vista'?",
         "expected_answer": "4.8",
     },
     {
-        "use_case": "ADD_TO_CART_MENU_ITEM",
+        "use_case": "FIND_PLATE",
         "seed": SEED,
         "question": "What is the delivery time of the restaurant where name is 'Bella Vista'?",
         "expected_answer": "25-35 min",
     },
     {
-        "use_case": "QUICK_REORDER",
+        "use_case": "FIND_RESTAURANT",
         "seed": SEED,
         "question": "What is the pickup time of the restaurant where name is 'Bella Vista'?",
         "expected_answer": "10 min",

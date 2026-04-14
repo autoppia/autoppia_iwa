@@ -1,6 +1,7 @@
 from autoppia_iwa.src.demo_webs.classes import WebProject
 
 from ...utils import get_backend_service_url, get_frontend_url, get_web_version
+from .dataExtractionUseCases import DATA_EXTRACTION_USE_CASES
 from .events import EVENTS
 from .use_cases import ALL_USE_CASES
 
@@ -14,4 +15,5 @@ lodge_project = WebProject(
     version=get_web_version("autolodge", frontend_url=_frontend_url),
     events=EVENTS,
     use_cases=ALL_USE_CASES,
+    data_extraction_use_cases=[item.name for item in DATA_EXTRACTION_USE_CASES],
 )

@@ -7,37 +7,37 @@ PROJECT_ID = "autodrive"
 
 _TRAJECTORY_SPECS: list[dict[str, str | int]] = [
     {
-        "use_case": "SELECT_DATE",
+        "use_case": "FIND_RIDE",
         "seed": SEED,
         "question": "What is the label of the place where main is '1 Hotel San Francisco'?",
         "expected_answer": "1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA",
     },
     {
-        "use_case": "SELECT_TIME",
+        "use_case": "FIND_DATE",
         "seed": SEED,
         "question": "What is the main of the place where label is '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'?",
         "expected_answer": "1 Hotel San Francisco",
     },
     {
-        "use_case": "SEARCH",
+        "use_case": "FIND_RIDE",
         "seed": SEED,
         "question": "What is the sub of the place where label is '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'?",
         "expected_answer": "8 Mission St, San Francisco, CA 94105, USA",
     },
     {
-        "use_case": "SELECT_CAR",
+        "use_case": "FIND_DATE",
         "seed": SEED,
         "question": "What is the category of the place where label is '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'?",
         "expected_answer": "hotel",
     },
     {
-        "use_case": "RESERVE_RIDE",
+        "use_case": "FIND_RIDE",
         "seed": SEED,
         "question": "What is the latitude of the place where label is '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'?",
         "expected_answer": "37.7937",
     },
     {
-        "use_case": "TRIP_DETAILS",
+        "use_case": "FIND_DATE",
         "seed": SEED,
         "question": "What is the longitude of the place where label is '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'?",
         "expected_answer": "-122.3929",

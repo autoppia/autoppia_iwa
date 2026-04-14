@@ -78,6 +78,16 @@ class Task(BaseModel):
         serialized["tests"] = [test.model_dump() for test in self.tests]
         if self.use_case:
             serialized["use_case"] = self.use_case.serialize()
+
+        # Keep DE task payload minimal in cache/exports.
+        if serialized.get("task_type") == "DEtask":
+            serialized.pop("tests", None)
+            serialized.pop("specifications", None)
+            serialized.pop("use_case", None)
+            serialized.pop("should_record", None)
+            serialized.pop("is_web_real", None)
+            serialized.pop("task_type", None)
+            serialized.pop("original_prompt", None)
         return serialized
 
     @classmethod
