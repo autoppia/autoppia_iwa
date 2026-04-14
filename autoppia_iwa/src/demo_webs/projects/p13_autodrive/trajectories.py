@@ -670,7 +670,7 @@ CANCEL_RESERVATION = _uc(
     actions=[
         NavigateAction(url=_trip(SEED_CANCEL_RESERVATION)),
         WaitAction(time_seconds=0.65),
-        *_prime_schedule("2026-04-03", "11:00", SEED_CANCEL_RESERVATION),
+        *_prime_schedule("2026-04-05", "11:00", SEED_CANCEL_RESERVATION),
         *_enter_pickup(LOC_CAFE_MAPLE),
         *_enter_dropoff(LOC_CAFE_MAPLE),
         *_click_search(),
@@ -681,7 +681,7 @@ CANCEL_RESERVATION = _uc(
         ClickAction(
             selector=Selector(
                 type=SelectorType.XPATH_SELECTOR,
-                value=("//div[contains(.,'4629')][contains(.,'Cafe Restaurant')]//div[contains(@class,'flex-col')][contains(@class,'items-end')]//button[last()]"),
+                value=("//div[contains(.,'Cafe Restaurant - 4629 Maple Dr')]/ancestor::div[contains(@class,'rounded-2xl')][1]//button[contains(normalize-space(.),'Delete')]"),
             )
         ),
         WaitAction(time_seconds=0.6),
