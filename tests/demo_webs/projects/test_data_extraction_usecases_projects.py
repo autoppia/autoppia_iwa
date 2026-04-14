@@ -69,13 +69,7 @@ async def test_generate_de_tasks_for_each_project_module(monkeypatch, module_pat
 async def test_generate_de_tasks_respects_selected_use_cases(monkeypatch, module_path: str):
     module = importlib.import_module(module_path)
     first_uc = module.DATA_EXTRACTION_USE_CASES[0].name
-    if len(module.DATA_EXTRACTION_USE_CASES) > 1:
-        selected_input = {
-            first_uc.lower(),
-            f" {module.DATA_EXTRACTION_USE_CASES[1].name} ",
-        }
-    else:
-        selected_input = {f" {first_uc.lower()} "}
+    selected_input = {first_uc.lower(), f" {module.DATA_EXTRACTION_USE_CASES[1].name} "} if len(module.DATA_EXTRACTION_USE_CASES) > 1 else {f" {first_uc.lower()} "}
 
     async def _fake_fetch_data(*args, **kwargs):
         _ = args, kwargs

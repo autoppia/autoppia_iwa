@@ -115,4 +115,3 @@ def test_normalize_and_keep_non_empty_rows_and_pick_row():
 
     picked = common.pick_row(rows=[{"x": 1}, {"x": 2}, {"x": 3}], seed=2, offset=1)
     assert picked in [{"x": 1}, {"x": 2}, {"x": 3}]
-
