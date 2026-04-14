@@ -81,8 +81,6 @@ VIEW_DMS_USE_CASE = UseCase(
     event=ViewDmsEvent,
     event_source_code=ViewDmsEvent.get_source_code_of_class(),
     constraints_generator=generate_view_dms_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=VIEW_DMS_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Open Direct Messages.", "prompt_for_task_generation": "Open Direct Messages."},
     ],
@@ -129,9 +127,7 @@ SELECT_SERVER_USE_CASE = UseCase(
     event=SelectServerEvent,
     event_source_code=SelectServerEvent.get_source_code_of_class(),
     constraints_generator=generate_select_server_constraints,
-    supports_data_extraction=True,
     additional_prompt_info=SELECT_SERVER_ADDITIONAL_PROMPT_INFO,
-    additional_prompt_info_for_data_extraction_task=SELECT_SERVER_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Select the server where server_name equals 'Dev Squad'.", "prompt_for_task_generation": "Select the server where server_name equals 'Dev Squad'."},
         {"prompt": "Select the server where server_name equals 'Gaming Zone'.", "prompt_for_task_generation": "Select the server where server_name equals 'Gaming Zone'."},
@@ -169,9 +165,7 @@ SELECT_CHANNEL_USE_CASE = UseCase(
     event=SelectChannelEvent,
     event_source_code=SelectChannelEvent.get_source_code_of_class(),
     constraints_generator=generate_select_channel_constraints,
-    supports_data_extraction=True,
     additional_prompt_info=SELECT_CHANNEL_ADDITIONAL_PROMPT_INFO,
-    additional_prompt_info_for_data_extraction_task=SELECT_CHANNEL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Select the channel where channel_name equals 'general' and server_name equals 'Dev Squad'.",
@@ -238,9 +232,7 @@ ADD_REACTION_USE_CASE = UseCase(
     event=AddReactionEvent,
     event_source_code=AddReactionEvent.get_source_code_of_class(),
     constraints_generator=generate_add_reaction_constraints,
-    supports_data_extraction=True,
     additional_prompt_info=ADD_REACTION_ADDITIONAL_PROMPT_INFO,
-    additional_prompt_info_for_data_extraction_task=ADD_REACTION_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Add a reaction where channel_name equals 'general' and server_name equals 'Dev Squad' and content that contains 'Hello'.",
@@ -488,9 +480,7 @@ JOIN_VOICE_CHANNEL_USE_CASE = UseCase(
     event=JoinVoiceChannelEvent,
     event_source_code=JoinVoiceChannelEvent.get_source_code_of_class(),
     constraints_generator=generate_join_voice_channel_constraints,
-    supports_data_extraction=True,
     additional_prompt_info=JOIN_VOICE_CHANNEL_ADDITIONAL_PROMPT_INFO,
-    additional_prompt_info_for_data_extraction_task=JOIN_VOICE_CHANNEL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Join the voice channel where channel_name equals 'voice-chat' and server_name equals 'Dev Squad'.",

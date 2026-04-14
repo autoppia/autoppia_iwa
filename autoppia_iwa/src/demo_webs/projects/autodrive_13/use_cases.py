@@ -192,8 +192,6 @@ SELECT_DATE_USE_CASE = UseCase(
     event_source_code=SelectDateEvent.get_source_code_of_class(),
     constraints_generator=generate_select_date_constraints,
     additional_prompt_info=SELECT_DATE_ADDITIONAL_INFO,
-    additional_prompt_info_for_data_extraction_task=SELECT_DATE_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {
             "prompt": "Select date equals '2025-08-20'",
@@ -257,8 +255,6 @@ SELECT_TIME_USE_CASE = UseCase(
     event_source_code=SelectTimeEvent.get_source_code_of_class(),
     constraints_generator=generate_select_time_constraints,
     additional_prompt_info=SELECT_TIME_ADDITIONAL_INFO,
-    additional_prompt_info_for_data_extraction_task=SELECT_TIME_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {
             "prompt": "Select time equals '10:00:00'",
@@ -373,8 +369,6 @@ SEARCH_RIDE_USE_CASE = UseCase(
     event_source_code=SearchRideEvent.get_source_code_of_class(),
     constraints_generator=generate_search_ride_constraints,
     additional_prompt_info=SEARCH_RIDE_ADDITIONAL_INFO,
-    additional_prompt_info_for_data_extraction_task=CAR_SEARCH_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {
             "prompt": "Search ride after successfully selects pickup location from dropdown that is not equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
@@ -440,8 +434,6 @@ SELECT_CAR_USE_CASE = UseCase(
     event_source_code=SelectCarEvent.get_source_code_of_class(),
     constraints_generator=generate_select_car_constraints,
     additional_prompt_info=SELECT_CAR_ADDITIONAL_INFO,
-    additional_prompt_info_for_data_extraction_task=SELECT_CAR_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {
             "prompt": "Select car with ride name 'AutoDriverX' and eta equals '1 min away · 1:39 PM'",
@@ -515,8 +507,6 @@ RESERVE_RIDE_USE_CASE = UseCase(
     event_source_code=ReserveRideEvent.get_source_code_of_class(),
     constraints_generator=generate_reserve_ride_constraints,
     additional_prompt_info=RESERVE_RIDE_ADDITIONAL_INFO,
-    additional_prompt_info_for_data_extraction_task=RESERVE_RIDE_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {
             "prompt": "Reserve ride where ride name is not equals 'AutoDriverX' and pickup equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
@@ -587,8 +577,6 @@ TRIP_DETAILS_USE_CASE = UseCase(
     event_source_code=TripDetailsEvent.get_source_code_of_class(),
     constraints_generator=generate_trip_details_constraints,
     additional_prompt_info=TRIP_DETAILS_ADDITIONAL_INFO,
-    additional_prompt_info_for_data_extraction_task=TRIP_DETAILS_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {
             "prompt": "View trip details where ride name is not equals 'AutoDriverX' and pickup equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",

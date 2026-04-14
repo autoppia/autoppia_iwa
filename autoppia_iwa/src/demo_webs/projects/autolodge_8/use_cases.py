@@ -85,8 +85,6 @@ SEARCH_HOTEL_USE_CASE = UseCase(
     event_source_code=SearchHotelEvent.get_source_code_of_class(),
     constraints_generator=generate_search_hotel_constraints,
     additional_prompt_info=SEARCH_HOTEL_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=SEARCH_HOTEL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Search for hotels where search term is Murree from July 25 to July 28 for 2 adults and 1 child",
@@ -162,8 +160,6 @@ VIEW_HOTEL_USE_CASE = UseCase(
     event_source_code=ViewHotelEvent.get_source_code_of_class(),
     constraints_generator=generate_view_hotel_constraints,
     additional_prompt_info=VIEW_HOTEL_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=VIEW_HOTEL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "View the hotel located in Murree with 5-star rating and free breakfast. Can you show me more about it?",
@@ -242,8 +238,6 @@ ADD_TO_WISHLIST_USE_CASE = UseCase(
     event_source_code=AddToWishlistEvent.get_source_code_of_class(),
     constraints_generator=generate_view_hotel_constraints,
     additional_prompt_info=ADD_TO_WISHLIST_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=ADD_TO_WISHLIST_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Add that beautiful hotel in Skardu with the river view to my wishlist.",
@@ -338,8 +332,6 @@ SHARE_HOTEL_USE_CASE = UseCase(
     event_source_code=ShareHotelEvent.get_source_code_of_class(),
     constraints_generator=generate_share_hotel_constraints,
     additional_prompt_info=SHARE_HOTEL_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=SHARE_HOTEL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Share the hotel listing with zoe.baker@civicgroup.org where the title does NOT contain lcu, location does NOT contain pep, rating equals 4.5, price is less than or equal to 198, reviews are less than or equal to 44, available from a date before 2025-07-16 00:00:00 to a date on or after 2025-07-16 00:00:00, for 5 guests, hosted by Brian, and amenities do NOT contain Art-inspired decor.",
@@ -430,8 +422,6 @@ EDIT_NUMBER_OF_GUESTS_USE_CASE = UseCase(
     event=EditNumberOfGuestsEvent,
     event_source_code=EditNumberOfGuestsEvent.get_source_code_of_class(),
     constraints_generator=generate_edit_guests_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=EDIT_NUMBER_OF_GUESTS_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Set total guests to 4 for this booking.", "prompt_for_task_generation": "Set total guests to 4 for this booking."},
         {"prompt": "Change the guests count to 2.", "prompt_for_task_generation": "Change the guests count to 2."},
@@ -499,8 +489,6 @@ RESERVE_HOTEL_USE_CASE = UseCase(
     event_source_code=ReserveHotelEvent.get_source_code_of_class(),
     constraints_generator=generate_reserve_hotel_constraints,
     additional_prompt_info=RESERVE_HOTEL_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=RESERVE_HOTEL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Reserve hotel from 5th to 9th August for 2 guests.",
@@ -586,8 +574,6 @@ EDIT_CHECK_IN_OUT_DATES_USE_CASE = UseCase(
     event_source_code=EditCheckInOutDatesEvent.get_source_code_of_class(),
     constraints_generator=generate_edit_checkin_checkout_constraints,
     additional_prompt_info=EDIT_CHECK_IN_OUT_DATES_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=EDIT_CHECK_IN_OUT_DATES_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Edit checkin checkout dates where checkin date '2025-08-20 00:00:00', and checkout date less than or equal '2025-10-24 00:00:00'.",
@@ -744,8 +730,6 @@ MESSAGE_HOST_USE_CASE = UseCase(
     event_source_code=MessageHostEvent.get_source_code_of_class(),
     constraints_generator=generate_message_host_constraints,
     additional_prompt_info=MESSAGE_HOST_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=MESSAGE_HOST_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Message host Natalie where message contains 'ly check-in possible?', title contains 'cozy' and location equals 'New York'",
@@ -881,8 +865,6 @@ APPLY_FILTERS_USE_CASE = UseCase(
     event=ApplyFilterEvent,
     event_source_code=ApplyFilterEvent.get_source_code_of_class(),
     constraints_generator=generate_apply_filter_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=APPLY_FILTERS_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Apply filters for rating at least 4.5, and region contains Italy.",

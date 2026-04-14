@@ -252,8 +252,6 @@ FILM_DETAIL_USE_CASE = UseCase(
     event_source_code=FilmDetailEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
     constraints_generator=generate_film_detail_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=FILM_DETAIL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Navigate to The Matrix movie page",
@@ -339,8 +337,6 @@ ADD_TO_WATCHLIST_USE_CASE = UseCase(
     replace_func=login_and_film_replace_func,
     additional_prompt_info=None,  # Will be populated dynamically from API
     constraints_generator=generate_add_to_watchlist_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=ADD_TO_WATCHLIST_FILM_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Login with the username equals <username> and password equals <password> and then add to watchlist The Matrix movie",
@@ -476,8 +472,6 @@ SHARE_FILM_USE_CASE = UseCase(
     event_source_code=ShareFilmEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
     constraints_generator=generate_share_film_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=SHARE_FILM_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Share The Matrix movie",
@@ -564,8 +558,6 @@ WATCH_TRAILER_USE_CASE = UseCase(
     event_source_code=WatchTrailer.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
     constraints_generator=generate_watch_trailer_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=WATCH_TRAILER_FILM_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Watch the trailer for The Matrix movie",
@@ -643,8 +635,6 @@ SEARCH_FILM_USE_CASE = UseCase(
     replace_func=replace_film_placeholders,
     constraints_generator=generate_search_film_constraints,
     additional_prompt_info=SEARCH_FILM_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=SEARCH_FILM_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Look for the film 'The Shawshank Redemption'",
@@ -841,8 +831,6 @@ DELETE_FILM_USE_CASE = UseCase(
     event_source_code=DeleteFilmEvent.get_source_code_of_class(),
     additional_prompt_info=DELETE_FILM_ADDITIONAL_PROMPT_INFO,
     constraints_generator=generate_delete_film_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=DELETE_FILM_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Log in with username equals user<web_agent_id> and password equals <password>. Then, delete your movie.",
@@ -1052,8 +1040,6 @@ FILTER_FILM_USE_CASE = UseCase(
     event_source_code=FilterFilmEvent.get_source_code_of_class(),
     constraints_generator=generate_film_filter_constraints,
     additional_prompt_info=None,  # Will be populated dynamically from API
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=FILTER_FILM_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Filter movies released in the year 1994",

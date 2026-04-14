@@ -212,8 +212,6 @@ ADD_NEW_CALENDAR_USE_CASE = UseCase(
     event_source_code=AddNewCalendarEvent.get_source_code_of_class(),
     constraints_generator=generate_add_new_calendar_constraints,
     additional_prompt_info=ADD_NEW_CALENDAR_INFO,
-    additional_prompt_info_for_data_extraction_task=ADD_NEW_CALENDAR_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {"prompt": "Click the add calendar button.", "prompt_for_task_generation": "Click add calendar."},
         {"prompt": "Press the button to add a calendar.", "prompt_for_task_generation": "Click add calendar button."},
@@ -267,8 +265,6 @@ CREATE_CALENDAR_USE_CASE = UseCase(
     event_source_code=CreateCalendarEvent.get_source_code_of_class(),
     constraints_generator=generate_create_calendar_constraints,
     additional_prompt_info=CREATE_CALENDAR_INFO,
-    additional_prompt_info_for_data_extraction_task=CREATE_NEW_CALENDAR_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {
             "prompt": "Create a 'Projects' calendar for my job-related events.",
@@ -344,8 +340,6 @@ UNSELECT_CALENDAR_USE_CASE = UseCase(
     event_source_code=UnselectCalendarEvent.get_source_code_of_class(),
     constraints_generator=generate_unselect_calendar_constraints,
     additional_prompt_info=UNSELECT_CALENDAR_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=UNSELECT_CALENDAR_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Hide the Personal calendar.", "prompt_for_task_generation": "Unselect the Personal calendar."},
         {"prompt": "I don't want to see the Fitness calendar right now.", "prompt_for_task_generation": "Hide the Fitness calendar."},
@@ -410,8 +404,6 @@ SELECT_CALENDAR_USE_CASE = UseCase(
     event_source_code=SelectCalendarEvent.get_source_code_of_class(),
     constraints_generator=generate_unselect_calendar_constraints,
     additional_prompt_info=SELECT_CALENDAR_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=SELECT_CALENDAR_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Show the Personal calendar.", "prompt_for_task_generation": "Select the Personal calendar."},
         {"prompt": "I want to see the Fitness calendar right now.", "prompt_for_task_generation": "Show the Fitness calendar."},
@@ -652,8 +644,6 @@ DELETE_ADDED_EVENT_USE_CASE = UseCase(
     event_source_code=DeleteAddedEventEvent.get_source_code_of_class(),
     constraints_generator=generate_add_event_constraints,
     additional_prompt_info=DELETE_ADDED_EVENT_INFO,
-    additional_prompt_info_for_data_extraction_task=DELETE_ADDED_EVENT_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {
             "prompt": "Delete an added event whose title equals 'Team Meeting' and calendar equals 'Work' and date equals '2025-09-20' and start_time equals '10:00' and end_time equals '11:00'.",
@@ -724,8 +714,6 @@ EVENT_WIZARD_OPEN_USE_CASE = UseCase(
     event_source_code=EventWizardOpenEvent.get_source_code_of_class(),
     constraints_generator=generate_event_wizard_open_constraints,
     additional_prompt_info=EVENT_WIZARD_OPEN_INFO,
-    additional_prompt_info_for_data_extraction_task=EVENT_WIZARD_OPEN_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {"prompt": "Open the form to add a new event.", "prompt_for_task_generation": "Open the new event wizard."},
         {"prompt": "I want to edit the 'Team Meeting' event.", "prompt_for_task_generation": "Open the event wizard to edit 'Team Meeting'."},
@@ -782,8 +770,6 @@ SEARCH_SUBMIT_USE_CASE = UseCase(
     event_source_code=SearchSubmitEvent.get_source_code_of_class(),
     constraints_generator=generate_search_submit_constraints,
     additional_prompt_info=SEARCH_SUBMIT_INFO,
-    additional_prompt_info_for_data_extraction_task=SEARCH_SUBMIT_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {"prompt": "Search for 'work'", "prompt_for_task_generation": "Search for 'work'"},
         {"prompt": "Find events with 'meeting'", "prompt_for_task_generation": "Search for 'meeting'"},
@@ -846,8 +832,6 @@ EVENT_ADD_REMINDER_USE_CASE = UseCase(
     event_source_code=EventAddReminderEvent.get_source_code_of_class(),
     constraints_generator=generate_event_reminder_constraints,
     additional_prompt_info=EVENT_ADD_REMINDER_INFO,
-    additional_prompt_info_for_data_extraction_task=EVENT_ADD_REMINDER_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {"prompt": "Add a 30-minute reminder to the event.", "prompt_for_task_generation": "Add a 30-minute reminder."},
         {"prompt": "Set a reminder for 10 minutes before.", "prompt_for_task_generation": "Add a 10-minute reminder."},
@@ -911,8 +895,6 @@ EVENT_REMOVE_REMINDER_USE_CASE = UseCase(
     event_source_code=EventRemoveReminderEvent.get_source_code_of_class(),
     constraints_generator=generate_event_reminder_constraints,
     additional_prompt_info=EVENT_REMOVE_REMINDER_INFO,
-    additional_prompt_info_for_data_extraction_task=EVENT_REMOVE_REMINDER_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {
             "prompt": "Remove the 30-minute reminder. If it's not there, add it first, then remove it.",
@@ -984,8 +966,6 @@ EVENT_ADD_ATTENDEE_USE_CASE = UseCase(
     event_source_code=EventAddAttendeeEvent.get_source_code_of_class(),
     constraints_generator=generate_event_attendee_constraints,
     additional_prompt_info=EVENT_ADD_ATTENDEE_INFO,
-    additional_prompt_info_for_data_extraction_task=EVENT_ADD_ATTENDEE_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {"prompt": "Add 'test@example.com' as an attendee.", "prompt_for_task_generation": "Add attendee 'test@example.com'."},
         {"prompt": "Invite 'user1@work.com' to this event.", "prompt_for_task_generation": "Add attendee 'user1@work.com'."},
@@ -1041,8 +1021,6 @@ EVENT_REMOVE_ATTENDEE_USE_CASE = UseCase(
     event_source_code=EventRemoveAttendeeEvent.get_source_code_of_class(),
     constraints_generator=generate_event_attendee_constraints,
     additional_prompt_info=EVENT_REMOVE_ATTENDEE_INFO,
-    additional_prompt_info_for_data_extraction_task=EVENT_REMOVE_ATTENDEE_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {"prompt": "Remove 'test@example.com' from the attendees.", "prompt_for_task_generation": "Remove attendee 'test@example.com'."},
         {"prompt": "Uninvite 'user1@work.com' from this event.", "prompt_for_task_generation": "Remove attendee 'user1@work.com'."},

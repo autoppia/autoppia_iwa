@@ -97,8 +97,6 @@ VIEW_EMAIL_USE_CASE = UseCase(
     event_source_code=ViewEmailEvent.get_source_code_of_class(),
     constraints_generator=generate_view_email_constraints,
     additional_prompt_info=VIEW_EMAIL_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=VIEW_EMAIL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "View the email where email_from equals 'alice.smith@company.com' and subject equals 'Project Kickoff Meeting'",
@@ -195,8 +193,6 @@ STAR_EMAIL_USE_CASE = UseCase(
     event_source_code=StarEmailEvent.get_source_code_of_class(),
     constraints_generator=generate_is_starred_constraints,
     additional_prompt_info=STAR_EMAIL_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=STAR_AN_EMAIL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Star the email where from_email equals 'grace.lee@company.com' and subject equals 'Team Outing Plan'",
@@ -268,8 +264,6 @@ MARK_EMAIL_AS_IMPORTANT_USE_CASE = UseCase(
     event_source_code=MarkEmailAsImportantEvent.get_source_code_of_class(),
     constraints_generator=generate_is_important_constraints,
     additional_prompt_info=MARK_EMAIL_AS_IMPORTANT_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=MARK_EMAIL_AS_IMPORTANT_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Mark the email important where from equals 'david.brown@company.com' and subject equals 'Q2 Report Feedback' and is_important equals 'True'.",
@@ -341,8 +335,6 @@ MARK_AS_UNREAD_USE_CASE = UseCase(
     event_source_code=MarkAsUnreadEvent.get_source_code_of_class(),
     constraints_generator=generate_is_read_constraints,
     additional_prompt_info=MARK_AS_UNREAD_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=MARK_AS_UNREAD_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Mark the email from 'emma.davis@yahoo.com' with subject 'Community Forum Update' as unread",
@@ -412,8 +404,6 @@ DELETE_EMAIL_USE_CASE = UseCase(
     event_source_code=DeleteEmailEvent.get_source_code_of_class(),
     constraints_generator=generate_view_email_constraints,
     additional_prompt_info=DELETE_EMAIL_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=DELETE_EMAIL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Delete the email from 'alice.smith@company.com' with subject 'Project Kickoff Meeting'",
@@ -483,8 +473,6 @@ MARK_AS_SPAM_USE_CASE = UseCase(
     event_source_code=MarkAsSpamEvent.get_source_code_of_class(),
     constraints_generator=generate_is_spam_constraints,
     additional_prompt_info=MARK_AS_SPAM_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=EMAIL_MARK_AS_SPAM_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Mark the email from 'alice.smith@company.com' with subject 'Project Kickoff Meeting' as spam",
@@ -698,8 +686,6 @@ EMAIL_SAVE_AS_DRAFT_USE_CASE = UseCase(
     event_source_code=EmailSaveAsDraftEvent.get_source_code_of_class(),
     constraints_generator=generate_draft_only_data_extraction_constraints,
     additional_prompt_info=SAVE_AS_DRAFT_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=EMAIL_SAVE_AS_DRAFT_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Save the email as draft where email equals jane.doe@example.com",
@@ -793,8 +779,6 @@ EDIT_DRAFT_EMAIL_USE_CASE = UseCase(
     event_source_code=EditDraftEmailEvent.get_source_code_of_class(),
     constraints_generator=generate_draft_only_data_extraction_constraints,
     additional_prompt_info=EDIT_DRAFT_EMAIL_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=EDIT_DRAFT_EMAIL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Edit the draft email where to equals 'jane.doe@example.com' and subject equals 'Client Proposal Updates'.",
@@ -857,8 +841,6 @@ ARCHIVE_EMAIL_USE_CASE = UseCase(
     event_source_code=ArchiveEmailEvent.get_source_code_of_class(),
     constraints_generator=generate_archive_email_constraints,
     additional_prompt_info=ARCHIVE_EMAIL_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=ARCHIVE_EMAIL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Archive the email whose from email equals 'alice.smith@company.com' and subject equals 'Project Kickoff Meeting'.",
@@ -926,8 +908,6 @@ REPLY_EMAIL_USE_CASE = UseCase(
     event_source_code=ReplyEmailEvent.get_source_code_of_class(),
     constraints_generator=generate_save_as_draft_send_email_constraints,
     additional_prompt_info=REPLY_EMAIL_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=REPLY_EMAIL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Reply to the email where from_email equals 'bob.johnson@tech.org' and subject equals 'Lunch Plans'.",
@@ -988,8 +968,6 @@ FORWARD_EMAIL_USE_CASE = UseCase(
     event_source_code=ForwardEmailEvent.get_source_code_of_class(),
     constraints_generator=generate_save_as_draft_send_email_constraints,
     additional_prompt_info=FORWARD_EMAIL_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=FORWARD_EMAIL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Forward the email where subject equals 'Q2 Report Feedback' and to equals 'john.doe@gmail.com'.",
@@ -1085,8 +1063,6 @@ SEARCH_EMAIL_USE_CASE = UseCase(
     event_source_code=SearchEmailEvent.get_source_code_of_class(),
     constraints_generator=generate_search_email_constraints,
     additional_prompt_info=SEARCH_EMAIL_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=SEARCH_EMAIL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Search for query containing 'Weekly Newsletter'",
@@ -1238,8 +1214,6 @@ TEMPLATE_SELECTED_USE_CASE = UseCase(
     event_source_code=TemplateSelectedEvent.get_source_code_of_class(),
     constraints_generator=generate_template_selection_constraints,
     additional_prompt_info=TEMPLATE_SELECTED_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=TEMPLATE_SELECTED_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Select the template where template_name equals 'Meeting Recap'.",
@@ -1310,8 +1284,6 @@ TEMPLATE_BODY_EDITED_USE_CASE = UseCase(
     event_source_code=TemplateBodyEditedEvent.get_source_code_of_class(),
     constraints_generator=generate_template_body_constraints,
     additional_prompt_info=TEMPLATE_BODY_EDITED_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=TEMPLATE_BODY_EDITED_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Update the body text of the template where template_name equals 'Warm Introduction'.",
@@ -1382,8 +1354,6 @@ TEMPLATE_SENT_USE_CASE = UseCase(
     event_source_code=TemplateSentEvent.get_source_code_of_class(),
     constraints_generator=generate_sent_template_constraints,
     additional_prompt_info=TEMPLATE_SENT_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=TEMPLATE_SENT_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Send an email using the template where template_name equals 'Friendly Follow Up'.",
@@ -1454,8 +1424,6 @@ TEMPLATE_SAVED_DRAFT_USE_CASE = UseCase(
     event_source_code=TemplateSavedDraftEvent.get_source_code_of_class(),
     constraints_generator=generate_sent_template_constraints,
     additional_prompt_info=TEMPLATE_SAVED_DRAFT_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=TEMPLATE_SAVED_DRAFT_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Save the template as draft where template_name equals 'Warm Introduction'.",
@@ -1526,8 +1494,6 @@ TEMPLATE_CANCELED_USE_CASE = UseCase(
     event_source_code=TemplateCanceledEvent.get_source_code_of_class(),
     constraints_generator=generate_sent_template_constraints,
     additional_prompt_info=TEMPLATE_CANCELED_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=TEMPLATE_CANCELED_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Cancel changes on the template where template_name equals 'Thank You'.",

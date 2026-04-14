@@ -35,7 +35,6 @@ VIEW_SUBNET_USE_CASE = UseCase(
     event=ViewSubnetEvent,
     event_source_code=ViewSubnetEvent.get_source_code_of_class(),
     constraints_generator=generate_view_subnet_constraints,
-    supports_data_extraction=True,
     additional_prompt_info=f"Use field names: subnet_name, emission, price, marketCap, volume24h. Format: 'View a subnet where <field> <operator> <value>'. {STRICT_COPY_INSTRUCTION}",
     examples=[
         {
@@ -55,7 +54,6 @@ VIEW_VALIDATOR_USE_CASE = UseCase(
     event=ViewValidatorEvent,
     event_source_code=ViewValidatorEvent.get_source_code_of_class(),
     constraints_generator=generate_view_validator_constraints,
-    supports_data_extraction=True,
     additional_prompt_info=f"Use field names: hotkey, rank, dominance, nominatorCount, totalWeight, rootStake, alphaStake, commission. Format: 'View a validator where <field> <operator> <value>'. {STRICT_COPY_INSTRUCTION}",
     examples=[
         {
@@ -75,7 +73,6 @@ VIEW_BLOCK_USE_CASE = UseCase(
     event=ViewBlockEvent,
     event_source_code=ViewBlockEvent.get_source_code_of_class(),
     constraints_generator=generate_view_block_constraints,
-    supports_data_extraction=True,
     additional_prompt_info="Use field names: number, hash, validator, epoch, extrinsicsCount, eventsCount. Format: 'View block where <field> <operator> <value>'.",
     examples=[
         {
@@ -95,7 +92,6 @@ VIEW_ACCOUNT_USE_CASE = UseCase(
     event=ViewAccountEvent,
     event_source_code=ViewAccountEvent.get_source_code_of_class(),
     constraints_generator=generate_view_account_constraints,
-    supports_data_extraction=True,
     additional_prompt_info=f"Use field names: rank, address, balance, stakedAmount, stakingRatio, accountType. Format: 'View account where <field> <operator> <value>'. {STRICT_COPY_INSTRUCTION}",
     examples=[
         {
@@ -203,7 +199,6 @@ TRANSFER_COMPLETE_USE_CASE = UseCase(
     event=TransferCompleteEvent,
     event_source_code=TransferCompleteEvent.get_source_code_of_class(),
     constraints_generator=generate_transfer_complete_constraints,
-    supports_data_extraction=True,
     additional_prompt_info=(
         f"Use field names: to, amount, block_number (amount and block_number are numbers). Format: 'Send X TAO to address Y' or 'Transfer amount Z to <address>'. {STRICT_COPY_INSTRUCTION}"
     ),

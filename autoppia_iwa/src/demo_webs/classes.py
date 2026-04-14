@@ -38,14 +38,6 @@ class UseCase(BaseModel):
         "Default to 'None'. Set 'False' when no dynamic constraints are needed and hence no events_criteria in CheckEventTest is generated.",
     )
     additional_prompt_info: str | None = Field(default=None)
-    # Used only when generating data-extraction task prompts. If set, overrides additional_prompt_info for that path.
-    additional_prompt_info_for_data_extraction_task: str | None = Field(
-        default=None,
-        description="Optional prompt info for data-extraction task generation. If set, used instead of additional_prompt_info when generating data-extraction questions.",
-    )
-    # Whether this use case supports data-extraction style tasks (question → answer about page data).
-    # This is used together with benchmark/test config to decide where to attach DataExtractionTest.
-    supports_data_extraction: bool = Field(default=False)
     # When constraint generator returns a dict with "question_fields_and_values", used for LLM prompt (entity identifier).
     question_fields_and_values: dict[str, Any] | None = Field(default=None, exclude=True)
 

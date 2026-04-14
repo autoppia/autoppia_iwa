@@ -74,8 +74,6 @@ SEARCH_RESTAURANT_USE_CASE = UseCase(
     event_source_code=SearchRestaurantEvent.get_source_code_of_class(),
     constraints_generator=generate_search_restaurant_constraints,
     additional_prompt_info=SEARCH_RESTAURANT_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=SEARCH_RESTAURANT_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Search for restaurants serving Italian cuisine.", "prompt_for_task_generation": "Search for restaurants serving Italian cuisine."},
         {"prompt": "Find restaurants with 'Sushi' in their name.", "prompt_for_task_generation": "Find restaurants with 'Sushi' in their name."},
@@ -126,8 +124,6 @@ VIEW_RESTAURANT_USE_CASE = UseCase(
     event_source_code=ViewRestaurantEvent.get_source_code_of_class(),
     constraints_generator=generate_view_restaurant_constraints,
     additional_prompt_info=VIEW_RESTAURANT_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=VIEW_RESTAURANT_DETAIL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "View details for 'Pizza Palace'.", "prompt_for_task_generation": "View details for 'Pizza Palace'."},
         {"prompt": "Show me the menu of the restaurant with cuisine 'Japanese'.", "prompt_for_task_generation": "Show me the menu of the restaurant with cuisine 'Japanese'."},
@@ -168,8 +164,6 @@ RESTAURANT_FILTER_USE_CASE = UseCase(
     event=RestaurantFilterEvent,
     event_source_code=RestaurantFilterEvent.get_source_code_of_class(),
     constraints_generator=generate_restaurant_filter_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=RESTAURANT_FILTER_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Filter restaurants to show only Italian cuisine with rating above 4.", "prompt_for_task_generation": "Filter restaurants to show only Italian cuisine with rating above 4."},
         {"prompt": "Show restaurants matching search 'pizza' and rating at least 4.5.", "prompt_for_task_generation": "Show restaurants matching search 'pizza' and rating at least 4.5."},
@@ -239,8 +233,6 @@ ADD_TO_CART_MODAL_OPEN_USE_CASE = UseCase(
     event_source_code=AddToCartModalOpenEvent.get_source_code_of_class(),
     constraints_generator=generate_add_to_cart_modal_open_constraints,
     additional_prompt_info=ADD_TO_CART_MODAL_OPEN_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=ADD_TO_CART_MODAL_OPEN_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Open the add-to-cart modal for 'Margherita Pizza' at 'Pizza Palace'.", "prompt_for_task_generation": "Open the add-to-cart modal for 'Margherita Pizza' at 'Pizza Palace'."},
         {"prompt": "Show the add-to-cart modal for 'Salmon Nigiri'.", "prompt_for_task_generation": "Show the add-to-cart modal for 'Salmon Nigiri'."},
@@ -346,8 +338,6 @@ ADD_TO_CART_USE_CASE = UseCase(
     event_source_code=AddToCartEvent.get_source_code_of_class(),
     constraints_generator=generate_add_to_cart_constraints,
     additional_prompt_info=ADD_TO_CART_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=ADD_TO_CART_MENU_ITEM_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Add when item equals 'Margherita Pizza' and size equals 'Large' to my cart.",
@@ -429,8 +419,6 @@ QUICK_REORDER_USE_CASE = UseCase(
     event=QuickReorderEvent,
     event_source_code=QuickReorderEvent.get_source_code_of_class(),
     constraints_generator=generate_quick_reorder_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=QUICK_REORDER_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Reorder the recent item 'California Roll' from Sushi Zen.", "prompt_for_task_generation": "Reorder the recent item 'California Roll' from Sushi Zen."},
         {"prompt": "Quick reorder my last pizza order.", "prompt_for_task_generation": "Quick reorder my last pizza order."},
@@ -659,8 +647,6 @@ DELETE_REVIEW_USE_CASE = UseCase(
     event_source_code=DeleteReviewEvent.get_source_code_of_class(),
     constraints_generator=generate_delete_review_constraints,
     additional_prompt_info=DELETE_REVIEW_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=DELETE_REVIEW_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Delete my review for 'Pizza Palace' written on 2025-06-02.", "prompt_for_task_generation": "Delete my review for 'Pizza Palace' written on 2025-06-02."},
         {"prompt": "Remove the review I wrote with a rating of 4.", "prompt_for_task_generation": "Remove the review I wrote with a rating of 4."},

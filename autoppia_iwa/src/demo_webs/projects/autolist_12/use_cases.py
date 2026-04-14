@@ -80,8 +80,6 @@ ADD_TASK_CLICKED_USE_CASE = UseCase(
     event_source_code=AddTaskClickedEvent.get_source_code_of_class(),
     constraints_generator=generate_add_task_clicked_constraints,
     additional_prompt_info=ADD_TASK_CLICKED_INFO,
-    additional_prompt_info_for_data_extraction_task=ADD_TASK_CLICKED_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {"prompt": "Click on the Add Task button to start.", "prompt_for_task_generation": "Click on the Add Task button to start."},
         {"prompt": "Please click the Add Task button.", "prompt_for_task_generation": "Please click the Add Task button."},
@@ -136,8 +134,6 @@ SELECT_DATE_FOR_TASK_USE_CASE = UseCase(
     event_source_code=SelectDateForTaskEvent.get_source_code_of_class(),
     constraints_generator=generate_select_date_for_task_constraints,
     additional_prompt_info=SELECT_DATE_FOR_TASK_INFO,
-    additional_prompt_info_for_data_extraction_task=SELECT_DATE_FOR_TASK_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {"prompt": "Set the date for this task to tomorrow.", "prompt_for_task_generation": "Set the date for this task to tomorrow."},
         {"prompt": "I need to schedule this for June 5th.", "prompt_for_task_generation": "I need to schedule this for June 5th."},
@@ -197,8 +193,6 @@ SELECT_TASK_PRIORITY_USE_CASE = UseCase(
     event_source_code=SelectTaskPriorityEvent.get_source_code_of_class(),
     constraints_generator=generate_select_task_priority_constraints,
     additional_prompt_info=SELECT_TASK_PRIORITY_INFO,
-    additional_prompt_info_for_data_extraction_task=SELECT_TASK_PRIORITY_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {"prompt": "Set the priority to high.", "prompt_for_task_generation": "Set the priority to high."},
         {"prompt": "Make this a low priority task.", "prompt_for_task_generation": "Make this a low priority task."},
@@ -353,8 +347,6 @@ EDIT_TASK_MODAL_OPENED_USE_CASE = UseCase(
     event_source_code=EditTaskModalOpenedEvent.get_source_code_of_class(),
     constraints_generator=generate_task_constraints,
     additional_prompt_info=EDIT_TASK_MODAL_OPENED_INFO,
-    additional_prompt_info_for_data_extraction_task=EDIT_TASK_MODAL_OPENED_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {"prompt": "Edit task modal open whose name equals 'Design new homepage mockup'.", "prompt_for_task_generation": "Edit task modal open whose name equals 'Design new homepage mockup'."},
         {
@@ -437,8 +429,6 @@ COMPLETE_TASK_USE_CASE = UseCase(
     event_source_code=CompleteTaskEvent.get_source_code_of_class(),
     constraints_generator=generate_task_constraints,
     additional_prompt_info=COMPLETE_TASK_INFO,
-    additional_prompt_info_for_data_extraction_task=COMPLETE_TASK_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {"prompt": "Complete task whose name equals 'Implement user authentication'.", "prompt_for_task_generation": "Complete task whose name equals 'Implement user authentication'."},
         {
@@ -521,8 +511,6 @@ DELETE_TASK_USE_CASE = UseCase(
     event_source_code=DeleteTaskEvent.get_source_code_of_class(),
     constraints_generator=generate_task_constraints,
     additional_prompt_info=DELETE_TASK_INFO,
-    additional_prompt_info_for_data_extraction_task=DELETE_TASK_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {"prompt": "Delete task whose name equals 'Fix login page CSS bug' from my list.", "prompt_for_task_generation": "Delete task whose name equals 'Fix login page CSS bug' from my list."},
         {"prompt": "Delete task whose name not equals 'Finish report' from my list.", "prompt_for_task_generation": "Delete task whose name not equals 'Finish report' from my list."},

@@ -57,8 +57,6 @@ class GlobalTestGenerationPipeline:
         use_case = task.use_case
         if not use_case:
             return False
-        if not getattr(use_case, "supports_data_extraction", False):
-            return False
         return not (data_extraction_use_cases is not None and use_case.name not in data_extraction_use_cases)
 
     def _generate_tests_for_task(

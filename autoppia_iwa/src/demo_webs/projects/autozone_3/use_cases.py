@@ -74,8 +74,6 @@ PRODUCT_DETAIL_USE_CASE = UseCase(
     constraints_generator=generate_view_detail_constraints,
     replace_func=replace_products_placeholders,
     additional_prompt_info=PRODUCT_DETAIL_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=PRODUCT_DETAIL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Show me details for the Espresso Machine",
@@ -131,8 +129,6 @@ DETAILS_TOGGLE_USE_CASE = UseCase(
     constraints_generator=generate_autozone_products_constraints,
     replace_func=replace_products_placeholders,
     additional_prompt_info=DETAILS_TOGGLE_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=DETAILS_TOGGLE_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Expand the Explore further section for the Espresso Machine page.",
@@ -191,8 +187,6 @@ SEARCH_PRODUCT_USE_CASE = UseCase(
     constraints_generator=generate_search_query_constraints,
     replace_func=replace_products_placeholders,
     additional_prompt_info=SEARCH_PRODUCT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=SEARCH_PRODUCT_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Search for kitchen appliances",
@@ -252,8 +246,6 @@ CATEGORY_FILTER_USE_CASE = UseCase(
     constraints_generator=generate_category_filter_constraints,
     replace_func=replace_products_placeholders,
     additional_prompt_info=CATEGORY_FILTER_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=CATEGORY_FILTER_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "On the search page, filter results for 'install kits' down to Kitchen items only.",
@@ -315,8 +307,6 @@ ADD_TO_CART_USE_CASE = UseCase(
     event_source_code=AddToCartEvent.get_source_code_of_class(),
     constraints_generator=generate_autozone_products_constraints,
     additional_prompt_info=ADD_TO_CART_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=ADD_TO_CART_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Add Air Fryer to my cart",
@@ -376,8 +366,6 @@ ADD_TO_WISHLIST_USE_CASE = UseCase(
     constraints_generator=generate_autozone_products_constraints,
     replace_func=replace_products_placeholders,
     additional_prompt_info=ADD_TO_WISHLIST_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=ADD_TO_WISHLIST_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Add the Espresso Machine kit to my wishlist for later.",
@@ -430,8 +418,6 @@ SHARE_PRODUCT_USE_CASE = UseCase(
     constraints_generator=generate_autozone_products_constraints,
     replace_func=replace_products_placeholders,
     additional_prompt_info=SHARE_PRODUCT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=SHARE_PRODUCT_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Share the Espresso Machine product page with my install team.",

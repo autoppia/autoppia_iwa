@@ -86,8 +86,6 @@ VIEW_MATTER_USE_CASE = UseCase(
     event=ViewMatterDetails,
     event_source_code=ViewMatterDetails.get_source_code_of_class(),
     constraints_generator=generate_view_matter_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=VIEW_MATTER_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Go to the Matters page and click on 'Estate Planning' to view the details of that particular matter",
@@ -149,8 +147,6 @@ SEARCH_MATTER_USE_CASE = UseCase(
     event=SearchMatter,
     event_source_code=SearchMatter.get_source_code_of_class(),
     constraints_generator=generate_search_matter_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=SEARCH_MATTER_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Search for matters that include 'Estate' in the title.",
@@ -241,8 +237,6 @@ ARCHIVE_MATTER_USE_CASE = UseCase(
     event_source_code=ArchiveMatter.get_source_code_of_class(),
     constraints_generator=generate_view_matter_constraints,
     additional_prompt_info=ARCHIVE_MATTER_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=ARCHIVE_MATTER_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Archive the matter whose status is set to 'Active'",
@@ -305,8 +299,6 @@ DELETE_MATTER_USE_CASE = UseCase(
     event_source_code=DeleteMatter.get_source_code_of_class(),
     constraints_generator=generate_view_matter_constraints,
     additional_prompt_info=DELETE_MATTER_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=DELETE_MATTER_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Delete the matter whose status is set to 'Active'",
@@ -369,8 +361,6 @@ FILTER_MATTER_STATUS_USE_CASE = UseCase(
     event=FilterMatterStatus,
     event_source_code=FilterMatterStatus.get_source_code_of_class(),
     constraints_generator=generate_filter_matter_status_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=FILTER_MATTER_STATUS_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Filter matters to only show those with status 'Active' or as similar.",
@@ -443,8 +433,6 @@ UPDATE_MATTER_USE_CASE = UseCase(
     event=UpdateMatter,
     event_source_code=UpdateMatter.get_source_code_of_class(),
     constraints_generator=generate_update_matter_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=UPDATE_MATTER_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Edit the matter 'Estate Planning' to change status to 'On Hold'.",
@@ -494,8 +482,6 @@ VIEW_CLIENT_DETAILS_USE_CASE = UseCase(
     event=ViewClientDetails,
     event_source_code=ViewClientDetails.get_source_code_of_class(),
     constraints_generator=generate_view_client_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=VIEW_CLIENT_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "View details of client, whose client name is 'jessica brown' and email is 'jbrown@samplemail.com'",
@@ -541,8 +527,6 @@ SEARCH_CLIENT_USE_CASE = UseCase(
     event=SearchClient,
     event_source_code=SearchClient.get_source_code_of_class(),
     constraints_generator=generate_search_client_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=SEARCH_CLIENT_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Search for clients named 'Smith'.",
@@ -600,8 +584,6 @@ DOCUMENT_DELETED_USE_CASE = UseCase(
     event_source_code=DocumentDeleted.get_source_code_of_class(),
     constraints_generator=generate_document_deleted_constraints,
     additional_prompt_info=DOCUMENT_DELETED_EXTRA_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=DOCUMENT_DELETED_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Delete the document named 'Retainer-Agreement.pdf'.",
@@ -657,8 +639,6 @@ DOCUMENT_RENAMED_USE_CASE = UseCase(
     event=DocumentRenamedEvent,
     event_source_code=DocumentRenamedEvent.get_source_code_of_class(),
     constraints_generator=generate_document_renamed_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=DOCUMENT_RENAMED_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Rename the document 'Retainer-Agreement.pdf' to 'Retainer-Agreement-final.pdf'.",
@@ -816,8 +796,6 @@ LOG_EDITED_USE_CASE = UseCase(
     event_source_code=LogEdited.get_source_code_of_class(),
     constraints_generator=generate_log_edited_constraints,
     additional_prompt_info=LOG_EDITED_EXTRA_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=LOG_EDITED_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Edit the time log for 'Estate Planning' to change hours to 2.5.",
@@ -888,8 +866,6 @@ LOG_DELETE_USE_CASE = UseCase(
     event_source_code=LogDelete.get_source_code_of_class(),
     constraints_generator=generate_delete_log_constraints,
     additional_prompt_info=LOG_DELETE_EXTRA_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=LOG_DELETE_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Delete the time log for 'Estate Planning' that recorded 2 hours.",
@@ -955,8 +931,6 @@ BILLING_SEARCH_USE_CASE = UseCase(
     event=BillingSearchEvent,
     event_source_code=BillingSearchEvent.get_source_code_of_class(),
     constraints_generator=generate_billing_search_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=BILLING_SEARCH_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Search billing entries for 'contract' from this week.",
@@ -1070,8 +1044,6 @@ DELETE_CLIENT_USE_CASE = UseCase(
     event=DeleteClientEvent,
     event_source_code=DeleteClientEvent.get_source_code_of_class(),
     constraints_generator=generate_delete_client_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=DELETE_CLIENT_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Delete the client 'Nova Labs'.",
@@ -1114,8 +1086,6 @@ FILTER_CLIENTS_USE_CASE = UseCase(
     event=FilterClientsEvent,
     event_source_code=FilterClientsEvent.get_source_code_of_class(),
     constraints_generator=generate_filter_clients_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=FILTER_CLIENTS_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Filter clients to status Active with 3-4 matters.",

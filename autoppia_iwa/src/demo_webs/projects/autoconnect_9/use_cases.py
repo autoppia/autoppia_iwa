@@ -109,8 +109,6 @@ VIEW_USER_PROFILE_USE_CASE = UseCase(
     event_source_code=ViewUserProfileEvent.get_source_code_of_class(),
     constraints_generator=generate_view_user_profile_constraints,
     additional_prompt_info=VIEW_USER_PROFILE_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=VIEW_USER_PROFILE_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "View the profile of user where name equals 'janedoe'.",
@@ -200,8 +198,6 @@ CONNECT_WITH_USER_USE_CASE = UseCase(
     event_source_code=ConnectWithUserEvent.get_source_code_of_class(),
     constraints_generator=generate_connect_with_user_constraints,
     additional_prompt_info=CONNECT_WITH_USER_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=CONNECT_WITH_USER_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Connect with Jane Doe.",
@@ -278,8 +274,6 @@ LIKE_POST_USE_CASE = UseCase(
     event_source_code=LikePostEvent.get_source_code_of_class(),
     constraints_generator=generate_like_post_constraints,
     additional_prompt_info=LIKE_POST_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=LIKE_POST_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Like the post where poster_content contains 'I finally got my AWS certification!'",
@@ -351,8 +345,6 @@ COMMENT_ON_POST_USE_CASE = UseCase(
     event_source_code=CommentOnPostEvent.get_source_code_of_class(),
     constraints_generator=generate_comment_on_post_constraints,
     additional_prompt_info=COMMENT_ON_POST_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=COMMENT_ON_POST_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Comment 'Great work!' on the post where poster_content contains 'Just released a new app version!'",
@@ -419,8 +411,6 @@ APPLY_FOR_JOB_USE_CASE = UseCase(
     event_source_code=ApplyForJobEvent.get_source_code_of_class(),
     constraints_generator=generate_apply_for_job_constraints,
     additional_prompt_info=APPLY_FOR_JOB_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=APPLY_FOR_JOB_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Apply for a job where job_title equals 'Frontend Developer', company equals 'Tech Innovations', and location equals 'Remote'.",
@@ -455,8 +445,6 @@ SEARCH_USERS_USE_CASE = UseCase(
     event_source_code=SearchUsersEvent.get_source_code_of_class(),
     constraints_generator=generate_search_users_constraints,
     additional_prompt_info=SEARCH_USERS_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=GENERIC_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Search for users where query equals 'al'.",
@@ -513,8 +501,6 @@ FOLLOW_PAGE_USE_CASE = UseCase(
     event_source_code=FollowPageEvent.get_source_code_of_class(),
     constraints_generator=generate_follow_page_constraints,
     additional_prompt_info=FOLLOW_PAGE_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=FOLLOW_PAGE_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Follow the Adobe company page.",
@@ -558,8 +544,6 @@ SEARCH_JOBS_USE_CASE = UseCase(
     event_source_code=SearchJobsEvent.get_source_code_of_class(),
     constraints_generator=generate_search_jobs_constraints,
     additional_prompt_info=SEARCH_JOBS_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=GENERIC_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         # Query (STRING_OPERATORS)
         {
@@ -668,8 +652,6 @@ FILTER_JOBS_USE_CASE = UseCase(
     event_source_code=FilterJobsEvent.get_source_code_of_class(),
     constraints_generator=generate_filter_jobs_constraints,
     additional_prompt_info=FILTER_JOBS_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=FILTER_JOBS_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Filter jobs where remote equals 'true'.",
@@ -726,8 +708,6 @@ VIEW_JOB_USE_CASE = UseCase(
     event_source_code=ViewJobEvent.get_source_code_of_class(),
     constraints_generator=generate_view_job_constraints,
     additional_prompt_info=VIEW_JOB_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=VIEW_JOB_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "View the job where job_title equals 'Senior Frontend Developer' and company equals 'Tech Innovations'.",
@@ -813,8 +793,6 @@ SAVE_POST_USE_CASE = UseCase(
     event_source_code=SavePostEvent.get_source_code_of_class(),
     constraints_generator=generate_save_post_constraints,
     additional_prompt_info=SAVE_POST_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=SAVE_POST_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Save the post where content contains 'AI trends'.", "prompt_for_task_generation": "Save the post where content contains 'AI trends'."},
         {"prompt": "Bookmark the post where content contains 'hiring announcement'.", "prompt_for_task_generation": "Save the post where content contains 'hiring announcement'."},
@@ -864,8 +842,6 @@ HIDE_POST_USE_CASE = UseCase(
     event_source_code=HidePostEvent.get_source_code_of_class(),
     constraints_generator=generate_save_post_constraints,
     additional_prompt_info=HIDE_POST_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=HIDE_POST_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Hide the post where content contains 'irrelevant'.", "prompt_for_task_generation": "Hide the post where content contains 'irrelevant'."},
         {"prompt": "Hide the post where content contains 'duplicate'.", "prompt_for_task_generation": "Hide the post where content contains 'duplicate'."},
@@ -957,8 +933,6 @@ EDIT_PROFILE_USE_CASE = UseCase(
     event_source_code=EditProfileEvent.get_source_code_of_class(),
     constraints_generator=generate_edit_profile_constraints,
     additional_prompt_info=EDIT_PROFILE_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=EDIT_PROFILE_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Edit profile where bio contains 'engineer'.", "prompt_for_task_generation": "Edit profile where bio contains 'engineer'."},
         {"prompt": "Update profile where name equals 'Alex Smith'.", "prompt_for_task_generation": "Edit profile where name equals 'Alex Smith'."},
@@ -1008,8 +982,6 @@ EDIT_EXPERIENCE_USE_CASE = UseCase(
     event_source_code=EditExperienceEvent.get_source_code_of_class(),
     constraints_generator=generate_edit_experience_constraints,
     additional_prompt_info=EDIT_EXPERIENCE_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=EDIT_EXPERIENCE_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Edit experience where name equals 'Alex'.", "prompt_for_task_generation": "Edit experience where name equals 'Alex'."},
         {
@@ -1060,8 +1032,6 @@ ADD_EXPERIENCE_USE_CASE = UseCase(
     event_source_code=AddExperienceEvent.get_source_code_of_class(),
     constraints_generator=generate_add_experience_constraints,
     additional_prompt_info=ADD_EXPERIENCE_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=ADD_EXPERIENCE_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {"prompt": "Add experience where name equals 'TechCorp'.", "prompt_for_task_generation": "Add experience where name equals 'TechCorp'."},
         {"prompt": "Add new experience to my profile.", "prompt_for_task_generation": "Add new experience to my profile."},
@@ -1110,8 +1080,6 @@ REMOVE_POST_USE_CASE = UseCase(
     event_source_code=RemovePostEvent.get_source_code_of_class(),
     constraints_generator=generate_remove_post_constraints,
     additional_prompt_info=REMOVE_POST_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=REMOVE_POST_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Remove saved post where content contains 'Just wrapped up!'.",

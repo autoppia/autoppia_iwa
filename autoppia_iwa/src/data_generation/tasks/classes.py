@@ -169,7 +169,7 @@ class TaskGenerationConfig(BaseModel):
     # Mirrors BenchmarkConfig.test_types but kept as a plain string to avoid import cycles.
     test_types: Literal["event_only", "data_extraction_only"] = "event_only"
     # Optional list of use-case names that can receive DataExtractionTest; if None,
-    # the pipeline relies solely on UseCase.supports_data_extraction.
+    # all selected/generated use cases are eligible in data-extraction-only runs.
     data_extraction_use_cases: list[str] | None = None
 
     @field_validator("prompts_per_use_case", mode="before")

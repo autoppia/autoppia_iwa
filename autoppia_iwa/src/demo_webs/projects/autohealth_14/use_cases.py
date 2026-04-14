@@ -399,8 +399,6 @@ OPEN_APPOINTMENT_FORM_USE_CASE = UseCase(
     event_source_code=OpenAppointmentFormEvent.get_source_code_of_class(),
     constraints_generator=generate_open_appointment_form_constraints,
     additional_prompt_info=f"CRITICAL: Use explicit field names (doctor_name, speciality, date, time). Format: 'Open appointment form where <field> <operator> '<value>''. {STRICT_COPY_INSTRUCTION}",
-    additional_prompt_info_for_data_extraction_task=OPEN_APPOINTMENT_FORM_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {
             "prompt": "Open appointment form where doctor_name equals 'Dr. Alice Thompson' and date equals '2025-09-20' and time equals '9:00 AM' and speciality equals 'Cardiology'",
@@ -420,8 +418,6 @@ APPOINTMENT_BOOKED_SUCCESSFULLY_USE_CASE = UseCase(
     event_source_code=AppointmentBookedSuccessfullyEvent.get_source_code_of_class(),
     constraints_generator=generate_appointment_booked_successfully_constraints,
     additional_prompt_info=f"CRITICAL: Use explicit field names (patient_name, doctor_name, date, time, speciality, insurance_provider, insurance_number, patient_email, patient_phone, emergency_contact, emergency_phone, notes, reason_for_visit). Format: 'Book an appointment where <field> <operator> '<value>''. {STRICT_COPY_INSTRUCTION}",
-    additional_prompt_info_for_data_extraction_task=APPOINTMENT_BOOKED_SUCCESSFULLY_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {
             "prompt": "Book an appointment where patient_name equals 'John Doe 4' and doctor_name equals 'Dr. Alice Thompson' and date equals '2025-09-23' and speciality equals 'Cardiology' and reason_for_visit contains 'chest pain s'",
@@ -459,8 +455,6 @@ SEARCH_APPOINTMENT_USE_CASE = UseCase(
     event_source_code=SearchAppointmentEvent.get_source_code_of_class(),
     constraints_generator=generate_search_appointment_constraints,
     additional_prompt_info="CRITICAL: Use explicit field names (doctor_name, speciality, date). Format: 'Search appointments where <field> <operator> '<value>''. Copy values EXACTLY.",
-    additional_prompt_info_for_data_extraction_task=SEARCH_APPOINTMENT_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {
             "prompt": "Search appointments where doctor_name equals 'Dr. Alice Thompson'",
@@ -484,8 +478,6 @@ SEARCH_DOCTORS_USE_CASE = UseCase(
     event_source_code=SearchDoctorsEvent.get_source_code_of_class(),
     constraints_generator=generate_search_doctors_constraints,
     additional_prompt_info=f"CRITICAL: Use explicit field names (doctor_name, speciality, language). Format: 'Search doctors where <field> <operator> '<value>''. {STRICT_COPY_INSTRUCTION}",
-    additional_prompt_info_for_data_extraction_task=SEARCH_DOCTORS_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {
             "prompt": "Search doctors where doctor_name contains 'Alice 7' and speciality equals 'General Practice g'",
@@ -501,8 +493,6 @@ SEARCH_PRESCRIPTION_USE_CASE = UseCase(
     event_source_code=SearchPrescriptionEvent.get_source_code_of_class(),
     constraints_generator=generate_search_prescription_constraints,
     additional_prompt_info=f"CRITICAL: Use explicit field names (medicine_name, doctor_name). Format: 'Search prescriptions where <field> <operator> '<value>''. {STRICT_COPY_INSTRUCTION}",
-    additional_prompt_info_for_data_extraction_task=SEARCH_PRESCRIPTION_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {
             "prompt": "Search prescriptions where medicine_name contains 'Vitamin 4' and doctor_name contains 'Smith a'",
@@ -518,8 +508,6 @@ REFILL_PRESCRIPTION_USE_CASE = UseCase(
     event_source_code=RefillRequestEvent.get_source_code_of_class(),
     constraints_generator=generate_refill_prescription_constraints,
     additional_prompt_info=f"CRITICAL: Use explicit field names (medicine_name). Format: 'Refill prescription where <field> <operator> '<value>''. {STRICT_COPY_INSTRUCTION}",
-    additional_prompt_info_for_data_extraction_task=REFILL_PRESCRIPTION_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {
             "prompt": "Refill prescription where medicine_name equals 'Atorvastatin'",
@@ -556,8 +544,6 @@ VIEW_PRESCRIPTION_USE_CASE = UseCase(
     event_source_code=ViewPrescriptionEvent.get_source_code_of_class(),
     constraints_generator=generate_view_prescription_constraints,
     additional_prompt_info="CRITICAL: Use explicit field names (doctor_name, start_date, dosage, medicine_name, category). Format: 'View a prescription where <field> <operator> '<value>''. Copy values EXACTLY.",
-    additional_prompt_info_for_data_extraction_task=VIEW_PRESCRIPTION_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {
             "prompt": "View a prescription where doctor_name equals 'Dr. Alice Thompson' and start_date equals '2025-08-01' and dosage equals '10 mg daily' and medicine_name equals 'Atorvastatin' and status equals 'active' and category equals 'cholesterol'",
@@ -581,8 +567,6 @@ SEARCH_MEDICAL_ANALYSIS_USE_CASE = UseCase(
     event_source_code=SearchMedicalAnalysisEvent.get_source_code_of_class(),
     constraints_generator=generate_search_medical_analysis_constraints,
     additional_prompt_info=f"CRITICAL: Use explicit field names (record_title, doctor_name). Format: 'Search medical analysis where <field> <operator> '<value>''. {STRICT_COPY_INSTRUCTION}",
-    additional_prompt_info_for_data_extraction_task=SEARCH_MEDICAL_ANALYSIS_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {
             "prompt": "Search medical analysis where record_title equals 'Complete Blood Count (CBC) 99' and doctor_name equals 'Dr. Alice Thompson'",
@@ -602,8 +586,6 @@ VIEW_MEDICAL_ANALYSIS_USE_CASE = UseCase(
     event_source_code=ViewMedicalAnalysisEvent.get_source_code_of_class(),
     constraints_generator=generate_view_medical_analysis_constraints,
     additional_prompt_info="Use format: 'View medical analysis where field operator value'. Always mention each constraint field explicitly (record_title, doctor_name, record_type).",
-    additional_prompt_info_for_data_extraction_task=VIEW_MEDICAL_ANALYSIS_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {
             "prompt": "View medical analysis where record_title equals 'Complete Blood Count (CBC)' and record_type equals 'lab_result' and record_date equals '2024-01-15'",
@@ -627,8 +609,6 @@ VIEW_DOCTOR_PROFILE_USE_CASE = UseCase(
     event_source_code=ViewDoctorProfileEvent.get_source_code_of_class(),
     constraints_generator=generate_view_doctor_profile_constraints,
     additional_prompt_info=f"CRITICAL: Use explicit field names (doctor_name, speciality, rating, consultation_fee, language). Format: 'View a doctor profile where <field> <operator> '<value>''. {STRICT_COPY_INSTRUCTION}",
-    additional_prompt_info_for_data_extraction_task=VIEW_DOCTOR_PROFILE_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {
             "prompt": "View a doctor profile where doctor_name equals 'Dr. Alice Thompson' and rating greater than 4.5 and speciality equals 'Cardiology'",
@@ -651,8 +631,6 @@ VIEW_DOCTOR_EDUCATION_USE_CASE = UseCase(
     event_source_code=ViewDoctorEducationEvent.get_source_code_of_class(),
     constraints_generator=generate_view_doctor_education_constraints,
     additional_prompt_info=f"CRITICAL: Use explicit field names (doctor_name, speciality). Format: 'View doctor education where <field> <operator> '<value>''. {STRICT_COPY_INSTRUCTION}",
-    additional_prompt_info_for_data_extraction_task=VIEW_DOCTOR_EDUCATION_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {
             "prompt": "View doctor education where doctor_name equals 'Dr. Alice Thompson' and speciality equals 'Cardiology'",
@@ -676,8 +654,6 @@ VIEW_DOCTOR_AVAILABILITY_USE_CASE = UseCase(
     event_source_code=ViewDoctorAvailabilityEvent.get_source_code_of_class(),
     constraints_generator=generate_view_doctor_availability_constraints,
     additional_prompt_info=f"CRITICAL: Use explicit field names (doctor_name, speciality). Format: 'View doctor availability where <field> <operator> '<value>''. {STRICT_COPY_INSTRUCTION}",
-    additional_prompt_info_for_data_extraction_task=VIEW_DOCTOR_AVAILABILITY_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {
             "prompt": "View doctor availability where doctor_name equals 'Dr. Alice Thompson' and speciality equals 'Cardiology'",
@@ -744,8 +720,6 @@ CONTACT_DOCTOR_USE_CASE = UseCase(
     event_source_code=ContactDoctorEvent.get_source_code_of_class(),
     additional_prompt_info=CONTACT_DOCTOR_ADDITIONAL_INFO,
     constraints_generator=generate_contact_doctor_constraints,
-    additional_prompt_info_for_data_extraction_task=CONTACT_DOCTOR_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {
             "prompt": "Contact a doctor where doctor_name equals 'Dr. Alice Thompson'",
@@ -809,8 +783,6 @@ FILTER_DOCTOR_REVIEWS_USE_CASE = UseCase(
     event_source_code=FilterDoctorReviewsEvent.get_source_code_of_class(),
     constraints_generator=generate_filter_doctor_reviews_constraints,
     additional_prompt_info=f"CRITICAL: Use explicit field names (doctor_name, speciality, filter_rating, sort_order). Format: 'Filter doctor reviews where <field> <operator> '<value>''. {STRICT_COPY_INSTRUCTION}",
-    additional_prompt_info_for_data_extraction_task=FILTER_DOCTOR_REVIEWS_DATA_EXTRACTION_PROMPT_INFO,
-    supports_data_extraction=True,
     examples=[
         {
             "prompt": "Filter doctor reviews where doctor_name equals 'Dr. Alice Thompson' and filter_rating equals 5",

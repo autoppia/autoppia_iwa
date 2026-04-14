@@ -31,7 +31,7 @@ def _is_empty(value: Any) -> bool:
         return True
     if isinstance(value, str):
         return not value.strip()
-    if isinstance(value, (list, tuple, set, dict)):
+    if isinstance(value, list | tuple | set | dict):
         return len(value) == 0
     return False
 
@@ -42,7 +42,7 @@ def _scalarize(value: Any) -> str | None:
     if isinstance(value, str):
         text = value.strip()
         return text or None
-    if isinstance(value, (int, float, bool)):
+    if isinstance(value, int | float | bool):
         return str(value)
     if isinstance(value, dict):
         for key in ("name", "title", "label", "value", "text", "email", "id", "earnings", "price", "rate", "amount", "hours", "jobs"):
@@ -51,7 +51,7 @@ def _scalarize(value: Any) -> str | None:
                 if nested:
                     return nested
         return None
-    if isinstance(value, (list, tuple, set)):
+    if isinstance(value, list | tuple | set):
         for item in value:
             nested = _scalarize(item)
             if nested:

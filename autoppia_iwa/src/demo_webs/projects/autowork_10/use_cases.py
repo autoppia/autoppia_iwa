@@ -97,8 +97,6 @@ BOOK_A_CONSULTATION_USE_CASE = UseCase(
     event=BookAConsultationEvent,
     event_source_code=BookAConsultationEvent.get_source_code_of_class(),
     constraints_generator=generate_book_consultant_constraint,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=BOOK_A_CONSULTATION_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Book a consultation whose name is 'Alexa R'",
@@ -163,8 +161,6 @@ HIRE_BUTTON_CLICKED_USE_CASE = UseCase(
     event=HireButtonClickedEvent,
     event_source_code=HireButtonClickedEvent.get_source_code_of_class(),
     constraints_generator=generate_hire_button_clicked_constraint,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=HIRE_BTN_CLICKED_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Hire a consultant whose name is 'Brandon M'",
@@ -242,8 +238,6 @@ HIRE_LATER_USE_CASE = UseCase(
     event=HireLaterEvent,
     event_source_code=HireLaterEvent.get_source_code_of_class(),
     constraints_generator=generate_hire_button_clicked_constraint,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=HIRE_LATER_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Decide to hire later for expert Jane Doe.",
@@ -339,8 +333,6 @@ QUICK_HIRE_USE_CASE = UseCase(
     event=QuickHireEvent,
     event_source_code=QuickHireEvent.get_source_code_of_class(),
     constraints_generator=generate_quick_hire_constraint,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=QUICK_HIRE_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Quick hire the expert John Smith.",
@@ -392,8 +384,6 @@ HIRE_CONSULTATION_USE_CASE = UseCase(
     event=HireConsultantEvent,
     event_source_code=HireConsultantEvent.get_source_code_of_class(),
     constraints_generator=generate_hire_consultation_constraint,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=HIRE_CONSULTANT_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "The user click 'Hire' button to confirm hiring of a chosen consultation",
@@ -486,8 +476,6 @@ POST_A_JOB_USE_CASE = UseCase(
     event=PostAJobEvent,
     event_source_code=PostAJobEvent.get_source_code_of_class(),
     constraints_generator=generate_job_posting_constraint,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=POST_A_JOB_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "User clicks 'Post a job' button to initiate the posting process for a job",
@@ -883,8 +871,6 @@ CONTACT_EXPERT_OPENED_USE_CASE = UseCase(
     event=ContactExpertOpenedEvent,
     event_source_code=ContactExpertOpenedEvent.get_source_code_of_class(),
     constraints_generator=generate_hire_button_clicked_constraint,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=CONTACT_EXPERT_OPENED_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Contact an expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
@@ -948,8 +934,6 @@ EDIT_PROFILE_NAME_USE_CASE = UseCase(
     event=EditProfileNameEvent,
     event_source_code=EditProfileNameEvent.get_source_code_of_class(),
     constraints_generator=generate_edit_profile_name_constraint,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=EDIT_PROFILE_NAME_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Edit profile name where name equals 'Emily Patel'.",
@@ -995,8 +979,6 @@ EDIT_PROFILE_TITLE_USE_CASE = UseCase(
     event=EditProfileTitleEvent,
     event_source_code=EditProfileTitleEvent.get_source_code_of_class(),
     constraints_generator=generate_edit_profile_title_constraint,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=EDIT_PROFILE_TITLE_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Edit profile title where title equals 'Senior Software Engineer'.",
@@ -1043,8 +1025,6 @@ EDIT_PROFILE_LOCATION_USE_CASE = UseCase(
     event=EditProfileLocationEvent,
     event_source_code=EditProfileLocationEvent.get_source_code_of_class(),
     constraints_generator=generate_edit_profile_location_constraint,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=EDIT_PROFILE_LOCATION_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Edit profile location where location equals 'New York, USA'.",
@@ -1112,8 +1092,6 @@ EDIT_PROFILE_EMAIL_USE_CASE = UseCase(
     event=EditProfileEmailEvent,
     event_source_code=EditProfileEmailEvent.get_source_code_of_class(),
     constraints_generator=generate_edit_profile_email_constraint,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=EDIT_PROFILE_EMAIL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Edit profile email where email equals 'emily.patel@example.com'.",
@@ -1183,8 +1161,6 @@ FAVORITE_EXPERT_SELECTED_USE_CASE = UseCase(
     event=FavoriteExpertSelectedEvent,
     event_source_code=FavoriteExpertSelectedEvent.get_source_code_of_class(),
     constraints_generator=generate_hire_button_clicked_constraint,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=FAVORITE_EXPERT_SELECTED_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Select favorite expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",

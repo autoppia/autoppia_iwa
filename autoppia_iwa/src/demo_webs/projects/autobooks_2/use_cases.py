@@ -253,8 +253,6 @@ BOOK_DETAIL_USE_CASE = UseCase(
     event_source_code=BookDetailEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
     constraints_generator=generate_book_details_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=BOOK_DETAIL_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Navigate to 'The Housemaid Is Watching' book page",
@@ -364,8 +362,6 @@ SHARE_BOOK_USE_CASE = UseCase(
     event_source_code=BookDetailEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
     constraints_generator=generate_book_details_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=SHARE_BOOK_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Share 'The Housemaid Is Watching' book",
@@ -475,8 +471,6 @@ OPEN_PREVIEW_USE_CASE = UseCase(
     event_source_code=OpenPreviewEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
     constraints_generator=generate_book_details_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=OPEN_PREVIEW_BOOK_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Open preview of 'The Housemaid Is Watching' book",
@@ -586,8 +580,6 @@ ADD_TO_READING_LIST_USE_CASE = UseCase(
     event_source_code=AddToReadingListEvent.get_source_code_of_class(),
     additional_prompt_info=None,  # Will be populated dynamically from API
     constraints_generator=generate_add_to_reading_list_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=ADD_TO_READING_LIST_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "First, login for the following username:<username> and password:<password> and then add to reading list 'The Housemaid Is Watching' book",
@@ -726,8 +718,6 @@ SEARCH_BOOK_USE_CASE = UseCase(
     replace_func=replace_book_placeholders,
     constraints_generator=generate_search_book_constraints,
     additional_prompt_info=SEARCH_BOOK_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=SEARCH_BOOK_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Look for the book 'Lidia's Italian-American Kitchen'",
@@ -977,8 +967,6 @@ DELETE_BOOK_USE_CASE = UseCase(
     event_source_code=DeleteBookEvent.get_source_code_of_class(),
     additional_prompt_info=DELETE_BOOK_ADDITIONAL_PROMPT_INFO,
     constraints_generator=generate_delete_book_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=DELETE_BOOK_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Log in with username equals <username> and password equals <password>. Then, delete your book.",
@@ -1217,8 +1205,6 @@ FILTER_BOOK_USE_CASE = UseCase(
     event_source_code=FilterBookEvent.get_source_code_of_class(),
     constraints_generator=generate_book_filter_constraints,
     additional_prompt_info=None,  # Will be populated dynamically from API
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=FILTER_BOOK_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Filter books released in the year 2005",
@@ -1418,8 +1404,6 @@ ADD_TO_CART_BOOK_USE_CASE = UseCase(
     event_source_code=AddToCartBookEvent.get_source_code_of_class(),
     constraints_generator=generate_add_to_cart_book_constraints,
     additional_prompt_info=ADD_TO_CART_BOOK_ADDITIONAL_PROMPT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=ADD_TO_CART_BOOK_DATA_EXTRACTION_PROMPT_INFO,
     replace_func=replace_book_placeholders,
     examples=[
         {

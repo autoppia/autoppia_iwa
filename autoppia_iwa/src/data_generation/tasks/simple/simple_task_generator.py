@@ -117,10 +117,6 @@ class SimpleTaskGenerator:
 
             if data_extraction_use_cases is not None:
                 web_use_cases = [uc for uc in self.web_project.use_cases if uc.name in data_extraction_use_cases]
-            # Minimal extra filter: when running data_extraction_only without an explicit whitelist,
-            # keep only use cases that support data extraction.
-            if data_extraction_use_cases is None:
-                web_use_cases = [uc for uc in web_use_cases if getattr(uc, "supports_data_extraction", False)]
             # When data_extraction_only, ignore use_cases and select by data_extraction_use_cases
             if not web_use_cases:
                 logger.warning(f"No matching use cases found for data_extraction_use_cases: {data_extraction_use_cases}. Available: {[uc.name for uc in self.web_project.use_cases]}")
@@ -225,12 +221,9 @@ class SimpleTaskGenerator:
         """
         tasks: list[Task] = []
 
-        # Decide whether this use case can generate data-extraction style tasks
-        use_case_allows_data_extraction = bool(getattr(use_case, "supports_data_extraction", False))
+        generate_data_extraction = test_types == "data_extraction_only"
         if data_extraction_allowed_names is not None and use_case.name not in data_extraction_allowed_names:
-            use_case_allows_data_extraction = False
-
-        generate_data_extraction = (test_types == "data_extraction_only") and use_case_allows_data_extraction
+            generate_data_extraction = False
 
         # Generate each prompt independently
         for _ in range(number_of_prompts):
@@ -280,7 +273,7 @@ class SimpleTaskGenerator:
                     llm_prompt = DATA_EXTRACTION_TASK_GENERATION_PROMPT_WITH_QUESTION_FIELDS.format(
                         use_case_name=use_case_copy.name,
                         use_case_description=use_case_copy.description,
-                        additional_prompt_info=use_case_copy.additional_prompt_info_for_data_extraction_task or "",
+                        additional_prompt_info=use_case_copy.additional_prompt_info or "",
                         question_fields_info=question_fields_info,
                         verify_field=verify_field,
                     )
@@ -293,7 +286,7 @@ class SimpleTaskGenerator:
                     llm_prompt = DATA_EXTRACTION_TASK_GENERATION_PROMPT_VERIFY_FIELD_ONLY.format(
                         use_case_name=use_case_copy.name,
                         use_case_description=use_case_copy.description,
-                        additional_prompt_info=use_case_copy.additional_prompt_info_for_data_extraction_task or "",
+                        additional_prompt_info=use_case_copy.additional_prompt_info or "",
                         verify_field=verify_field,
                     )
             else:

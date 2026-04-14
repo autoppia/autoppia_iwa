@@ -91,8 +91,6 @@ DATE_SELECTED_USE_CASE = UseCase(
     event_source_code=DateSelectedEvent.get_source_code_of_class(),
     additional_prompt_info=DATE_SELECTED_INFO,
     constraints_generator=generate_date_selected_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=DATE_DROPDOWN_OPENED_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Select the date '2026-02-23T19:00:00+00:00'.",
@@ -148,8 +146,6 @@ TIME_SELECTED_USE_CASE = UseCase(
     event_source_code=TimeSelectedEvent.get_source_code_of_class(),
     additional_prompt_info=TIME_SELECTED_INFO,
     constraints_generator=generate_time_selected_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=TIME_DROPDOWN_OPENED_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Select the time equals '2:30 PM'.",
@@ -207,8 +203,6 @@ PEOPLE_SELECTED_USE_CASE = UseCase(
     event_source_code=PeopleSelectedEvent.get_source_code_of_class(),
     additional_prompt_info=PEOPLE_SELECTED_INFO,
     constraints_generator=generate_people_selected_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=PEOPLE_DROPDOWN_OPENED_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Open the guest selector dropdown and select people equals 4.",
@@ -278,8 +272,6 @@ SEARCH_RESTAURANT_USE_CASE = UseCase(
     event_source_code=SearchRestaurantEvent.get_source_code_of_class(),
     constraints_generator=generate_search_restaurant_constraints,
     additional_prompt_info=SEARCH_RESTAURANT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=SEARCH_RESTAURANT_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Search for 'italian restaurants in downtown'",
@@ -437,8 +429,6 @@ VIEW_RESTAURANT_USE_CASE = UseCase(
     event_source_code=ViewRestaurantEvent.get_source_code_of_class(),
     constraints_generator=generate_view_restaurant_constraints,
     additional_prompt_info=VIEW_RESTAURANT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=VIEW_RESTAURANT_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Show me details for 'The Royal Dine'",
@@ -499,8 +489,6 @@ VIEW_FULL_MENU_USE_CASE = UseCase(
     event_source_code=ViewFullMenuEvent.get_source_code_of_class(),
     additional_prompt_info=VIEW_FULL_MENU_INFO,
     constraints_generator=generate_view_full_menu_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=VIEW_FULL_MENU_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Show the full menu for 'The Royal Dine' for 2 people for dinner on July 18.",
@@ -558,8 +546,6 @@ COLLAPSE_MENU_USE_CASE = UseCase(
     event_source_code=CollapseMenuEvent.get_source_code_of_class(),
     additional_prompt_info=COLLAPSE_MENU_INFO,
     constraints_generator=generate_collapse_menu_constraints,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=COLLAPSE_MENU_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "Hide the menu for 'The Royal Dine'.",
@@ -610,8 +596,6 @@ BOOK_RESTAURANT_USE_CASE = UseCase(
     event_source_code=BookRestaurantEvent.get_source_code_of_class(),
     constraints_generator=generate_book_restaurant_constraints,
     additional_prompt_info=BOOK_RESTAURANT_INFO,
-    supports_data_extraction=True,
-    additional_prompt_info_for_data_extraction_task=BOOK_RESTAURANT_DATA_EXTRACTION_PROMPT_INFO,
     examples=[
         {
             "prompt": "I'd like to book a table at the restaurant which name 'The Royal Dine' for 2 people on 2025-05-16 at 1:30 PM.",
