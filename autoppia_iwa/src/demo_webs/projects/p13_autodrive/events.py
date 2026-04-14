@@ -6,7 +6,6 @@ from pydantic import BaseModel
 
 from autoppia_iwa.src.demo_webs.base_events import BaseEventValidator, Event
 from autoppia_iwa.src.demo_webs.criterion_helper import CriterionValue
-from autoppia_iwa.src.demo_webs.utils import log_event
 
 from ...shared_utils import validate_date_field, validate_time_field
 
@@ -103,7 +102,6 @@ class SearchLocationEvent(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "SearchLocationEvent":
         base_event = Event.parse(backend_event)
-        log_event(backend_event)
         data = backend_event.data
         raw = data.get("value")
         if raw is None:
@@ -143,7 +141,6 @@ class SearchDestinationEvent(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "SearchDestinationEvent":
         base_event = Event.parse(backend_event)
-        log_event(backend_event)
         data = backend_event.data
         raw = data.get("value")
         if raw is None:
@@ -186,7 +183,6 @@ class SeePricesEvent(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "SeePricesEvent":
         base_event = Event.parse(backend_event)
-        log_event(backend_event)
         data = backend_event.data
         return cls(
             event_name=base_event.event_name,
@@ -216,7 +212,6 @@ class SelectDateEvent(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "SelectDateEvent":
         base_event = Event.parse(backend_event)
-        log_event(backend_event)
         data = backend_event.data
         return cls(
             event_name=base_event.event_name,
@@ -258,7 +253,6 @@ class SelectTimeEvent(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "SelectTimeEvent":
         base_event = Event.parse(backend_event)
-        log_event(backend_event)
         data = backend_event.data
         return cls(
             event_name=base_event.event_name,
@@ -295,7 +289,6 @@ class NextPickupEvent(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "NextPickupEvent":
         base_event = Event.parse(backend_event)
-        log_event(backend_event)
         data = backend_event.data
         return cls(
             event_name=base_event.event_name,
@@ -332,14 +325,11 @@ class SearchRideEvent(Event, BaseEventValidator):
                 validate_schedule,
             ]
         )
-        if not result:
-            ...
         return result
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "SearchRideEvent":
         base_event = Event.parse(backend_event)
-        log_event(backend_event)
         data = backend_event.data or {}
         scheduled = parse_ride_scheduled(data.get("scheduled"), backend_event.timestamp)
         if scheduled is None:
@@ -395,7 +385,6 @@ class SelectCarEvent(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "SelectCarEvent":
         base_event = Event.parse(backend_event)
-        log_event(backend_event)
         kw = _reserve_ride_field_values(backend_event.data or {}, backend_event.timestamp)
         return cls(
             event_name=base_event.event_name,
@@ -443,7 +432,6 @@ class ReserveRideEvent(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "ReserveRideEvent":
         base_event = Event.parse(backend_event)
-        log_event(backend_event)
         kw = _reserve_ride_field_values(backend_event.data or {}, backend_event.timestamp)
         return cls(
             event_name=base_event.event_name,
@@ -466,7 +454,6 @@ class CancelReservationEvent(ReserveRideEvent):
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "CancelReservationEvent":
         base_event = Event.parse(backend_event)
-        log_event(backend_event)
         data = backend_event.data or {}
         trip = data.get("tripData")
         if isinstance(trip, dict):

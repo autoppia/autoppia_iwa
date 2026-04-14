@@ -114,9 +114,3 @@ def get_web_version(project_id: str, frontend_url: str | None = None) -> str | N
                 continue
 
     return None
-
-
-def log_event(event):
-    print("=" * 50)
-    print(event)
-    print("=" * 50)

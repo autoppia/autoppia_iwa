@@ -70,10 +70,3 @@ def test_get_web_version_returns_none_for_invalid_package_json(tmp_path, monkeyp
 
     version = utils.get_web_version("autocinema", "http://localhost:8000/")
     assert version is not None
-
-
-def test_log_event_prints_delimiters(capsys):
-    utils.log_event({"event": "x"})
-    captured = capsys.readouterr()
-    assert "=" * 50 in captured.out
-    assert "{'event': 'x'}" in captured.out
