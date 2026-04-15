@@ -1466,7 +1466,7 @@ ALL prompts must follow this pattern exactly, each phrased slightly differently 
 
 
 VIEW_AUTHOR_USE_CASE = UseCase(
-    name="view_author",
+    name="VIEW_AUTHOR",
     description="User opened an author profile page.",
     event=ViewAuthorEvent,
     event_source_code=ViewAuthorEvent.get_source_code_of_class(),
