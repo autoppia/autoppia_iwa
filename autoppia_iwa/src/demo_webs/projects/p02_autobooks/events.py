@@ -489,7 +489,7 @@ class EditCommentBookEvent(AddCommentEvent):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        if not super()._validate_criteria(criteria):
+        if not AddCommentEvent._validate_criteria(criteria):
             return False
         if criteria.previous_content is not None:
             return self._validate_field(self.previous_content, criteria.previous_content)
@@ -523,7 +523,7 @@ class DeleteCommentBookEvent(AddCommentEvent):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return super()._validate_criteria(criteria)
+        return AddCommentEvent._validate_criteria(criteria)
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "DeleteCommentBookEvent":
