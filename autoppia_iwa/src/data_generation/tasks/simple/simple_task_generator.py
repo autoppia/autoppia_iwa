@@ -504,18 +504,18 @@ class SimpleTaskGenerator:
         """Get the primary entity type for a single-entity project."""
         # Map project directories to their entity types
         entity_type_map = {
-            "autocinema_1": "movies",
-            "autobooks_2": "books",
-            "autozone_3": "products",
-            "autodining_4": "restaurants",
-            "autodelivery_7": "restaurants",
-            "autolodge_8": "hotels",
-            "autoconnect_9": "users",  # Primary entity, but has multiple
-            "autowork_10": "jobs",  # Primary entity, but has multiple
-            "autocalendar_11": "events",
-            "autolist_12": "tasks",
-            "autodrive_13": "places",  # Primary entity, but has multiple
-            "autohealth_14": "appointments",  # Primary entity, but has multiple
+            "p01_autocinema": "movies",
+            "p02_autobooks": "books",
+            "p03_autozone": "products",
+            "p04_autodining": "restaurants",
+            "p07_autodelivery": "restaurants",
+            "p08_autolodge": "hotels",
+            "p09_autoconnect": "users",  # Primary entity, but has multiple
+            "p10_autowork": "jobs",  # Primary entity, but has multiple
+            "p11_autocalendar": "events",
+            "p12_autolist": "tasks",
+            "p13_autodrive": "places",  # Primary entity, but has multiple
+            "p14_autohealth": "appointments",  # Primary entity, but has multiple
         }
         return entity_type_map.get(project_dir)
 
@@ -523,32 +523,41 @@ class SimpleTaskGenerator:
         """Get all entity types for a multi-entity project."""
         # Map project directories to their entity types
         entity_types_map = {
-            "autocrm_5": ["matters", "clients", "logs", "events", "files"],
-            "automail_6": ["emails", "templates"],
-            "autoconnect_9": ["users", "posts", "jobs", "recommendations"],
-            "autowork_10": ["jobs", "experts", "hires", "skills"],
-            "autodrive_13": ["places", "rides"],
-            "autohealth_14": ["appointments", "doctors", "prescriptions", "medical-records"],
-            "autostats_15": ["validators", "subnets", "blocks", "accounts", "transfers"],
-            "autodiscord_16": ["servers", "channels", "messages", "members"],
+            "p05_autocrm": ["matters", "clients", "logs", "events", "files"],
+            "p06_automail": ["emails", "templates"],
+            "p09_autoconnect": ["users", "posts", "jobs", "recommendations"],
+            "p10_autowork": ["jobs", "experts", "hires", "skills"],
+            "p13_autodrive": ["places", "rides"],
+            "p14_autohealth": ["appointments", "doctors", "prescriptions", "medical-records"],
+            "p15_autostats": ["validators", "subnets", "blocks", "accounts", "transfers"],
+            "p16_autodiscord": ["servers", "channels", "messages", "members"],
         }
         return entity_types_map.get(project_dir)
 
     def _get_project_module_name(self) -> str | None:
         """Auto-detect project module name from filesystem.
 
-        Finds the directory in src/demo_webs/projects/ that starts with project.id.
-        Example: "autocinema" → finds "autocinema_1"
+        Finds the directory in src/demo_webs/projects/ that maps to project.id.
+        Examples:
+          - "autocinema" -> "p01_autocinema"
+          - legacy fallback "autocinema_1"
         """
 
         project_id = self.web_project.id
         projects_dir = Path(__file__).resolve().parents[3] / "demo_webs" / "projects"
 
         try:
-            # Find directories starting with project_id
-            matches = [d.name for d in projects_dir.iterdir() if d.is_dir() and d.name.startswith(f"{project_id}_")]
-            if matches:
-                return matches[0]
+            dirs = [d.name for d in projects_dir.iterdir() if d.is_dir()]
+
+            # Preferred format: pNN_<project_id>
+            preferred = [name for name in dirs if name.startswith("p") and name.endswith(f"_{project_id}")]
+            if preferred:
+                return sorted(preferred)[0]
+
+            # Legacy format: <project_id>_<number>
+            legacy = [name for name in dirs if name.startswith(f"{project_id}_")]
+            if legacy:
+                return sorted(legacy)[0]
 
             # Fallback: try exact match
             exact_match = projects_dir / project_id

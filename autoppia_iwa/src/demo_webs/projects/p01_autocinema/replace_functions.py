@@ -1,4 +1,4 @@
-from autoppia_iwa.src.demo_webs.projects.autocinema_1.data_utils import fetch_data
+from autoppia_iwa.src.demo_webs.projects.p01_autocinema.data_utils import fetch_data
 from autoppia_iwa.src.web_agents.classes import DEFAULT_PASSWORD
 
 

@@ -67,22 +67,22 @@ class Event(BaseModel):
         events: list[Event] = []
         # TODO: If we have more types we should include here
         # TODO: Moving (ALL_BACKEND_EVENT_TYPES) here to resolve circular import error
-        from autoppia_iwa.src.demo_webs.projects.autobooks_2.events import BACKEND_EVENT_TYPES as web_2_backend_types
-        from autoppia_iwa.src.demo_webs.projects.autocalendar_11.events import BACKEND_EVENT_TYPES as web_11_backend_types
-        from autoppia_iwa.src.demo_webs.projects.autocinema_1.events import BACKEND_EVENT_TYPES as web_1_backend_types
-        from autoppia_iwa.src.demo_webs.projects.autoconnect_9.events import BACKEND_EVENT_TYPES as web_9_backend_types
-        from autoppia_iwa.src.demo_webs.projects.autocrm_5.events import BACKEND_EVENT_TYPES as web_5_backend_types
-        from autoppia_iwa.src.demo_webs.projects.autodelivery_7.events import BACKEND_EVENT_TYPES as web_7_backend_types
-        from autoppia_iwa.src.demo_webs.projects.autodining_4.events import BACKEND_EVENT_TYPES as web_4_backend_types
-        from autoppia_iwa.src.demo_webs.projects.autodiscord_16.events import BACKEND_EVENT_TYPES as web_16_backend_types
-        from autoppia_iwa.src.demo_webs.projects.autodrive_13.events import BACKEND_EVENT_TYPES as web_13_backend_types
-        from autoppia_iwa.src.demo_webs.projects.autohealth_14.events import BACKEND_EVENT_TYPES as web_14_backend_types
-        from autoppia_iwa.src.demo_webs.projects.autolist_12.events import BACKEND_EVENT_TYPES as web_12_backend_types
-        from autoppia_iwa.src.demo_webs.projects.autolodge_8.events import BACKEND_EVENT_TYPES as web_8_backend_types
-        from autoppia_iwa.src.demo_webs.projects.automail_6.events import BACKEND_EVENT_TYPES as web_6_backend_types
-        from autoppia_iwa.src.demo_webs.projects.autostats_15.events import BACKEND_EVENT_TYPES as web_15_backend_types
-        from autoppia_iwa.src.demo_webs.projects.autowork_10.events import BACKEND_EVENT_TYPES as web_10_backend_types
-        from autoppia_iwa.src.demo_webs.projects.autozone_3.events import BACKEND_EVENT_TYPES as web_3_backend_types
+        from autoppia_iwa.src.demo_webs.projects.p01_autocinema.events import BACKEND_EVENT_TYPES as web_1_backend_types
+        from autoppia_iwa.src.demo_webs.projects.p02_autobooks.events import BACKEND_EVENT_TYPES as web_2_backend_types
+        from autoppia_iwa.src.demo_webs.projects.p03_autozone.events import BACKEND_EVENT_TYPES as web_3_backend_types
+        from autoppia_iwa.src.demo_webs.projects.p04_autodining.events import BACKEND_EVENT_TYPES as web_4_backend_types
+        from autoppia_iwa.src.demo_webs.projects.p05_autocrm.events import BACKEND_EVENT_TYPES as web_5_backend_types
+        from autoppia_iwa.src.demo_webs.projects.p06_automail.events import BACKEND_EVENT_TYPES as web_6_backend_types
+        from autoppia_iwa.src.demo_webs.projects.p07_autodelivery.events import BACKEND_EVENT_TYPES as web_7_backend_types
+        from autoppia_iwa.src.demo_webs.projects.p08_autolodge.events import BACKEND_EVENT_TYPES as web_8_backend_types
+        from autoppia_iwa.src.demo_webs.projects.p09_autoconnect.events import BACKEND_EVENT_TYPES as web_9_backend_types
+        from autoppia_iwa.src.demo_webs.projects.p10_autowork.events import BACKEND_EVENT_TYPES as web_10_backend_types
+        from autoppia_iwa.src.demo_webs.projects.p11_autocalendar.events import BACKEND_EVENT_TYPES as web_11_backend_types
+        from autoppia_iwa.src.demo_webs.projects.p12_autolist.events import BACKEND_EVENT_TYPES as web_12_backend_types
+        from autoppia_iwa.src.demo_webs.projects.p13_autodrive.events import BACKEND_EVENT_TYPES as web_13_backend_types
+        from autoppia_iwa.src.demo_webs.projects.p14_autohealth.events import BACKEND_EVENT_TYPES as web_14_backend_types
+        from autoppia_iwa.src.demo_webs.projects.p15_autostats.events import BACKEND_EVENT_TYPES as web_15_backend_types
+        from autoppia_iwa.src.demo_webs.projects.p16_autodiscord.events import BACKEND_EVENT_TYPES as web_16_backend_types
 
         ALL_BACKEND_EVENT_TYPES = {
             **web_1_backend_types,

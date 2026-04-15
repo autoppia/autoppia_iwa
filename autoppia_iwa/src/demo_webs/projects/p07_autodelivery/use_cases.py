@@ -1,5 +1,5 @@
 from autoppia_iwa.src.demo_webs.classes import UseCase
-from autoppia_iwa.src.demo_webs.projects.autodelivery_7.events import (
+from autoppia_iwa.src.demo_webs.projects.p07_autodelivery.events import (
     AddressAddedEvent,
     AddToCartEvent,
     AddToCartModalOpenEvent,
