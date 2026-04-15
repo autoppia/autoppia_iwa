@@ -5,12 +5,15 @@ import re
 from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
 from hashlib import sha1
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field, ValidationError
 
 from autoppia_iwa.src.execution.actions.actions import NavigateAction
 from autoppia_iwa.src.execution.actions.base import BaseAction
+
+if TYPE_CHECKING:
+    from autoppia_iwa.src.data_generation.tests.classes import BaseTaskTest
 
 # Constants
 CONSTRAINTS_INFO_PLACEHOLDER = "<constraints_info>"
@@ -305,6 +308,44 @@ class BackendEvent(BaseModel):
     user_id: int | None = None
     web_agent_id: str | None = None
     timestamp: Any | None = None
+
+
+@dataclass
+class Trajectory:
+    """
+    Per-use-case concrete flow: `name` is the use case id, `prompt` is the task text,
+    `actions` is the scripted solution, and `tests` mirrors cached CheckEventTest payloads.
+    """
+
+    name: str
+    prompt: str
+    actions: list[BaseAction] | None
+    tests: list["BaseTaskTest"] | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "prompt": self.prompt,
+            "actions": [action.to_tool_call() for action in (self.actions or [])],
+            "tests": [t.model_dump() for t in (self.tests or [])] if self.tests else [],
+        }
+
+    def to_step_tool_calls_trajectory(self) -> dict[str, Any]:
+        actions = self.actions or []
+        url: str | None = None
+        for action in actions:
+            if isinstance(action, NavigateAction) and getattr(action, "url", None):
+                url = action.url
+                break
+        tool_actions = [x.to_tool_call() for x in actions]
+        return {
+            "url": url,
+            "prompt": self.prompt or None,
+            "actions": tool_actions,
+            "use_case": self.name,
+            "has_success": bool(tool_actions),
+            "action_format": "step_tool_calls",
+        }
 
 
 @dataclass
