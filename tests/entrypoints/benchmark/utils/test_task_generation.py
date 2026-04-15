@@ -23,6 +23,43 @@ def _make_project(pid: str = "p1", name: str = "Project 1") -> WebProject:
     )
 
 
+def test_filter_tasks_by_use_cases_none_means_no_filter():
+    class _UC:
+        def __init__(self, name: str):
+            self.name = name
+
+    class _T:
+        def __init__(self, name: str):
+            self.use_case = _UC(name)
+
+    tasks = [_T("LOGIN"), _T("SEARCH")]
+    assert task_generation.filter_tasks_by_use_cases(tasks, None) is tasks
+    assert len(task_generation.filter_tasks_by_use_cases(tasks, [])) == 2
+
+
+def test_filter_tasks_by_use_cases_matches_name_case_insensitive():
+    class _UC:
+        def __init__(self, name: str):
+            self.name = name
+
+    class _T:
+        def __init__(self, name: str):
+            self.use_case = _UC(name)
+
+    tasks = [_T("REQUEST_QUICK_APPOINTMENT"), _T("LOGIN"), _T("REQUEST_QUICK_APPOINTMENT")]
+    out = task_generation.filter_tasks_by_use_cases(tasks, ["request_quick_appointment"])
+    assert len(out) == 2
+    assert all(t.use_case.name.startswith("REQUEST") for t in out)
+
+
+def test_filter_tasks_by_use_cases_drops_tasks_without_use_case():
+    class _T:
+        use_case = None
+
+    tasks = [_T(), _T()]
+    assert task_generation.filter_tasks_by_use_cases(tasks, ["LOGIN"]) == []
+
+
 def test_get_cache_filename():
     project = _make_project("autocinema_1", "Auto Cinema")
     path = task_generation.get_cache_filename(project, "/tmp/cache")

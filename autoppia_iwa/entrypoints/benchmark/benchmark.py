@@ -547,7 +547,7 @@ class Benchmark:
         return str(cache_root / "tasks")
 
     async def _generate_tasks_for_project(self, project: WebProject) -> list[Task]:
-        from autoppia_iwa.entrypoints.benchmark.utils.task_generation import load_tasks_from_json, save_tasks_to_json
+        from autoppia_iwa.entrypoints.benchmark.utils.task_generation import filter_tasks_by_use_cases, load_tasks_from_json, save_tasks_to_json
         from autoppia_iwa.src.data_generation.tasks.classes import TaskGenerationConfig
         from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
 
@@ -558,8 +558,12 @@ class Benchmark:
         if use_cached:
             cached_tasks = await load_tasks_from_json(project, cache_dir)
             if cached_tasks:
-                logger.info(f"Using {len(cached_tasks)} cached tasks for '{project.name}'")
-                return cached_tasks
+                filtered = filter_tasks_by_use_cases(cached_tasks, self.config.use_cases)
+                if self.config.use_cases:
+                    logger.info(f"use_cases {self.config.use_cases!r}: {len(filtered)}/{len(cached_tasks)} cached tasks for '{project.name}'")
+                else:
+                    logger.info(f"Using {len(filtered)} cached tasks for '{project.name}'")
+                return filtered
             else:
                 logger.info(f"No cached tasks found for '{project.name}', generating new tasks...")
 

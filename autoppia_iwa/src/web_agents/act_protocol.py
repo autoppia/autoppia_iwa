@@ -36,7 +36,7 @@ class ActRequest(BaseModel):
 class ActToolCall(BaseModel):
     """Canonical tool call payload used by `/act` response."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
     name: str
     arguments: dict[str, Any] = Field(default_factory=dict)
@@ -62,7 +62,7 @@ class ActToolCall(BaseModel):
 class ActResponse(BaseModel):
     """Canonical response payload returned by `/act` endpoints."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
     protocol_version: str = Field(default=ACT_PROTOCOL_VERSION)
     tool_calls: list[ActToolCall]

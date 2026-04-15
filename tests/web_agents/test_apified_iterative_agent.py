@@ -71,12 +71,27 @@ class TestRewriteToRemote:
             result = ApifiedWebAgent._rewrite_to_remote("http://other.com/page")
             assert result == "https://demo.example.com/page"
 
+    def test_rewrite_bare_loopback_with_port(self):
+        with patch("autoppia_iwa.src.web_agents.apified_iterative_agent.DEMO_WEBS_ENDPOINT", "https://demo.example.com"):
+            result = ApifiedWebAgent._rewrite_to_remote("localhost:8080")
+            assert result == "https://demo.example.com/"
+
+
+class TestRewriteWithPage:
+    def test_rewrite_with_page_keeps_current_loopback_origin_when_needed(self):
+        agent = ApifiedWebAgent(base_url="http://localhost:5000")
+        agent._act_rewrite_page_url = "http://localhost:8000/current"
+
+        with patch("autoppia_iwa.src.web_agents.apified_iterative_agent.DEMO_WEBS_ENDPOINT", "http://localhost"):
+            result = agent._rewrite_to_remote_with_page("/landing")
+        assert result == "http://localhost:8000/landing"
+
 
 class TestParseActionsResponse:
     def test_actions_list_format(self):
         agent = ApifiedWebAgent(base_url="http://localhost:5000")
         data = {"actions": [{"type": "ClickAction", "x": 10, "y": 20}]}
-        with patch.object(agent, "_rewrite_to_remote", side_effect=lambda x: x):
+        with patch.object(agent, "_rewrite_to_remote_with_page", side_effect=lambda x: x):
             result = agent._parse_actions_response(data)
         assert len(result) == 1
         assert result[0].type == "ClickAction"
@@ -84,7 +99,7 @@ class TestParseActionsResponse:
     def test_single_action_format(self):
         agent = ApifiedWebAgent(base_url="http://localhost:5000")
         data = {"action": {"type": "NavigateAction", "url": "http://localhost/page"}}
-        with patch.object(agent, "_rewrite_to_remote", side_effect=lambda x: x):
+        with patch.object(agent, "_rewrite_to_remote_with_page", side_effect=lambda x: x):
             result = agent._parse_actions_response(data)
         assert len(result) == 1
         assert isinstance(result[0], NavigateAction)
@@ -92,7 +107,7 @@ class TestParseActionsResponse:
     def test_navigate_url_format(self):
         agent = ApifiedWebAgent(base_url="http://localhost:5000")
         data = {"navigate_url": "http://localhost/landing"}
-        with patch.object(agent, "_rewrite_to_remote", side_effect=lambda x: x):
+        with patch.object(agent, "_rewrite_to_remote_with_page", side_effect=lambda x: x):
             result = agent._parse_actions_response(data)
         assert len(result) == 1
         assert result[0].type == "NavigateAction"
@@ -121,7 +136,7 @@ class TestParseActionsResponse:
 
         assert len(parsed_actions) == 2
         assert isinstance(parsed_actions[0], NavigateAction)
-        assert parsed_actions[0].url == agent._rewrite_to_remote("/dashboard")
+        assert parsed_actions[0].url == agent._rewrite_to_remote_with_page("/dashboard")
 
     def test_parse_actions_response_returns_empty_when_done_true_and_no_tool_calls(self) -> None:
         agent = ApifiedWebAgent(base_url="http://127.0.0.1:5060")
@@ -165,7 +180,7 @@ class TestParseActionsResponse:
 
         assert len(parsed_actions) == 1
         assert isinstance(parsed_actions[0], NavigateAction)
-        assert parsed_actions[0].url == agent._rewrite_to_remote("/a")
+        assert parsed_actions[0].url == agent._rewrite_to_remote_with_page("/a")
 
     def test_parse_actions_response_maps_user_request_input_tool(self) -> None:
         agent = ApifiedWebAgent(base_url="http://127.0.0.1:5060")
@@ -214,7 +229,7 @@ class TestParseActionsResponse:
 
         assert len(parsed_actions) == 2
         assert isinstance(parsed_actions[0], NavigateAction)
-        assert parsed_actions[0].url == agent._rewrite_to_remote("/dashboard")
+        assert parsed_actions[0].url == agent._rewrite_to_remote_with_page("/dashboard")
 
 
 class TestTaskState:
@@ -311,7 +326,7 @@ class TestAct:
 
         assert len(result) == 1
         assert isinstance(result[0], NavigateAction)
-        assert result[0].url == agent._rewrite_to_remote("/landing")
+        assert result[0].url == agent._rewrite_to_remote_with_page("/landing")
         assert agent.last_reasoning == "go to landing"
         assert agent.last_done is False
         assert agent._task_state == {"phase": "browse"}
@@ -448,7 +463,7 @@ class TestApifiedWebAgentHelpers:
     def test_parse_legacy_actions_skips_row_on_create_failure(self) -> None:
         agent = ApifiedWebAgent(base_url="http://localhost:5000")
         data = {"actions": [{"type": "NavigateAction", "url": None}]}
-        with patch.object(agent, "_rewrite_to_remote", side_effect=lambda x: x), patch.object(BaseAction, "create_action", side_effect=ValueError("bad")):
+        with patch.object(agent, "_rewrite_to_remote_with_page", side_effect=lambda x: x), patch.object(BaseAction, "create_action", side_effect=ValueError("bad")):
             assert agent._parse_legacy_actions_response(data) == []
 
     def test_build_action_from_tool_call_swallows_errors(self) -> None:
@@ -465,11 +480,19 @@ class TestApifiedWebAgentHelpers:
     def test_parse_legacy_skips_action_when_factory_returns_none(self) -> None:
         agent = ApifiedWebAgent(base_url="http://localhost:5000")
         data = {"actions": [{"type": "__not_a_registered_action_type__", "x": 1}]}
-        with patch.object(agent, "_rewrite_to_remote", side_effect=lambda x: x):
+        with patch.object(agent, "_rewrite_to_remote_with_page", side_effect=lambda x: x):
             assert agent._parse_legacy_actions_response(data) == []
 
 
 class TestActJsonPayload:
+    def test_screenshot_for_json_encodes_bytes(self) -> None:
+        encoded = ApifiedWebAgent._screenshot_for_json(b"\x89PNG")
+        assert isinstance(encoded, str)
+        assert encoded.startswith("data:image/png;base64,")
+
+    def test_screenshot_for_json_drops_empty_bytes(self) -> None:
+        assert ApifiedWebAgent._screenshot_for_json(b"") is None
+
     @pytest.mark.asyncio
     async def test_act_treats_non_dict_json_as_empty_payload(self) -> None:
         agent = ApifiedWebAgent(base_url="http://localhost:9999", id="a1")
@@ -494,3 +517,31 @@ class TestActJsonPayload:
                 step_index=0,
             )
         assert result == []
+
+    @pytest.mark.asyncio
+    async def test_act_normalizes_screenshot_bytes_in_payload(self) -> None:
+        agent = ApifiedWebAgent(base_url="http://localhost:9999", id="a1")
+        task = Task(url="https://example.com", prompt="P", web_project_id="dummy")
+        response_mock = AsyncMock()
+        response_mock.status = 200
+        response_mock.raise_for_status = MagicMock()
+        response_mock.json = AsyncMock(return_value={"actions": []})
+        post_mock = MagicMock()
+        post_mock.__aenter__ = AsyncMock(return_value=response_mock)
+        post_mock.__aexit__ = AsyncMock(return_value=None)
+        session_mock = MagicMock()
+        session_mock.post = MagicMock(return_value=post_mock)
+        session_mock.__aenter__ = AsyncMock(return_value=session_mock)
+        session_mock.__aexit__ = AsyncMock(return_value=None)
+
+        with patch("aiohttp.ClientSession", return_value=session_mock):
+            _ = await agent.act(
+                task=task,
+                snapshot_html="",
+                screenshot=b"\x89PNG",
+                url="http://localhost:8000/",
+                step_index=0,
+            )
+
+        _, kwargs = session_mock.post.call_args
+        assert kwargs["json"]["screenshot"].startswith("data:image/png;base64,")

@@ -98,3 +98,17 @@ def test_act_response_normalize_root_non_dict_passes_through_validator() -> None
 def test_act_response_rejects_non_object_state_out() -> None:
     with pytest.raises(ValidationError):
         ActResponse.from_raw({"tool_calls": [], "done": True, "state_out": "bad"})
+
+
+def test_act_protocol_ignores_extra_fields_in_response_and_tool_call() -> None:
+    parsed = ActResponse.from_raw(
+        {
+            "tool_calls": [{"name": "browser.click", "arguments": {"x": 1, "y": 2}, "extra_tool_field": "ignored"}],
+            "done": False,
+            "state_out": {},
+            "extra_response_field": "ignored",
+        }
+    )
+    assert len(parsed.tool_calls) == 1
+    assert parsed.tool_calls[0].name == "browser.click"
+    assert parsed.tool_calls[0].arguments == {"x": 1, "y": 2}
