@@ -4,9 +4,8 @@ This module keeps backward-compatible import paths for legacy project package
 names (e.g. ``autobooks_2``) after the migration to ``pNN_*`` directories.
 """
 
-from importlib import import_module
 import sys
-
+from importlib import import_module
 
 _LEGACY_TO_NEW = {
     "autocinema_1": "p01_autocinema",
