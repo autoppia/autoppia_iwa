@@ -35,58 +35,29 @@ omit =
     autoppia_iwa/entrypoints/web_verification/**
 
     # Demo_webs project generation/data layers (not gated)
-    autoppia_iwa/src/demo_webs/projects/autobooks_2/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/autobooks_2/replace_functions.py
-    autoppia_iwa/src/demo_webs/projects/autozone_3/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/autozone_3/replace_functions.py
-    autoppia_iwa/src/demo_webs/projects/autocalendar_11/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/autoconnect_9/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/autocrm_5/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/autodelivery_7/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/autodining_4/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/autodrive_13/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/autohealth_14/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/autolist_12/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/autolodge_8/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/automail_6/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/autostats_15/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/autowork_10/generation_functions.py
+    autoppia_iwa/src/demo_webs/projects/*/generation_functions.py
+    autoppia_iwa/src/demo_webs/projects/*/replace_functions.py
 
     # Demo_webs project dataset helpers that are not unit-covered
-    autoppia_iwa/src/demo_webs/projects/autobooks_2/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/autocalendar_11/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/autoconnect_9/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/autocrm_5/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/autodining_4/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/autodrive_13/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/autodelivery_7/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/autolodge_8/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/autolist_12/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/automail_6/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/autozone_3/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/autocinema_1/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/autowork_10/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/autostats_15/data_utils.py
+    autoppia_iwa/src/demo_webs/projects/*/data_utils.py
 
     # Static/derivation layers
     autoppia_iwa/src/demo_webs/projects/*/data.py
     autoppia_iwa/src/demo_webs/projects/*/use_cases.py
 
     # Discord project is currently not exercised by tests.
-    autoppia_iwa/src/demo_webs/projects/autodiscord_16/events.py
-    autoppia_iwa/src/demo_webs/projects/autodiscord_16/generation_functions.py
+    autoppia_iwa/src/demo_webs/projects/p16_autodiscord/events.py
 
     # Additional gate exclusions (keep the gate focused).
-    autoppia_iwa/src/demo_webs/projects/autocinema_1/events.py
-    autoppia_iwa/src/demo_webs/projects/autolodge_8/events.py
-    autoppia_iwa/src/demo_webs/projects/autodelivery_7/events.py
-    autoppia_iwa/src/demo_webs/projects/autodining_4/events.py
-    autoppia_iwa/src/demo_webs/projects/autolist_12/events.py
-    autoppia_iwa/src/demo_webs/projects/automail_6/events.py
-    autoppia_iwa/src/demo_webs/projects/autobooks_2/utils.py
-    autoppia_iwa/src/demo_webs/projects/autodrive_13/events.py
-    autoppia_iwa/src/demo_webs/projects/autozone_3/events.py
-    autoppia_iwa/src/demo_webs/projects/autohealth_14/data_utils.py
+    autoppia_iwa/src/demo_webs/projects/p01_autocinema/events.py
+    autoppia_iwa/src/demo_webs/projects/p02_autobooks/utils.py
+    autoppia_iwa/src/demo_webs/projects/p03_autozone/events.py
+    autoppia_iwa/src/demo_webs/projects/p04_autodining/events.py
+    autoppia_iwa/src/demo_webs/projects/p06_automail/events.py
+    autoppia_iwa/src/demo_webs/projects/p07_autodelivery/events.py
+    autoppia_iwa/src/demo_webs/projects/p08_autolodge/events.py
+    autoppia_iwa/src/demo_webs/projects/p12_autolist/events.py
+    autoppia_iwa/src/demo_webs/projects/p13_autodrive/events.py
     autoppia_iwa/src/demo_webs/utils.py
     autoppia_iwa/src/demo_webs/classes.py
     autoppia_iwa/src/demo_webs/projects/shared_utils.py

@@ -504,6 +504,18 @@ class SimpleTaskGenerator:
         """Get the primary entity type for a single-entity project."""
         # Map project directories to their entity types
         entity_type_map = {
+            "autocinema_1": "movies",
+            "autobooks_2": "books",
+            "autozone_3": "products",
+            "autodining_4": "restaurants",
+            "autodelivery_7": "restaurants",
+            "autolodge_8": "hotels",
+            "autoconnect_9": "users",  # Legacy name kept for backwards-compat tests
+            "autowork_10": "jobs",  # Legacy name kept for backwards-compat tests
+            "autocalendar_11": "events",
+            "autolist_12": "tasks",
+            "autodrive_13": "places",  # Legacy name kept for backwards-compat tests
+            "autohealth_14": "appointments",  # Legacy name kept for backwards-compat tests
             "p01_autocinema": "movies",
             "p02_autobooks": "books",
             "p03_autozone": "products",
@@ -523,6 +535,14 @@ class SimpleTaskGenerator:
         """Get all entity types for a multi-entity project."""
         # Map project directories to their entity types
         entity_types_map = {
+            "autocrm_5": ["matters", "clients", "logs", "events", "files"],
+            "automail_6": ["emails", "templates"],
+            "autoconnect_9": ["users", "posts", "jobs", "recommendations"],
+            "autowork_10": ["jobs", "experts", "hires", "skills"],
+            "autodrive_13": ["places", "rides"],
+            "autohealth_14": ["appointments", "doctors", "prescriptions", "medical-records"],
+            "autostats_15": ["validators", "subnets", "blocks", "accounts", "transfers"],
+            "autodiscord_16": ["servers", "channels", "messages", "members"],
             "p05_autocrm": ["matters", "clients", "logs", "events", "files"],
             "p06_automail": ["emails", "templates"],
             "p09_autoconnect": ["users", "posts", "jobs", "recommendations"],
