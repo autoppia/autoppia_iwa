@@ -8,7 +8,7 @@ from autoppia_iwa.src.demo_webs.data_provider import get_seed_from_url
 
 from ...criterion_helper import ComparisonOperator
 from ...shared_utils import create_constraint_dict, parse_price
-from .data import FIELD_OPERATORS_MAP_PRODUCTS
+from .data import FIELD_OPERATORS_MAP_PRODUCTS, FIELD_OPERATORS_MAP_RECIPIENT
 from .data_utils import fetch_data
 
 QUANTITY_FIELDS = ["quantity", "items", "total_items", "previous_quantity", "new_quantity"]
@@ -212,6 +212,59 @@ async def generate_autozone_products_constraints(task_url: str | None = None, da
     return constraints_list
 
 
+def _share_completed_recipient_value(field: str, op: ComparisonOperator, raw: str) -> str:
+    """Build a constraint value for recipient_name / recipient_email for the given operator."""
+    if op in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]:
+        return raw
+    if op == ComparisonOperator.CONTAINS:
+        if field == "recipient_email" and "@" in raw:
+            return raw.split("@", 1)[1]
+        if len(raw) >= 2:
+            return raw[: max(2, len(raw) // 2)]
+        return raw
+    if op == ComparisonOperator.NOT_CONTAINS:
+        return raw + "XYZ" + str(random.randint(100, 999))  # Ensure it won't contain source
+
+    return raw
+
+
+async def generate_share_completed_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
+    """
+    Product constraints (same as catalog tasks) plus exactly one recipient constraint:
+    either ``recipient_name`` or ``recipient_email`` — not both.
+    """
+
+    SAMPLE_RECIPIENT_NAMES = [
+        "Alex",
+        "Jordan",
+        "Sam",
+        "Riley",
+        "Taylor",
+        "Morgan",
+        "Casey",
+    ]
+
+    SAMPLE_RECIPIENT_EMAILS = [
+        "alex@example.com",
+        "team@company.org",
+        "buyer@shop.net",
+        "procurement@acme.test",
+        "orders@retail.demo",
+    ]
+
+    constraints_list = await generate_autozone_products_constraints(task_url, dataset)
+
+    for field in ["recipient_name", "recipient_email"]:
+        op = ComparisonOperator(random.choice(FIELD_OPERATORS_MAP_RECIPIENT[field]))
+        raw = random.choice(SAMPLE_RECIPIENT_NAMES if field == "recipient_name" else SAMPLE_RECIPIENT_EMAILS)
+        value = _share_completed_recipient_value(field, op, raw)
+        constraints_list.append(create_constraint_dict(field, op, value))
+    return constraints_list
+
+
 async def generate_search_query_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints_list = []
     query_operators = [
@@ -383,3 +436,25 @@ async def generate_category_filter_constraints(task_url: str | None = None, data
     constraints.append(create_constraint_dict("category", ComparisonOperator.EQUALS, selected_category))
 
     return constraints
+
+
+async def generate_autozone_login_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
+    _ = (task_url, dataset)
+    return [
+        {"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<username>"},
+        {"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<password>"},
+    ]
+
+
+async def generate_autozone_register_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
+    _ = (task_url, dataset)
+    return [
+        {"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<signup_username>"},
+        {"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<signup_password>"},
+    ]

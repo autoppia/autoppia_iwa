@@ -3,6 +3,12 @@ from autoppia_iwa.src.demo_webs.classes import UseCase
 from .events import (
     AddToCartEvent,
     AddToWishlistEvent,
+    AutozoneLoginEvent,
+    AutozoneLogoutEvent,
+    AutozoneRegisterEvent,
+    AutozoneReviewCreatedEvent,
+    AutozoneReviewDeletedEvent,
+    AutozoneReviewUpdatedEvent,
     CarouselScrollEvent,
     CategoryFilterEvent,
     CheckoutStartedEvent,
@@ -12,20 +18,115 @@ from .events import (
     ProceedToCheckoutEvent,
     QuantityChangedEvent,
     SearchProductEvent,
+    ShareCompletedEvent,
     ShareProductEvent,
     ViewCartEvent,
     ViewWishlistEvent,
 )
 from .generation_functions import (
+    generate_autozone_login_constraints,
     generate_autozone_products_constraints,
+    generate_autozone_register_constraints,
     generate_carousel_scroll_constraints,
     generate_category_filter_constraints,
     generate_checkout_constraints,
     generate_order_completed_constraints,
     generate_quantity_change_constraints,
     generate_search_query_constraints,
+    generate_share_completed_constraints,
 )
 from .replace_functions import replace_products_placeholders
+
+###############################################################################
+# AUTOZONE AUTH (AUTOZONE_LOGIN / AUTOZONE_REGISTER / AUTOZONE_LOGOUT)
+###############################################################################
+
+AUTOZONE_REGISTRATION_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Be sure to add instruction to register using username '<signup_username>' and password '<signup_password> (**strictly** containing both the username and password placeholders)'.
+2. Only phrase it like: "Register with the following username:<signup_username> and password:<signup_password>" etc
+3. Avoid mentioning anything other than mentioned above.
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+
+AUTOZONE_LOGIN_USE_CASE = UseCase(
+    name="AUTOZONE_LOGIN",
+    description="The user fills out the login form and logs in successfully.",
+    event=AutozoneLoginEvent,
+    event_source_code=AutozoneLoginEvent.get_source_code_of_class(),
+    constraints_generator=generate_autozone_login_constraints,
+    examples=[
+        {
+            "prompt": "Login for the following username:<username> and password:<password>",
+            "prompt_for_task_generation": "Login for the following username:<username> and password:<password>",
+        },
+        {
+            "prompt": "Login with a specific username:<username> and password:<password>",
+            "prompt_for_task_generation": "Login with a specific username:<username> and password:<password>",
+        },
+        {
+            "prompt": "Fill the Login Form with a specific username:<username> and password:<password>",
+            "prompt_for_task_generation": "Fill the Login Form with a specific username:<username> and password:<password>",
+        },
+        {
+            "prompt": "Sign in to the website username:<username> and password:<password>",
+            "prompt_for_task_generation": "Sign in to the website username:<username> and password:<password>",
+        },
+    ],
+)
+
+AUTOZONE_REGISTER_USE_CASE = UseCase(
+    name="AUTOZONE_REGISTER",
+    description="The user fills out the registration form and successfully creates a new account.",
+    event=AutozoneRegisterEvent,
+    event_source_code=AutozoneRegisterEvent.get_source_code_of_class(),
+    constraints_generator=generate_autozone_register_constraints,
+    additional_prompt_info=AUTOZONE_REGISTRATION_ADDITIONAL_PROMPT_INFO,
+    examples=[
+        {
+            "prompt": "Register with the following username:<signup_username> and password:<signup_password>",
+            "prompt_for_task_generation": "Register with the following username:<signup_username> and password:<signup_password>",
+        },
+        {
+            "prompt": "Create a new account with username:<signup_username> and password:<signup_password>",
+            "prompt_for_task_generation": "Create a new account with username:<signup_username> and password:<signup_password>",
+        },
+        {
+            "prompt": "Fill the registration form with username:<signup_username> and password:<signup_password>",
+            "prompt_for_task_generation": "Fill the registration form with username:<signup_username> and password:<signup_password>",
+        },
+    ],
+)
+
+AUTOZONE_LOGOUT_USE_CASE = UseCase(
+    name="AUTOZONE_LOGOUT",
+    description="The user logs out of the platform after logging in.",
+    event=AutozoneLogoutEvent,
+    event_source_code=AutozoneLogoutEvent.get_source_code_of_class(),
+    constraints_generator=generate_autozone_login_constraints,
+    examples=[
+        {
+            "prompt": "Login for the following username:<username> and password:<password>, then logout",
+            "prompt_for_task_generation": "Login for the following username:<username> and password:<password>, then logout",
+        },
+        {
+            "prompt": "Login with a specific username:<username> and password:<password>, then sign out from the system",
+            "prompt_for_task_generation": "Login with a specific username:<username> and password:<password>, then sign out from the system",
+        },
+        {
+            "prompt": "Fill the Login Form with a specific username:<username> and password:<password>, once logged in, logout from my account",
+            "prompt_for_task_generation": "Fill the Login Form with a specific username:<username> and password:<password>, once logged in, logout from my account",
+        },
+        {
+            "prompt": "Sign in to the website username:<username> and password:<password>, after that please log me out",
+            "prompt_for_task_generation": "Sign in to the website username:<username> and password:<password>, after that please log me out",
+        },
+        {
+            "prompt": "Authenticate with username:<username> and password:<password>, then end my session",
+            "prompt_for_task_generation": "Authenticate with username:<username> and password:<password>, then end my session",
+        },
+    ],
+)
 
 ###############################################################################
 # PRODUCT_DETAIL_USE_CASE
@@ -295,6 +396,66 @@ SHARE_PRODUCT_USE_CASE = UseCase(
     ],
 )
 
+SHARE_COMPLETED_USE_CASE = UseCase(
+    name="SHARE_COMPLETED",
+    description="The user completed the share flow (recipient email/name filled and share submitted).",
+    event=ShareCompletedEvent,
+    event_source_code=ShareCompletedEvent.get_source_code_of_class(),
+    constraints_generator=generate_share_completed_constraints,
+    additional_prompt_info=SHARE_PRODUCT_INFO,
+    examples=[
+        {
+            "prompt": "Share the Espresso Machine with recipient name Alex and a valid email.",
+            "prompt_for_task_generation": "Share the <product_name> with recipient name <name> and a valid email.",
+        },
+    ],
+)
+
+REVIEW_CREATED_USE_CASE = UseCase(
+    name="REVIEW_CREATED",
+    description="The user posted a new product review on the AutoZone product page.",
+    event=AutozoneReviewCreatedEvent,
+    event_source_code=AutozoneReviewCreatedEvent.get_source_code_of_class(),
+    constraints_generator=generate_autozone_products_constraints,
+    additional_prompt_info="",
+    examples=[
+        {
+            "prompt": "Post a 5-star review for the Espresso Machine.",
+            "prompt_for_task_generation": "Post a <rating>-star review for the <product_name>.",
+        },
+    ],
+)
+
+REVIEW_UPDATED_USE_CASE = UseCase(
+    name="REVIEW_UPDATED",
+    description="The user edited an existing product review.",
+    event=AutozoneReviewUpdatedEvent,
+    event_source_code=AutozoneReviewUpdatedEvent.get_source_code_of_class(),
+    constraints_generator=generate_autozone_products_constraints,
+    additional_prompt_info="",
+    examples=[
+        {
+            "prompt": "Update my review for the Kettle to 4 stars.",
+            "prompt_for_task_generation": "Update my review for the <product_name> to <rating> stars.",
+        },
+    ],
+)
+
+REVIEW_DELETED_USE_CASE = UseCase(
+    name="REVIEW_DELETED",
+    description="The user deleted one of their product reviews.",
+    event=AutozoneReviewDeletedEvent,
+    event_source_code=AutozoneReviewDeletedEvent.get_source_code_of_class(),
+    constraints_generator=generate_autozone_products_constraints,
+    additional_prompt_info="",
+    examples=[
+        {
+            "prompt": "Delete my review for the Stand Mixer.",
+            "prompt_for_task_generation": "Delete my review for the <product_name>.",
+        },
+    ],
+)
+
 ###############################################################################
 # VIEW_CART_USE_CASE
 ###############################################################################
@@ -507,7 +668,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Explicitly mention changing quantity (use phrases like "Update quantity", "Change to X", etc.)
 2. Include both product identifier and new quantity
 3. May include previous quantity if specified in constraints
-4. Must be for items already in cart
+4. Must be for items already in carta
 
 For example:
 - CORRECT: "Change quantity of iPhone case in my cart from 1 to 3"
@@ -595,9 +756,16 @@ CAROUSEL_SCROLL_USE_CASE = UseCase(
 ###############################################################################
 
 ALL_USE_CASES = [
+    AUTOZONE_LOGIN_USE_CASE,
+    AUTOZONE_REGISTER_USE_CASE,
+    AUTOZONE_LOGOUT_USE_CASE,
     PRODUCT_DETAIL_USE_CASE,
     DETAILS_TOGGLE_USE_CASE,
     SHARE_PRODUCT_USE_CASE,
+    SHARE_COMPLETED_USE_CASE,
+    REVIEW_CREATED_USE_CASE,
+    REVIEW_UPDATED_USE_CASE,
+    REVIEW_DELETED_USE_CASE,
     SEARCH_PRODUCT_USE_CASE,
     CATEGORY_FILTER_USE_CASE,
     ADD_TO_CART_USE_CASE,
