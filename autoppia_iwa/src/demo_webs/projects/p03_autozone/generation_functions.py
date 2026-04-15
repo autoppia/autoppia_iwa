@@ -330,7 +330,7 @@ async def generate_search_query_constraints(
 ) -> list[dict[str, Any]] | dict[str, Any]:
     data_items = await _ensure_products_dataset(task_url, dataset)
     if not data_items:
-        return []
+        return [create_constraint_dict("query", ComparisonOperator.CONTAINS, "products")]
 
     if test_types == "data_extraction_only":
         product = random.choice(data_items)

@@ -135,6 +135,9 @@ async def _ensure_restaurant_dataset(
     dataset: dict[str, list[dict[str, Any]]] | None = None,
 ) -> list[dict[str, Any]]:
     """Extract restaurant data from the pre-loaded dataset, or fetch from server if not available."""
+    if isinstance(dataset, list):
+        return dataset
+
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url)

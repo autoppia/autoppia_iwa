@@ -89,7 +89,9 @@ def _ensure_dates_pair_in_selected(selected_fields: list[str]) -> None:
 
 
 async def _ensure_hotel_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    _ = dataset  # Unused parameter kept for backward compatibility
+    if isinstance(dataset, list):
+        return dataset
+
     seed = get_seed_from_url(task_url)
     hotels = await fetch_data(seed_value=seed)
     fetched_dataset = {"hotels": hotels}
