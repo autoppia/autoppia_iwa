@@ -1,7 +1,7 @@
 import pytest
 
-from autoppia_iwa.entrypoints.web_verification.data_extraction_verifier import DataExtractionTrajectoryVerifier
 from autoppia_iwa.src.demo_webs.classes import DataExtractionTrajectory, WebProject
+from autoppia_iwa.src.demo_webs.web_verification.data_extraction_verifier import DataExtractionTrajectoryVerifier
 
 
 def _make_project(project_id: str = "autocinema") -> WebProject:

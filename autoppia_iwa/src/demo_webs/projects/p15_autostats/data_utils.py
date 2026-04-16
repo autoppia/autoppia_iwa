@@ -12,9 +12,8 @@ from typing import Any
 
 from loguru import logger
 
+from autoppia_iwa.src.demo_webs.data_provider import load_dataset_data
 from autoppia_iwa.src.demo_webs.utils import get_backend_service_url
-
-from ..data_provider import load_dataset_data
 
 PROJECT_KEY = "web_15_autostats"
 

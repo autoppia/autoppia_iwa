@@ -1,9 +1,9 @@
 import pytest
 
-from autoppia_iwa.entrypoints.web_verification.data_extraction_task_generation_verifier import DataExtractionTaskGenerationVerifier
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.data_generation.tests.classes import DataExtractionTest
 from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.web_verification.data_extraction_task_generation_verifier import DataExtractionTaskGenerationVerifier
 
 
 def _make_project(project_id: str = "autocinema", de_use_cases: list[str] | None = None) -> WebProject:

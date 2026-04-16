@@ -1,64 +1,62 @@
-"""Tests for act_response_utils.actions_to_act_response."""
-
-from unittest.mock import patch
+from typing import Literal
 
 from autoppia_iwa.src.execution.actions.actions import NavigateAction, RequestUserInputAction
+from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.web_agents.act_response_utils import actions_to_act_response
 
 
-def test_actions_to_act_response_namespaces_browser_tool() -> None:
-    nav = NavigateAction(type="NavigateAction", url="https://example.com/p")
-    resp = actions_to_act_response(
-        [nav],
+class BlankToolNameAction(BaseAction):
+    type: Literal["BlankToolNameAction"] = "BlankToolNameAction"
+
+    @classmethod
+    def tool_name(cls) -> str:
+        return ""
+
+    async def execute(self, page, backend_service, web_agent_id: str):
+        return None
+
+
+def test_actions_to_act_response_namespaces_browser_and_user_tools() -> None:
+    response = actions_to_act_response(
+        [
+            NavigateAction(url="https://example.com"),
+            RequestUserInputAction(prompt="Need confirmation", options=["yes", "no"]),
+        ],
         done=True,
         content="ok",
-        reasoning="because",
-        state_out={"k": 1},
+        reasoning="picked two actions",
+        state_out={"phase": "done"},
         error=None,
     )
-    assert resp.done is True
-    assert resp.content == "ok"
-    assert resp.reasoning == "because"
-    assert resp.state_out == {"k": 1}
-    assert resp.error is None
-    assert len(resp.tool_calls) == 1
-    assert resp.tool_calls[0].name == "browser.navigate"
-    assert "url" in resp.tool_calls[0].arguments
+
+    assert response.done is True
+    assert response.content == "ok"
+    assert response.reasoning == "picked two actions"
+    assert [tool.name for tool in response.tool_calls] == [
+        "browser.navigate",
+        "user.request_input",
+    ]
+    assert response.tool_calls[0].arguments["url"] == "https://example.com"
+    assert response.tool_calls[1].arguments["prompt"] == "Need confirmation"
+    assert "state_out" not in response.model_dump(mode="json")
 
 
-def test_actions_to_act_response_maps_request_user_input() -> None:
-    req = RequestUserInputAction(type="RequestUserInputAction", prompt="OTP?")
-    resp = actions_to_act_response([req])
-    assert len(resp.tool_calls) == 1
-    assert resp.tool_calls[0].name == "user.request_input"
+def test_actions_to_act_response_skips_non_actions_and_blank_tool_names() -> None:
+    response = actions_to_act_response(
+        [
+            NavigateAction(url="https://example.com"),
+            "not-an-action",
+            BlankToolNameAction(),
+        ]
+    )
+
+    assert len(response.tool_calls) == 1
+    assert response.tool_calls[0].name == "browser.navigate"
 
 
-def test_actions_to_act_response_skips_non_base_action() -> None:
-    class NotAnAction:
-        def to_tool_call(self) -> dict:
-            return {"name": "navigate", "arguments": {}}
+def test_actions_to_act_response_defaults_state_out_to_empty_dict() -> None:
+    response = actions_to_act_response([], error="boom")
 
-    nav = NavigateAction(type="NavigateAction", url="/x")
-    resp = actions_to_act_response([NotAnAction(), nav])  # type: ignore[list-item]
-    assert len(resp.tool_calls) == 1
-    assert resp.tool_calls[0].name == "browser.navigate"
-
-
-def test_actions_to_act_response_skips_empty_tool_name() -> None:
-    nav = NavigateAction(type="NavigateAction", url="/x")
-    with patch.object(nav, "to_tool_call", return_value={"name": "", "arguments": {}}):
-        resp = actions_to_act_response([nav])
-    assert resp.tool_calls == []
-
-
-def test_actions_to_act_response_normalizes_non_dict_arguments() -> None:
-    nav = NavigateAction(type="NavigateAction", url="/x")
-    with patch.object(nav, "to_tool_call", return_value={"name": "navigate", "arguments": None}):
-        resp = actions_to_act_response([nav])
-    assert resp.tool_calls[0].arguments == {}
-
-
-def test_actions_to_act_response_default_state_out() -> None:
-    nav = NavigateAction(type="NavigateAction", url="/x")
-    resp = actions_to_act_response([nav], state_out=None)
-    assert resp.state_out == {}
+    assert response.tool_calls == []
+    assert response.error == "boom"
+    assert "state_out" not in response.model_dump(mode="json")

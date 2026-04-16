@@ -4,9 +4,9 @@ import random
 from datetime import date, datetime, timedelta
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
+from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator
 
-from ..shared_utils import create_constraint_dict
+from ...shared_utils import create_constraint_dict
 
 # Constants
 ERROR_NO_DATASET_MSG = "[ERROR] No dataset provided"
@@ -134,7 +134,7 @@ async def _ensure_crm_dataset(
     Returns a dictionary with entity_type as the key.
     """
     _ = dataset  # Unused parameter kept for backward compatibility
-    from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+    from autoppia_iwa.src.demo_webs.data_provider import get_seed_from_url
 
     from .data_utils import fetch_data
 

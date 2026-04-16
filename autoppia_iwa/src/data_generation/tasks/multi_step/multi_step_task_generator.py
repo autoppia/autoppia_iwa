@@ -36,13 +36,13 @@ class MultiStepTaskGenerator:
         retry_delay: float = 0.1,
     ):
         self.web_project = web_project
-        self.llm_service = llm_service
+        self.llm_service = DIContainer.resolve_llm_service(llm_service)
         self.max_retries = max_retries
         self.retry_delay = retry_delay
         # Reuse the existing SimpleTaskGenerator for the base tasks:
         self.global_task_pipeline = SimpleTaskGenerator(
             web_project=web_project,
-            llm_service=llm_service,
+            llm_service=self.llm_service,
             max_retries=max_retries,
             retry_delay=retry_delay,
         )

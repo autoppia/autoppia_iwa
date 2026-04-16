@@ -687,6 +687,7 @@ OPEN_CONTACT_DOCTOR_FORM_USE_CASE = UseCase(
         },
     ],
 )
+
 CONTACT_DOCTOR_ADDITIONAL_INFO = """
 CRITICAL REQUIREMENTS:
 1. The request must start with: "Contact a doctor...".

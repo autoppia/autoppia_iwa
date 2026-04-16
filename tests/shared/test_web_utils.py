@@ -1,5 +1,7 @@
 """Unit tests for shared web_utils (HTML cleaning and diff generation)."""
 
+from unittest.mock import patch
+
 from autoppia_iwa.src.shared.web_utils import clean_html, generate_html_differences
 
 
@@ -54,6 +56,28 @@ class TestCleanHtml:
         result = clean_html(html)
         assert "standalone" in result
 
+    def test_removes_meta_and_link_tags(self):
+        html = '<html><head><meta charset="utf-8"><link rel="stylesheet" href="x.css"></head><body><p>ok</p></body></html>'
+        result = clean_html(html)
+        assert "meta" not in result.lower()
+        assert "stylesheet" not in result.lower()
+
+    def test_removes_visibility_hidden(self):
+        html = '<html><body><div style="visibility: hidden">hidden</div><p>visible</p></body></html>'
+        result = clean_html(html)
+        assert "hidden" not in result
+        assert "visible" in result
+
+    def test_clean_html_returns_empty_when_prettify_fails(self):
+        class _BrokenDoc:
+            body = None
+
+            def prettify(self):
+                raise RuntimeError("boom")
+
+        with patch("autoppia_iwa.src.shared.web_utils.BeautifulSoup", return_value=_BrokenDoc()):
+            assert clean_html("<p>x</p>") == ""
+
 
 class TestGenerateHtmlDifferences:
     """Tests for generate_html_differences()."""
@@ -84,3 +108,9 @@ class TestGenerateHtmlDifferences:
         result = generate_html_differences(html_list)
         assert result[0] == "<p>1</p>"
         assert len(result) >= 2
+
+    def test_ignores_consecutive_states_without_diff(self):
+        html_list = ["<p>same</p>", "<p>same</p>", "<p>changed</p>"]
+        result = generate_html_differences(html_list)
+        assert result[0] == "<p>same</p>"
+        assert len(result) == 2

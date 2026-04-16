@@ -1,22 +1,43 @@
-from autoppia_iwa.src.web_agents.act_protocol import ACT_PROTOCOL_VERSION, ActExecutionMode, ActRequest, ActResponse
-from autoppia_iwa.src.web_agents.act_response_utils import actions_to_act_response
-from autoppia_iwa.src.web_agents.apified_iterative_agent import (
-    ApifiedIterativeWebAgent,
-    ApifiedWebAgent,
+from autoppia_iwa.src.web_agents.apified_one_shot_agent import ApifiedOneShotWebAgent
+from autoppia_iwa.src.web_agents.apified_web_agent import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.interfaces import (
+    AsyncTaskExecutionSession,
+    AsyncWebAgentSession,
+    BrowserSnapshot,
+    ScoreDetails,
+    StepResult,
+    TaskExecutionSessionProtocol,
+    WebAgentSession,
 )
-from autoppia_iwa.src.web_agents.apified_one_shot_agent import ApifiedOneShotWebAgent as ApifiedOneShotWebAgent
+from autoppia_iwa.src.web_agents.protocol import (
+    STEP_PROTOCOL_VERSION,
+    StepAllowedTool,
+    StepExecutionMode,
+    StepHistoryItem,
+    StepRequest,
+    StepResponse,
+)
+
+# Backward compat aliases
+ApifiedIterativeWebAgent = ApifiedWebAgent
+WebAgent = ApifiedWebAgent
 
 __all__ = [
-    "ACT_PROTOCOL_VERSION",
-    "ActExecutionMode",
-    "ActRequest",
-    "ActResponse",
+    "STEP_PROTOCOL_VERSION",
     "ApifiedIterativeWebAgent",
     "ApifiedOneShotWebAgent",
     "ApifiedWebAgent",
+    "AsyncTaskExecutionSession",
+    "AsyncWebAgentSession",
+    "BrowserSnapshot",
+    "ScoreDetails",
+    "StepAllowedTool",
+    "StepExecutionMode",
+    "StepHistoryItem",
+    "StepRequest",
+    "StepResponse",
+    "StepResult",
+    "TaskExecutionSessionProtocol",
     "WebAgent",
-    "actions_to_act_response",
+    "WebAgentSession",
 ]
-
-# New public name for the HTTP iterative web-agent interface.
-WebAgent = ApifiedWebAgent

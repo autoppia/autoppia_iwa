@@ -2,13 +2,23 @@ from collections.abc import Callable
 from datetime import date, datetime
 from typing import Any
 
-from dateutil.parser import isoparse
-from loguru import logger
-from pydantic import BaseModel, field_validator
+try:
+    from dateutil.parser import isoparse
+except ImportError:  # broken/empty ``dateutil`` namespace installs
 
-from ..base_events import BaseEventValidator, Event
-from ..criterion_helper import ComparisonOperator, CriterionValue
-from ..shared_utils import parse_price
+    def isoparse(val: str) -> datetime:
+        v = val.strip()
+        if v.endswith("Z"):
+            v = v[:-1] + "+00:00"
+        return datetime.fromisoformat(v)
+
+
+from loguru import logger
+from pydantic import BaseModel, ConfigDict, field_validator
+
+from ...base_events import BaseEventValidator, Event
+from ...criterion_helper import ComparisonOperator, CriterionValue
+from ...shared_utils import parse_price
 
 
 # Helper Pydantic Models for ViewFullMenuEvent
@@ -40,9 +50,10 @@ class DateDropdownOpenedEvent(Event, BaseEventValidator):
     class ValidationCriteria(BaseModel):
         date: datetime | CriterionValue | None = None
 
-        class Config:
-            title = "Date Dropdown Opened Validation"
-            description = "Validates that the date dropdown was opened with a specific date."
+        model_config = ConfigDict(
+            title="Date Dropdown Opened Validation",
+            description="Validates that the date dropdown was opened with a specific date.",
+        )
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria or not criteria.date:
@@ -119,9 +130,10 @@ class TimeDropdownOpenedEvent(Event, BaseEventValidator):
     class ValidationCriteria(BaseModel):
         time: str | CriterionValue | None = None
 
-        class Config:
-            title = "Time Dropdown Opened Validation"
-            description = "Validates that the time dropdown was opened with a specific time."
+        model_config = ConfigDict(
+            title="Time Dropdown Opened Validation",
+            description="Validates that the time dropdown was opened with a specific time.",
+        )
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -150,9 +162,10 @@ class PeopleDropdownOpenedEvent(Event, BaseEventValidator):
     class ValidationCriteria(BaseModel):
         people: int | CriterionValue | None = None
 
-        class Config:
-            title = "People Dropdown Opened Validation"
-            description = "Validates that the people dropdown was opened with a specific count."
+        model_config = ConfigDict(
+            title="People Dropdown Opened Validation",
+            description="Validates that the people dropdown was opened with a specific count.",
+        )
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -549,9 +562,10 @@ class SearchRestaurantEvent(Event, BaseEventValidator):
     class ValidationCriteria(BaseModel):
         query: str | CriterionValue | None = None
 
-        class Config:
-            title = "Search Restaurant Validation"
-            description = "Validates that a restaurant search was performed with a specific query."
+        model_config = ConfigDict(
+            title="Search Restaurant Validation",
+            description="Validates that a restaurant search was performed with a specific query.",
+        )
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -578,7 +592,7 @@ class ViewRestaurantEvent(Event, BaseEventValidator):
     restaurant_id: str
     name: str
     desc: str
-    rating: int
+    rating: float
     reviews: int
     bookings: int
     cuisine: str
@@ -587,14 +601,15 @@ class ViewRestaurantEvent(Event, BaseEventValidator):
         restaurant_id: str | CriterionValue | None = None
         name: str | CriterionValue | None = None
         desc: str | CriterionValue | None = None
-        rating: int | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
         reviews: int | CriterionValue | None = None
         bookings: int | CriterionValue | None = None
         cuisine: str | CriterionValue | None = None
 
-        class Config:
-            title = "View Restaurant Validation"
-            description = "Validates that a specific restaurant was viewed."
+        model_config = ConfigDict(
+            title="View Restaurant Validation",
+            description="Validates that a specific restaurant was viewed.",
+        )
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -622,7 +637,7 @@ class ViewRestaurantEvent(Event, BaseEventValidator):
             restaurant_id=data.get("restaurantId", ""),
             name=data.get("restaurantName", ""),
             desc=data.get("desc", ""),
-            rating=data.get("rating", 0),
+            rating=data.get("rating", 0.0),
             cuisine=data.get("cuisine", ""),
             reviews=data.get("reviews", 0),
             bookings=data.get("bookings", 0),
@@ -636,7 +651,7 @@ class ViewFullMenuEvent(Event, BaseEventValidator):
     restaurant_id: str
     name: str
     desc: str
-    rating: int
+    rating: float
     reviews: int
     bookings: int
     cuisine: str
@@ -654,14 +669,15 @@ class ViewFullMenuEvent(Event, BaseEventValidator):
         date: date | CriterionValue | None = None
         people: int | CriterionValue | None = None
         desc: str | CriterionValue | None = None
-        rating: int | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
         reviews: int | CriterionValue | None = None
         bookings: int | CriterionValue | None = None
         cuisine: str | CriterionValue | None = None
 
-        class Config:
-            title = "View Full Menu Validation"
-            description = "Validates viewing of a full menu with specific details."
+        model_config = ConfigDict(
+            title="View Full Menu Validation",
+            description="Validates viewing of a full menu with specific details.",
+        )
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -706,7 +722,7 @@ class ViewFullMenuEvent(Event, BaseEventValidator):
             time=data.get("time", ""),
             date=parsed_date,
             desc=data.get("desc", ""),
-            rating=data.get("rating", 0),
+            rating=data.get("rating", 0.0),
             cuisine=data.get("cuisine", ""),
             reviews=data.get("reviews", 0),
             bookings=data.get("bookings", 0),
@@ -722,7 +738,7 @@ class CollapseMenuEvent(Event, BaseEventValidator):
     restaurant_id: str
     name: str
     desc: str
-    rating: int
+    rating: float
     reviews: int
     bookings: int
     cuisine: str
@@ -737,15 +753,16 @@ class CollapseMenuEvent(Event, BaseEventValidator):
         restaurant_id: str | CriterionValue | None = None
         name: str | CriterionValue | None = None
         desc: str | CriterionValue | None = None
-        rating: int | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
         reviews: int | CriterionValue | None = None
         bookings: int | CriterionValue | None = None
         cuisine: str | CriterionValue | None = None
         people: int | CriterionValue | None = None
 
-        class Config:
-            title = "Collapse Menu Validation"
-            description = "Validates that a menu was collapsed."
+        model_config = ConfigDict(
+            title="Collapse Menu Validation",
+            description="Validates that a menu was collapsed.",
+        )
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -788,7 +805,7 @@ class CollapseMenuEvent(Event, BaseEventValidator):
             time=data.get("time", ""),
             date=parsed_date,
             desc=data.get("desc", ""),
-            rating=data.get("rating", 0),
+            rating=data.get("rating", 0.0),
             cuisine=data.get("cuisine", ""),
             reviews=data.get("reviews", 0),
             bookings=data.get("bookings", 0),
@@ -803,7 +820,7 @@ class BookRestaurantEvent(Event, BaseEventValidator):
     event_name: str = "BOOK_RESTAURANT"
     name: str
     desc: str
-    rating: int
+    rating: float
     reviews: int
     bookings: int
     cuisine: str
@@ -816,7 +833,7 @@ class BookRestaurantEvent(Event, BaseEventValidator):
     class ValidationCriteria(BaseModel):
         name: str | CriterionValue | None = None
         desc: str | CriterionValue | None = None
-        rating: int | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
         reviews: int | CriterionValue | None = None
         bookings: int | CriterionValue | None = None
         cuisine: str | CriterionValue | None = None
@@ -832,9 +849,10 @@ class BookRestaurantEvent(Event, BaseEventValidator):
                 return datetime.fromisoformat(v).date()
             return v
 
-        class Config:
-            title = "Book Restaurant Validation"
-            description = "Validates a restaurant booking action."
+        model_config = ConfigDict(
+            title="Book Restaurant Validation",
+            description="Validates a restaurant booking action.",
+        )
 
     # ----------------------- instancia: validación ---------------------------
 
@@ -880,9 +898,6 @@ class BookRestaurantEvent(Event, BaseEventValidator):
                 self._validate_field(self.people, criteria.people),
             ]
         )
-
-        if not result:
-            print("AY")
         return result
 
     # ----------------------- clase: parseo desde backend ---------------------
@@ -911,7 +926,7 @@ class BookRestaurantEvent(Event, BaseEventValidator):
             date=parsed_date,
             people=int(data.get("people", 0)),
             desc=data.get("desc", ""),
-            rating=data.get("rating", 0),
+            rating=data.get("rating", 0.0),
             cuisine=data.get("cuisine", ""),
             reviews=data.get("reviews", 0),
             bookings=data.get("bookings", 0),
@@ -926,7 +941,7 @@ class CountrySelectedEvent(Event, BaseEventValidator):
     code: str  # e.g., "IN"
     country: str  # e.g., "India"
     desc: str
-    rating: int
+    rating: float
     reviews: int
     bookings: int
     cuisine: str
@@ -936,14 +951,15 @@ class CountrySelectedEvent(Event, BaseEventValidator):
         country: str | CriterionValue | None = None
         name: str | CriterionValue | None = None
         desc: str | CriterionValue | None = None
-        rating: int | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
         reviews: int | CriterionValue | None = None
         bookings: int | CriterionValue | None = None
         cuisine: str | CriterionValue | None = None
 
-        class Config:
-            title = "Country Selected Validation"
-            description = "Validates that a country was selected."
+        model_config = ConfigDict(
+            title="Country Selected Validation",
+            description="Validates that a country was selected.",
+        )
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -973,7 +989,7 @@ class CountrySelectedEvent(Event, BaseEventValidator):
             country=data.get("countryName", ""),
             name=data.get("restaurantName", ""),
             desc=data.get("desc", ""),
-            rating=data.get("rating", 0),
+            rating=data.get("rating", 0.0),
             cuisine=data.get("cuisine", ""),
             reviews=data.get("reviews", 0),
             bookings=data.get("bookings", 0),
@@ -987,7 +1003,7 @@ class OccasionSelectedEvent(Event, BaseEventValidator):
     occasion: str  # e.g., "birthday"
     name: str
     desc: str | CriterionValue | None = None
-    rating: int | CriterionValue | None = None
+    rating: float | CriterionValue | None = None
     reviews: int | CriterionValue | None = None
     bookings: int | CriterionValue | None = None
     cuisine: str | CriterionValue | None = None
@@ -996,14 +1012,15 @@ class OccasionSelectedEvent(Event, BaseEventValidator):
         occasion: str | CriterionValue | None = None
         name: str | CriterionValue | None = None
         desc: str | CriterionValue | None = None
-        rating: int | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
         reviews: int | CriterionValue | None = None
         bookings: int | CriterionValue | None = None
         cuisine: str | CriterionValue | None = None
 
-        class Config:
-            title = "Occasion Selected Validation"
-            description = "Validates that an occasion was selected."
+        model_config = ConfigDict(
+            title="Occasion Selected Validation",
+            description="Validates that an occasion was selected.",
+        )
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -1022,7 +1039,7 @@ class OccasionSelectedEvent(Event, BaseEventValidator):
             occasion=data.get("occasion", ""),
             desc=data.get("desc", ""),
             name=data.get("restaurantName", ""),
-            rating=data.get("rating", 0),
+            rating=data.get("rating", 0.0),
             cuisine=data.get("cuisine", ""),
             reviews=data.get("reviews", 0),
             bookings=data.get("bookings", 0),
@@ -1052,9 +1069,10 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
         code: str | CriterionValue | None = None
         request: str | None = None
 
-        class Config:
-            title = "Reservation Complete Validation"
-            description = "Validates the completion of a reservation with key details."
+        model_config = ConfigDict(
+            title="Reservation Complete Validation",
+            description="Validates the completion of a reservation with key details.",
+        )
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -1106,9 +1124,10 @@ class ScrollViewEvent(Event, BaseEventValidator):
         direction: str | CriterionValue | None = None
         section: str | CriterionValue | None = None
 
-        class Config:
-            title = "Scroll View Validation"
-            description = "Validates a scroll action on a view."
+        model_config = ConfigDict(
+            title="Scroll View Validation",
+            description="Validates a scroll action on a view.",
+        )
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -1130,7 +1149,7 @@ class ScrollViewEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             direction=data.get("direction", "").lower(),
-            section=data.get("sectionTitle", ""),
+            section=data.get("title", ""),
         )
 
 
@@ -1259,7 +1278,9 @@ class ContactEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "ContactEvent":
         base_event = Event.parse(backend_event)
         event_data = backend_event.data
-        form_data = event_data.get("data", {})
+        nested = event_data.get("data")
+        form_data = nested if isinstance(nested, dict) else event_data
+
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,

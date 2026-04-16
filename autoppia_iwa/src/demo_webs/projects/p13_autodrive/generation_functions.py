@@ -6,10 +6,10 @@ from typing import Any
 
 from dateutil import parser
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.data_provider import get_seed_from_url
 
-from ..criterion_helper import ComparisonOperator
-from ..shared_utils import (
+from ...criterion_helper import ComparisonOperator
+from ...shared_utils import (
     constraint_value_for_datetime_date,
     constraint_value_for_numeric,
     constraint_value_for_time,

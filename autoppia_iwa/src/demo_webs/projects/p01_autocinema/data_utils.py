@@ -6,7 +6,7 @@ don't need to duplicate the logic.
 
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+from autoppia_iwa.src.demo_webs.data_provider import load_dataset_data
 
 
 def _normalize_rating(value: Any) -> Any:

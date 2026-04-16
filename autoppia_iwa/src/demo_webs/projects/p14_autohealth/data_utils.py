@@ -2,64 +2,11 @@
 Shared dataset helpers for autohealth_14.
 """
 
-import json
-from pathlib import Path
 from typing import Any
 
 from loguru import logger
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
-
-
-def _get_initial_data_dir() -> Path | None:
-    """Resolve path to webs_server initial_data for web_14_autohealth."""
-    p = Path(__file__).resolve()
-    # data_utils is at .../autoppia_iwa/autoppia_iwa/src/demo_webs/projects/autohealth_14/
-    # parents[6] = workspace root (sibling to autoppia_iwa and autoppia_webs_demo)
-    workspace = p.parents[6]
-    data_dir = workspace / "autoppia_webs_demo" / "webs_server" / "initial_data" / "web_14_autohealth" / "data"
-    if data_dir.exists():
-        return data_dir
-    # Fallback: WEBS_DEMO_PATH env or parents[5].parent for alternate layouts
-    import os
-
-    webs_demo = os.getenv("WEBS_DEMO_PATH")
-    if webs_demo:
-        fallback = Path(webs_demo) / "webs_server" / "initial_data" / "web_14_autohealth" / "data"
-        if fallback.exists():
-            return fallback
-    return None
-
-
-def _load_initial_data_fallback(entity_type: str, count: int = 50) -> list[dict]:
-    """Load entity data from local initial_data JSON when backend returns empty."""
-    data_dir = _get_initial_data_dir()
-    if not data_dir:
-        return []
-
-    file_map = {
-        "appointments": "appointments_1.json",
-        "doctors": "doctors_1.json",
-        "prescriptions": "prescriptions_1.json",
-        "medical-records": "medical-records_1.json",
-    }
-    filename = file_map.get(entity_type)
-    if not filename:
-        return []
-
-    path = data_dir / filename
-    if not path.exists():
-        return []
-
-    try:
-        with open(path, encoding="utf-8") as f:
-            data = json.load(f)
-        if isinstance(data, list):
-            return data[:count]
-        return []
-    except (OSError, json.JSONDecodeError) as e:
-        logger.warning("Fallback load from {} failed: {}", path, e)
-        return []
+from autoppia_iwa.src.demo_webs.data_provider import load_dataset_data
 
 
 async def fetch_data(
@@ -100,13 +47,9 @@ async def fetch_data(
         method=method if method else "select",
         filter_key=filter_key if filter_key else None,
     )
-    if items:
-        return items
-    # Fallback: load from local initial_data when backend returns empty
-    fallback = _load_initial_data_fallback(entity_type, count)
-    if fallback:
-        logger.info("Using initial_data fallback for entity_type={} (backend returned empty)", entity_type)
-    return fallback
+    if not items:
+        logger.error("Dataset fetch failed for {}.", entity_type)
+    return items
 
 
 def extract_health_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]] | None:

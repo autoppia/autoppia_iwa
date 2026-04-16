@@ -24,7 +24,7 @@ def _skip_if_backend_unavailable(reason: str):
 async def reset_http_session_after_test():
     """Close the global aiohttp session after each test so the next test creates a new one in its own event loop."""
     yield
-    from autoppia_iwa.src.demo_webs.projects.data_provider import close_async_session
+    from autoppia_iwa.src.demo_webs.data_provider import close_async_session
 
     await close_async_session()
 
@@ -36,13 +36,13 @@ async def test_autocinema_constraints():
     print("🎬 TESTING AUTOCINEMA (Web 1) - real backend data")
     print("=" * 80)
 
-    from autoppia_iwa.src.demo_webs.projects.autocinema_1.data_utils import fetch_data as fetch_movies
-    from autoppia_iwa.src.demo_webs.projects.autocinema_1.generation_functions import (
+    from autoppia_iwa.src.demo_webs.data_provider import get_seed_from_url
+    from autoppia_iwa.src.demo_webs.projects.p01_autocinema.data_utils import fetch_data as fetch_movies
+    from autoppia_iwa.src.demo_webs.projects.p01_autocinema.generation_functions import (
         generate_film_constraints,
         generate_film_filter_constraints,
         generate_search_film_constraints,
     )
-    from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
     test_url = "http://localhost:8001/?seed=86"
 
@@ -104,13 +104,13 @@ async def test_autobooks_constraints():
     print("📚 TESTING AUTOBOOKS (Web 2) - real backend data")
     print("=" * 80)
 
-    from autoppia_iwa.src.demo_webs.projects.autobooks_2.data_utils import fetch_data as fetch_books
-    from autoppia_iwa.src.demo_webs.projects.autobooks_2.generation_functions import (
+    from autoppia_iwa.src.demo_webs.data_provider import get_seed_from_url
+    from autoppia_iwa.src.demo_webs.projects.p02_autobooks.data_utils import fetch_data as fetch_books
+    from autoppia_iwa.src.demo_webs.projects.p02_autobooks.generation_functions import (
         generate_book_constraints,
         generate_book_filter_constraints,
         generate_search_book_constraints,
     )
-    from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
     test_url = "http://localhost:8002/?seed=123"
 
@@ -159,9 +159,9 @@ async def test_constraints_validity():
     print("✅ TESTING VALIDEZ DE CONSTRAINTS - real backend data")
     print("=" * 80)
 
-    from autoppia_iwa.src.demo_webs.projects.autocinema_1.data_utils import fetch_data as fetch_movies
-    from autoppia_iwa.src.demo_webs.projects.autocinema_1.generation_functions import generate_film_constraints
-    from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+    from autoppia_iwa.src.demo_webs.data_provider import get_seed_from_url
+    from autoppia_iwa.src.demo_webs.projects.p01_autocinema.data_utils import fetch_data as fetch_movies
+    from autoppia_iwa.src.demo_webs.projects.p01_autocinema.generation_functions import generate_film_constraints
 
     test_seeds = [42, 86, 150, 200, 300]
 

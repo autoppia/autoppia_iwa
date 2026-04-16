@@ -1,4 +1,3 @@
-import asyncio
 import ipaddress
 from typing import Any
 from urllib.parse import urlparse, urlunparse
@@ -13,150 +12,100 @@ from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution
 
 
 def _parse_remote_demo_endpoint():
-    """Return parsed URL for the configured remote demo webs endpoint (scheme + netloc)."""
     remote = DEMO_WEBS_ENDPOINT if DEMO_WEBS_ENDPOINT.startswith("http") else f"https://{DEMO_WEBS_ENDPOINT}"
     return urlparse(remote)
 
 
 class ApifiedOneShotWebAgent(IWebAgent):
-    """
-    One-shot agent that calls a remote /solve_task endpoint and rebuilds a TaskSolution.
-    """
+    """One-shot agent that calls /solve_task. Returns all actions on first step."""
 
     def __init__(self, host: str | None = None, port: int | None = None, id: str | None = None, name: str | None = None, timeout=180, base_url: str | None = None):
         self.id = id or generate_random_web_agent_id()
         self.name = name or f"Agent {self.id}"
         if base_url:
-            # Respect provided base_url as-is
             self.base_url = base_url.rstrip("/")
+        elif host is None:
+            raise ValueError("host must be provided when base_url is not set")
+        elif port is not None:
+            self.base_url = f"http://{host}:{port}"
         else:
-            if host is None:
-                raise ValueError("host must be provided when base_url is not set")
-            # If port is provided, include it; otherwise omit
-            if port is not None:
-                self.base_url = f"http://{host}:{port}"
-            else:
-                self.base_url = f"http://{host}"
+            self.base_url = f"http://{host}"
         self.timeout = timeout
-        super().__init__()
         self._cached_solution: TaskSolution | None = None
 
-    async def act(
+    async def step(
         self,
         *,
         task: Task,
-        snapshot_html: str,
+        html: str = "",
         screenshot: str | bytes | None = None,
         url: str,
         step_index: int,
         history: list[dict[str, Any]] | None = None,
-        state: dict[str, Any] | None = None,
+        snapshot_html: str | None = None,
     ) -> list[BaseAction]:
-        """
-        Act method for stateful mode. For concurrent mode agents, this returns
-        all actions on the first step (step_index == 0) and empty list afterwards.
-        """
         if step_index == 0:
-            # First call: generate solution and cache it
-            solution = await self.solve_task(task)
+            solution = await self._solve_task(task)
             self._cached_solution = solution
-            # Return dict when extracted_data is present so benchmark can set it on TaskSolution (DataExtractionTest path)
-            if solution.extracted_data is not None:
-                return {"actions": solution.actions, "extracted_data": solution.extracted_data}
             return solution.actions
-        else:
-            # Subsequent calls: return empty list (all actions already returned)
-            return []
+        return []
+
+    async def act(self, **kwargs) -> list[BaseAction]:
+        return await self.step(**kwargs)
+
+    async def solve_task(self, task: Task) -> TaskSolution:
+        return await self._solve_task(task)
+
+    async def _solve_task(self, task: Task) -> TaskSolution:
+        timeout = aiohttp.ClientTimeout(total=self.timeout)
+        try:
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                payload = task.clean_task()
+                payload["url"] = self._force_localhost(payload.get("url"))
+                async with session.post(f"{self.base_url}/solve_task_at_once", json=payload) as response:
+                    response.raise_for_status()
+                    response_json = await response.json()
+                actions_data = response_json.get("actions", [])
+                web_agent_id = response_json.get("web_agent_id", "unknown")
+                rebuilt = [a for raw in actions_data if isinstance(raw, dict) for a in [self._create_action(raw)] if a]
+        except Exception as exc:
+            raise RuntimeError(f"Failed to solve task via one-shot agent: {exc}") from exc
+        return TaskSolution(task_id=task.id, actions=rebuilt, web_agent_id=web_agent_id)
 
     def _create_action(self, raw: dict) -> BaseAction | None:
-        """Build one BaseAction from dict; rewrite NavigateAction URL."""
         try:
             action = BaseAction.create_action(raw)
-            if action is None:
-                return None
-            if isinstance(action, NavigateAction):
+            if action and isinstance(action, NavigateAction):
                 action.url = self._rewrite_to_remote(getattr(action, "url", None))
             return action
         except Exception:
             return None
 
-    async def solve_task(self, task: Task) -> TaskSolution:
-        timeout = aiohttp.ClientTimeout(total=self.timeout)
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            try:
-                payload = task.clean_task()
-                payload["url"] = self._force_localhost(payload.get("url"))
-
-                async with session.post(f"{self.base_url}/solve_task_at_once", json=payload) as response:
-                    response.raise_for_status()
-                    response_json = await response.json()
-            except Exception as e:
-                raise RuntimeError(f"Error during HTTP request to {self.base_url}/solve_task_at_once: {e}") from e
-
-            actions_data = response_json.get("actions", [])
-            web_agent_id = response_json.get("web_agent_id", "unknown")
-            recording_str = response_json.get("recording", "")
-            extracted_data = response_json.get("extracted_data")
-            rebuilt_actions: list[BaseAction] = []
-            for a in actions_data:
-                if isinstance(a, dict):
-                    built = self._create_action(a)
-                    if built is not None:
-                        rebuilt_actions.append(built)
-        return TaskSolution(task_id=task.id, actions=rebuilt_actions, web_agent_id=web_agent_id, recording=recording_str, extracted_data=extracted_data)
-
-    def solve_task_sync(self, task: Task) -> TaskSolution:
-        return asyncio.run(self.solve_task(task))
+    @staticmethod
+    def _force_localhost(url: str | None) -> str | None:
+        if not url:
+            return url
+        parsed = urlparse(url)
+        netloc = f"localhost:{parsed.port}" if parsed.port else "localhost"
+        return urlunparse(parsed._replace(netloc=netloc))
 
     @staticmethod
-    def _force_localhost(original_url: str | None) -> str | None:
-        """Rewrite any task URL so the host becomes localhost while preserving port/path."""
-        if not original_url:
-            return original_url
-
-        parsed = urlparse(original_url)
-        netloc = "localhost"
-        if parsed.port:
-            netloc = f"{netloc}:{parsed.port}"
-
-        rewritten = parsed._replace(netloc=netloc)
-        return urlunparse(rewritten)
-
-    @staticmethod
-    def _rewrite_to_remote(original_url: str | None) -> str | None:
-        """Rewrite agent-produced URLs to point at the configured remote demo webs endpoint."""
-        if not original_url:
-            return original_url
-
-        remote_parsed = _parse_remote_demo_endpoint()
-
-        # Relative paths from the agent should be anchored to the remote host
-        if original_url.startswith("/"):
-            return f"{remote_parsed.scheme}://{remote_parsed.netloc}{original_url}"
-
-        parsed = urlparse(original_url)
-
-        # If agent sent something like "localhost:8001" without scheme, treat it as path
+    def _rewrite_to_remote(url: str | None) -> str | None:
+        if not url:
+            return url
+        remote = _parse_remote_demo_endpoint()
+        if url.startswith("/"):
+            return f"{remote.scheme}://{remote.netloc}{url}"
+        parsed = urlparse(url)
         if not parsed.scheme and not parsed.netloc:
-            cleaned_path = original_url if original_url.startswith("/") else f"/{original_url}"
-            return f"{remote_parsed.scheme}://{remote_parsed.netloc}{cleaned_path}"
-
-        # Keep the remote host; preserve original port when the agent points to localhost/loopback,
-        # otherwise only carry over the port if the remote host is an IP and has no explicit port.
-        netloc = remote_parsed.netloc
-        host = remote_parsed.hostname or remote_parsed.netloc
+            return f"{remote.scheme}://{remote.netloc}/{url.lstrip('/')}"
+        netloc = remote.netloc
+        host = remote.hostname or remote.netloc
         parsed_host = parsed.hostname or ""
         try:
             remote_is_ip = bool(host and ipaddress.ip_address(host))
         except ValueError:
             remote_is_ip = False
-        parsed_is_loopback = parsed_host in {"localhost", "127.0.0.1"}
-
-        if parsed.port and (parsed_is_loopback or (not remote_parsed.port and remote_is_ip)):
+        if parsed.port and (parsed_host in {"localhost", "127.0.0.1"} or (not remote.port and remote_is_ip)):
             netloc = f"{host}:{parsed.port}"
-
-        new_url = parsed._replace(scheme=remote_parsed.scheme or parsed.scheme, netloc=netloc)
-        return urlunparse(new_url)
-
-
-__all__ = ["ApifiedOneShotWebAgent"]
+        return urlunparse(parsed._replace(scheme=remote.scheme or parsed.scheme, netloc=netloc))

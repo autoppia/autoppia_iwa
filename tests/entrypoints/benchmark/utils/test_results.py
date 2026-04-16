@@ -1,9 +1,9 @@
-"""Tests for entrypoints.benchmark.utils.results."""
+"""Tests for canonical benchmark results utilities."""
 
 from unittest.mock import MagicMock
 
-from autoppia_iwa.entrypoints.benchmark.utils.metrics import TimingMetrics
-from autoppia_iwa.entrypoints.benchmark.utils.results import (
+from autoppia_iwa.src.evaluation.benchmark.utils.metrics import TimingMetrics
+from autoppia_iwa.src.evaluation.benchmark.utils.results import (
     _has_zero_score,
     print_performance_statistics,
     save_results_to_json,
@@ -62,3 +62,15 @@ def test_print_performance_statistics(capsys):
     captured = capsys.readouterr()
     assert "PERFORMANCE REPORT" in captured.out
     assert "TestAgent" in captured.out
+
+
+def test_entrypoint_results_module_re_exports_canonical_objects():
+    from autoppia_iwa.entrypoints.benchmark.utils.results import (
+        _has_zero_score as entry_has_zero_score,
+        print_performance_statistics as entry_print_performance_statistics,
+        save_results_to_json as entry_save_results_to_json,
+    )
+
+    assert entry_has_zero_score is _has_zero_score
+    assert entry_print_performance_statistics is print_performance_statistics
+    assert entry_save_results_to_json is save_results_to_json

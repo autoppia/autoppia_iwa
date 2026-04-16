@@ -1,8 +1,8 @@
-"""Tests for entrypoints.benchmark.utils.metrics."""
+"""Tests for canonical benchmark metrics utilities."""
 
 import statistics
 
-from autoppia_iwa.entrypoints.benchmark.utils.metrics import (
+from autoppia_iwa.src.evaluation.benchmark.utils.metrics import (
     TimingMetrics,
     compute_statistics,
 )
@@ -53,3 +53,10 @@ def test_compute_statistics_single_value():
     assert out["count"] == 1
     assert out["mean"] == 4.5
     assert out["stdev"] == 0.0
+
+
+def test_entrypoint_metrics_module_re_exports_canonical_objects():
+    from autoppia_iwa.entrypoints.benchmark.utils.metrics import TimingMetrics as EntryTimingMetrics, compute_statistics as entry_compute_statistics
+
+    assert EntryTimingMetrics is TimingMetrics
+    assert entry_compute_statistics is compute_statistics

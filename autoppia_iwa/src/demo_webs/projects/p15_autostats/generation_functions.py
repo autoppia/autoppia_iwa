@@ -5,8 +5,8 @@ from typing import Any
 
 from loguru import logger
 
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_dict
+from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator
+from autoppia_iwa.src.demo_webs.shared_utils import create_constraint_dict
 
 from .data import (
     FIELD_OPERATORS_MAP_CONNECT_WALLET,

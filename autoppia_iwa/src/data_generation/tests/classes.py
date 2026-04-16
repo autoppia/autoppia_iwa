@@ -7,53 +7,20 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal
 
-try:  # Optional: allow running without dependency_injector (e.g., Py3.13 wheels)
-    from dependency_injector.wiring import Provide  # type: ignore
-except Exception:  # pragma: no cover - lightweight fallback for environments without the package
-
-    class Provide:  # type: ignore
-        """Minimal stub so annotations like Provide[DIContainer.llm_service] don't break imports.
-
-        Note: Tests that rely on DI-injected services (e.g., LLM-based judge tests)
-        should not run when this stub is active. Simpler tests such as CheckUrlTest
-        and FindInHtmlTest will continue to work.
-        """
-
-        def __class_getitem__(cls, item):
-            return None
-
-
+from dependency_injector.wiring import Provide
 from loguru import logger
-
-try:  # Optional: avoid forcing openai dependency for non-LLM tests
-    from openai.types.chat import ChatCompletion  # type: ignore
-except Exception:  # pragma: no cover - fallback type stub
-
-    class ChatCompletion:  # type: ignore
-        pass
-
-
-from pydantic import BaseModel, Field, ValidationError
+from openai.types.chat import ChatCompletion
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
-
-try:  # Optional: avoid importing DI machinery when not installed
-    from autoppia_iwa.src.di_container import DIContainer  # type: ignore
-except Exception:  # pragma: no cover - fallback DI stub
-
-    class DIContainer:  # type: ignore
-        llm_service = object()
-
-
+from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.llms.interfaces import ILLM
 
 # Avoid importing heavy optional deps (e.g., Pillow) at module import time.
 # Import helpers locally inside methods that need them.
 from .prompts import OPINION_BASED_HTML_TEST_SYS_MSG, SCREENSHOT_TEST_SYSTEM_PROMPT
-
-# Moved from schemas.py - consolidated into classes.py
 
 
 class ITest(ABC):
@@ -77,9 +44,7 @@ class BaseTaskTest(BaseModel, ITest):
     Base class for all task tests.
     """
 
-    class Config:
-        extra = "allow"
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(extra="allow", arbitrary_types_allowed=True)
 
     async def execute_test(
         self,
@@ -209,7 +174,7 @@ class CheckEventTest(BaseTaskTest):
         """
         Execute the test on the given snapshots by checking for specific events.
         """
-        from autoppia_iwa.src.demo_webs.projects.base_events import Event
+        from autoppia_iwa.src.demo_webs.base_events import Event
 
         if (current_iteration + 1) < total_iterations:
             return False
@@ -224,7 +189,7 @@ class CheckEventTest(BaseTaskTest):
             try:
                 parsed_criteria = validation_model(**self.event_criteria)
             except ValidationError as e:
-                print(f"Invalid validation criteria: {e}")
+                logger.warning(f"Invalid validation criteria: {e}")
                 return False
 
             if event.validate_criteria(parsed_criteria):
@@ -241,7 +206,7 @@ class CheckEventTest(BaseTaskTest):
         """
         Execute the test on the given snapshots by checking for specific events.
         """
-        from autoppia_iwa.src.demo_webs.projects.base_events import Event
+        from autoppia_iwa.src.demo_webs.base_events import Event
 
         parsed_events: list[Event] = Event.parse_all(backend_events)
         valid_events: list[Event] = []
@@ -254,7 +219,7 @@ class CheckEventTest(BaseTaskTest):
             try:
                 parsed_criteria = validation_model(**self.event_criteria)
             except ValidationError as e:
-                print(f"Invalid validation criteria: {e}")
+                logger.warning(f"Invalid validation criteria: {e}")
                 return False
 
             if event.validate_criteria(parsed_criteria):
@@ -533,7 +498,7 @@ def save_usage_record(prompt, response: "ChatCompletion", time_taken, test_type,
         with log_file.open("a", encoding="utf-8") as f:
             f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
     except OSError as e:
-        print(f"[ERROR] Failed to write to log file: {e}")
+        logger.error(f"Failed to write to log file: {e}")
 
 
 class ScreenshotTestResponse(BaseModel):

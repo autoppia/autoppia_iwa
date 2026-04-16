@@ -3,9 +3,9 @@ import random
 from datetime import date, datetime, timedelta
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
-from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_dict
+from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator
+from autoppia_iwa.src.demo_webs.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.shared_utils import create_constraint_dict
 
 from .data import (
     DATES_QUICK_OPTIONS,
@@ -17,6 +17,7 @@ from .data import (
     FIELD_OPERATORS_TEAM_ROLE_ASSIGNED_MAP,
     PRIORITIES,
     ROLES,
+    TASK_PRIORITY_KEY_TO_LABEL,
     TEAM_MEMBERS_OPTIONS,
     TEAMS,
 )
@@ -47,6 +48,23 @@ def _collect_field_values_from_dataset_flat(dataset: list[dict[str, Any]], sourc
             elif val is not None:
                 all_values.append(val)
     return list(set(all_values))
+
+
+def _task_priority_to_label(raw: Any) -> str | None:
+    """Map numeric priority (1=highest, 4=low) or label text to a canonical PRIORITIES string."""
+    if raw is None:
+        return None
+    if isinstance(raw, int):
+        return TASK_PRIORITY_KEY_TO_LABEL.get(raw)
+    if isinstance(raw, str):
+        s = raw.strip()
+        if s.isdigit():
+            return TASK_PRIORITY_KEY_TO_LABEL.get(int(s))
+        if raw in PRIORITIES:
+            return raw
+        by_lower = {p.lower(): p for p in PRIORITIES}
+        return by_lower.get(s.lower())
+    return None
 
 
 def _pick_different_value_from_dataset(dataset: list[dict[str, Any]], source_key: str, exclude_value: Any, fallback: Any = None) -> Any:
@@ -251,6 +269,15 @@ def _generate_constraints_for_event(field_map: dict[str, dict[str, Any]], operat
             else:
                 continue
 
+        if field == "priority" and source_key == "priority":
+            normalized = _task_priority_to_label(field_value)
+            if normalized is not None:
+                field_value = normalized
+            elif dataset:
+                field_value = random.choice(dataset)[source_key]
+            else:
+                continue
+
         if config.get("is_date"):
             today = datetime.today()
             start_of_month = today.replace(day=1)
@@ -353,10 +380,12 @@ async def generate_add_task_clicked_constraints(
 
 async def generate_select_date_for_task_constraints(
     task_url: str | None = None,
-    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    dataset: list[dict[str, Any]] | None = None,
     test_types: str | None = None,
-) -> list[dict[str, Any]] | dict[str, Any]:
+) -> list[dict[str, Any]]:
     """Generate constraints for selecting a date for a task."""
+    dataset = await _ensure_task_dataset(task_url, dataset)
+    field_map = {"_dataset": dataset, "date": {"is_date": True}} if random.choice([True, False]) else {"_dataset": dataset, "quick_option": {"values": DATES_QUICK_OPTIONS}}
     if test_types == "data_extraction_only":
         tasks = await _ensure_task_dataset(task_url, dataset)
         if not tasks:

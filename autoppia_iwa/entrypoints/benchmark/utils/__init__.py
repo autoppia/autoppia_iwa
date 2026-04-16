@@ -1,8 +1,17 @@
-import os
+"""Backward-compatible benchmark utils facade."""
 
-if os.getenv("SKIP_APP_BOOTSTRAP", "").lower() not in {"1", "true", "yes"}:
-    from autoppia_iwa.src.bootstrap import AppBootstrap
+from autoppia_iwa.src.evaluation.benchmark.utils import (
+    TimingMetrics,
+    compute_statistics,
+    get_projects_by_ids,
+    save_results_to_json,
+    setup_logging,
+)
 
-    app = AppBootstrap()
-else:  # pragma: no cover
-    app = None
+__all__ = [
+    "TimingMetrics",
+    "compute_statistics",
+    "get_projects_by_ids",
+    "save_results_to_json",
+    "setup_logging",
+]

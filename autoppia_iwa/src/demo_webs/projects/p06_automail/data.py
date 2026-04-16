@@ -1,7 +1,7 @@
 from copy import deepcopy
 from datetime import UTC, datetime, timedelta
 
-from ..operators import CONTAINS, EQUALS, NOT_CONTAINS, NOT_EQUALS
+from ...operators import CONTAINS, EQUALS, NOT_CONTAINS, NOT_EQUALS
 
 
 def transform_email_data(email: dict) -> dict:

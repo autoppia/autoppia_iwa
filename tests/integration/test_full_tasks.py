@@ -33,7 +33,7 @@ async def test_full_task_generation():
 
     from autoppia_iwa.src.data_generation.tasks.classes import TaskGenerationConfig
     from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
-    from autoppia_iwa.src.demo_webs.projects.autocinema_1.main import autocinema_project
+    from autoppia_iwa.src.demo_webs.projects.p01_autocinema.main import autocinema_project
     from autoppia_iwa.src.evaluation.shared.utils import extract_seed_from_url
 
     print("\n1️⃣ Configurando pipeline (real LLM)...")
@@ -136,7 +136,7 @@ async def test_autobooks_tasks():
 
     from autoppia_iwa.src.data_generation.tasks.classes import TaskGenerationConfig
     from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
-    from autoppia_iwa.src.demo_webs.projects.autobooks_2.main import autobooks_project
+    from autoppia_iwa.src.demo_webs.projects.p02_autobooks.main import autobooks_project
     from autoppia_iwa.src.evaluation.shared.utils import extract_seed_from_url
 
     config = TaskGenerationConfig(

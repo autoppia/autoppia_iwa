@@ -4,9 +4,9 @@ from typing import Any
 
 from autoppia_iwa.src.web_agents.classes import DEFAULT_PASSWORD
 
-from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
-from ..data_provider import get_seed_from_url
-from ..shared_utils import create_constraint_dict
+from ...criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
+from ...data_provider import get_seed_from_url
+from ...shared_utils import create_constraint_dict
 from .data import (
     ALL_GENRES,
     COMMENT_KEYWORDS,

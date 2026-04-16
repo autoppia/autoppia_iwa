@@ -3,9 +3,9 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from autoppia_iwa.src.demo_webs.base_events import BaseEventValidator, Event
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator, CriterionValue
+from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator, CriterionValue
 
 # =============================================================================
 #                           BASE MODELS
@@ -534,13 +534,16 @@ class FilterClientsEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: BackendEvent) -> "FilterClientsEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
+        matters = data.get("matters")
+        if matters is not None and matters == "5plus":
+            matters = "5+"
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             status=data.get("status"),
-            matters=data.get("matters"),
+            matters=matters,
         )
 
 
@@ -707,7 +710,7 @@ class NewCalendarEventAdded(Event, BaseEventValidator):
                 label=data.get("label", ""),
                 date=data.get("date", ""),
                 time=data.get("time", ""),
-                event_type=data.get("color", ""),
+                event_type=data.get("event_type", data.get("color", "")),
             ),
         )
 
@@ -988,6 +991,7 @@ class UpdateMatter(Event, BaseEventValidator):
 
     event_name: str = "UPDATE_MATTER"
     after: Matter
+    before_updated_day: str
 
     class ValidationCriteria(BaseModel):
         name: str | CriterionValue | None = None
@@ -1003,7 +1007,7 @@ class UpdateMatter(Event, BaseEventValidator):
                 self._validate_field(self.after.name, criteria.name),
                 self._validate_field(self.after.client, criteria.client),
                 self._validate_field(self.after.status, criteria.status),
-                self._validate_field(self.after.updated, criteria.updated),
+                self._validate_field(self.before_updated_day, criteria.updated),
             ],
         )
 
@@ -1011,12 +1015,15 @@ class UpdateMatter(Event, BaseEventValidator):
     def parse(cls, backend_event: BackendEvent) -> "UpdateMatter":
         base_event = Event.parse(backend_event)
         after_matter = Matter(**backend_event.data.get("after", {}))
+        before_data = backend_event.data.get("before")
+        before_updated_day = before_data.get("updated")
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             after=after_matter,
+            before_updated_day=before_updated_day,
         )
 
 

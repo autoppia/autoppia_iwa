@@ -2,10 +2,10 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from autoppia_iwa.src.demo_webs.base_events import BaseEventValidator, Event
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator, CriterionValue
-from autoppia_iwa.src.demo_webs.projects.shared_utils import parse_datetime, validate_date_field
+from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator, CriterionValue
+from autoppia_iwa.src.demo_webs.shared_utils import parse_datetime, validate_date_field
 
 
 class SearchHotelEvent(Event, BaseEventValidator):
@@ -553,26 +553,7 @@ class ConfirmAndPayEvent(Event, BaseEventValidator, HotelInfo):
     def parse(cls, backend_event: BackendEvent) -> "ConfirmAndPayEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
-        hotel_info = HotelInfo.parse(
-            {
-                "hotel": {
-                    "title": data.get("title"),
-                    "location": data.get("location"),
-                    "price": data.get("price"),
-                    "rating": data.get("rating"),
-                    "reviews": data.get("reviews"),
-                    "guests": data.get("guests"),
-                    "maxGuests": data.get("maxGuests"),
-                    "datesFrom": data.get("datesFrom") or (data.get("dates") or {}).get("from"),
-                    "datesTo": data.get("datesTo") or (data.get("dates") or {}).get("to"),
-                    "baths": data.get("baths", 0),
-                    "bedrooms": data.get("bedrooms", 0),
-                    "beds": data.get("beds", 0),
-                    "host": {"name": data.get("host_name", "")},
-                    "amenities": data.get("amenities", []),
-                }
-            }
-        )
+        hotel_info = HotelInfo.parse(data)
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
@@ -586,7 +567,7 @@ class ConfirmAndPayEvent(Event, BaseEventValidator, HotelInfo):
             cvv=data.get("cvv", ""),
             country=data.get("country", ""),
             guests_set=data.get("guests_set"),
-            zipcode=data.get("zipcode"),
+            zipcode=data.get("zip"),
             **hotel_info.model_dump(),
         )
 
@@ -706,8 +687,7 @@ class WishlistOpenedEvent(Event, BaseEventValidator):
         pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
+        return True
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "WishlistOpenedEvent":
@@ -724,11 +704,9 @@ class BookFromWishlistEvent(Event, BaseEventValidator):
     """User proceeds to book from wishlist."""
 
     event_name: str = "BOOK_FROM_WISHLIST"
-    hotel_id: int | None = None
     title: str | None = None
 
     class ValidationCriteria(BaseModel):
-        hotel_id: int | CriterionValue | None = None
         title: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
@@ -736,7 +714,6 @@ class BookFromWishlistEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.hotel_id, criteria.hotel_id),
                 self._validate_field(self.title, criteria.title),
             ]
         )
@@ -750,7 +727,6 @@ class BookFromWishlistEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            hotel_id=data.get("hotelId") or data.get("id"),
             title=data.get("title"),
         )
 
@@ -764,8 +740,7 @@ class PopularHotelsViewedEvent(Event, BaseEventValidator):
         pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
+        return True
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "PopularHotelsViewedEvent":
@@ -787,8 +762,7 @@ class HelpViewedEvent(Event, BaseEventValidator):
         pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
+        return True
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "HelpViewedEvent":

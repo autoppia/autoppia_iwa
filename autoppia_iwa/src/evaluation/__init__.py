@@ -1,27 +1,19 @@
 """
-Sistema de Evaluación de Autoppia IWA
+Autoppia IWA Evaluation System
 
-Este módulo proporciona dos tipos de evaluadores para distintos casos de uso:
+Active runtime:
+1. TaskExecutionSession: step-by-step task execution runtime
 
-1. ConcurrentEvaluator: Para evaluar soluciones completas con todas las acciones generadas
-2. StatefulEvaluator: Para evaluación iterativa paso a paso (usado en subnet y modo stateful)
-
-Además, proporciona clases comunes y utilidades compartidas.
+Legacy concurrent evaluation remains under `autoppia_iwa.src.evaluation.legacy`.
 """
 
-# Evaluadores
-# Clases e interfaces
 from autoppia_iwa.src.evaluation.classes import (
     EvaluationResult,
     EvaluationStats,
-    EvaluatorConfig,
     Feedback,
     TestResult,
 )
-from autoppia_iwa.src.evaluation.concurrent_evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.evaluation.interfaces import IEvaluator
-
-# Utilidades compartidas
 from autoppia_iwa.src.evaluation.shared import (
     FeedbackGenerator,
     TestRunner,
@@ -32,21 +24,20 @@ from autoppia_iwa.src.evaluation.shared import (
 from autoppia_iwa.src.evaluation.stateful_evaluator import (
     AsyncStatefulEvaluator,
     StatefulEvaluator,
+    TaskExecutionSession,
+    TaskExecutionSessionConfig,
 )
 
 __all__ = [
     "AsyncStatefulEvaluator",
-    # Evaluadores
-    "ConcurrentEvaluator",
-    # Clases
     "EvaluationResult",
     "EvaluationStats",
-    "EvaluatorConfig",
     "Feedback",
-    # Utilidades
     "FeedbackGenerator",
     "IEvaluator",
     "StatefulEvaluator",
+    "TaskExecutionSession",
+    "TaskExecutionSessionConfig",
     "TestResult",
     "TestRunner",
     "generate_feedback",

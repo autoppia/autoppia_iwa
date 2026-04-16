@@ -3,11 +3,11 @@ import string
 from random import choice, randint, sample
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.data_provider import get_seed_from_url
 
-from ..criterion_helper import ComparisonOperator
-from ..operators import EQUALS, NOT_EQUALS
-from ..shared_utils import create_constraint_dict
+from ...criterion_helper import ComparisonOperator
+from ...operators import EQUALS, NOT_EQUALS
+from ...shared_utils import create_constraint_dict
 
 # Constants
 NAME_PLACEHOLDER = "<name>"

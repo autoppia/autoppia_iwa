@@ -2,7 +2,7 @@
 Shared data helpers for autozone_3.
 """
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+from autoppia_iwa.src.demo_webs.data_provider import load_dataset_data
 
 
 async def fetch_data(seed_value: int | None = None, count: int = 50) -> list[dict]:

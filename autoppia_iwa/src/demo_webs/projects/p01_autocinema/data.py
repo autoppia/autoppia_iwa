@@ -3,7 +3,7 @@ Central definition of field-operator maps and value pools for autocinema.
 Constraint generation uses these maps (no hardcoded operators in generation_functions).
 """
 
-from ..operators import (
+from ...operators import (
     CONTAINS,
     EQUALS,
     GREATER_EQUAL,

@@ -25,7 +25,7 @@ def _ensure_task_generation_level() -> None:
 def _log_task_generation(message: str, context: str = "TASK_GENERATION") -> None:
     """Helper to log task generation events using the TASK_GENERATION level."""
     try:
-        from autoppia_iwa.entrypoints.benchmark.utils.logging import log_task_generation_event
+        from autoppia_iwa.src.evaluation.benchmark.utils.logging import log_task_generation_event
 
         log_task_generation_event(message, context=context)
     except ImportError:
@@ -43,10 +43,10 @@ class TaskGenerationPipeline:
     ):
         self.web_project = web_project
         self.task_config = config
-        self.llm_service = llm_service
+        self.llm_service = DIContainer.resolve_llm_service(llm_service)
 
         # Initialize task generator and test pipeline
-        self.task_generator = SimpleTaskGenerator(web_project=web_project, llm_service=llm_service)
+        self.task_generator = SimpleTaskGenerator(web_project=web_project, llm_service=self.llm_service)
         self.global_test_pipeline = GlobalTestGenerationPipeline()
 
     async def generate(self) -> list[Task]:

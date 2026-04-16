@@ -4,7 +4,7 @@ import datetime
 
 from autoppia_iwa.src.data_generation.tests.classes import BaseTaskTest
 from autoppia_iwa.src.demo_webs.classes import Trajectory
-from autoppia_iwa.src.execution.actions.actions import ClickAction, EvaluateAction, HoldKeyAction, NavigateAction, SendKeysIWAAction, TypeAction, WaitAction
+from autoppia_iwa.src.execution.actions import ClickAction, EvaluateAction, HoldKeyAction, NavigateAction, SendKeysIWAAction, TypeAction, WaitAction
 from autoppia_iwa.src.execution.actions.base import BaseAction, Selector, SelectorType
 
 PROJECT_NUMBER = 13

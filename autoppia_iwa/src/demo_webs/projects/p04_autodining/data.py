@@ -1,4 +1,4 @@
-from ..operators import CONTAINS, EQUALS, GREATER_EQUAL, GREATER_THAN, LESS_EQUAL, LESS_THAN, NOT_CONTAINS, NOT_EQUALS
+from ...operators import CONTAINS, EQUALS, GREATER_EQUAL, GREATER_THAN, LESS_EQUAL, LESS_THAN, NOT_CONTAINS, NOT_EQUALS
 
 RESTAURANT_TIMES = ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM", "2:00 PM", "2:30 PM"]
 RESTAURANT_PEOPLE_COUNTS = [1, 2, 3, 4, 5, 6, 7, 8]
@@ -39,6 +39,7 @@ RESTAURANT_COUNTRIES = [
 ]
 RESTAURANT_OCCASIONS = ["birthday", "anniversary", "business", "other"]
 SCROLL_DIRECTIONS = ["left", "right"]
+SCROLL_SECTIONS_TITLES = ["Premium", "Popular", "Great value"]
 SCROLL_SECTIONS_TITLES = ["Available for lunch now", "Introducing OpenDinning Icons", "Award Winners"]
 TAG_OPTIONS = [
     "top-rated",
@@ -153,11 +154,12 @@ HELP_CATEGORIES = [
 ]
 
 FAQ_QUESTIONS = [
-    "How do I modify a reservation?",
-    "Can I get a refund?",
-    "How do I change my password?",
-    "Is there a cancellation fee?",
-    "How do I contact support?",
+    "How do I make a reservation?",
+    "What is your cancellation policy?",
+    "How do I create account?",
+    "How do I search for restaurants?",
+    "Can I leave a review?",
+    "How do I update my profile information?Is there a booking fee?",
 ]
 
 ABOUT_FEATURES = [

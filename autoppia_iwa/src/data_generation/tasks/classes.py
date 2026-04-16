@@ -1,4 +1,3 @@
-# file: data_generation/domain/classes.py
 import random
 import uuid
 from typing import Annotated, Any, Literal

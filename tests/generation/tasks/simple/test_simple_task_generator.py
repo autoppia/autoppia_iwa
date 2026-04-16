@@ -12,9 +12,9 @@ from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.data_generation.tasks.simple.simple_task_generator import (
     SimpleTaskGenerator,
 )
+from autoppia_iwa.src.demo_webs.base_events import Event
 from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
-from autoppia_iwa.src.demo_webs.projects.base_events import Event
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
+from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator
 
 
 def _make_project(project_id: str = "dummy", frontend_url: str = "https://example.com/", use_cases: list | None = None) -> WebProject:
@@ -238,6 +238,28 @@ class TestEntityTypeHelpers:
         assert gen._get_entity_type_for_project("autocinema_1") == "movies"
         assert gen._get_entity_type_for_project("autobooks_2") == "books"
 
+    def test_get_entity_type_for_p_prefixed_package_dir(self):
+        project = _make_project()
+        gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
+        assert gen._get_entity_type_for_project("p01_autocinema") == "movies"
+        assert gen._get_entity_type_for_project("p14_autohealth") == "appointments"
+
+    def test_get_entity_types_for_p_prefixed_package_dir(self):
+        project = _make_project()
+        gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
+        assert gen._get_entity_types_for_project("p05_autocrm") == ["matters", "clients", "logs", "events", "files"]
+        assert gen._get_entity_types_for_project("p14_autohealth") == [
+            "appointments",
+            "doctors",
+            "prescriptions",
+            "medical-records",
+        ]
+
+    def test_p_package_dir_to_legacy_map_key(self):
+        assert SimpleTaskGenerator._p_package_dir_to_legacy_map_key("p14_autohealth") == "autohealth_14"
+        assert SimpleTaskGenerator._p_package_dir_to_legacy_map_key("p01_autocinema") == "autocinema_1"
+        assert SimpleTaskGenerator._p_package_dir_to_legacy_map_key("autocinema_1") is None
+
     def test_get_entity_type_for_project_unknown_returns_none(self):
         project = _make_project()
         gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
@@ -268,6 +290,18 @@ class TestGetProjectModuleName:
         with patch.object(Path, "iterdir", side_effect=OSError("read error")):
             result = gen._get_project_module_name()
         assert result is None
+
+    def test_resolves_p_prefixed_disk_package_for_autohealth(self):
+        from autoppia_iwa.src.demo_webs.projects.p14_autohealth.main import health_project
+
+        gen = SimpleTaskGenerator(web_project=health_project, llm_service=MagicMock())
+        assert gen._get_project_module_name() == "p14_autohealth"
+
+    def test_resolves_p_prefixed_disk_package_for_autocinema(self):
+        from autoppia_iwa.src.demo_webs.projects.p01_autocinema.main import autocinema_project
+
+        gen = SimpleTaskGenerator(web_project=autocinema_project, llm_service=MagicMock())
+        assert gen._get_project_module_name() == "p01_autocinema"
 
 
 # -----------------------------------------------------------------------------
@@ -429,9 +463,42 @@ class TestLoadDataset:
         project = _make_project(project_id="dummy")
         gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
         mock_module = MagicMock(spec=[])
-        with patch.object(gen, "_get_project_module_name", return_value="autocinema_1"), patch("importlib.import_module", return_value=mock_module):
+        with patch.object(gen, "_get_project_module_name", return_value="p01_autocinema"), patch("importlib.import_module", return_value=mock_module):
             result = await gen._load_dataset(1)
         assert result is None
+
+    @pytest.mark.asyncio
+    async def test_load_dataset_single_entity_returns_none_when_entity_type_unknown(self):
+        project = _make_project(project_id="dummy")
+        gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
+        mock_module = MagicMock()
+        mock_module.fetch_data = AsyncMock(return_value=[{"id": 1}])
+        with (
+            patch.object(gen, "_get_project_module_name", return_value="unknown_project"),
+            patch("importlib.import_module", return_value=mock_module),
+        ):
+            result = await gen._load_dataset(1)
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_load_dataset_multi_entity_collects_only_non_empty_results(self):
+        project = _make_project(project_id="autocrm")
+        gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
+
+        async def _fetch_data(*, entity_type, seed_value, count):
+            return [] if entity_type == "logs" else [{"entity": entity_type, "seed": seed_value, "count": count}]
+
+        mock_module = MagicMock()
+        mock_module.fetch_data = _fetch_data
+
+        with (
+            patch.object(gen, "_get_project_module_name", return_value="p05_autocrm"),
+            patch("importlib.import_module", return_value=mock_module),
+        ):
+            result = await gen._load_dataset(7)
+
+        assert sorted(result.keys()) == ["clients", "events", "files", "matters"]
+        assert result["clients"][0]["seed"] == 7
 
 
 # -----------------------------------------------------------------------------
@@ -458,6 +525,42 @@ class TestLoadDatasetForModule:
         with patch("importlib.import_module", return_value=mock_module):
             result = await gen._load_dataset_for_module("tests.generation.tasks.simple.test_simple_task_generator", 1)
         assert result is None
+
+    @pytest.mark.asyncio
+    async def test_returns_none_when_loader_has_required_params(self):
+        project = _make_project()
+        gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
+
+        class _Module:
+            @staticmethod
+            def _get_data(required):
+                return [required]
+
+        with patch("importlib.import_module", return_value=_Module):
+            result = await gen._load_dataset_for_module("some.module", 1)
+
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_load_dataset_for_module_caches_sync_loader_result(self):
+        project = _make_project()
+        gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
+
+        class _Module:
+            calls = 0
+
+            @staticmethod
+            def _get_data(seed_value=0):
+                _Module.calls += 1
+                return [{"seed": seed_value}]
+
+        with patch("importlib.import_module", return_value=_Module):
+            first = await gen._load_dataset_for_module("some.module", 3)
+            second = await gen._load_dataset_for_module("some.module", 3)
+
+        assert first == [{"seed": 3}]
+        assert second == first
+        assert _Module.calls == 1
 
 
 # -----------------------------------------------------------------------------
@@ -504,6 +607,20 @@ class TestPreloadDatasetForUseCase:
         result = await gen._preload_dataset_for_use_case(use_case, 1)
         assert result is None
 
+    @pytest.mark.asyncio
+    async def test_returns_none_when_preload_raises(self):
+        use_case = _make_use_case()
+
+        def gen_with_dataset(task_url=None, dataset=None):
+            return "ok"
+
+        use_case.constraints_generator = gen_with_dataset
+        project = _make_project()
+        gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
+        with patch.object(gen, "_load_dataset_for_module", side_effect=RuntimeError("boom")):
+            result = await gen._preload_dataset_for_use_case(use_case, 5)
+        assert result is None
+
 
 # -----------------------------------------------------------------------------
 # _update_use_cases_prompt_info
@@ -525,9 +642,32 @@ class TestUpdateUseCasesPromptInfo:
     async def test_returns_early_when_use_cases_module_import_fails(self):
         project = _make_project(project_id="dummy")
         gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
-        with patch.object(gen, "_get_project_module_name", return_value="autocinema_1"), patch("importlib.import_module", side_effect=ImportError("no module")):
+        with patch.object(gen, "_get_project_module_name", return_value="p01_autocinema"), patch("importlib.import_module", side_effect=ImportError("no module")):
             await gen._update_use_cases_prompt_info("https://example.com/")
         # No exception
+
+    @pytest.mark.asyncio
+    async def test_returns_early_when_use_cases_module_has_no_update_hook(self):
+        project = _make_project(project_id="dummy")
+        gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
+        with patch.object(gen, "_get_project_module_name", return_value="p01_autocinema"), patch("importlib.import_module", return_value=MagicMock(spec=[])):
+            await gen._update_use_cases_prompt_info("https://example.com/")
+
+    @pytest.mark.asyncio
+    async def test_update_use_cases_prompt_info_calls_update_hook(self):
+        project = _make_project(project_id="dummy")
+        gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
+        use_cases_module = MagicMock()
+        use_cases_module.update_use_cases_prompt_info = AsyncMock()
+
+        with (
+            patch.object(gen, "_get_project_module_name", return_value="p01_autocinema"),
+            patch("importlib.import_module", return_value=use_cases_module),
+            patch.object(gen, "_load_dataset_for_module", AsyncMock(return_value=[{"id": 1}, {"id": 2}])),
+        ):
+            await gen._update_use_cases_prompt_info("https://example.com/?seed=11")
+
+        use_cases_module.update_use_cases_prompt_info.assert_awaited_once_with(seed_value=11, dataset=[{"id": 1}, {"id": 2}], count=2)
 
 
 # -----------------------------------------------------------------------------
@@ -641,3 +781,17 @@ class TestCleanListResponseCodePaths:
         result = gen._clean_list_response(content)
         parsed = json.loads(result)
         assert parsed == ["x"]
+
+    def test_preserves_signup_placeholders(self):
+        project = _make_project()
+        gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
+        content = '["Register with <signup_username> <signup_email> <signup_password> <email> <username> <password>"]'
+        result = gen._clean_list_response(content)
+        parsed = json.loads(result)
+        assert parsed == ["Register with <signup_username> <signup_email> <signup_password> <email> <username> <password>"]
+
+    def test_extracts_array_like_content_when_json_has_prefix_suffix_noise(self):
+        project = _make_project()
+        gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
+        result = gen._clean_list_response('prefix ["x","y"] suffix')
+        assert json.loads(result) == ["x", "y"]

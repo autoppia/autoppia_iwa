@@ -2,8 +2,8 @@
 
 from unittest.mock import patch
 
-from autoppia_iwa.src.demo_webs.projects.autozone_3 import utils as autozone_utils
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
+from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator
+from autoppia_iwa.src.demo_webs.projects.p03_autozone import utils as autozone_utils
 
 
 class TestBuildConstraintsInfo:
@@ -12,9 +12,9 @@ class TestBuildConstraintsInfo:
     def test_returns_none_when_max_attempts_exhausted(self):
         data = [{"title": "Widget", "brand": "Acme", "category": "Tools", "rating": 4.5, "price": 19.99}]
         with (
-            patch("autoppia_iwa.src.demo_webs.projects.autozone_3.utils.constraints_exist_in_db", return_value=False),
+            patch("autoppia_iwa.src.demo_webs.projects.p03_autozone.utils.constraints_exist_in_db", return_value=False),
             patch(
-                "autoppia_iwa.src.demo_webs.projects.autozone_3.generation_functions.generate_constraint_value",
+                "autoppia_iwa.src.demo_webs.projects.p03_autozone.generation_functions.generate_constraint_value",
                 return_value={"field": "title", "operator": ComparisonOperator.EQUALS, "value": "Widget"},
             ),
             patch("random.choice", side_effect=[data[0], "equals"]),
@@ -30,9 +30,9 @@ class TestBuildConstraintsInfo:
             {"title": "Gadget", "brand": "Acme", "category": "Tools", "rating": 4.0, "price": 29.99},
         ]
         with (
-            patch("autoppia_iwa.src.demo_webs.projects.autozone_3.utils.constraints_exist_in_db", return_value=True),
+            patch("autoppia_iwa.src.demo_webs.projects.p03_autozone.utils.constraints_exist_in_db", return_value=True),
             patch(
-                "autoppia_iwa.src.demo_webs.projects.autozone_3.generation_functions.generate_constraint_value",
+                "autoppia_iwa.src.demo_webs.projects.p03_autozone.generation_functions.generate_constraint_value",
                 return_value={"field": "title", "operator": ComparisonOperator.EQUALS, "value": "Widget"},
             ),
             patch("random.choice", side_effect=[data[0], "equals"]),
@@ -51,9 +51,9 @@ class TestBuildConstraintsInfo:
             {"title": "Widget", "brand": "Acme", "category": "Tools", "rating": 4.5, "price": 19.99},
         ]
         with (
-            patch("autoppia_iwa.src.demo_webs.projects.autozone_3.utils.constraints_exist_in_db", return_value=True),
+            patch("autoppia_iwa.src.demo_webs.projects.p03_autozone.utils.constraints_exist_in_db", return_value=True),
             patch(
-                "autoppia_iwa.src.demo_webs.projects.autozone_3.generation_functions.generate_constraint_value",
+                "autoppia_iwa.src.demo_webs.projects.p03_autozone.generation_functions.generate_constraint_value",
                 return_value={"field": "category", "operator": ComparisonOperator.IN_LIST, "value": ["Tools", "Parts"]},
             ),
             patch("random.choice", side_effect=[data[0], "in_list"]),
@@ -69,9 +69,9 @@ class TestBuildConstraintsInfo:
         """When generate_constraint_value returns None/falsy, that constraint is not appended."""
         data = [{"title": "Widget", "brand": "Acme", "category": "Tools", "rating": 4.5, "price": 19.99}]
         with (
-            patch("autoppia_iwa.src.demo_webs.projects.autozone_3.utils.constraints_exist_in_db", return_value=True),
+            patch("autoppia_iwa.src.demo_webs.projects.p03_autozone.utils.constraints_exist_in_db", return_value=True),
             patch(
-                "autoppia_iwa.src.demo_webs.projects.autozone_3.generation_functions.generate_constraint_value",
+                "autoppia_iwa.src.demo_webs.projects.p03_autozone.generation_functions.generate_constraint_value",
                 return_value=None,
             ),
             patch("random.choice", side_effect=[data[0], "equals"]),
@@ -94,11 +94,11 @@ class TestBuildConstraintsInfo:
 
         with (
             patch(
-                "autoppia_iwa.src.demo_webs.projects.autozone_3.utils.constraints_exist_in_db",
+                "autoppia_iwa.src.demo_webs.projects.p03_autozone.utils.constraints_exist_in_db",
                 side_effect=exist_side_effect,
             ),
             patch(
-                "autoppia_iwa.src.demo_webs.projects.autozone_3.generation_functions.generate_constraint_value",
+                "autoppia_iwa.src.demo_webs.projects.p03_autozone.generation_functions.generate_constraint_value",
                 return_value={"field": "title", "operator": ComparisonOperator.EQUALS, "value": "Widget"},
             ),
             patch("random.choice", side_effect=choice_side_effect),

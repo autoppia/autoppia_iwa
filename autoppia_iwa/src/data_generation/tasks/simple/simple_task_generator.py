@@ -15,7 +15,8 @@ from loguru import logger
 
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.project_package_registry import resolve_demo_project_package_dir
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.interfaces import ILLM
 
@@ -46,7 +47,7 @@ def _ensure_task_generation_level() -> None:
 def _log_task_generation(message: str, context: str = "TASK_GENERATION") -> None:
     """Log task generation events with TASK_GENERATION level or fallback."""
     try:
-        from autoppia_iwa.entrypoints.benchmark.utils.logging import log_task_generation_event
+        from autoppia_iwa.src.evaluation.benchmark.utils.logging import log_task_generation_event
 
         log_task_generation_event(message, context=context)
     except ImportError:
@@ -68,7 +69,7 @@ class SimpleTaskGenerator:
         retry_delay: float = 0.1,
     ):
         self.web_project = web_project
-        self.llm_service = llm_service
+        self.llm_service = DIContainer.resolve_llm_service(llm_service)
         self.max_retries = max_retries
         self.retry_delay = retry_delay
         self._seed_cache: dict[str, int] = {}
@@ -500,6 +501,15 @@ class SimpleTaskGenerator:
             logger.debug(f"Could not load dataset for {self.web_project.id}: {e}")
             return None
 
+    @staticmethod
+    def _p_package_dir_to_legacy_map_key(project_dir: str) -> str | None:
+        """Map on-disk package ``p14_autohealth`` to legacy dict key ``autohealth_14``."""
+        m = re.fullmatch(r"p(\d+)_(.+)", project_dir)
+        if not m:
+            return None
+        num_s, slug = m.group(1), m.group(2)
+        return f"{slug}_{int(num_s)}"
+
     def _get_entity_type_for_project(self, project_dir: str) -> str | None:
         """Get the primary entity type for a single-entity project."""
         # Map project directories to their entity types
@@ -529,6 +539,11 @@ class SimpleTaskGenerator:
             "p13_autodrive": "places",  # Primary entity, but has multiple
             "p14_autohealth": "appointments",  # Primary entity, but has multiple
         }
+        legacy_key = self._p_package_dir_to_legacy_map_key(project_dir)
+        if legacy_key is not None:
+            hit = entity_type_map.get(legacy_key)
+            if hit is not None:
+                return hit
         return entity_type_map.get(project_dir)
 
     def _get_entity_types_for_project(self, project_dir: str) -> list[str] | None:
@@ -552,42 +567,21 @@ class SimpleTaskGenerator:
             "p15_autostats": ["validators", "subnets", "blocks", "accounts", "transfers"],
             "p16_autodiscord": ["servers", "channels", "messages", "members"],
         }
+        legacy_key = self._p_package_dir_to_legacy_map_key(project_dir)
+        if legacy_key is not None:
+            hit = entity_types_map.get(legacy_key)
+            if hit is not None:
+                return hit
         return entity_types_map.get(project_dir)
 
     def _get_project_module_name(self) -> str | None:
-        """Auto-detect project module name from filesystem.
+        """Resolve the package directory under ``demo_webs/projects/`` (see ``project_package_registry``)."""
 
-        Finds the directory in src/demo_webs/projects/ that maps to project.id.
-        Examples:
-          - "autocinema" -> "p01_autocinema"
-          - legacy fallback "autocinema_1"
-        """
-
-        project_id = self.web_project.id
         projects_dir = Path(__file__).resolve().parents[3] / "demo_webs" / "projects"
-
         try:
-            dirs = [d.name for d in projects_dir.iterdir() if d.is_dir()]
-
-            # Preferred format: pNN_<project_id>
-            preferred = [name for name in dirs if name.startswith("p") and name.endswith(f"_{project_id}")]
-            if preferred:
-                return sorted(preferred)[0]
-
-            # Legacy format: <project_id>_<number>
-            legacy = [name for name in dirs if name.startswith(f"{project_id}_")]
-            if legacy:
-                return sorted(legacy)[0]
-
-            # Fallback: try exact match
-            exact_match = projects_dir / project_id
-            if exact_match.is_dir():
-                return project_id
-
+            return resolve_demo_project_package_dir(self.web_project.id, projects_root=projects_dir)
         except Exception:
-            pass
-
-        return None
+            return None
 
     # ============================================================================
     # URL AND SEED UTILITIES
@@ -681,9 +675,9 @@ class SimpleTaskGenerator:
         system_prompt = "You are a helpful assistant that generates user tasks as a list of strings."
         messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": llm_prompt}]
 
-        # Print temperature being used for task generation
+        # Log temperature to make prompt-generation behavior easier to inspect.
         task_gen_temp = self.llm_service.config.temperature if hasattr(self.llm_service, "config") else "unknown"
-        print(f"🌡️  Task Generation: Calling LLM with temperature={task_gen_temp}")
+        logger.info(f"[TASK_GENERATION] Calling LLM with temperature={task_gen_temp}")
 
         for attempt in range(self.max_retries):
             try:
@@ -749,13 +743,9 @@ class SimpleTaskGenerator:
         # First, remove <think>...</think> blocks completely (including multiline)
         content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL | re.IGNORECASE)
 
-        # Remove any remaining XML-like tags, while preserving known task placeholders.
-        # This prevents placeholders used by constraints (e.g. book_* / assigned_book_*) from being stripped.
-        content = re.sub(
-            r"<(?!/?(?:username|password|web_agent_id|book_name|book_id|book_author|assigned_book_name|assigned_book_id|assigned_book_author|film_name|film_id|film_director|assigned_film_name|assigned_film_id|assigned_film_director)\b)[^>]+>",
-            "",
-            content,
-        )
+        # Preserve credential placeholders that are part of the task contract.
+        allowed_placeholders = "username|password|email|web_agent_id|signup_username|signup_email|signup_password"
+        content = re.sub(rf"<(?!/?(?:{allowed_placeholders})\b)[^>]+>", "", content)
 
         # Remove markdown code blocks
         content = re.sub(r"```(?:json)?\s*\n?", "", content)

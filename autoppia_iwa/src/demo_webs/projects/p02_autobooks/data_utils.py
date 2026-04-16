@@ -3,7 +3,7 @@ Shared data helpers for autobooks_2.
 Consolidates the dataset loading + mapping logic so other modules avoid duplication.
 """
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+from autoppia_iwa.src.demo_webs.data_provider import load_dataset_data
 
 
 def _apply_mapping(record: dict, mapping: dict) -> dict:

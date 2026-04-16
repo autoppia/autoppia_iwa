@@ -1,6 +1,5 @@
 """Unit tests for config.env (init_env)."""
 
-import importlib
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -28,21 +27,10 @@ class TestInitEnv:
             _, kwargs = m.call_args
             assert kwargs.get("override") is True
 
-    def test_init_env_uses_fallback_when_dotenv_not_installed(self):
-        """Covers env.py lines 5-8: fallback load_dotenv when dotenv import fails."""
+    def test_init_env_uses_project_root_env_file(self):
         import autoppia_iwa.config.env as env_module
 
-        real_import = __import__
-
-        def fake_import(name, *args, **kwargs):
-            if name == "dotenv":
-                raise ImportError("No module named 'dotenv'")
-            return real_import(name, *args, **kwargs)
-
-        with patch("builtins.__import__", fake_import):
-            importlib.reload(env_module)
-        try:
-            env_module.init_env(override=False)
-            env_module.init_env(override=True)
-        finally:
-            importlib.reload(env_module)
+        with patch.object(env_module, "load_dotenv", MagicMock(return_value=None)) as m:
+            env_module.init_env()
+            args, _kwargs = m.call_args
+            assert args[0] == env_module._PROJECT_ROOT / ".env"

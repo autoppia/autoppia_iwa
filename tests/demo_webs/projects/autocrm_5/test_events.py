@@ -3,7 +3,7 @@
 import pytest
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.projects.autocrm_5.events import (
+from autoppia_iwa.src.demo_webs.projects.p05_autocrm.events import (
     BACKEND_EVENT_TYPES,
     AddClientEvent,
     AddNewMatter,
@@ -166,6 +166,11 @@ class TestValidateAutocrmEventsCriteria:
         assert e.validate_criteria(criteria) is True
 
     def test_new_calendar_event_added_validate_criteria(self):
+        e = NewCalendarEventAdded.parse(_be("NEW_CALENDAR_EVENT_ADDED", {"date": "2025-01-01", "label": "L", "time": "10:00", "event_type": "meeting"}))
+        criteria = NewCalendarEventAdded.ValidationCriteria(label="L", date="2025-01-01", time="10:00", event_type="meeting")
+        assert e.validate_criteria(criteria) is True
+
+    def test_new_calendar_event_added_validate_criteria_color_fallback(self):
         e = NewCalendarEventAdded.parse(_be("NEW_CALENDAR_EVENT_ADDED", {"date": "2025-01-01", "label": "L", "time": "10:00", "color": "meeting"}))
         criteria = NewCalendarEventAdded.ValidationCriteria(label="L", date="2025-01-01", time="10:00", event_type="meeting")
         assert e.validate_criteria(criteria) is True

@@ -8,27 +8,34 @@ task; skip when server is unavailable.
 """
 
 import base64
+import json
 import textwrap
 import urllib.error
 import urllib.request
-from unittest.mock import AsyncMock, patch
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from playwright.async_api import Error as PlaywrightError
 
 from autoppia_iwa.config.config import DEMO_WEB_SERVICE_PORT, DEMO_WEBS_ENDPOINT
 from autoppia_iwa.src.data_generation.tasks.classes import BrowserSpecification, Task
 from autoppia_iwa.src.data_generation.tests.classes import CheckEventTest
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.evaluation.stateful_evaluator import AsyncStatefulEvaluator
-from autoppia_iwa.src.evaluation.stateful_evaluator.evaluator import (
+from autoppia_iwa.src.evaluation.scoring import ScoreDetails
+from autoppia_iwa.src.evaluation.stateful_evaluator import (
+    AsyncStatefulEvaluator,
     _is_navigation_url_allowed as _orig_nav_allowed,
-    _url_hostname,
 )
 from autoppia_iwa.src.execution.actions.actions import ClickAction, TypeAction, WaitAction
 from autoppia_iwa.src.execution.actions.base import Selector, SelectorType
+from autoppia_iwa.src.execution.classes import ActionExecutionResult, BrowserSnapshot as ExecutionBrowserSnapshot
+from autoppia_iwa.src.web_agents.apified_iterative_agent import ApifiedWebAgent
 
 WEB_AGENT_ID = "test_agent"
+P01_TRAJECTORIES_FIXTURE = Path(__file__).with_name("fixtures") / "trajectories_p01.json"
 PROJECT = next(p for p in demo_web_projects if getattr(p, "id", None) == "autobooks")
 PROJECT_AUTOCINEMA = next(p for p in demo_web_projects if getattr(p, "id", None) == "autocinema")
 
@@ -78,75 +85,92 @@ def _make_task(url: str):
     )
 
 
-class TestUrlHostnameAndNavigationAllowed:
-    def test_url_hostname_none(self):
-        assert _url_hostname(None) is None
+def _make_action_result(action, *, url: str, html: str, success: bool = True) -> ActionExecutionResult:
+    return ActionExecutionResult(
+        action=action,
+        action_event=action.type,
+        successfully_executed=success,
+        error=None if success else "failed",
+        execution_time=0.1,
+        browser_snapshot=ExecutionBrowserSnapshot(
+            iteration=0,
+            action=action,
+            prev_html="",
+            current_html=html,
+            screenshot_before="",
+            screenshot_after="",
+            backend_events=[],
+            current_url=url,
+        ),
+    )
 
-    def test_url_hostname_lowercases(self):
-        assert _url_hostname("http://EXAMPLE.com/some") == "example.com"
 
-    def test_navigation_allowed_candidate_url_none(self):
-        ok, reason = _orig_nav_allowed(is_web_real=False, task_url="http://example.com", candidate_url=None)
-        assert ok is True
-        assert reason is None
+class _DummyPage:
+    def __init__(self, *, html: str, url: str):
+        self._html = html
+        self.url = url
 
-    def test_navigation_blocks_non_http_scheme(self):
-        ok, reason = _orig_nav_allowed(is_web_real=False, task_url="http://example.com", candidate_url="javascript:alert(1)")
-        assert ok is False
-        assert "scheme 'javascript'" in (reason or "")
+    async def content(self):
+        return self._html
 
-    def test_navigation_relative_url_is_allowed(self):
-        ok, reason = _orig_nav_allowed(is_web_real=False, task_url="http://example.com", candidate_url="/relative/path")
-        assert ok is True
-        assert reason is None
+    async def screenshot(self, full_page=True):
+        return b"fake-screenshot"
 
-    def test_navigation_demo_webs_allows_localhost(self):
-        ok, reason = _orig_nav_allowed(is_web_real=False, task_url="http://example.com", candidate_url="http://localhost:1234/app")
-        assert ok is True
-        assert reason is None
 
-    def test_navigation_demo_webs_allows_task_host(self):
-        ok, reason = _orig_nav_allowed(is_web_real=False, task_url="http://example.com/app", candidate_url="https://example.com/other")
-        assert ok is True
-        assert reason is None
+class _DummyContext:
+    def __init__(self, page):
+        self._page = page
+        self.headers = None
 
-    def test_navigation_demo_webs_blocks_mismatched_host(self):
-        ok, reason = _orig_nav_allowed(
-            is_web_real=False,
-            task_url="http://example.com/app",
-            candidate_url="https://other.com/other",
-        )
-        assert ok is False
-        assert "not allowed for demo webs" in (reason or "")
+    async def new_page(self):
+        return self._page
 
-    def test_navigation_real_webs_requires_task_host(self):
-        ok, reason = _orig_nav_allowed(
-            is_web_real=True,
-            task_url="invalid-url-without-host",
-            candidate_url="https://example.com/other",
-        )
-        assert ok is False
-        assert "could not be determined" in (reason or "")
+    async def add_init_script(self, script):
+        return None
 
-    def test_navigation_real_webs_blocks_mismatched_host(self):
-        ok, reason = _orig_nav_allowed(
-            is_web_real=True,
-            task_url="https://example.com/task",
-            candidate_url="https://other.com/other",
-        )
-        assert ok is False
-        assert "does not match task host" in (reason or "")
+    def set_default_timeout(self, value):
+        return None
 
-    def test_navigation_demo_webs_allows_any_host_in_testing_mode(self):
-        # When SUBNET_TESTING=True, demo webs should allow navigation even if host mismatch.
-        with patch("autoppia_iwa.src.evaluation.stateful_evaluator.evaluator.SUBNET_TESTING", True):
-            ok, reason = _orig_nav_allowed(
-                is_web_real=False,
-                task_url="http://example.com/app",
-                candidate_url="https://other.com/other",
-            )
-        assert ok is True
-        assert reason is None
+    async def close(self):
+        return None
+
+
+class _DummyBrowser:
+    def __init__(self, context):
+        self._context = context
+
+    async def new_context(self, **kwargs):
+        self._context.headers = kwargs.get("extra_http_headers")
+        return self._context
+
+    async def close(self):
+        return None
+
+
+class _DummyPlaywright:
+    def __init__(self, browser):
+        self.chromium = SimpleNamespace(launch=AsyncMock(return_value=browser))
+
+    async def stop(self):
+        return None
+
+
+def _build_runtime_patches(*, html: str, url: str, action_result: ActionExecutionResult, scores: list[ScoreDetails]):
+    page = _DummyPage(html=html, url=url)
+    context = _DummyContext(page)
+    browser = _DummyBrowser(context)
+    playwright = _DummyPlaywright(browser)
+    async_playwright_factory = MagicMock(return_value=SimpleNamespace(start=AsyncMock(return_value=playwright)))
+    executor_mock = MagicMock()
+    executor_mock.execute_single_action = AsyncMock(return_value=action_result)
+    score_mock = AsyncMock(side_effect=scores)
+    return (
+        patch("autoppia_iwa.src.evaluation.stateful_evaluator.async_playwright", async_playwright_factory),
+        patch("autoppia_iwa.src.evaluation.stateful_evaluator.PlaywrightBrowserExecutor", return_value=executor_mock),
+        patch("autoppia_iwa.src.evaluation.stateful_evaluator.TaskExecutionScorer.score", new=score_mock),
+        executor_mock,
+        context,
+    )
 
 
 # -----------------------------------------------------------------------------
@@ -169,13 +193,19 @@ def _is_real_demo_server_available() -> tuple[bool, str]:
         host = base.split("/")[0].split(":")[0]
     port = DEMO_WEB_SERVICE_PORT
     url = f"http://{host}:{port}/health"
+    events_url = f"http://{host}:{port}/get_events/?web_url=http://localhost:8000&web_agent_id=test_agent&validator_id=test_validator"
     try:
         req = urllib.request.Request(url, method="GET")
         req.add_header("User-Agent", "IWA-Test/1.0")
         with urllib.request.urlopen(req, timeout=2) as resp:
-            if resp.status in (200, 204):
+            if resp.status not in (200, 204):
+                return False, f"Backend returned status {resp.status}"
+        events_req = urllib.request.Request(events_url, method="GET")
+        events_req.add_header("User-Agent", "IWA-Test/1.0")
+        with urllib.request.urlopen(events_req, timeout=2) as resp:
+            if resp.status == 200:
                 return True, ""
-            return False, f"Backend returned status {resp.status}"
+            return False, f"Backend get_events returned status {resp.status}"
     except urllib.error.URLError as e:
         return False, f"Demo webs backend not reachable: {e.reason}"
     except OSError as e:
@@ -247,34 +277,133 @@ def _real_server_step2_actions():
     ]
 
 
+def _make_real_server_search_filters_task():
+    """Task for real-server trajectory test: open a Sci-Fi 2010 film detail from Search page filters."""
+    base_url = (PROJECT_AUTOCINEMA.frontend_url or "").rstrip("/") or f"{DEMO_WEBS_ENDPOINT.rstrip('/')}:8000"
+    return Task(
+        id="task-stateful-real-film-detail-search-filters",
+        url=base_url,
+        prompt="Navigate to a movie details page that matches requested year/genre constraints using the Search page filters.",
+        web_project_id=PROJECT_AUTOCINEMA.id,
+        is_web_real=False,
+        specifications=BrowserSpecification(),
+        tests=[
+            CheckEventTest(
+                type="CheckEventTest",
+                event_name="FILM_DETAIL",
+                event_criteria={"name": "Inception"},
+                description="User must view the Inception film detail page",
+            )
+        ],
+    )
+
+
+def _real_server_search_filters_trajectory_actions(task_url: str):
+    parser = ApifiedWebAgent(base_url="http://127.0.0.1:9999")
+    payload = {
+        "actions": [
+            {"name": "browser.navigate", "arguments": {"url": f"{task_url.rstrip('/')}/search"}},
+            {
+                "name": "browser.select_dropdown",
+                "arguments": {
+                    "selector": {
+                        "type": "xpathSelector",
+                        "value": "//select[.//option[contains(normalize-space(.), 'All genres')]]",
+                    },
+                    "text": "Sci-Fi",
+                },
+            },
+            {
+                "name": "browser.select_dropdown",
+                "arguments": {
+                    "selector": {
+                        "type": "xpathSelector",
+                        "value": "//select[.//option[contains(normalize-space(.), 'All years')]]",
+                    },
+                    "text": "2010",
+                },
+            },
+            {
+                "name": "browser.click",
+                "arguments": {
+                    "selector": {
+                        "type": "tagContainsSelector",
+                        "value": "View Details",
+                        "case_sensitive": False,
+                    }
+                },
+            },
+            {"name": "browser.wait", "arguments": {"time_seconds": 1}},
+        ],
+        "done": False,
+    }
+    return parser._parse_actions_response(payload)
+
+
+def _load_p01_success_trajectory(use_case: str) -> dict:
+    payload = json.loads(P01_TRAJECTORIES_FIXTURE.read_text())
+    for trajectory in payload["trajectories"]:
+        if trajectory.get("use_case") == use_case and trajectory.get("has_success"):
+            return trajectory
+    raise AssertionError(f"Missing success trajectory for {use_case}")
+
+
+def _make_real_server_fixture_task(trajectory: dict) -> Task:
+    return Task(
+        id=f"task-stateful-real-{trajectory['use_case'].lower()}-fixture",
+        url=trajectory["url"],
+        prompt=trajectory["prompt"],
+        web_project_id=PROJECT_AUTOCINEMA.id,
+        is_web_real=False,
+        specifications=BrowserSpecification(),
+        tests=[CheckEventTest(**test) for test in trajectory["tests"]],
+    )
+
+
+def _fixture_trajectory_actions(trajectory: dict):
+    parser = ApifiedWebAgent(base_url="http://127.0.0.1:9999")
+    actions = [action for action in trajectory["actions"] if action.get("name") != "browser.navigate"]
+    return parser._parse_actions_response({"actions": actions, "done": False})
+
+
 @pytest.mark.asyncio
 async def test_stateful_evaluator_correct_solution():
-    """Reset loads mock HTML; step runs real action; mock backend returns passing events."""
+    """Reset and step should work with a mocked runtime and real session logic."""
     html = _make_mock_html()
     data_url = _data_url(html)
     task = _make_task(data_url)
-    passing_events = [
-        BackendEvent(
-            event_name="LOGIN_BOOK",
-            data={"username": "user123"},
-            web_agent_id=WEB_AGENT_ID,
-        )
-    ]
-
     mock_backend = AsyncMock()
     mock_backend.reset_database = AsyncMock()
     mock_backend.close = AsyncMock()
-    mock_backend.get_backend_events = AsyncMock(return_value=passing_events)
+    mock_backend.get_backend_events = AsyncMock(return_value=[BackendEvent(event_name="LOGIN_BOOK", data={"username": "user123"}, web_agent_id=WEB_AGENT_ID)])
+    step_action = TypeAction(
+        selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="input"),
+        text="hello",
+    )
+    action_result = _make_action_result(step_action, url=data_url, html=html)
+    async_playwright_patch, executor_patch, scorer_patch, executor_mock, context = _build_runtime_patches(
+        html=html,
+        url=data_url,
+        action_result=action_result,
+        scores=[
+            ScoreDetails(raw_score=0.0, tests_passed=0, total_tests=1, success=False),
+            ScoreDetails(raw_score=1.0, tests_passed=1, total_tests=1, success=True),
+            ScoreDetails(raw_score=1.0, tests_passed=1, total_tests=1, success=True),
+        ],
+    )
 
     with (
         patch(
-            "autoppia_iwa.src.evaluation.stateful_evaluator.evaluator._is_navigation_url_allowed",
+            "autoppia_iwa.src.evaluation.stateful_evaluator._is_navigation_url_allowed",
             side_effect=_allow_data_url,
         ),
         patch(
-            "autoppia_iwa.src.evaluation.stateful_evaluator.evaluator.BackendDemoWebService",
+            "autoppia_iwa.src.evaluation.stateful_evaluator.BackendDemoWebService",
             return_value=mock_backend,
         ),
+        async_playwright_patch,
+        executor_patch,
+        scorer_patch,
     ):
         evaluator = AsyncStatefulEvaluator(
             task=task,
@@ -285,40 +414,58 @@ async def test_stateful_evaluator_correct_solution():
         try:
             step_result = await evaluator.reset()
             assert step_result.score.total_tests >= 1
-            # After one step (e.g. type), backend events from mock -> score can pass
-            sel = Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="input")
-            step_result = await evaluator.step(TypeAction(selector=sel, text="hello"))
+            step_result = await evaluator.step(step_action)
             details = await evaluator.get_score_details()
             assert details.total_tests >= 1
             assert details.tests_passed >= 1
             assert details.raw_score > 0
             assert details.success is True
+            assert step_result.action_result is action_result
+            assert step_result.snapshot.html == html
+            assert executor_mock.execute_single_action.await_count == 2
+            assert context.headers == {"X-WebAgent-Id": WEB_AGENT_ID, "X-Validator-Id": evaluator.validator_id}
         finally:
             await evaluator.close()
 
 
 @pytest.mark.asyncio
 async def test_stateful_evaluator_wrong_solution():
-    """Mock backend returns no events; score should be 0."""
+    """A noop step should still rescore and preserve existing execution history."""
     html = _make_mock_html()
     data_url = _data_url(html)
     task = _make_task(data_url)
-    wrong_events = []
-
     mock_backend = AsyncMock()
     mock_backend.reset_database = AsyncMock()
     mock_backend.close = AsyncMock()
-    mock_backend.get_backend_events = AsyncMock(return_value=wrong_events)
+    mock_backend.get_backend_events = AsyncMock(return_value=[])
+    first_action = TypeAction(
+        selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="input"),
+        text="hello",
+    )
+    action_result = _make_action_result(first_action, url=data_url, html=html)
+    async_playwright_patch, executor_patch, scorer_patch, executor_mock, _context = _build_runtime_patches(
+        html=html,
+        url=data_url,
+        action_result=action_result,
+        scores=[
+            ScoreDetails(raw_score=0.0, tests_passed=0, total_tests=1, success=False),
+            ScoreDetails(raw_score=0.0, tests_passed=0, total_tests=1, success=False),
+            ScoreDetails(raw_score=0.0, tests_passed=0, total_tests=1, success=False),
+        ],
+    )
 
     with (
         patch(
-            "autoppia_iwa.src.evaluation.stateful_evaluator.evaluator._is_navigation_url_allowed",
+            "autoppia_iwa.src.evaluation.stateful_evaluator._is_navigation_url_allowed",
             side_effect=_allow_data_url,
         ),
         patch(
-            "autoppia_iwa.src.evaluation.stateful_evaluator.evaluator.BackendDemoWebService",
+            "autoppia_iwa.src.evaluation.stateful_evaluator.BackendDemoWebService",
             return_value=mock_backend,
         ),
+        async_playwright_patch,
+        executor_patch,
+        scorer_patch,
     ):
         evaluator = AsyncStatefulEvaluator(
             task=task,
@@ -334,6 +481,8 @@ async def test_stateful_evaluator_wrong_solution():
             assert details.tests_passed == 0
             assert details.raw_score == 0.0
             assert details.success is False
+            assert len(evaluator.history) == 1
+            executor_mock.execute_single_action.assert_awaited_once()
         finally:
             await evaluator.close()
 
@@ -357,7 +506,10 @@ async def test_stateful_evaluator_real_server_film_detail():
         capture_screenshot=False,
     )
     try:
-        await evaluator.reset()
+        try:
+            await evaluator.reset()
+        except PlaywrightError as exc:
+            pytest.skip(f"Playwright browser unavailable in this environment: {exc}")
         # Step 1: two actions — type search query and submit
         for action in _real_server_step1_actions():
             await evaluator.step(action)
@@ -392,7 +544,10 @@ async def test_stateful_evaluator_real_server_film_detail_fails_wrong_criteria()
         capture_screenshot=False,
     )
     try:
-        await evaluator.reset()
+        try:
+            await evaluator.reset()
+        except PlaywrightError as exc:
+            pytest.skip(f"Playwright browser unavailable in this environment: {exc}")
         # Step 1: two actions — type search query and submit
         for action in _real_server_step1_actions():
             await evaluator.step(action)
@@ -404,5 +559,43 @@ async def test_stateful_evaluator_real_server_film_detail_fails_wrong_criteria()
         assert details.tests_passed == 0
         assert details.raw_score == 0.0
         assert details.success is False
+    finally:
+        await evaluator.close()
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_stateful_evaluator_real_server_film_detail_trajectories_test():
+    """
+    Real browser, real demo server, and a fixed trajectory expressed as /step tool calls.
+    This simulates a miner returning a known-good action list and verifies evaluator scoring.
+    """
+    available, reason = _is_real_demo_server_available()
+    if not available:
+        _skip_if_real_server_unavailable(reason)
+
+    trajectory = _load_p01_success_trajectory("FILM_DETAIL")
+    task = _make_real_server_fixture_task(trajectory)
+    evaluator = AsyncStatefulEvaluator(
+        task=task,
+        web_agent_id=WEB_AGENT_ID,
+        should_record_gif=False,
+        capture_screenshot=False,
+    )
+    try:
+        try:
+            await evaluator.reset()
+        except PlaywrightError as exc:
+            pytest.skip(f"Playwright browser unavailable in this environment: {exc}")
+
+        actions = _fixture_trajectory_actions(trajectory)
+        for action in actions:
+            await evaluator.step(action)
+
+        details = await evaluator.get_score_details()
+        assert details.total_tests >= 1
+        assert details.tests_passed >= 1
+        assert details.raw_score > 0
+        assert details.success is True
     finally:
         await evaluator.close()

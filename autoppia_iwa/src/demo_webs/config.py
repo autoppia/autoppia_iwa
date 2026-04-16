@@ -17,7 +17,6 @@ from .projects.p12_autolist.main import autolist_project
 from .projects.p13_autodrive.main import drive_project
 from .projects.p14_autohealth.main import health_project
 from .projects.p15_autostats.main import autostats_project
-from .projects.p16_autodiscord.main import discord_project
 
 sys.path.append(str(Path(__file__).resolve().parents[3]))
 
@@ -38,5 +37,4 @@ demo_web_projects: list[WebProject] = [
     drive_project,
     health_project,
     autostats_project,
-    discord_project,
 ]
