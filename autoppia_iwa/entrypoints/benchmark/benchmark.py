@@ -20,6 +20,7 @@ from autoppia_iwa.entrypoints.benchmark.utils.logging import log_step, log_task_
 from autoppia_iwa.entrypoints.benchmark.utils.metrics import TimingMetrics
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.data_provider import close_async_session
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStats
 from autoppia_iwa.src.evaluation.concurrent_evaluator import ConcurrentEvaluator
@@ -986,6 +987,10 @@ class Benchmark:
             raise
         finally:
             self._timing_metrics.end()
+            # Task generation uses a shared aiohttp session in data_provider.
+            # Close it explicitly to avoid "Unclosed client session" warnings.
+            with contextlib.suppress(Exception):
+                await close_async_session()
 
         # Save consolidated results to a single file
         saved_path: Path | None = None

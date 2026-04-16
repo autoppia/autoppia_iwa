@@ -1014,8 +1014,6 @@ class WebVerificationPipeline:
         all_llm_reviews_passed = True
         all_dynamic_verification_passed = True
         has_dynamic_verification = False
-        has_trajectory_verification = False
-        all_trajectory_verification_passed = True
 
         for _use_case_name, use_case_data in self.results["use_cases"].items():
             tasks = use_case_data.get("tasks", [])
@@ -1050,15 +1048,11 @@ class WebVerificationPipeline:
 
             traj = use_case_data.get("trajectory_verification")
             if traj is not None and self.config.evaluate_trajectories:
-                if traj.get("skipped"):
+                if traj.get("skipped") or traj.get("error"):
                     pass
-                elif traj.get("error"):
-                    has_trajectory_verification = True
-                    all_trajectory_verification_passed = False
                 else:
-                    has_trajectory_verification = True
                     if not traj.get("all_passed", False):
-                        all_trajectory_verification_passed = False
+                        pass
 
         # Determine summary status
         # Dynamic verification: Pass if all seeds passed (all_passed=True), else Fail

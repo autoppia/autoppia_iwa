@@ -39,7 +39,11 @@ class EventTaskStrategy:
         if getattr(config, "use_cached_tasks", False):
             cached_tasks = await load_tasks_from_json(project, cache_dir)
             if cached_tasks:
-                filtered = filter_tasks_by_use_cases(cached_tasks, selected_use_cases)
+                filtered = filter_tasks_by_use_cases(
+                    cached_tasks,
+                    selected_use_cases,
+                    test_types="event_only",
+                )
                 logger.info(f"[{self.name}] Using {len(filtered)} cached tasks for '{project.name}'")
                 return filtered
             logger.info(f"[{self.name}] No cached tasks found for '{project.name}', generating new tasks...")
@@ -81,7 +85,11 @@ class DataExtractionTaskStrategy:
         if getattr(config, "use_cached_tasks", False):
             cached_tasks = await load_tasks_from_json(project, cache_dir)
             if cached_tasks:
-                filtered = filter_tasks_by_use_cases(cached_tasks, selected_use_cases)
+                filtered = filter_tasks_by_use_cases(
+                    cached_tasks,
+                    selected_use_cases,
+                    test_types="data_extraction_only",
+                )
                 logger.info(f"[{self.name}] Using {len(filtered)} cached tasks for '{project.name}'")
                 return filtered
             logger.info(f"[{self.name}] No cached tasks found for '{project.name}', generating new tasks...")

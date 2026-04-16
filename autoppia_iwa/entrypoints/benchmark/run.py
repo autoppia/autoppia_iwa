@@ -224,12 +224,19 @@ def _build_agent(agent: str):
 
 def _write_staged_tasks(cache_dir: Path, payload: dict) -> None:
     pid = str(payload.get("project_id", "unknown"))
-    (cache_dir / f"{pid}_tasks.json").write_text(json.dumps(payload, indent=2, ensure_ascii=False, default=str))
+    is_data_extraction_cache = "dataextraction" in cache_dir.as_posix().lower()
+    suffix = "_DE_tasks.json" if is_data_extraction_cache else "_tasks.json"
+    (cache_dir / f"{pid}{suffix}").write_text(json.dumps(payload, indent=2, ensure_ascii=False, default=str))
 
 
 def _stage_tasks(tasks_path: Path, config) -> None:
     """Compatibility helper to stage tasks JSON in benchmark cache."""
-    test_types = getattr(config, "test_types", "event_only")
+    test_types = getattr(config, "test_types", None)
+    if test_types is None:
+        enable_event = bool(getattr(config, "enable_event_tasks", True))
+        enable_de = bool(getattr(config, "enable_data_extraction_tasks", False))
+        test_types = "data_extraction_only" if (enable_de and not enable_event) else "event_only"
+
     sub = "DataExtraction" if test_types == "data_extraction_only" else "tasks"
     cache_dir = config.base_dir / "benchmark-output" / "cache" / sub
     cache_dir.mkdir(parents=True, exist_ok=True)
@@ -270,48 +277,53 @@ async def run(
 ):
     """
     Legacy programmatic API kept for compatibility with existing tests/callers.
-    Uses the stateful benchmark runtime under autoppia_iwa.src.evaluation.benchmark.
+    Internally mapped to the modern benchmark runtime under entrypoints/benchmark.
     """
     from autoppia_iwa.src.bootstrap import AppBootstrap
-    from autoppia_iwa.src.evaluation.benchmark import Benchmark as StatefulBenchmark, BenchmarkConfig as StatefulBenchmarkConfig
-    from autoppia_iwa.src.evaluation.benchmark.utils.task_generation import get_projects_by_ids as get_projects_by_ids_stateful
 
     AppBootstrap()
 
     if mode != "stateful":
         raise ValueError("Only stateful benchmark mode is supported. Concurrent evaluation has moved to autoppia_iwa.src.evaluation.legacy.")
 
-    projects = get_projects_by_ids_stateful(demo_web_projects, project_ids) if project_ids else demo_web_projects
+    projects = get_projects_by_ids(demo_web_projects, project_ids) if project_ids else demo_web_projects
     web_agent = _build_agent(agent)
 
     base_dir = Path(output_dir)
     if base_dir.name == "benchmark-output":
         base_dir = base_dir.parent
 
+    enable_event_tasks = test_types != "data_extraction_only"
+    enable_data_extraction_tasks = test_types == "data_extraction_only"
     data_extraction_use_cases = use_cases if test_types == "data_extraction_only" else None
-    config = StatefulBenchmarkConfig(
+
+    config = BenchmarkConfig(
         projects=projects,
         agents=[web_agent],
+        evaluator_mode="stateful",
         use_cases=use_cases,
         prompts_per_use_case=prompts_per_use_case,
         max_steps_per_task=max_steps,
         runs=runs,
-        max_parallel_evaluations=parallel,
-        web_agent_id_prefix=web_agent_prefix,
-        validator_id_prefix=validator_prefix or "validator_001",
-        headless=headless,
+        max_parallel_agent_calls=parallel,
+        dynamic=DYNAMIC,
+        save_results_json=SAVE_RESULTS_JSON,
+        record_gif=RECORD_GIF,
+        headless=bool(headless),
         base_dir=base_dir,
         use_cached_tasks=bool(tasks_file),
-        test_types=test_types,
+        enable_event_tasks=enable_event_tasks,
+        enable_data_extraction_tasks=enable_data_extraction_tasks,
         data_extraction_use_cases=data_extraction_use_cases,
     )
 
     if tasks_file:
         _stage_tasks(Path(tasks_file), config)
 
-    benchmark = StatefulBenchmark(config)
-    await benchmark.run()
-    return benchmark.last_run_report or {}
+    benchmark = Benchmark(config)
+    results = await benchmark.run()
+    last_run_report = getattr(benchmark, "last_run_report", None)
+    return last_run_report or results or {}
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:

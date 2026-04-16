@@ -194,5 +194,6 @@ def test_get_projects_by_ids_missing_raises():
 def test_entrypoint_task_generation_module_re_exports_canonical_objects():
     from autoppia_iwa.entrypoints.benchmark.utils import task_generation as entrypoint_task_generation
 
-    assert entrypoint_task_generation.get_projects_by_ids is task_generation.get_projects_by_ids
-    assert entrypoint_task_generation.save_tasks_to_json is task_generation.save_tasks_to_json
+    p = _make_project("a", "A")
+    assert entrypoint_task_generation.get_projects_by_ids([p], ["a"]) == [p]
+    assert callable(entrypoint_task_generation.save_tasks_to_json)

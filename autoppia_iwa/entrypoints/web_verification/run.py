@@ -90,11 +90,11 @@ async def run(
     no_data_extraction_verification: bool = False,
     data_extraction_seed: int = 1,
 ):
+    from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
     from autoppia_iwa.src.bootstrap import AppBootstrap
     from autoppia_iwa.src.demo_webs.config import demo_web_projects
     from autoppia_iwa.src.demo_webs.web_verification.config import WebVerificationConfig
     from autoppia_iwa.src.demo_webs.web_verification.pipeline import WebVerificationPipeline
-    from autoppia_iwa.src.evaluation.benchmark.utils.task_generation import get_projects_by_ids
 
     AppBootstrap()
 

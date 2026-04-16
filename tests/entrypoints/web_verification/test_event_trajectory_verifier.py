@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import pytest
 
-from autoppia_iwa.entrypoints.web_verification import event_trajectory_verifier as verifier_module
 from autoppia_iwa.entrypoints.web_verification.event_trajectory_verifier import EventTrajectoryVerifier
 from autoppia_iwa.src.demo_webs.classes import Trajectory, WebProject
+from autoppia_iwa.src.demo_webs.web_verification import event_trajectory_verifier as verifier_module
 from autoppia_iwa.src.execution.actions.actions import NavigateAction
 
 

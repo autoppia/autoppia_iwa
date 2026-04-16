@@ -48,12 +48,19 @@ def _read_tasks_from_file(filename: Path) -> dict:
         return json.load(f)
 
 
-def filter_tasks_by_use_cases(tasks: list[Task], use_cases: list[str] | None) -> list[Task]:
+def filter_tasks_by_use_cases(
+    tasks: list[Task],
+    use_cases: list[str] | None,
+    *,
+    test_types: str = "event_only",
+) -> list[Task]:
     """
     Keep tasks whose use_case.name matches one of use_cases (case-insensitive).
 
-    When use_cases is None or empty, returns tasks unchanged. Tasks with no use_case
-    are dropped when filtering is active.
+    When use_cases is None or empty, returns tasks unchanged.
+
+    For data-extraction-only tasks without ``use_case`` (for example, tasks
+    generated through ``generate_de_tasks``), we also match ``de_use_case_name``.
     """
     if not use_cases:
         return tasks
@@ -67,6 +74,11 @@ def filter_tasks_by_use_cases(tasks: list[Task], use_cases: list[str] | None) ->
         name = getattr(use_case, "name", None) if use_case is not None else None
         if isinstance(name, str) and name.strip().casefold() in wanted:
             out.append(task)
+            continue
+        if test_types == "data_extraction_only":
+            de_name = getattr(task, "de_use_case_name", None)
+            if isinstance(de_name, str) and de_name.strip().casefold() in wanted:
+                out.append(task)
     return out
 
 
