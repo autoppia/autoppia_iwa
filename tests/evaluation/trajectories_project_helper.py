@@ -22,10 +22,12 @@ _TRAJECTORY_BUNDLE_NAME = "all_projects_use_case_trajectories_prod_pxx_step_test
 
 
 def _resolve_trajectory_bundle_path() -> Path:
+    """Prod trajectory JSON: repo root by default; TRAJECTORIES_FIXTURE_PATH overrides."""
     env = os.environ.get("TRAJECTORIES_FIXTURE_PATH", "").strip()
     if env:
         return Path(env).expanduser().resolve()
     here = Path(__file__).resolve()
+    # tests/evaluation/*.py -> parents[2] is repository root
     at_repo_root = here.parents[2] / _TRAJECTORY_BUNDLE_NAME
     legacy_parent = here.parents[3] / _TRAJECTORY_BUNDLE_NAME
     if at_repo_root.is_file():
@@ -43,7 +45,9 @@ KNOWN_PROD_MISMATCHES: dict[tuple[str, str], str] = {}
 def load_project_fixture(project_id: str) -> dict[str, Any]:
     if not ROOT_FIXTURE_PATH.is_file():
         pytest.skip(
-            f"Trajectory bundle not found: {ROOT_FIXTURE_PATH}. Place {_TRAJECTORY_BUNDLE_NAME} at the repository root or set TRAJECTORIES_FIXTURE_PATH.",
+            f"Trajectory bundle not found: {ROOT_FIXTURE_PATH}. "
+            f"Place {_TRAJECTORY_BUNDLE_NAME} at the repository root, set TRAJECTORIES_FIXTURE_PATH, "
+            "or keep the legacy copy one directory above the repo.",
             allow_module_level=True,
         )
     data = json.loads(ROOT_FIXTURE_PATH.read_text())

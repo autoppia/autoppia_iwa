@@ -121,6 +121,73 @@ def _join_segments_from_base(base: Path, relative: str) -> Path:
         raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
 
 
+def _resolve_unc_network_path(backslash_form: str) -> Path:
+    """Resolve \\\\server\\share\\... using segment joins (no Path(entire_user_string))."""
+    s = backslash_form.replace("/", "\\")
+    if not s.startswith("\\\\"):
+        raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
+    segments = [p for p in s.split("\\") if p]
+    if len(segments) < 2:
+        raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
+    for p in segments:
+        if p in (".", ".."):
+            raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
+    server, share = segments[0], segments[1]
+    tail = "/".join(segments[2:])
+    base = Path("\\\\") / server / share
+    try:
+        if not tail:
+            return base.resolve()
+        return _join_segments_from_base(base, tail)
+    except HTTPException:
+        raise
+    except (OSError, RuntimeError):
+        raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
+
+
+def _resolve_absolute_path_from_string(value: str) -> Path:
+    """Resolve absolute paths (~ expanded first) without Path(user_controlled_string)."""
+    v = os.path.expanduser(value.strip())
+    if not v or "\x00" in v:
+        raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
+
+    vb = v.replace("/", "\\")
+    if vb.startswith("\\\\"):
+        return _resolve_unc_network_path(vb)
+
+    if v.startswith("//") and not v.startswith("///") and len(v) > 3:
+        parts = [p for p in v.replace("\\", "/").split("/") if p]
+        if len(parts) >= 2:
+            return _resolve_unc_network_path("\\\\" + "\\".join(parts))
+
+    drive, tail = os.path.splitdrive(v)
+    if drive:
+        base = Path(drive + "/")
+        tail_norm = tail.replace("\\", "/").strip("/")
+        try:
+            if not tail_norm:
+                return base.resolve()
+            return _join_segments_from_base(base, tail_norm)
+        except HTTPException:
+            raise
+        except (OSError, RuntimeError):
+            raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
+
+    norm = v.replace("\\", "/")
+    if norm.startswith("/"):
+        rest = norm.lstrip("/")
+        try:
+            if not rest:
+                return Path("/").resolve()
+            return _join_segments_from_base(Path("/"), rest)
+        except HTTPException:
+            raise
+        except (OSError, RuntimeError):
+            raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
+
+    raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
+
+
 def _safe_path_under(base: Path, *parts: str) -> Path:
     """Join path parts under base; reject absolute paths and traversal."""
     if any(Path(p).is_absolute() for p in parts):
@@ -145,11 +212,11 @@ def _resolve_trace_dir(raw: str | None = None) -> Path:
         path = Path.home().resolve()
     elif slash.startswith("~/"):
         path = _join_segments_from_base(Path.home(), slash[2:])
-    elif slash.startswith("/") or _windows_drive_absolute(value):
-        # lgtm[py/path-injection] -- resolved path must pass _is_under_allowed_root below.
-        # codeql[py/path-injection]
+    elif slash.startswith("/") or _windows_drive_absolute(value) or value.replace("/", "\\").startswith("\\\\"):
         try:
-            path = Path(value).expanduser().resolve()
+            path = _resolve_absolute_path_from_string(value)
+        except HTTPException:
+            raise
         except (OSError, RuntimeError):
             raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
     else:

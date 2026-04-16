@@ -19,12 +19,15 @@ def test_annotate_step_only_keeps_html_diff():
     assert "state" not in annotated["diffs"]
 
 
-def test_resolve_trace_dir_requires_index(tmp_path):
+def test_resolve_trace_dir_requires_index(tmp_path, monkeypatch):
+    # Relative path under cwd so _resolve_trace_dir uses the safe cwd-relative branch
+    # (absolute /tmp/... paths are not under the project cwd and return 403).
+    monkeypatch.chdir(tmp_path)
     trace_dir = tmp_path / "trace"
     trace_dir.mkdir()
 
     with pytest.raises(HTTPException) as exc_info:
-        server._resolve_trace_dir(str(trace_dir))
+        server._resolve_trace_dir("trace")
     assert exc_info.value.status_code == 404
 
 
