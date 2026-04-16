@@ -658,10 +658,12 @@ SHARE_COMPLETED_USE_CASE = UseCase(
 
 REVIEW_PRODUCT_CONSTRAINTS_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Refer to the product using the same attributes as the structured constraints—fields may include title, category, brand, rating, and price, with operators such as equals, not_equals, contains, not_contains, and numeric comparisons on rating and price.
+0. Authentication first (same pattern as autobooks use cases that touch user-owned data): begin with an explicit login instruction using placeholders username <username> and password <password>—for example "First, login for the following username:<username> and password:<password>" or "Login with username equals <username> and password equals <password>."—because posting, editing, or deleting a product review requires a signed-in user before navigating to the product and the reviews section.
+1. After the login step, refer to the product using the same attributes as the structured constraints—fields may include title, category, brand, rating, and price, with operators such as equals, not_equals, contains, not_contains, and numeric comparisons on rating and price.
 2. Describe posting, editing, or deleting a product review (as appropriate to the event), without adding cart, checkout, or unrelated flows.
 3. Include ALL constraint fields that appear in the generated list; do not invent extra product filters.
-ALL prompts must follow this pattern, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+4. Keep the login clause and the review clause in one continuous prompt; do not omit the login preamble.
+ALL prompts must follow this pattern, each phrased slightly differently but containing EXACTLY the same constraint criteria (including login + product constraints together).
 """
 
 REVIEW_CREATED_USE_CASE = UseCase(
@@ -674,24 +676,24 @@ REVIEW_CREATED_USE_CASE = UseCase(
     additional_prompt_info=REVIEW_PRODUCT_CONSTRAINTS_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Post a 5-star review for the Espresso Machine, matching the product title constraint.",
-            "prompt_for_task_generation": "Post a 5-star review for the Espresso Machine, matching the product title constraint.",
+            "prompt": "First, login for the following username:<username> and password:<password> and then post a 5-star review for the Espresso Machine, matching the product title constraint.",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then post a 5-star review for the Espresso Machine, matching the product title constraint.",
         },
         {
-            "prompt": "Write a review for a Kitchen category item with brand Chef and rating on the product at least 4.0, giving it 5 stars.",
-            "prompt_for_task_generation": "Write a review for a Kitchen category item with brand Chef and rating on the product at least 4.0, giving it 5 stars.",
+            "prompt": "First, login for the following username:<username> and password:<password> and then write a review for a Kitchen category item with brand Chef and rating on the product at least 4.0, giving it 5 stars.",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then write a review for a Kitchen category item with brand Chef and rating on the product at least 4.0, giving it 5 stars.",
         },
         {
-            "prompt": "Add a short review for a Technology product whose price is under 150 and title contains Laptop.",
-            "prompt_for_task_generation": "Add a short review for a Technology product whose price is under 150 and title contains Laptop.",
+            "prompt": "Login with username equals <username> and password equals <password>. Then add a short review for a Technology product whose price is under 150 and title contains Laptop.",
+            "prompt_for_task_generation": "Login with username equals <username> and password equals <password>. Then add a short review for a Technology product whose price is under 150 and title contains Laptop.",
         },
         {
-            "prompt": "Leave a 4-star review on a Fitness item where brand equals FitPro and category equals fitness.",
-            "prompt_for_task_generation": "Leave a 4-star review on a Fitness item where brand equals FitPro and category equals fitness.",
+            "prompt": "First, login for the following username:<username> and password:<password> and then leave a 4-star review on a Fitness item where brand equals FitPro and category equals fitness.",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then leave a 4-star review on a Fitness item where brand equals FitPro and category equals fitness.",
         },
         {
-            "prompt": "Submit feedback with 5 stars for the product matching title not_equals GenericWidget and price less than 99.",
-            "prompt_for_task_generation": "Submit feedback with 5 stars for the product matching title not_equals GenericWidget and price less than 99.",
+            "prompt": "After successful login with '<username>' and '<password>', submit feedback with 5 stars for the product matching title not_equals GenericWidget and price less than 99.",
+            "prompt_for_task_generation": "After successful login with '<username>' and '<password>', submit feedback with 5 stars for the product matching title not_equals GenericWidget and price less than 99.",
         },
     ],
 )
@@ -706,20 +708,20 @@ REVIEW_UPDATED_USE_CASE = UseCase(
     additional_prompt_info=REVIEW_PRODUCT_CONSTRAINTS_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Update my review for the Electric Kettle to 4 stars; the product is identified by the title constraint.",
-            "prompt_for_task_generation": "Update my review for the Electric Kettle to 4 stars; the product is identified by the title constraint.",
+            "prompt": "First, login for the following username:<username> and password:<password> and then update my review for the Electric Kettle to 4 stars; the product is identified by the title constraint.",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then update my review for the Electric Kettle to 4 stars; the product is identified by the title constraint.",
         },
         {
-            "prompt": "Change my review text and rating to 3 stars for the Home product with brand Autoppia and category home.",
-            "prompt_for_task_generation": "Change my review text and rating to 3 stars for the Home product with brand Autoppia and category home.",
+            "prompt": "Login with username equals <username> and password equals <password>. Then change my review text and rating to 3 stars for the Home product with brand Autoppia and category home.",
+            "prompt_for_task_generation": "Login with username equals <username> and password equals <password>. Then change my review text and rating to 3 stars for the Home product with brand Autoppia and category home.",
         },
         {
-            "prompt": "Edit my existing review on the item whose rating is greater than 4.2 and price is less than 200—set the review to 5 stars.",
-            "prompt_for_task_generation": "Edit my existing review on the item whose rating is greater than 4.2 and price is less than 200—set the review to 5 stars.",
+            "prompt": "First, login for the following username:<username> and password:<password> and then edit my existing review on the item whose rating is greater than 4.2 and price is less than 200—set the review to 5 stars.",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then edit my existing review on the item whose rating is greater than 4.2 and price is less than 200—set the review to 5 stars.",
         },
         {
-            "prompt": "Revise my comment for the product matching title contains Mixer and brand contains Kitchen, keeping the same product constraints.",
-            "prompt_for_task_generation": "Revise my comment for the product matching title contains Mixer and brand contains Kitchen, keeping the same product constraints.",
+            "prompt": "Using your credentials username equals <username> and password equals <password>, sign in and revise my comment for the product matching title contains Mixer and brand contains Kitchen, keeping the same product constraints.",
+            "prompt_for_task_generation": "Using your credentials username equals <username> and password equals <password>, sign in and revise my comment for the product matching title contains Mixer and brand contains Kitchen, keeping the same product constraints.",
         },
     ],
 )
@@ -734,20 +736,20 @@ REVIEW_DELETED_USE_CASE = UseCase(
     additional_prompt_info=REVIEW_PRODUCT_CONSTRAINTS_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Delete my review for the Stand Mixer; match the product by title constraint Stand Mixer.",
-            "prompt_for_task_generation": "Delete my review for the Stand Mixer; match the product by title constraint Stand Mixer.",
+            "prompt": "First, login for the following username:<username> and password:<password> and then delete my review for the Stand Mixer; match the product by title constraint Stand Mixer.",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then delete my review for the Stand Mixer; match the product by title constraint Stand Mixer.",
         },
         {
-            "prompt": "Remove my feedback on the Electronics product with category technology and brand from the constraints.",
-            "prompt_for_task_generation": "Remove my feedback on the Electronics product with category technology and brand from the constraints.",
+            "prompt": "Login with username equals <username> and password equals <password>. Then remove my feedback on the Electronics product with category technology and brand from the constraints.",
+            "prompt_for_task_generation": "Login with username equals <username> and password equals <password>. Then remove my feedback on the Electronics product with category technology and brand from the constraints.",
         },
         {
-            "prompt": "Take down my review on the listing whose price is less than 50 and title equals Oil Filter.",
-            "prompt_for_task_generation": "Take down my review on the listing whose price is less than 50 and title equals Oil Filter.",
+            "prompt": "First, login for the following username:<username> and password:<password> and then take down my review on the listing whose price is less than 50 and title equals Oil Filter.",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then take down my review on the listing whose price is less than 50 and title equals Oil Filter.",
         },
         {
-            "prompt": "Erase my star rating for the item where rating is greater than 4.0 and brand not_equals Unknown—delete only that review.",
-            "prompt_for_task_generation": "Erase my star rating for the item where rating is greater than 4.0 and brand not_equals Unknown—delete only that review.",
+            "prompt": "After successful login with '<username>' and '<password>', erase my star rating for the item where rating is greater than 4.0 and brand not_equals Unknown—delete only that review.",
+            "prompt_for_task_generation": "After successful login with '<username>' and '<password>', erase my star rating for the item where rating is greater than 4.0 and brand not_equals Unknown—delete only that review.",
         },
     ],
 )
