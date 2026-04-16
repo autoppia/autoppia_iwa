@@ -166,7 +166,10 @@ def test_main_exits_non_zero_on_invalid_project(monkeypatch, capsys):
             "verbose": False,
             "evaluate_trajectories": False,
             "trajectories_only": False,
+            "no_trajectory_doability": False,
             "use_case": None,
+            "no_data_extraction_verification": False,
+            "data_extraction_seed": 1,
         },
     )()
     monkeypatch.setattr(verify_run, "_parse_args", lambda: args)

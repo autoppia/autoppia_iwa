@@ -133,8 +133,9 @@ class WebVerificationPipeline:
                 web_project=web_project,
                 frontend_url=web_project.frontend_url,
                 headless=True,
+                show_extract_chars=220,
             )
-            if config.data_extraction_verification_enabled
+            if config.data_extraction_trajectories_enabled
             else None
         )
         self.data_extraction_task_generation_verifier = (
@@ -142,7 +143,7 @@ class WebVerificationPipeline:
                 web_project=web_project,
                 task_generator=self.task_generator,
             )
-            if config.data_extraction_verification_enabled
+            if config.data_extraction_task_generation_enabled
             else None
         )
 
@@ -164,8 +165,13 @@ class WebVerificationPipeline:
         """
         logger.info(f"Starting web verification pipeline for project: {self.web_project.name} ({self.web_project.id})")
 
+        # Step 2.5 / 2.6 first: project-level DE verification runs even when event use-case filters match nothing.
+        await self._run_data_extraction_project_verification()
+        await self._run_data_extraction_task_generation_verification()
+
         if not self.web_project.use_cases:
             logger.warning(f"No use cases found for project {self.web_project.id}")
+            await self._save_results()
             return self.results
 
         use_cases_to_run = self._use_cases_matching_filter()
@@ -173,12 +179,8 @@ class WebVerificationPipeline:
             logger.warning(
                 f"No use cases to verify for project {self.web_project.id} (filter={self.config.use_case_filter!r})",
             )
+            await self._save_results()
             return self.results
-
-        # Step 2.5: Project-level DE trajectories verification
-        await self._run_data_extraction_project_verification()
-        # Step 2.6: Project-level DE task generation verification
-        await self._run_data_extraction_task_generation_verification()
 
         # Process each use case
         for use_case in use_cases_to_run:
@@ -197,7 +199,7 @@ class WebVerificationPipeline:
         if not self.data_extraction_verifier:
             self.results["data_extraction_project_verification"] = {
                 "skipped": True,
-                "reason": "Data extraction verification disabled by config",
+                "reason": "Data extraction trajectory verification disabled by config",
                 "seed": self.config.data_extraction_seed,
                 "all_passed": None,
                 "total_count": 0,
@@ -206,13 +208,14 @@ class WebVerificationPipeline:
             }
             return
 
+        seed = int(self.config.data_extraction_seed)
         self._print_step_banner(
             "🔎 STEP 2.5: DATA EXTRACTION TRAJECTORIES VERIFICATION",
             f"Project ID: {self.web_project.id}",
-            f"Seed to test: {self.config.data_extraction_seed}",
+            f"Seed to test: {seed}",
             "Running all DE trajectories for this project and validating expected answers.",
         )
-        de_result = await self.data_extraction_verifier.verify_for_project(seed=self.config.data_extraction_seed)
+        de_result = await self.data_extraction_verifier.verify_for_project(seed=seed)
         self.results["data_extraction_project_verification"] = de_result
 
         if de_result.get("skipped", False):
@@ -221,7 +224,7 @@ class WebVerificationPipeline:
             passed_count = de_result.get("passed_count", 0)
             total_count = de_result.get("total_count", 0)
             all_passed = de_result.get("all_passed", False)
-            print(f"DataExtraction trajectories passed: {'✅ YES' if all_passed else '❌ NO'} ({passed_count}/{total_count}, seed={self.config.data_extraction_seed})")
+            print(f"DataExtraction trajectories passed: {'✅ YES' if all_passed else '❌ NO'} ({passed_count}/{total_count}, seed={seed})")
             for item in de_result.get("results", []):
                 status = "✓" if item.get("ok", False) else "✗"
                 print(f"  {status} [{item.get('use_case')}] {item.get('trajectory_id')}: {item.get('detail')}")
@@ -232,7 +235,7 @@ class WebVerificationPipeline:
         if not self.data_extraction_task_generation_verifier:
             self.results["data_extraction_task_generation_verification"] = {
                 "skipped": True,
-                "reason": "Data extraction verification disabled by config",
+                "reason": "Data extraction task generation verification disabled by config",
                 "seed": self.config.data_extraction_seed,
                 "all_passed": None,
                 "total_count": 0,
@@ -241,15 +244,18 @@ class WebVerificationPipeline:
             }
             return
 
+        task_gen_seed = int(self.config.data_extraction_seed)
+        de_task_use_cases = getattr(self.web_project, "data_extraction_use_cases", None)
+
         self._print_step_banner(
             "🔎 STEP 2.6: DATA EXTRACTION TASK GENERATION VERIFICATION",
             f"Project ID: {self.web_project.id}",
-            f"Seed to test: {self.config.data_extraction_seed}",
+            f"Seed to test: {task_gen_seed}",
             "Generating one DEtask per DE use case and validating generation consistency.",
         )
         de_task_result = await self.data_extraction_task_generation_verifier.verify_for_project(
-            seed=self.config.data_extraction_seed,
-            use_cases=getattr(self.web_project, "data_extraction_use_cases", None),
+            seed=task_gen_seed,
+            use_cases=de_task_use_cases,
         )
         self.results["data_extraction_task_generation_verification"] = de_task_result
 
