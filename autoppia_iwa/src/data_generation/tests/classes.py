@@ -5,7 +5,7 @@ import time
 from abc import ABC, abstractmethod
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from dependency_injector.wiring import Provide
 from loguru import logger
@@ -54,22 +54,34 @@ class BaseTaskTest(BaseModel, ITest):
         snapshot: BrowserSnapshot,
         browser_snapshots: list[BrowserSnapshot],
         total_iterations: int,
+        *,
+        extracted_data: Any | None = None,
     ) -> bool:
         """
         Executes the test by delegating to the _execute_partial_test method.
         """
 
-        return await self._execute_partial_test(web_project, current_iteration, prompt, snapshot, browser_snapshots, total_iterations)
+        return await self._execute_partial_test(
+            web_project,
+            current_iteration,
+            prompt,
+            snapshot,
+            browser_snapshots,
+            total_iterations,
+            extracted_data=extracted_data,
+        )
 
     async def execute_global_test(
         self,
         backend_events: list[BackendEvent],
+        *,
+        extracted_data: Any | None = None,
     ) -> bool:
         """
-        Executes the test by delegating to the _execute_partial_test method.
+        Executes the test by delegating to the _execute_global_test method.
         """
 
-        return await self._execute_global_test(backend_events)
+        return await self._execute_global_test(backend_events, extracted_data=extracted_data)
 
     async def _execute_partial_test(
         self,
@@ -79,6 +91,8 @@ class BaseTaskTest(BaseModel, ITest):
         snapshot: BrowserSnapshot,
         browser_snapshots: list[BrowserSnapshot],
         total_iterations: int,
+        *,
+        extracted_data: Any | None = None,
     ) -> bool:
         """
         Must be overridden by subclasses.
@@ -88,6 +102,8 @@ class BaseTaskTest(BaseModel, ITest):
     async def _execute_global_test(
         self,
         backend_events: list[BackendEvent],
+        *,
+        extracted_data: Any | None = None,
     ) -> bool:
         """
         Must be overridden by subclasses.
@@ -110,11 +126,23 @@ class BaseTaskTest(BaseModel, ITest):
         in case you do not rely on the 'Union[...]' approach in your Task model.
         """
         test_type = data.get("type", "")
+        # Local import to avoid circular imports when referencing DataExtractionTest below.
+        from autoppia_iwa.src.data_generation.tests.classes import (
+            CheckEventTest,
+            JudgeBaseOnHTML,
+            JudgeBaseOnScreenshot,
+        )
+
         test_classes: dict[str, type[BaseTaskTest]] = {
             "CheckEventTest": CheckEventTest,
             "JudgeBaseOnHTML": JudgeBaseOnHTML,
             "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot,
         }
+        # DataExtractionTest will be registered later in this module; look it up lazily.
+        data_extraction_cls = globals().get("DataExtractionTest")
+        if data_extraction_cls is not None:
+            test_classes["DataExtractionTest"] = data_extraction_cls  # type: ignore[assignment]
+
         target_class = test_classes.get(test_type, cls)
         try:
             return target_class.model_validate(data)
@@ -140,6 +168,8 @@ class CheckEventTest(BaseTaskTest):
         snapshot: BrowserSnapshot,
         browser_snapshots: list[BrowserSnapshot],
         total_iterations: int,
+        *,
+        extracted_data: Any | None = None,
     ) -> bool:
         """
         Execute the test on the given snapshots by checking for specific events.
@@ -170,6 +200,8 @@ class CheckEventTest(BaseTaskTest):
     async def _execute_global_test(
         self,
         backend_events: list[BackendEvent],
+        *,
+        extracted_data: Any | None = None,
     ) -> bool:
         """
         Execute the test on the given snapshots by checking for specific events.
@@ -209,6 +241,8 @@ class JudgeBaseOnHTML(BaseTaskTest):
         snapshot: BrowserSnapshot,
         browser_snapshots: list[BrowserSnapshot],
         total_iterations: int,
+        *,
+        extracted_data: Any | None = None,
     ) -> bool:
         if current_iteration != total_iterations - 1:
             return False
@@ -301,6 +335,8 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
         snapshot: BrowserSnapshot,
         browser_snapshots: list[BrowserSnapshot],
         total_iterations: int,
+        *,
+        extracted_data: Any | None = None,
     ) -> bool:
         if current_iteration != total_iterations - 1:
             return False
@@ -346,6 +382,91 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
         save_usage_record(prompt, result, duration, self.type, final_result=final_result, total_iteration=total_iteration)
 
         return final_result
+
+
+class DataExtractionTest(BaseTaskTest):
+    """
+    Test that validates an agent-provided extracted answer (scalar) against expected value.
+
+    The evaluator (or caller) is expected to pass `extracted_data` (scalar: string, number,
+    or comma-separated string when expected is a list) into execute_test/execute_global_test.
+    """
+
+    type: Literal["DataExtractionTest"] = "DataExtractionTest"
+    description: str = Field(default="Validate extracted data against expected answer")
+
+    # Expected answer: scalar (str/int/float) or list (compared via Option B: canonical list).
+    expected_answer: str | int | float | list[Any] | None = Field(
+        default=None,
+        description="Expected answer; scalar compared as normalized string; list compared via canonical list (extracted can be 'a,b,c').",
+    )
+    # Kept for schema/serialization compatibility; not used in validation (extracted is always scalar).
+    answer_criteria: dict[str, Any] | None = Field(
+        default=None,
+        description="Unused; extracted value is always scalar.",
+    )
+
+    @staticmethod
+    def _normalize_scalar(value: Any) -> str:
+        if value is None:
+            return ""
+        return str(value).strip().lower()
+
+    @staticmethod
+    def _normalize_to_canonical_list(value: Any) -> list[str]:
+        if value is None:
+            return []
+        if isinstance(value, list):
+            return [str(x).strip().lower() for x in value if x is not None]
+
+        if isinstance(value, str):
+            # Remove standalone connectors between items
+            cleaned = re.sub(r"\b(and|or)\b|&", ",", value, flags=re.IGNORECASE)
+            parts = [p.strip().lower() for p in cleaned.split(",")]
+            return [p for p in parts if p]
+
+        return [str(value).strip().lower()]
+
+    def _check_expected_answer(self, extracted_data: Any | None) -> bool:
+        if self.expected_answer is None:
+            return True
+        if extracted_data is None:
+            return False
+        # When expected is a list, compare as canonical lists (Option B): e.g. expected ["a","b","c"] matches extracted "a,b,c".
+        if isinstance(self.expected_answer, list):
+            expected_list = self._normalize_to_canonical_list(self.expected_answer)
+            actual_list = self._normalize_to_canonical_list(extracted_data)
+            return sorted(expected_list) == sorted(actual_list)
+        # Scalar: normalize both to string and compare.
+        expected = self._normalize_scalar(self.expected_answer)
+        actual = self._normalize_scalar(extracted_data)
+        return expected == actual
+
+    async def _execute_partial_test(
+        self,
+        web_project: WebProject,
+        current_iteration: int,
+        prompt: str,
+        snapshot: BrowserSnapshot,
+        browser_snapshots: list[BrowserSnapshot],
+        total_iterations: int,
+        *,
+        extracted_data: Any | None = None,
+    ) -> bool:
+        # Only evaluate at the final iteration to mirror other tests.
+        if total_iterations is not None and (current_iteration + 1) < total_iterations:
+            return False
+        return self._check_expected_answer(extracted_data)
+
+    async def _execute_global_test(
+        self,
+        backend_events: list[BackendEvent],
+        *,
+        extracted_data: Any | None = None,
+    ) -> bool:
+        # Backend events are not used directly; rely solely on extracted_data.
+        _ = backend_events
+        return self._check_expected_answer(extracted_data)
 
 
 def save_usage_record(prompt, response: "ChatCompletion", time_taken, test_type, final_result: bool, total_iteration, log_file: Path = PROJECT_BASE_DIR / "judge_tests_usage_logs.jsonl"):

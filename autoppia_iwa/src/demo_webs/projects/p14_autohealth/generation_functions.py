@@ -95,6 +95,172 @@ DOCTOR_PROFILE_CORE_FIELDS = [
 FIELD_MAP_LANGUAGE_TO_PRIMARY = {"language": "primary_language"}
 
 
+def _build_data_extraction_result(
+    selected_item: dict[str, Any],
+    visible_fields: list[str],
+    *,
+    verify_field: str | None = None,
+    question_fields_override: list[str] | None = None,
+) -> dict[str, Any] | None:
+    """Build constraints + question_fields_and_values for data_extraction_only; returns None on validation failure."""
+    available_fields = [f for f in visible_fields if selected_item.get(f) is not None]
+    if len(available_fields) < 2:
+        return None
+
+    if question_fields_override:
+        question_fields = [f for f in question_fields_override if f in available_fields and selected_item.get(f) is not None]
+        if question_fields:
+            remaining = [f for f in available_fields if f not in question_fields]
+            if not remaining:
+                return None
+            chosen_verify_field = verify_field if verify_field is not None and verify_field in remaining else random.choice(remaining)
+            remaining_for_extra = [f for f in available_fields if f != chosen_verify_field and f not in question_fields]
+            if len(remaining_for_extra) >= 2:
+                num_extra = random.randint(1, len(remaining_for_extra))
+                question_fields = question_fields + random.sample(remaining_for_extra, num_extra)
+        else:
+            question_fields = []
+            chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+    else:
+        chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+        question_fields = []
+
+    if chosen_verify_field not in available_fields:
+        return None
+    verify_value = selected_item.get(chosen_verify_field)
+    if verify_value is None:
+        return None
+
+    if question_fields:
+        question_candidates = question_fields
+    else:
+        question_candidates = [f for f in available_fields if f != chosen_verify_field]
+        if not question_candidates:
+            return None
+        num_question_fields = 1 if len(question_candidates) == 1 else 2
+        question_candidates = random.sample(question_candidates, num_question_fields)
+
+    question_fields_and_values: dict[str, Any] = {}
+    for qf in question_candidates:
+        val = selected_item.get(qf)
+        if val is not None:
+            question_fields_and_values[qf] = val
+    if not question_fields_and_values:
+        return None
+
+    constraints = [create_constraint_dict(chosen_verify_field, ComparisonOperator.EQUALS, verify_value)]
+    return {
+        "constraints": constraints,
+        "question_fields_and_values": question_fields_and_values,
+    }
+
+
+def _appointment_row_to_selected_item(row: dict[str, Any]) -> dict[str, Any]:
+    out: dict[str, Any] = {}
+    if row.get("doctor_name") is not None:
+        out["doctor_name"] = row["doctor_name"]
+    if row.get("speciality") is not None:
+        out["speciality"] = row["speciality"]
+    if row.get("date") is not None:
+        out["date"] = row["date"]
+    if row.get("time") is not None:
+        out["time"] = row["time"]
+    return out
+
+
+def _doctor_row_to_selected_item(row: dict[str, Any]) -> dict[str, Any]:
+    out: dict[str, Any] = {}
+    if row.get("doctor_name") is not None:
+        out["doctor_name"] = row["doctor_name"]
+    if row.get("speciality") is not None:
+        out["speciality"] = row["speciality"]
+    if row.get("rating") is not None:
+        out["rating"] = row["rating"]
+    if row.get("consultation_fee") is not None:
+        raw_fee = row["consultation_fee"]
+        fee = f"${raw_fee}"
+        out["consultation_fee"] = fee
+    if row.get("languages") is not None:
+        out["languages"] = row["languages"]
+    if row.get("experience") is not None:
+        raw_experience = row["experience"]
+        experience = f"{raw_experience} years experience"
+        out["experience"] = experience
+    if row.get("specialties") is not None:
+        out["sub_specialities"] = row["specialties"]
+    if row.get("officeLocation") is not None:
+        out["office_location"] = row["officeLocation"]
+    if row.get("email") is not None:
+        out["email"] = row["email"]
+    if row.get("education") is not None:
+        out["education"] = row["education"]
+    if row.get("availability") is not None:
+        out["availability"] = row["availability"]
+    if row.get("patientReviews") is not None:
+        out["patient_review"] = row["patientReviews"]
+    if row.get("phone") is not None:
+        out["doctor_phone"] = row["phone"]
+    return out
+
+
+def _prescription_row_to_selected_item(row: dict[str, Any]) -> dict[str, Any]:
+    out: dict[str, Any] = {}
+    for key in ("medicine_name", "doctor_name", "start_date", "dosage", "status", "refills_remaining"):
+        val = row.get(key)
+        if val is not None:
+            if key == "status" and val == "refill_needed":
+                val = "refill needed"
+            out[key] = val
+
+    # VIEW_PRESCRIPTION extra visible fields: backend sends them in camelCase,
+    # but the UI/constraints use underscore-style snake_case keys.
+    end_date = row.get("end_date", row.get("endDate"))
+    if end_date is not None:
+        out["end_date"] = end_date
+
+    if row.get("pharmacy") is not None:
+        out["pharmacy"] = row["pharmacy"]
+
+    prescription_number = row.get("prescription_number", row.get("prescriptionNumber"))
+    if prescription_number is not None:
+        out["prescription_number"] = prescription_number
+
+    if row.get("cost") is not None:
+        cost = row["cost"]
+        ui_cost_format = f"${cost}"
+        out["cost"] = ui_cost_format
+
+    side_effects = row.get("side_effects", row.get("sideEffects"))
+    if side_effects is not None:
+        out["side_effects"] = side_effects
+
+    if row.get("instructions") is not None:
+        out["instructions"] = row["instructions"]
+    return out
+
+
+def _medical_record_row_to_selected_item(row: dict[str, Any]) -> dict[str, Any]:
+    out: dict[str, Any] = {}
+    if "status" in row:
+        # rename backend field "status" to constraint field "record_status"
+        row["record_status"] = row.pop("status")
+    for key in ("record_title", "doctor_name", "record_status", "record_date", "description", "facility"):
+        val = row.get(key)
+        if val is not None:
+            out[key] = val
+
+    # Flatten additional structured attributes under "values" (if present).
+    # Example:
+    #   "values": {"Vaccine": "...", "Lot Number": "..."}
+    # becomes top-level fields in `out`.
+    values = row.get("values")
+    if isinstance(values, dict):
+        for k, v in values.items():
+            if v is not None:
+                out[k] = v
+    return out
+
+
 async def _ensure_entity_dataset(
     task_url: str | None,
     dataset: dict[str, list[dict[str, Any]]] | None,
@@ -400,8 +566,16 @@ async def _generate_doctor_profile_constraints(
     task_url: str | None,
     dataset: dict[str, list[dict[str, Any]]] | None,
     field_operators: dict,
-) -> list[dict[str, Any]]:
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints from doctors data using DOCTOR_PROFILE_CORE_FIELDS and FIELD_MAP_LANGUAGE_TO_PRIMARY."""
+    if test_types == "data_extraction_only":
+        data = await _get_doctors_data(task_url, dataset)
+        if not data:
+            return []
+        selected = _doctor_row_to_selected_item(choice(data))
+        visible = ["doctor_name", "speciality", "rating", "consultation_fee", "language", "experience", "rating", "sub_specialities", "office_location", "email", "phone"]
+        return _build_data_extraction_result(selected, visible, question_fields_override=["doctor_name"]) or []
     return await _generate_from_entity(
         task_url,
         dataset,
@@ -412,8 +586,19 @@ async def _generate_doctor_profile_constraints(
     )
 
 
-async def generate_open_appointment_form_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_open_appointment_form_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for OPEN_APPOINTMENT_FORM: doctor_name, speciality, date, time from appointments (DB first). num_constraints=0..1 to keep reviewer consistency while allowing lateral field picks."""
+    if test_types == "data_extraction_only":
+        data = await _get_appointments_data(task_url, dataset)
+        if not data:
+            return []
+        selected = _appointment_row_to_selected_item(choice(data))
+        visible = ["doctor_name", "speciality", "date", "time"]
+        return _build_data_extraction_result(selected, visible, question_fields_override=["doctor_name"]) or []
     return await _generate_from_entity(
         task_url,
         dataset,
@@ -437,7 +622,18 @@ APPOINTMENT_BOOKED_FIELD_MAP = {
 }
 
 
-async def generate_appointment_booked_successfully_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_appointment_booked_successfully_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        data = await _get_appointments_data(task_url, dataset)
+        if not data:
+            return []
+        selected = _appointment_row_to_selected_item(choice(data))
+        visible = ["doctor_name", "speciality", "date", "time"]
+        return _build_data_extraction_result(selected, visible, question_fields_override=["doctor_name"]) or []
     return await _generate_from_entity(
         task_url,
         dataset,
@@ -468,8 +664,19 @@ async def generate_request_quick_appointment_constraints(task_url: str | None = 
     )
 
 
-async def generate_search_appointment_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_search_appointment_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for SEARCH_APPOINTMENT: doctor_name, speciality, date from appointments (DB first)."""
+    if test_types == "data_extraction_only":
+        data = await _get_appointments_data(task_url, dataset)
+        if not data:
+            return []
+        selected = _appointment_row_to_selected_item(choice(data))
+        visible = ["doctor_name", "speciality", "date", "time"]
+        return _build_data_extraction_result(selected, visible) or []
     return await _generate_from_entity(
         task_url,
         dataset,
@@ -480,8 +687,19 @@ async def generate_search_appointment_constraints(task_url: str | None = None, d
     )
 
 
-async def generate_search_doctors_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_search_doctors_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for SEARCH_DOCTORS: doctor_name, speciality, language from doctors page (Search button)."""
+    if test_types == "data_extraction_only":
+        data = await _get_doctors_data(task_url, dataset)
+        if not data:
+            return []
+        selected = _doctor_row_to_selected_item(choice(data))
+        visible = ["doctor_name", "speciality", "languages", "consultation_fee"]
+        return _build_data_extraction_result(selected, visible, question_fields_override=["doctor_name", "languages"]) or []
     return await _generate_from_entity(
         task_url,
         dataset,
@@ -492,8 +710,19 @@ async def generate_search_doctors_constraints(task_url: str | None = None, datas
     )
 
 
-async def generate_search_prescription_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_search_prescription_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for SEARCH_PRESCRIPTION: medicine_name, doctor_name from prescriptions (DB first)."""
+    if test_types == "data_extraction_only":
+        data = await _get_prescriptions_data(task_url, dataset)
+        if not data:
+            return []
+        selected = _prescription_row_to_selected_item(choice(data))
+        visible = ["medicine_name", "doctor_name", "dosage", "start_date", "status"]
+        return _build_data_extraction_result(selected, visible) or []
     return await _generate_from_entity(
         task_url,
         dataset,
@@ -503,8 +732,31 @@ async def generate_search_prescription_constraints(task_url: str | None = None, 
     )
 
 
-async def generate_view_prescription_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_view_prescription_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for VIEW_PRESCRIPTION: medicine_name, doctor_name, start_date, dosage, status, category from prescriptions."""
+    if test_types == "data_extraction_only":
+        data = await _get_prescriptions_data(task_url, dataset)
+        if not data:
+            return []
+        selected = _prescription_row_to_selected_item(choice(data))
+        visible = [
+            "medicine_name",
+            "doctor_name",
+            "start_date",
+            "dosage",
+            "status",
+            "end_date",
+            "pharmacy",
+            "prescription_number",
+            "cost",
+            "side_effects",
+            "instructions",
+        ]
+        return _build_data_extraction_result(selected, visible, question_fields_override=["medicine_name"]) or []
     return await _generate_from_entity(
         task_url,
         dataset,
@@ -514,10 +766,20 @@ async def generate_view_prescription_constraints(task_url: str | None = None, da
     )
 
 
-async def generate_refill_prescription_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_refill_prescription_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for REFILL_PRESCRIPTION: medicine_name, doctor_name from eligible prescriptions (DB first). num_constraints=0..1 to keep reviewer consistency while allowing lateral field picks."""
     prescriptions_data = await _get_prescriptions_data(task_url, dataset)
     data_source = _filter_eligible_refill_prescriptions(prescriptions_data)
+    if test_types == "data_extraction_only":
+        if not data_source:
+            return []
+        selected = _prescription_row_to_selected_item(choice(data_source))
+        visible = ["medicine_name", "doctor_name", "dosage", "start_date", "status", "refills_remaining"]
+        return _build_data_extraction_result(selected, visible, question_fields_override=["medicine_name"], verify_field="refills_remaining") or []
     return _generate_constraints(
         data_source,
         FIELD_OPERATORS_MAP_REFILL_PRESCRIPTION,
@@ -526,8 +788,19 @@ async def generate_refill_prescription_constraints(task_url: str | None = None, 
     )
 
 
-async def generate_search_medical_analysis_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_search_medical_analysis_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for SEARCH_MEDICAL_ANALYSIS: record_title, doctor_name from medical records (DB first)."""
+    if test_types == "data_extraction_only":
+        data = await _get_medical_records_data(task_url, dataset)
+        if not data:
+            return []
+        selected = _medical_record_row_to_selected_item(choice(data))
+        visible = ["record_title", "doctor_name", "record_date", "record_status", "description"]
+        return _build_data_extraction_result(selected, visible, question_fields_override=["record_title"]) or []
     return await _generate_from_entity(
         task_url,
         dataset,
@@ -537,8 +810,27 @@ async def generate_search_medical_analysis_constraints(task_url: str | None = No
     )
 
 
-async def generate_view_medical_analysis_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_view_medical_analysis_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for VIEW_MEDICAL_ANALYSIS: record_title, doctor_name, record_type from medical records (DB first)."""
+    if test_types == "data_extraction_only":
+        data = await _get_medical_records_data(task_url, dataset)
+        if not data:
+            return []
+        medical_record = random.choice(data)
+        selected = _medical_record_row_to_selected_item(medical_record)
+        visible = ["record_title", "doctor_name", "record_status", "record_date", "description", "facility"]
+
+        record_values = medical_record.get("values")
+        if isinstance(record_values, dict):
+            # Ensure `values` sub-fields are available as top-level visible fields.
+            # `_medical_record_row_to_selected_item` already flattens them into `selected`;
+            # this just updates the visible schema.
+            visible.extend([k for k in record_values if k not in visible and (str(k).lower() != "status")])
+        return _build_data_extraction_result(selected, visible, question_fields_override=["record_title"]) or []
     return await _generate_from_entity(
         task_url,
         dataset,
@@ -548,28 +840,81 @@ async def generate_view_medical_analysis_constraints(task_url: str | None = None
     )
 
 
-async def generate_view_doctor_profile_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_view_doctor_profile_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for VIEW_DOCTOR_PROFILE: doctor_name, speciality, rating, consultation_fee, language from doctors (DB first)."""
-    return await _generate_doctor_profile_constraints(task_url, dataset, FIELD_OPERATORS_MAP_VIEW_DOCTOR_PROFILE)
+    return await _generate_doctor_profile_constraints(task_url, dataset, FIELD_OPERATORS_MAP_VIEW_DOCTOR_PROFILE, test_types=test_types)
 
 
-async def generate_view_doctor_education_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_view_doctor_education_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for VIEW_DOCTOR_EDUCATION: doctor_name, speciality, rating, consultation_fee, language from doctors (DB first)."""
-    return await _generate_doctor_profile_constraints(task_url, dataset, FIELD_OPERATORS_MAP_VIEW_DOCTOR_EDUCATION)
+    if test_types == "data_extraction_only":
+        data = await _get_doctors_data(task_url, dataset)
+        if not data:
+            return []
+        selected = _doctor_row_to_selected_item(choice(data))
+        visible = ["doctor_name", "speciality", "consultation_fee", "education"]
+        return _build_data_extraction_result(selected, visible, question_fields_override=["doctor_name"], verify_field="education") or []
+    return await _generate_doctor_profile_constraints(task_url, dataset, FIELD_OPERATORS_MAP_VIEW_DOCTOR_EDUCATION, test_types="events_only")
 
 
-async def generate_view_doctor_availability_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_view_doctor_availability_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for VIEW_DOCTOR_AVAILABILITY: doctor_name, speciality, rating, consultation_fee, language from doctors (DB first)."""
+    if test_types == "data_extraction_only":
+        data = await _get_doctors_data(task_url, dataset)
+        if not data:
+            return []
+        selected = _doctor_row_to_selected_item(choice(data))
+        availability = selected.get("availability")
+        if isinstance(availability, dict) and availability:
+            chosen_day = random.choice(list(availability.keys()))
+            chosen_day_field = f"{chosen_day}_availability"
+            selected[chosen_day_field] = availability.get(chosen_day)
+            visible = ["doctor_name", "speciality", "consultation_fee", chosen_day_field]
+            return (
+                _build_data_extraction_result(
+                    selected,
+                    visible,
+                    question_fields_override=["doctor_name"],
+                    verify_field=chosen_day_field,
+                )
+                or []
+            )
     return await _generate_doctor_profile_constraints(task_url, dataset, FIELD_OPERATORS_MAP_VIEW_DOCTOR_AVAILABILITY)
 
 
-async def generate_open_contact_doctor_form_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_open_contact_doctor_form_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for OPEN_CONTACT_DOCTOR_FORM: doctor_name, speciality, rating, consultation_fee, language from doctors (DB first)."""
-    return await _generate_doctor_profile_constraints(task_url, dataset, FIELD_OPERATORS_MAP_OPEN_CONTACT_DOCTOR_FORM)
+    return await _generate_doctor_profile_constraints(task_url, dataset, FIELD_OPERATORS_MAP_OPEN_CONTACT_DOCTOR_FORM, test_types=test_types)
 
 
-async def generate_contact_doctor_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    """Generate constraints for CONTACT_DOCTOR: doctor_name, speciality, rating, etc. from doctors (DB first)."""
+async def generate_contact_doctor_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    """Generate constraints for CONTACT_DOCTOR: doctor_name, speciality, rating, consultation_fee, language from doctors (DB first)."""
+    if test_types == "data_extraction_only":
+        return await generate_view_doctor_profile_constraints(
+            task_url=task_url,
+            dataset=dataset,
+            test_types="data_extraction_only",
+        )
     return await _generate_from_entity(
         task_url,
         dataset,
@@ -609,8 +954,41 @@ FILTER_DOCTOR_REVIEWS_FIELD_MAP = {
 }
 
 
-async def generate_filter_doctor_reviews_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_filter_doctor_reviews_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for FILTER_DOCTOR_REVIEWS: doctor_name, filter_rating, sort_order (DB first). num_constraints=0..1 to keep reviewer consistency while allowing lateral field picks (e.g. speciality)."""
+    if test_types == "data_extraction_only":
+        data = await _get_doctors_data(task_url, dataset)
+        if not data:
+            return []
+        selected = _doctor_row_to_selected_item(choice(data))
+        reviews = selected.get("patient_review", [])
+        chosen_review = random.choice(reviews) if reviews else {}
+        selected["reviewer_name"] = chosen_review.get("patientName")
+        selected["review_content"] = chosen_review.get("comment")
+        raw_review_date = chosen_review.get("date")
+        if isinstance(raw_review_date, str) and raw_review_date.strip():
+            try:
+                dt = datetime.strptime(raw_review_date.strip(), "%m/%d/%Y")
+                selected["review_date"] = f"{dt.month}/{dt.day}/{dt.year}"  # no leading zeros
+            except ValueError:
+                # fallback: keep original if format is unexpected
+                selected["review_date"] = raw_review_date
+        else:
+            selected["review_date"] = raw_review_date
+        visible = ["doctor_name", "speciality", "reviewer_name", "review_date", "review_content"]
+        verify_field_candidates = ["reviewer_name", "review_date", "review_content"]
+        chosen_verify_field = random.choice(verify_field_candidates)
+        if chosen_verify_field == "reviewer_name":
+            question_fields_override = ["doctor_name", "review_date", "review_content"]
+        elif chosen_verify_field == "reviewer_date":
+            question_fields_override = ["doctor_name", "reviewer_name"]
+        else:
+            question_fields_override = ["doctor_name", "reviewer_name"]
+        return _build_data_extraction_result(selected, visible, question_fields_override=question_fields_override) or []
     return await _generate_from_entity(
         task_url,
         dataset,

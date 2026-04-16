@@ -37,37 +37,11 @@ omit =
     autoppia_iwa/src/web_agents/examples/**
 
     # Demo_webs project generation/data layers (not gated)
-    autoppia_iwa/src/demo_webs/projects/p02_autobooks/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/p02_autobooks/replace_functions.py
-    autoppia_iwa/src/demo_webs/projects/p03_autozone/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/p03_autozone/replace_functions.py
-    autoppia_iwa/src/demo_webs/projects/p05_autocrm/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/p06_automail/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/p07_autodelivery/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/p08_autolodge/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/p09_autoconnect/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/p10_autowork/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/p11_autocalendar/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/p12_autolist/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/p13_autodrive/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/p14_autohealth/generation_functions.py
-    autoppia_iwa/src/demo_webs/projects/p15_autostats/generation_functions.py
+    autoppia_iwa/src/demo_webs/projects/*/generation_functions.py
+    autoppia_iwa/src/demo_webs/projects/*/replace_functions.py
 
     # Demo_webs project dataset helpers that are not unit-covered
-    autoppia_iwa/src/demo_webs/projects/p01_autocinema/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/p02_autobooks/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/p03_autozone/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/p04_autodining/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/p05_autocrm/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/p06_automail/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/p07_autodelivery/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/p08_autolodge/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/p09_autoconnect/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/p10_autowork/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/p11_autocalendar/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/p12_autolist/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/p13_autodrive/data_utils.py
-    autoppia_iwa/src/demo_webs/projects/p15_autostats/data_utils.py
+    autoppia_iwa/src/demo_webs/projects/*/data_utils.py
 
     # Static/derivation layers
     autoppia_iwa/src/demo_webs/projects/*/data.py
@@ -88,6 +62,9 @@ omit =
     autoppia_iwa/src/demo_webs/projects/p13_autodrive/events.py
     autoppia_iwa/src/demo_webs/utils.py
     autoppia_iwa/src/demo_webs/classes.py
+    autoppia_iwa/src/demo_webs/projects/shared_utils.py
+    autoppia_iwa/src/demo_webs/projects/data_provider.py
+    autoppia_iwa/src/demo_webs/projects/autocinema_1/generation_functions.py
 
     autoppia_iwa/src/evaluation/stateful_evaluator/evaluator.py
     autoppia_iwa/src/evaluation/shared/utils.py

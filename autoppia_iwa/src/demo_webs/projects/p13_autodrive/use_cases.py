@@ -23,6 +23,7 @@ from .generation_functions import (
     generate_select_car_constraints,
     generate_select_date_constraints,
     generate_select_time_constraints,
+    generate_trip_details_constraints,
 )
 
 ENTER_LOCATION_ADDITIONAL_INFO = """
@@ -163,6 +164,27 @@ Critical requirements:
 2. Include ALL mentioned constraints in the prompt.
 3. Copy constraint values exactly in single quotes.
 """.strip()
+
+SELECT_DATE_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field in the select date context.
+
+Use natural language only. Do NOT use schema-style field names such as "date" or names with underscores (_).
+
+Do NOT start questions with imperative phrasing like "Select...", "Pick...", or "Choose...".
+
+Always follow this strict question structure:
+"Can you please tell me the default pickup <verify field>, so I can continue setting the pickup schedule?"
+
+For example:
+- "Can you please tell me the default pickup date, so I can continue setting the pickup schedule?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Ask only for the verify field value.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 SELECT_DATE_USE_CASE = UseCase(
     name="SELECT_DATE",
     description="The user selects a specific date for their trip or booking",
@@ -203,6 +225,28 @@ Critical requirements:
 1. The request must start with "Select time...".
 2. Include ALL mentioned constraints in the prompt.
 3. Copy constraint values exactly in single quotes.
+""".strip()
+
+SELECT_TIME_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field in the select time context.
+
+Use natural language only. Do NOT use schema-style field names such as "time" or names with underscores (_).
+
+Refer to the field naturally (for example: selected time, pickup time, trip time).
+
+Do NOT start questions with imperative phrasing like "Select...", "Pick...", or "Choose...".
+
+Always follow this strict question structure:
+"Can you please tell me the default pickup <verify field>, so I can continue setting the pickup schedule?"
+
+For example:
+- "Can you please tell me the default pickup time, so I can continue setting the pickup schedule?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Ask only for the verify field value.
+
+The output must be a single question asking only for the verify field value.
 """.strip()
 SELECT_TIME_USE_CASE = UseCase(
     name="SELECT_TIME",
@@ -286,6 +330,38 @@ Critical requirements:
 2. Include ALL mentioned constraints in the prompt.
 3. Copy constraint values exactly in single quotes.
 """.strip()
+
+CAR_SEARCH_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a car in the trip selection context (e.g., ride name, eta, price, old price, description).
+
+Use natural language only. Do NOT use schema-style field names such as "ride_name", "eta", "price", "old_price", "description" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., car name, estimated time, current price, previous price, description).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Select...", "Choose...", or "Book...".
+
+Always follow this strict question structure:
+"Can you please tell me the <verify field> of the car whose <question fields with their values> after entering the trip route that is <from> to <to>?"
+
+
+For example, if the verify field is 'ride_name', format the question exactly like:
+- "Can you please tell me the name of the car whose eta is '30 mins', current price is '$20', old price is '$18' and description is 'Affordable everyday rides' after entering the trip route that is from 'Central Park' to 'Airport'?"
+
+Examples:
+- "Can you please tell me the current price of the car whose eta is '25 mins' and ride name is 'City Express' and old price is '$18' after entering the trip route that is from 'Station' to 'Museum'?"
+- "Can you please tell me the eta of the car whose current price is '$20' and ride name is 'City Cab' after entering the trip route that is from 'Hotel Plaza' to 'Station'?"
+- "Can you please tell me the description of the car whose eta is '15 mins' current price is '$30' and old price is '$18' after entering the trip route that is from 'Airport' to 'Central Park'?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 SEARCH_RIDE_USE_CASE = UseCase(
     name="SEARCH",
     description="The user clicks on the 'Search' button after selecting pickup, dropoff, and optionally scheduling a ride.",
@@ -319,6 +395,38 @@ Critical requirements:
 2. Include ALL mentioned constraints in the prompt.
 3. Copy constraint values exactly in single quotes.
 """.strip()
+
+SELECT_CAR_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a car in the trip selection context (e.g., ride name, eta, current price, old price, description).
+
+Use natural language only. Do NOT use schema-style field names such as "ride_name", "eta", "price", "old_price", "description" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., car name, estimated time, current price, old price, description).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Select...", "Choose...", or "Book...".
+
+Always follow this strict question structure:
+"Can you please tell me the <verify field> of the car whose <question fields with their values> after entering the trip route that is <from> to <to>, so I can select it?"
+
+
+For example, if the verify field is 'ride_name', format the question exactly like:
+- "Can you please tell me the name of the car whose eta is '30 mins', current price is '$20', old price is '$18' and description is 'Affordable everyday rides' after entering the trip route that is from 'Central Park' to 'Airport', so I can select it?"
+
+Examples:
+- "Can you please tell me the current price of the car whose eta is '25 mins' and ride name is 'City Express' and old price is '$18' after entering the trip route that is from 'Station' to 'Museum', so I can select it?"
+- "Can you please tell me the eta of the car whose current price is '$20' and ride name is 'City Cab' after entering the trip route that is from 'Hotel Plaza' to 'Station', so I can select it?"
+- "Can you please tell me the description of the car whose eta is '15 mins', current price is '$30' and old price is '$18' after entering the trip route that is from 'Airport' to 'Central Park', so I can select it?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 SELECT_CAR_USE_CASE = UseCase(
     name="SELECT_CAR",
     description="The user selects an available car option for their ride, including details such as price, discount, seats, and pickup/dropoff information.",
@@ -360,6 +468,38 @@ Critical requirements:
 2. Include ALL mentioned constraints in the prompt.
 3. Copy constraint values exactly in single quotes.
 """.strip()
+
+RESERVE_RIDE_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a car in the trip selection context (e.g., ride name, eta, current price, old price, description).
+
+Use natural language only. Do NOT use schema-style field names such as "ride_name", "eta", "price", "old_price", "description" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., car name, estimated time, current price, old price, description).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Select...", "Choose...", or "Reserve...".
+
+Always follow this strict question structure:
+"Can you please tell me the <verify field> of the car whose <question fields with their values> after entering the trip route that is <from> to <to>, so I can reserve it?"
+
+
+For example, if the verify field is 'ride_name', format the question exactly like:
+- "Can you please tell me the name of the car whose eta is '30 mins', current price is '$20', old price is '$18' and description is 'Affordable everyday rides' after entering the trip route that is from 'Central Park' to 'Airport', so I can reserve it?"
+
+Examples:
+- "Can you please tell me the current price of the car whose eta is '25 mins' and ride name is 'City Express' and old price is '$18' after entering the trip route that is from 'Station' to 'Museum', so I can reserve it?"
+- "Can you please tell me the eta of the car whose current price is '$20' and ride name is 'City Cab' after entering the trip route that is from 'Hotel Plaza' to 'Station', so I can reserve it?"
+- "Can you please tell me the description of the car whose eta is '15 mins', current price is '$30' and old price is '$18' after entering the trip route that is from 'Airport' to 'Central Park', so I can reserve it?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 RESERVE_RIDE_USE_CASE = UseCase(
     name="RESERVE_RIDE",
     description="The user reserves an available car for their ride, including details such as price, discount, seats, and pickup/dropoff information.",
@@ -401,12 +541,41 @@ Critical requirements:
 2. Include ALL mentioned constraints in the prompt.
 3. Copy constraint values exactly in single quotes.
 """.strip()
+
+TRIP_DETAILS_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a trip in the trip details context (e.g., title, date, price, time).
+
+Use natural language only. Do NOT use schema-style field names such as "title", "date", "price", "time" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., trip title, date, price, time).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "View...", "Check...", or "See...".
+
+For example, if the verify field is 'price', format the question naturally:
+- "What is the price of the trip whose title 'Beach Vacation', date is '6/13/2024' and time is '6:17:48 PM'?"
+
+Examples:
+- "What is the trip title whose date is '6/12/2024', price is '$50', and time is '9:04:31 PM'?"
+- "What is the date of the trip whose title 'Mountain Adventure', price is '$20.3' and time is '1:04:31 PM'?"
+- "What is the time of the trip whose title 'City Tour', date is '10/21/2025' and price is '$31.4'?"
+- "What is the price of the trip whose title 'Desert Safari', date is '2/27/2025' and time is '8:38:14 AM'?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only non-verify fields for identification.
+- Always include all question fields with values in the question for precise identification.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 TRIP_DETAILS_USE_CASE = UseCase(
     name="TRIP_DETAILS",
     description="The user views details of a trip, including trip information, ride details, driver information, and location details.",
     event=TripDetailsEvent,
     event_source_code=TripDetailsEvent.get_source_code_of_class(),
-    constraints_generator=generate_reserve_ride_constraints,
+    constraints_generator=generate_trip_details_constraints,
     additional_prompt_info=TRIP_DETAILS_ADDITIONAL_INFO,
     examples=[
         {

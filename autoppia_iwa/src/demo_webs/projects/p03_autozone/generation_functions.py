@@ -8,21 +8,104 @@ from autoppia_iwa.src.demo_webs.data_provider import get_seed_from_url
 
 from ...criterion_helper import ComparisonOperator
 from ...shared_utils import create_constraint_dict, parse_price
-from .data import FIELD_OPERATORS_MAP_PRODUCTS
+from .data import (
+    FIELD_OPERATORS_MAP_PRODUCTS,
+    VISIBLE_FIELDS_CATEGORY_FILTER,
+    VISIBLE_FIELDS_PRODUCT_DETAIL,
+    VISIBLE_FIELDS_SEARCH_PRODUCT,
+)
 from .data_utils import fetch_data
+
+
+def _build_data_extraction_result(
+    selected_item: dict[str, Any],
+    visible_fields: list[str],
+    *,
+    verify_field: str | None = None,
+    question_fields_override: list[str] | None = None,
+) -> dict[str, Any] | None:
+    """Build constraints + question_fields_and_values for data_extraction_only; returns None on validation failure.
+
+    When verify_field is provided, it is used as the verify field (fixed). Otherwise, verify field is chosen randomly
+    from the available visible fields.
+
+    When question_fields_override is provided and non-empty, those fields (that exist and have values) are used
+    as the fixed question fields, and verify field is chosen randomly from the remaining available fields.
+    If, apart from the verify field and the fixed question fields, there are 2 or more visible fields left,
+    a random subset of those is added to the question fields.
+    """
+    available_fields = [f for f in visible_fields if selected_item.get(f) is not None]
+    if len(available_fields) < 2:
+        return None
+
+    question_fields: list[str]
+    chosen_verify_field: str
+
+    if question_fields_override:
+        question_fields = [f for f in question_fields_override if f in available_fields and selected_item.get(f) is not None]
+        if question_fields:
+            remaining = [f for f in available_fields if f not in question_fields]
+            if not remaining:
+                return None
+            chosen_verify_field = random.choice(remaining)
+            # If 2+ fields remain apart from verify and fixed question fields, add a random subset to question fields
+            remaining_for_extra = [f for f in available_fields if f != chosen_verify_field and f not in question_fields]
+            if len(remaining_for_extra) >= 2:
+                num_extra = random.randint(1, len(remaining_for_extra))
+                question_fields = question_fields + random.sample(remaining_for_extra, num_extra)
+        else:
+            question_fields = []
+            chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+    else:
+        chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+        question_fields = []
+
+    if chosen_verify_field not in available_fields:
+        return None
+    verify_value = selected_item.get(chosen_verify_field)
+    if verify_value is None:
+        return None
+
+    if question_fields:
+        question_candidates = question_fields
+    else:
+        question_candidates = [f for f in available_fields if f != chosen_verify_field]
+        if not question_candidates:
+            return None
+        num_question_fields = 1 if len(question_candidates) == 1 else 2
+        question_candidates = random.sample(question_candidates, num_question_fields)
+
+    question_fields_and_values: dict[str, Any] = {}
+    for qf in question_candidates:
+        val = selected_item.get(qf)
+        if val is not None:
+            question_fields_and_values[qf] = val
+    if not question_fields_and_values:
+        return None
+
+    constraints = [create_constraint_dict(chosen_verify_field, ComparisonOperator.EQUALS, verify_value)]
+    return {
+        "constraints": constraints,
+        "question_fields_and_values": question_fields_and_values,
+    }
+
 
 QUANTITY_FIELDS = ["quantity", "items", "total_items", "previous_quantity", "new_quantity"]
 
 
-async def _ensure_products_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def _ensure_products_dataset(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | list[dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
     """Extract products data from the pre-loaded dataset, or fetch from server if not available."""
-    # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url)
         products = await fetch_data(seed_value=seed)
         dataset = {"products": products}
 
-    if dataset and "products" in dataset:
+    if isinstance(dataset, list) and dataset:
+        return dataset
+    if isinstance(dataset, dict) and dataset.get("products"):
         return dataset["products"]
     return []
 
@@ -189,13 +272,22 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
     return generated_value
 
 
-async def generate_autozone_products_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    constraints_list = []
-    fields = ["title", "category", "brand", "rating", "price"]
+async def generate_autozone_products_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     data_items = await _ensure_products_dataset(task_url, dataset)
     if not data_items:
         return []
 
+    if test_types == "data_extraction_only":
+        product = random.choice(data_items)
+        result = _build_data_extraction_result(product, VISIBLE_FIELDS_PRODUCT_DETAIL, question_fields_override=["price"])
+        return result if result is not None else []
+
+    constraints_list = []
+    fields = ["title", "category", "brand", "rating", "price"]
     selected_criteria_fields = random.sample(fields, random.randint(1, min(3, len(fields))))
     product = random.choice(data_items)
 
@@ -212,25 +304,50 @@ async def generate_autozone_products_constraints(task_url: str | None = None, da
     return constraints_list
 
 
-async def generate_search_query_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_view_detail_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    """Generate constraints for VIEW_DETAIL. In data_extraction_only, question field is fixed to product name; verify field is random."""
+    data_items = await _ensure_products_dataset(task_url, dataset)
+    if not data_items:
+        return []
+
+    if test_types == "data_extraction_only":
+        product = random.choice(data_items)
+        item_with_name = {**product, "name": product.get("title") or product.get("brand", "")}
+        result = _build_data_extraction_result(item_with_name, VISIBLE_FIELDS_PRODUCT_DETAIL, question_fields_override=["name"])
+        return result if result is not None else []
+
+    return await generate_autozone_products_constraints(task_url, dataset)
+
+
+async def generate_search_query_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    data_items = await _ensure_products_dataset(task_url, dataset)
+    if not data_items:
+        return [create_constraint_dict("query", ComparisonOperator.CONTAINS, "products")]
+
+    if test_types == "data_extraction_only":
+        product = random.choice(data_items)
+        item_with_name = {**product, "name": product.get("title") or product.get("brand", "")}
+        result = _build_data_extraction_result(item_with_name, VISIBLE_FIELDS_SEARCH_PRODUCT, question_fields_override=["name"])
+        return result if result is not None else []
+
     constraints_list = []
     query_operators = [
         ComparisonOperator.EQUALS,
         ComparisonOperator.CONTAINS,
     ]
-
-    data_items = await _ensure_products_dataset(task_url, dataset)
-    if not data_items:
-        return [create_constraint_dict("query", ComparisonOperator.CONTAINS, "products")]
-
     op = random.choice(query_operators)
-    # Pass a mock product_data_source even if not directly used, as generate_constraint_value expects it
     product = random.choice(data_items)
     constraint_value = generate_constraint_value("query", op, product, all_products_data=data_items)
     if constraint_value is not None:
         constraints_list.append(create_constraint_dict("query", op, constraint_value))
-
-    # Fallback
     return constraints_list if constraints_list else [create_constraint_dict("query", ComparisonOperator.CONTAINS, "products")]
 
 
@@ -367,19 +484,30 @@ def generate_carousel_scroll_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_category_filter_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_category_filter_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     constraints: list[dict[str, Any]] = []
     data_items = await _ensure_products_dataset(task_url, dataset)
     if not data_items:
         return constraints
 
+    if test_types == "data_extraction_only":
+        product = random.choice(data_items)
+        category = product.get("category")
+        title = product.get("title")
+        if category is not None and title is not None:
+            selected_item = {"category": category, "name": title}
+            result = _build_data_extraction_result(selected_item, VISIBLE_FIELDS_CATEGORY_FILTER, verify_field="category")
+            return result if result is not None else []
+        return []
+
     allowed_categories = {"all", "kitchen", "technology", "home", "electronics", "fitness"}
     categories = sorted({str(item.get("category", "")).lower() for item in data_items if item.get("category") and str(item.get("category", "")).lower() in allowed_categories})
     if not categories:
-        # Fallback to "all" if dataset categories don't match allowed values
         categories = ["all"]
-
     selected_category = random.choice(categories)
     constraints.append(create_constraint_dict("category", ComparisonOperator.EQUALS, selected_category))
-
     return constraints

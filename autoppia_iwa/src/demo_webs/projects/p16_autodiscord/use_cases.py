@@ -40,6 +40,7 @@ from .generation_functions import (
     generate_settings_account_constraints,
     generate_settings_appearance_constraints,
     generate_settings_notifications_constraints,
+    generate_view_dms_constraints,
     generate_voice_mute_toggle_constraints,
 )
 
@@ -55,12 +56,31 @@ VIEW_SERVERS_USE_CASE = UseCase(
     ],
 )
 
+VIEW_DMS_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field.
+
+The question MUST clearly mention that the context is "in the DMs".
+
+Use natural language only. Do NOT use schema-style field names such as
+"username", "content", or any names with underscores (_).
+
+Always refer to fields using simple words like "name" or "message".
+
+Examples:
+- "In the DMs, what is the name of the user who sent the message 'Hey, are you coming today?'?"
+- "In the DMs, who sent the message 'Let's meet at 5 PM'?"
+- "In the DMs, what message did Alex send?"
+
+Do NOT start the question with "Open DMs..." or "View messages...".
+The output must be a single question whose answer is the verify field value.
+""".strip()
+
 VIEW_DMS_USE_CASE = UseCase(
     name="VIEW_DMS",
     description="The user clicks the Direct Messages icon.",
     event=ViewDmsEvent,
     event_source_code=ViewDmsEvent.get_source_code_of_class(),
-    constraints_generator=False,
+    constraints_generator=generate_view_dms_constraints,
     examples=[
         {"prompt": "Open Direct Messages.", "prompt_for_task_generation": "Open Direct Messages."},
     ],
@@ -82,6 +102,22 @@ Critical requirements:
 1. The request must start with: "Select the server...".
 2. Do not mention a single constraint more than once in the request.
 3. Do not add additional information in the prompt that is not mentioned in the constraints.
+""".strip()
+
+SELECT_SERVER_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field.
+
+Use natural language only. Do NOT use schema-style field names such as
+"server_name", "channel_name", or any names with underscores (_).
+
+Always refer to the field using simple words like "name".
+
+Examples:
+- "What is the name of the server that has channel named general?"
+- "What is the name of the server that has channel named studio-talk?"
+
+Do NOT start the question with "Select the server...".
+The output must be a single question.
 """.strip()
 
 # With payload — use constraints_generator
@@ -106,6 +142,21 @@ Critical requirements:
 1. The request must start with: "Select the channel...".
 2. Do not mention a single constraint more than once in the request.
 3. Do not add additional information in the prompt that is not mentioned in the constraints.
+""".strip()
+
+SELECT_CHANNEL_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field.
+
+Use natural language in the question. Do NOT use schema-style field names such as
+"channel_name", "server_name", etc.
+
+Always refer to these fields using simple words like "name".
+
+Examples:
+- "What is the name of the channel on server X?"
+- "What is the name of the server that has channel X?"
+
+The output must be a single question.
 """.strip()
 
 SELECT_CHANNEL_USE_CASE = UseCase(
@@ -163,6 +214,16 @@ Critical requirements:
 1. The request must start with: "Add a reaction...".
 2. Do not mention a single constraint more than once in the request.
 3. Do not add additional information in the prompt that is not mentioned in the constraints.
+""".strip()
+
+ADD_REACTION_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field.
+The verify field is either the message content or the authorUsername—ask for whichever one is specified.
+Use the entity identifier fields (server_name, channel_name, and the other of content/authorUsername) to identify the message.
+Examples (when verify field is content): "What is the content of the message in the channel <channel_name> on the server <server_name>?"
+Examples (when verify field is authorUsername): "Who posted the message with content '<content>' in the channel <channel_name> on the server <server_name>?"
+
+Do NOT start with "Add a reaction..." or any imperative phrasing; the output must be a single question whose answer is the verify field value.
 """.strip()
 
 ADD_REACTION_USE_CASE = UseCase(
@@ -396,6 +457,21 @@ Critical requirements:
 1. The request must start with: "Join the voice channel...".
 2. Do not mention a single constraint more than once in the request.
 3. Do not add additional information in the prompt that is not mentioned in the constraints.
+""".strip()
+
+JOIN_VOICE_CHANNEL_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field.
+
+Use natural language only. Do NOT use schema-style field names such as
+"channel_name", "server_name", or any names with underscores (_).
+Always refer to fields using simple words like "name".
+
+Examples:
+- "What is the name of the voice channel on the server Dev Squad?"
+- "Which server does the voice channel 'voice-chat' belong to?"
+
+Do NOT start with "Join the voice channel...".
+The output must be a single question whose answer is the verify field value.
 """.strip()
 
 JOIN_VOICE_CHANNEL_USE_CASE = UseCase(

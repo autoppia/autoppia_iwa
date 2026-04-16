@@ -66,8 +66,6 @@ async def load_dataset_data(
     Args:
         limit: Number of items to fetch. Defaults to 50 and will be enforced to exactly 50.
     """
-    # Enforce exactly 50 items
-    limit = 50
 
     # Construir URL directamente usando el backend_url proporcionado
     url = urljoin(backend_url.rstrip("/"), "datasets/load")

@@ -5,6 +5,21 @@ Shared dataset helpers for autodelivery_7.
 from autoppia_iwa.src.demo_webs.data_provider import load_dataset_data
 
 
+def _enrich_restaurants_menu_derived_fields(restaurants: list[dict]) -> list[dict]:
+    """Set menu-derived fields not from the server: ``dishes``, ``names_of_menu_items``."""
+    for row in restaurants:
+        if not isinstance(row, dict):
+            continue
+        menu = row.get("menu")
+        if not isinstance(menu, list):
+            row["dishes"] = 0
+            row["names_of_menu_items"] = []
+            continue
+        row["dishes"] = len(menu)
+        row["names_of_menu_items"] = [str(entry["name"]) for entry in menu if isinstance(entry, dict) and entry.get("name") is not None and str(entry["name"]).strip()]
+    return restaurants
+
+
 async def fetch_data(
     seed_value: int | None = None,
     count: int = 50,
@@ -24,7 +39,8 @@ async def fetch_data(
         count: Number of items to fetch
 
     Returns:
-        list[dict] of restaurant data
+        list[dict] of restaurant data with ``dishes`` (menu length) and ``names_of_menu_items``
+        (non-empty menu item ``name`` strings), derived from each row's ``menu``.
     """
     from .main import FRONTEND_PORT_INDEX, autodelivery_project
 
@@ -39,4 +55,6 @@ async def fetch_data(
         method="distribute",
         filter_key="cuisine",
     )
-    return items or []
+    items = items or []
+    _enrich_restaurants_menu_derived_fields(items)
+    return items

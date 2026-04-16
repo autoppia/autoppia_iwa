@@ -5,7 +5,9 @@ Main pipeline that orchestrates:
 0. Pre-validation (project setup, events, use cases)
 1. Task generation (2 tasks per use case with constraints) + LLM Review (V1)
 2. Dataset diversity verification - verify datasets differ with different seeds (V2)
-3. Reference-solution doability: registered trajectories (preferred) or IWAP API fallback
+2.5. Data extraction trajectories verification (project-level, seed-filtered deterministic checks)
+2.6. Data extraction task generation verification (project-level, one DEtask per DE use case)
+3. IWAP doability check (find any successful solution for use case)
 4. Dynamic verification with different seeds (V3)
 """
 
@@ -28,6 +30,8 @@ from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.interfaces import ILLM
 
 from .config import WebVerificationConfig
+from .data_extraction_task_generation_verifier import DataExtractionTaskGenerationVerifier
+from .data_extraction_verifier import DataExtractionTrajectoryVerifier
 from .dynamic_verifier import DynamicVerifier
 from .iwap_client import IWAPClient
 from .llm_reviewer import LLMReviewer
@@ -124,10 +128,30 @@ class WebVerificationPipeline:
             else None
         )
 
+        self.data_extraction_verifier = (
+            DataExtractionTrajectoryVerifier(
+                web_project=web_project,
+                frontend_url=web_project.frontend_url,
+                headless=True,
+            )
+            if config.data_extraction_verification_enabled
+            else None
+        )
+        self.data_extraction_task_generation_verifier = (
+            DataExtractionTaskGenerationVerifier(
+                web_project=web_project,
+                task_generator=self.task_generator,
+            )
+            if config.data_extraction_verification_enabled
+            else None
+        )
+
         # Results storage
         self.results: dict[str, Any] = {
             "project_id": web_project.id,
             "project_name": web_project.name,
+            "data_extraction_project_verification": None,
+            "data_extraction_task_generation_verification": None,
             "use_cases": {},
         }
 
@@ -151,6 +175,11 @@ class WebVerificationPipeline:
             )
             return self.results
 
+        # Step 2.5: Project-level DE trajectories verification
+        await self._run_data_extraction_project_verification()
+        # Step 2.6: Project-level DE task generation verification
+        await self._run_data_extraction_task_generation_verification()
+
         # Process each use case
         for use_case in use_cases_to_run:
             logger.info(f"Processing use case: {use_case.name}")
@@ -162,6 +191,80 @@ class WebVerificationPipeline:
 
         logger.info("Web verification pipeline completed")
         return self.results
+
+    async def _run_data_extraction_project_verification(self) -> None:
+        """Run DE trajectories once per project and store a single boolean verdict."""
+        if not self.data_extraction_verifier:
+            self.results["data_extraction_project_verification"] = {
+                "skipped": True,
+                "reason": "Data extraction verification disabled by config",
+                "seed": self.config.data_extraction_seed,
+                "all_passed": None,
+                "total_count": 0,
+                "passed_count": 0,
+                "results": [],
+            }
+            return
+
+        self._print_step_banner(
+            "🔎 STEP 2.5: DATA EXTRACTION TRAJECTORIES VERIFICATION",
+            f"Project ID: {self.web_project.id}",
+            f"Seed to test: {self.config.data_extraction_seed}",
+            "Running all DE trajectories for this project and validating expected answers.",
+        )
+        de_result = await self.data_extraction_verifier.verify_for_project(seed=self.config.data_extraction_seed)
+        self.results["data_extraction_project_verification"] = de_result
+
+        if de_result.get("skipped", False):
+            print(f"DataExtraction trajectories passed: ⏭️ SKIPPED ({de_result.get('reason', UNKNOWN_REASON)})")
+        else:
+            passed_count = de_result.get("passed_count", 0)
+            total_count = de_result.get("total_count", 0)
+            all_passed = de_result.get("all_passed", False)
+            print(f"DataExtraction trajectories passed: {'✅ YES' if all_passed else '❌ NO'} ({passed_count}/{total_count}, seed={self.config.data_extraction_seed})")
+            for item in de_result.get("results", []):
+                status = "✓" if item.get("ok", False) else "✗"
+                print(f"  {status} [{item.get('use_case')}] {item.get('trajectory_id')}: {item.get('detail')}")
+        print("=" * 80 + "\n")
+
+    async def _run_data_extraction_task_generation_verification(self) -> None:
+        """Generate one DEtask per DE use case and validate generation correctness."""
+        if not self.data_extraction_task_generation_verifier:
+            self.results["data_extraction_task_generation_verification"] = {
+                "skipped": True,
+                "reason": "Data extraction verification disabled by config",
+                "seed": self.config.data_extraction_seed,
+                "all_passed": None,
+                "total_count": 0,
+                "passed_count": 0,
+                "results": [],
+            }
+            return
+
+        self._print_step_banner(
+            "🔎 STEP 2.6: DATA EXTRACTION TASK GENERATION VERIFICATION",
+            f"Project ID: {self.web_project.id}",
+            f"Seed to test: {self.config.data_extraction_seed}",
+            "Generating one DEtask per DE use case and validating generation consistency.",
+        )
+        de_task_result = await self.data_extraction_task_generation_verifier.verify_for_project(
+            seed=self.config.data_extraction_seed,
+            use_cases=getattr(self.web_project, "data_extraction_use_cases", None),
+        )
+        self.results["data_extraction_task_generation_verification"] = de_task_result
+
+        if de_task_result.get("skipped", False):
+            print(f"DE task generation passed: ⏭️ SKIPPED ({de_task_result.get('reason', UNKNOWN_REASON)})")
+        else:
+            passed_count = de_task_result.get("passed_count", 0)
+            total_count = de_task_result.get("total_count", 0)
+            all_passed = de_task_result.get("all_passed", False)
+            generated_count = de_task_result.get("generated_count", 0)
+            print(f"DE task generation passed: {'✅ YES' if all_passed else '❌ NO'} ({passed_count}/{total_count}, generated={generated_count})")
+            for item in de_task_result.get("results", []):
+                status = "✓" if item.get("ok", False) else "✗"
+                print(f"  {status} [{item.get('use_case')}] {item.get('task_id')}: {item.get('detail')}")
+        print("=" * 80 + "\n")
 
     def _use_cases_matching_filter(self) -> list[UseCase]:
         """Return project use cases to run, applying ``config.use_case_filter`` when set."""
@@ -698,6 +801,8 @@ class WebVerificationPipeline:
         formatted_results = {
             "project_id": self.web_project.id,
             "project_name": self.web_project.name,
+            "data_extraction_project_verification": self.results.get("data_extraction_project_verification"),
+            "data_extraction_task_generation_verification": self.results.get("data_extraction_task_generation_verification"),
             "use_cases": {},
             "summary": {},
         }
@@ -847,6 +952,7 @@ class WebVerificationPipeline:
             - task_generation: Pass | Fail
             - number_of_tasks_generated: int
             - llm_review: Pass | Fail
+            - data_extraction_verification: Pass | Fail | N/A
             - dynamic_verification: Pass | Fail
             - trajectory_verification: Pass | Fail | N/A
         """
@@ -909,6 +1015,14 @@ class WebVerificationPipeline:
         dynamic_verification_status = "N/A"
         if has_dynamic_verification:
             dynamic_verification_status = "Pass" if all_dynamic_verification_passed else "Fail"
+        data_extraction_verification_status = "N/A"
+        data_extraction_project = self.results.get("data_extraction_project_verification")
+        if isinstance(data_extraction_project, dict) and not data_extraction_project.get("skipped", False):
+            data_extraction_verification_status = "Pass" if data_extraction_project.get("all_passed", False) else "Fail"
+        data_extraction_task_generation_status = "N/A"
+        data_extraction_task_generation = self.results.get("data_extraction_task_generation_verification")
+        if isinstance(data_extraction_task_generation, dict) and not data_extraction_task_generation.get("skipped", False):
+            data_extraction_task_generation_status = "Pass" if data_extraction_task_generation.get("all_passed", False) else "Fail"
 
         trajectory_verification_status = "N/A"
         if self.config.evaluate_trajectories and has_trajectory_verification:
@@ -920,6 +1034,8 @@ class WebVerificationPipeline:
                 "number_of_tasks_generated": 0,
                 "llm_review": "Skipped",
                 "dynamic_verification": dynamic_verification_status,
+                "data_extraction_verification": data_extraction_verification_status,
+                "data_extraction_task_generation": data_extraction_task_generation_status,
                 "trajectory_verification": trajectory_verification_status,
             }
         else:
@@ -928,6 +1044,8 @@ class WebVerificationPipeline:
                 "number_of_tasks_generated": total_tasks,
                 "llm_review": "Pass" if (all_llm_reviews_passed or not self.llm_reviewer) else "Fail",
                 "dynamic_verification": dynamic_verification_status,
+                "data_extraction_verification": data_extraction_verification_status,
+                "data_extraction_task_generation": data_extraction_task_generation_status,
                 "trajectory_verification": trajectory_verification_status,
             }
 
@@ -1501,6 +1619,8 @@ class WebVerificationPipeline:
                         f"  Trajectory replay: {'✓ Passed' if ok else '✗ Failed'} ({pc}/{tc} seeds)",
                     )
 
+            summary_lines.append("  Step 2.5-2.6 (Data Extraction): ↪ Project-level verification (see final conclusion)")
+
             # Step 3: IWAP API / Doability check
             iwap_status = use_case_data.get("iwap_status")
             if iwap_status:
@@ -1656,6 +1776,20 @@ class WebVerificationPipeline:
         # Overall Status
         summary_lines.append("\n📈 Overall Status:")
         total_use_cases = len(self.results["use_cases"])
+        data_extraction_project = self.results.get("data_extraction_project_verification")
+        data_extraction_status = "N/A"
+        if isinstance(data_extraction_project, dict) and not data_extraction_project.get("skipped", False):
+            passed_count = data_extraction_project.get("passed_count", 0)
+            total_count = data_extraction_project.get("total_count", 0)
+            status = "YES" if data_extraction_project.get("all_passed", False) else "NO"
+            data_extraction_status = f"{status} ({passed_count}/{total_count} trajectories)"
+        data_extraction_task_generation = self.results.get("data_extraction_task_generation_verification")
+        data_extraction_task_generation_status = "N/A"
+        if isinstance(data_extraction_task_generation, dict) and not data_extraction_task_generation.get("skipped", False):
+            passed_count = data_extraction_task_generation.get("passed_count", 0)
+            total_count = data_extraction_task_generation.get("total_count", 0)
+            status = "YES" if data_extraction_task_generation.get("all_passed", False) else "NO"
+            data_extraction_task_generation_status = f"{status} ({passed_count}/{total_count} DE_usecases)"
         summary_lines.append(f"  Total Use Cases: {total_use_cases}")
         if categories["generation_skipped"]:
             summary_lines.append(f"  - Task gen skipped (trajectories-only): {len(categories['generation_skipped'])}/{total_use_cases}")
@@ -1663,9 +1797,36 @@ class WebVerificationPipeline:
         else:
             summary_lines.append(f"  - Good generation: {len(categories['generation_ok'])}/{total_use_cases}")
             summary_lines.append(f"  - Dataset diverse (V2): {len(categories['dataset_diverse'])}/{total_use_cases}")
+            summary_lines.append(f"  - DataExtraction trajectories passed: {data_extraction_status}")
+            summary_lines.append(f"  - DE task generation passed: {data_extraction_task_generation_status}")
         summary_lines.append(f"  - Has solutions: {len(categories['has_solution'])}/{total_use_cases}")
         summary_lines.append(f"  - Truly dynamic (V3): {len(categories['truly_dynamic'])}/{total_use_cases}")
         summary_lines.append(f"  - Needs review (not dynamic): {len(categories['not_dynamic'])}/{total_use_cases}")
+
+        # Data Extraction details at the end of final report
+        summary_lines.append("\n🧠 Data Extraction:")
+        if not isinstance(data_extraction_project, dict):
+            summary_lines.append("  DataExtraction trajectories passed: N/A (no data)")
+        elif data_extraction_project.get("skipped", False):
+            reason = data_extraction_project.get("reason", UNKNOWN_REASON)
+            summary_lines.append(f"  DataExtraction trajectories passed: N/A (skipped: {reason})")
+        else:
+            passed_count = data_extraction_project.get("passed_count", 0)
+            total_count = data_extraction_project.get("total_count", 0)
+            status = "✅ YES" if data_extraction_project.get("all_passed", False) else "❌ NO"
+            summary_lines.append(f"  DataExtraction trajectories passed: {status} ({passed_count}/{total_count})")
+
+        if not isinstance(data_extraction_task_generation, dict):
+            summary_lines.append("  DE task generation passed: N/A (no data)")
+        elif data_extraction_task_generation.get("skipped", False):
+            reason = data_extraction_task_generation.get("reason", UNKNOWN_REASON)
+            summary_lines.append(f"  DE task generation passed: N/A (skipped: {reason})")
+        else:
+            passed_count = data_extraction_task_generation.get("passed_count", 0)
+            total_count = data_extraction_task_generation.get("total_count", 0)
+            generated_count = data_extraction_task_generation.get("generated_count", 0)
+            status = "✅ YES" if data_extraction_task_generation.get("all_passed", False) else "❌ NO"
+            summary_lines.append(f"  DE task generation passed: {status} ({passed_count}/{total_count} DE_usecases, generated={generated_count})")
 
         summary_lines.append(f"\n{'=' * 60}\n")
         return "\n".join(summary_lines)

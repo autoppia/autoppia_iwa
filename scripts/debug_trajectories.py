@@ -31,7 +31,13 @@ import argparse
 import asyncio
 import copy
 import sys
+from pathlib import Path
 from typing import Any
+
+# Ensure local package imports work when running this script directly.
+_repo_root = Path(__file__).resolve().parents[1]
+if str(_repo_root) not in sys.path:
+    sys.path.insert(0, str(_repo_root))
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.tasks.classes import BrowserSpecification, Task

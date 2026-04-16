@@ -73,6 +73,113 @@ def _pick_different_value_from_dataset(dataset: list[dict[str, Any]], source_key
     return random.choice(valid) if valid else fallback
 
 
+def _build_data_extraction_result(
+    selected_item: dict[str, Any],
+    visible_fields: list[str],
+    *,
+    verify_field: str | None = None,
+    question_fields_override: list[str] | None = None,
+) -> dict[str, Any] | None:
+    """Build constraints + question_fields_and_values for data_extraction_only; returns None on validation failure."""
+    available_fields = [f for f in visible_fields if selected_item.get(f) is not None]
+    if len(available_fields) < 2:
+        return None
+
+    question_fields: list[str]
+    chosen_verify_field: str
+
+    if question_fields_override:
+        question_fields = [f for f in question_fields_override if f in available_fields and selected_item.get(f) is not None]
+        if question_fields:
+            remaining = [f for f in available_fields if f not in question_fields]
+            if not remaining:
+                return None
+            chosen_verify_field = verify_field if verify_field is not None and verify_field in remaining else random.choice(remaining)
+            remaining_for_extra = [f for f in available_fields if f != chosen_verify_field and f not in question_fields]
+            if len(remaining_for_extra) >= 2:
+                num_extra = random.randint(1, len(remaining_for_extra))
+                question_fields = question_fields + random.sample(remaining_for_extra, num_extra)
+        else:
+            question_fields = []
+            chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+    else:
+        chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+        question_fields = []
+
+    if chosen_verify_field not in available_fields:
+        return None
+    verify_value = selected_item.get(chosen_verify_field)
+    if verify_value is None:
+        return None
+
+    if question_fields:
+        question_candidates = question_fields
+    else:
+        question_candidates = [f for f in available_fields if f != chosen_verify_field]
+        if not question_candidates:
+            return None
+        num_question_fields = 1 if len(question_candidates) == 1 else 2
+        question_candidates = random.sample(question_candidates, num_question_fields)
+
+    question_fields_and_values: dict[str, Any] = {}
+    for qf in question_candidates:
+        val = selected_item.get(qf)
+        if val is not None:
+            question_fields_and_values[qf] = val
+    if not question_fields_and_values:
+        return None
+
+    constraints = [create_constraint_dict(chosen_verify_field, ComparisonOperator.EQUALS, verify_value)]
+    return {
+        "constraints": constraints,
+        "question_fields_and_values": question_fields_and_values,
+    }
+
+
+def _normalize_date_for_constraint(raw: Any) -> str | None:
+    if raw is None:
+        return None
+    parsed: date | None = None
+
+    if isinstance(raw, datetime):
+        parsed = raw.date()
+    elif isinstance(raw, date):
+        parsed = raw
+    elif isinstance(raw, str):
+        value = raw.strip()
+        if not value:
+            return None
+        value = value.replace("Z", "+00:00")
+        try:
+            parsed = datetime.fromisoformat(value).date()
+        except ValueError:
+            try:
+                parsed = datetime.strptime(value.split("T")[0], "%Y-%m-%d").date()
+            except ValueError:
+                return None
+    else:
+        return None
+
+    return parsed.strftime("%-d %b %Y")
+
+
+def _task_row_to_selected_item(task: dict[str, Any]) -> dict[str, Any] | None:
+    name = task.get("name")
+    description = task.get("description")
+    priority = task.get("priority")
+    date_str = _normalize_date_for_constraint(task.get("dueDate"))
+    out: dict[str, Any] = {}
+    if name is not None:
+        out["name"] = name
+    if description is not None:
+        out["description"] = description
+    if priority is not None:
+        out["priority"] = priority
+    if date_str is not None:
+        out["due_date"] = date_str
+    return out if out else None
+
+
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, source_key: str, dataset: list[dict[str, Any]]) -> Any:
     """
     Generate a constraint value for a given operator, field, and dataset.
@@ -205,28 +312,206 @@ def _generate_constraints_for_event(field_map: dict[str, dict[str, Any]], operat
     return constraints_list
 
 
-async def generate_select_date_for_task_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_add_task_clicked_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    """No action-task constraints; data extraction uses a random task from the server."""
+    if test_types == "data_extraction_only":
+        tasks = await _ensure_task_dataset(task_url, dataset)
+        if not tasks:
+            return []
+
+        eligible_tasks: list[dict[str, Any]] = []
+        for task in tasks:
+            if not isinstance(task, dict):
+                continue
+            status_raw = task.get("status")
+            status = str(status_raw).strip().lower() if status_raw is not None else ""
+            if status not in {"completed", "complete", "done", "closed", "finished"}:
+                eligible_tasks.append(task)
+
+        if not eligible_tasks:
+            return []
+
+        selected = random.choice(eligible_tasks)
+        if not isinstance(selected, dict):
+            return []
+        selected_item = _task_row_to_selected_item(selected)
+        if selected_item is None:
+            return []
+
+        completed_task_count = 0
+        pending_task_count = 0
+        for task in tasks:
+            if not isinstance(task, dict):
+                continue
+            status_raw = task.get("status")
+            status = str(status_raw).strip().lower() if status_raw is not None else ""
+            if status in {"completed", "complete", "done", "closed", "finished"}:
+                completed_task_count += 1
+            else:
+                pending_task_count += 1
+
+        selected_item["completed_task"] = completed_task_count
+        selected_item["pending_task"] = pending_task_count
+        verify_field_candidates = ["name", "description", "due_date", "priority", "completed_task", "pending_task"]
+        verify_field = random.choice(verify_field_candidates)
+
+        if verify_field in {"completed_task", "pending_task"}:
+            verify_value = selected_item.get(verify_field)
+            if verify_value is None:
+                return []
+            return [create_constraint_dict(verify_field, ComparisonOperator.EQUALS, verify_value)]
+
+        visible_fields = ["name", "description", "due_date", "priority"]
+        return (
+            _build_data_extraction_result(
+                selected_item,
+                visible_fields,
+                verify_field=verify_field,
+                question_fields_override=["name"],
+            )
+            or []
+        )
+    return []
+
+
+async def generate_select_date_for_task_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]]:
     """Generate constraints for selecting a date for a task."""
     dataset = await _ensure_task_dataset(task_url, dataset)
     field_map = {"_dataset": dataset, "date": {"is_date": True}} if random.choice([True, False]) else {"_dataset": dataset, "quick_option": {"values": DATES_QUICK_OPTIONS}}
+    if test_types == "data_extraction_only":
+        tasks = await _ensure_task_dataset(task_url, dataset)
+        if not tasks:
+            return []
+
+        eligible_tasks: list[dict[str, Any]] = []
+        for task in tasks:
+            if not isinstance(task, dict):
+                continue
+            status_raw = task.get("status")
+            status = str(status_raw).strip().lower() if status_raw is not None else ""
+            if status not in {"completed", "complete", "done", "closed", "finished"}:
+                eligible_tasks.append(task)
+
+        if not eligible_tasks:
+            return []
+
+        selected = random.choice(eligible_tasks)
+        if not isinstance(selected, dict):
+            return []
+        selected_item = _task_row_to_selected_item(selected)
+        if selected_item is None or selected_item.get("due_date") is None:
+            return []
+        visible_fields = ["name", "description", "due_date", "priority"]
+        return (
+            _build_data_extraction_result(
+                selected_item,
+                visible_fields,
+                verify_field="due_date",
+                question_fields_override=["name"],
+            )
+            or []
+        )
+    task_list = await _ensure_task_dataset(task_url, dataset)
+    field_map = {"_dataset": task_list, "date": {"is_date": True}} if random.choice([True, False]) else {"_dataset": task_list, "quick_option": {"values": DATES_QUICK_OPTIONS}}
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_SELECT_DATE_MAP)
 
 
-def generate_select_task_priority_constraints() -> list[dict[str, Any]]:
+async def generate_select_task_priority_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for selecting a task priority."""
+    if test_types == "data_extraction_only":
+        tasks = await _ensure_task_dataset(task_url, dataset)
+        if not tasks:
+            return []
+
+        eligible_tasks: list[dict[str, Any]] = []
+        for task in tasks:
+            if not isinstance(task, dict):
+                continue
+            status_raw = task.get("status")
+            status = str(status_raw).strip().lower() if status_raw is not None else ""
+            if status not in {"completed", "complete", "done", "closed", "finished"}:
+                eligible_tasks.append(task)
+
+        if not eligible_tasks:
+            return []
+
+        selected = random.choice(eligible_tasks)
+        if not isinstance(selected, dict):
+            return []
+        selected_item = _task_row_to_selected_item(selected)
+        if selected_item is None or selected_item.get("priority") is None:
+            return []
+        visible_fields = ["name", "description", "due_date", "priority"]
+        return (
+            _build_data_extraction_result(
+                selected_item,
+                visible_fields,
+                verify_field="priority",
+                question_fields_override=["name"],
+            )
+            or []
+        )
     field_map = {
         "priority": {"dataset": PRIORITIES},
     }
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_SELECT_PRIORITY_MAP)
 
 
-async def generate_task_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    """Generate constraints for adding or updating a task."""
-    dataset = await _ensure_task_dataset(task_url, dataset)
+async def generate_task_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    """Generate constraints for adding or updating a task (shared by several task use cases)."""
+    if test_types == "data_extraction_only":
+        tasks = await _ensure_task_dataset(task_url, dataset)
+        if not tasks:
+            return []
+
+        eligible_tasks: list[dict[str, Any]] = []
+        for task in tasks:
+            if not isinstance(task, dict):
+                continue
+            status_raw = task.get("status")
+            status = str(status_raw).strip().lower() if status_raw is not None else ""
+            if status not in {"completed", "complete", "done", "closed", "finished"}:
+                eligible_tasks.append(task)
+
+        if not eligible_tasks:
+            return []
+
+        selected = random.choice(eligible_tasks)
+        if not isinstance(selected, dict):
+            return []
+        selected_item = _task_row_to_selected_item(selected)
+        if selected_item is None:
+            return []
+        visible_fields = ["name", "description", "due_date", "priority"]
+        return (
+            _build_data_extraction_result(
+                selected_item,
+                visible_fields,
+                question_fields_override=["name"],
+            )
+            or []
+        )
+    task_list = await _ensure_task_dataset(task_url, dataset)
     field_map = {
-        "_dataset": dataset,
-        "name": {"dataset": dataset},
-        "description": {"dataset": dataset},
+        "_dataset": task_list,
+        "name": {"dataset": task_list},
+        "description": {"dataset": task_list},
         "date": {"is_date": True},
         "priority": {"dataset": PRIORITIES},
     }

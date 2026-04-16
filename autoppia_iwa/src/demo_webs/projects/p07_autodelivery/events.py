@@ -761,7 +761,7 @@ class DeliveryPrioritySelectedEvent(Event, BaseEventValidator):
         if not criteria:
             return True
 
-        # Validate event-level fields (priority, name)
+        # Validate event-level fields
         if criteria.priority is not None and not self._validate_field(self.priority, criteria.priority):
             return False
 

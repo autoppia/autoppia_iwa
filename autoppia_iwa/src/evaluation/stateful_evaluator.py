@@ -176,10 +176,13 @@ class TaskExecutionSession(AsyncTaskExecutionSession):
         self._history: list[ActionExecutionResult] = []
         self._session_start_utc: datetime | None = None
         self._last_score = ScoreDetails()
+        # Latest agent-reported answer for DataExtractionTest (partial tests); updated by benchmark per /act response.
+        self.latest_extracted_data: Any | None = None
         self._scorer = TaskExecutionScorer()
 
     async def reset(self) -> StepResult:
-        logger.info("[TaskExecutionSession] reset start")
+        logger.info("[AsyncStatefulEvaluator] reset start")
+        self.latest_extracted_data = None
         await self._close_async()
         await self._init_async()
         self._session_start_utc = datetime.now(UTC)
@@ -401,7 +404,12 @@ class TaskExecutionSession(AsyncTaskExecutionSession):
                             seen_ids.add(event_id)
                             merged.append(event)
                         last_snapshot.backend_events = merged
-        matrix = await run_partial_tests(self._project, self.task, self._history)
+        matrix = await run_partial_tests(
+            self._project,
+            self.task,
+            self._history,
+            extracted_data=self.latest_extracted_data,
+        )
         if not matrix:
             self._last_score = ScoreDetails()
             return self._last_score

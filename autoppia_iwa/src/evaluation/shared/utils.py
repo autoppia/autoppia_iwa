@@ -188,7 +188,12 @@ def display_batch_evaluation_summary(
 # ---------------------------------------------------------------------------------
 # TEST / FEEDBACK HELPERS
 # ---------------------------------------------------------------------------------
-async def run_global_tests(task: Task, backend_events: list[BackendEvent], web_agent_id: str | None = None) -> list[TestResult]:
+async def run_global_tests(
+    task: Task,
+    backend_events: list[BackendEvent],
+    web_agent_id: str | None = None,
+    extracted_data: object | None = None,
+) -> list[TestResult]:
     """
     Runs all task tests once after all actions are executed.
 
@@ -206,6 +211,7 @@ async def run_global_tests(task: Task, backend_events: list[BackendEvent], web_a
     test_results = await test_runner.run_global_tests(
         backend_events=backend_events,
         web_agent_id=web_agent_id,
+        extracted_data=extracted_data,
     )
     return test_results
 
@@ -399,7 +405,12 @@ async def _resolve_autocinema_film_placeholders_in_tests(task: Task, tests_for_r
     return tests_for_run
 
 
-async def run_partial_tests(web_project: WebProject, task: Task, execution_history: list[ActionExecutionResult]) -> list[list[TestResult]]:
+async def run_partial_tests(
+    web_project: WebProject,
+    task: Task,
+    execution_history: list[ActionExecutionResult],
+    extracted_data: object | None = None,
+) -> list[list[TestResult]]:
     """
     Runs all task tests after each action, building a test results matrix.
 
@@ -428,6 +439,7 @@ async def run_partial_tests(web_project: WebProject, task: Task, execution_histo
             browser_snapshots=browser_snapshots,
             current_action_index=i,
             total_iterations=total_iterations,
+            extracted_data=extracted_data,
         )
         test_results_matrix.append(test_results)
 
