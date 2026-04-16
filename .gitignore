@@ -46,3 +46,7 @@ prompt_test_output/*
 .flake8_cache/
 flake8.log
 *.jsonl
+
+.coverage
+.coverage.*
+htmlcov/
