@@ -28,7 +28,7 @@ echo "OPENAI_API_KEY=your-key" >> .env
 python -m autoppia_iwa.entrypoints.benchmark.run
 ```
 
-**Results:** `data/outputs/benchmark/results/benchmark_results_<timestamp>.json`
+**Results:** `benchmark-output/results/benchmark_results_<timestamp>.json`
 
 ---
 
@@ -48,7 +48,7 @@ entrypoints/benchmark/
 └── README.md              # This file
 ```
 
-**Single entrypoint:** Use only `run.py`. Switch between **concurrent** and **stateful** by choosing the corresponding `CFG` block and the right agent type (see [Evaluator mode: Concurrent vs Stateful](#-evaluator-mode-concurrent-vs-stateful) below).
+**Single entrypoint:** Use only `run.py`. You can run it with no flags (uses defaults in file) or pass CLI flags for pipelines/use cases.
 
 ---
 
@@ -109,7 +109,54 @@ For each project in PROJECT_IDS:
 
 ### **Main Configuration File: `run.py`**
 
-All benchmark settings configured in code (no CLI):
+`run.py` keeps the default configuration in code, and the CLI can override only what you pass.
+
+### **CLI Usage (Simple)**
+
+Default (uses `run.py` config exactly):
+
+```bash
+python -m autoppia_iwa.entrypoints.benchmark.run
+```
+
+Run only EventTasks:
+
+```bash
+python -m autoppia_iwa.entrypoints.benchmark.run \
+  --task-types event_only \
+  --project-id autocinema \
+  --use-case FIND_MOVIE
+```
+
+Run only DataExtraction tasks:
+
+```bash
+python -m autoppia_iwa.entrypoints.benchmark.run \
+  --task-types data_extraction_only \
+  --project-id autocinema \
+  --de-use-case EXTRACT_MOVIES
+```
+
+Run both with explicit filters:
+
+```bash
+python -m autoppia_iwa.entrypoints.benchmark.run \
+  --task-types both \
+  --project-id autocinema \
+  --use-cases FIND_MOVIE,BUY_TICKET \
+  --data-extraction-use-cases EXTRACT_MOVIES,EXTRACT_TOP_RATED
+```
+
+Available pipeline flags:
+- `--task-types {both,event_only,data_extraction_only}`
+- `--use-cases` / `--use-case` for EventTask use cases
+- `--data-extraction-use-cases` / `--de-use-case` for DataExtraction use cases
+- `--project-ids` / `--project-id` for project selection
+
+Legacy alias kept for compatibility:
+- `--test {both,event_only,data_extraction_only}`
+
+Example default config block:
 
 ```python
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
@@ -183,7 +230,7 @@ There is **one entrypoint**, `run.py`. All agents expose **POST /act**; you choo
 | **Calls** | Once per task: `step_index=0`, agent returns full `tool_calls` plan | Repeated: each call gets current `snapshot_html`, agent returns next `tool_calls` |
 | **Typical use** | Agent plans full sequence in one go | Agent decides step-by-step (same as subnet miners) |
 
-**How to switch in `run.py`:** Use the first `CFG` block for concurrent, or the commented stateful block for stateful. In both cases use `ApifiedWebAgent` with your agent’s base URL (agent must expose `POST /act`).
+**How to switch in `run.py`:** Set `EVALUATOR_MODE` (`"concurrent"` or `"stateful"`). In both cases use `ApifiedWebAgent` with your agent’s base URL (agent must expose `POST /act`).
 
 **`/act` endpoint (POST) — used for both modes:**
 

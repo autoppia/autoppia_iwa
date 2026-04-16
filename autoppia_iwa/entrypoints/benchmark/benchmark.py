@@ -55,10 +55,12 @@ class Benchmark:
         self.per_project_results = {}
         # When using tasks_json_path, (project, tasks) loaded once at start of run()
         self._custom_tasks_cache: tuple[WebProject, list[Task]] | None = None
-        self._task_strategies = (
-            EventTaskStrategy(),
-            DataExtractionTaskStrategy(),
-        )
+        task_strategies: list[EventTaskStrategy | DataExtractionTaskStrategy] = []
+        if self.config.enable_event_tasks:
+            task_strategies.append(EventTaskStrategy())
+        if self.config.enable_data_extraction_tasks:
+            task_strategies.append(DataExtractionTaskStrategy())
+        self._task_strategies = tuple(task_strategies)
 
     def _validate_config(self) -> None:
         """
@@ -76,12 +78,24 @@ class Benchmark:
         if self.config.max_parallel_agent_calls <= 0:
             raise ValueError("max_parallel_agent_calls must be greater than 0.")
 
+        if not self.config.enable_event_tasks and not self.config.enable_data_extraction_tasks:
+            raise ValueError("At least one task strategy must be enabled.")
+
         # Validate agent uniqueness
         agent_ids = [agent.id for agent in self.config.agents]
         if len(agent_ids) != len(set(agent_ids)):
             raise ValueError("Agent IDs must be unique.")
 
-        logger.info(f"Configuration validated: {len(self.config.projects)} projects, {len(self.config.agents)} agents, {self.config.runs} runs, evaluator_mode={self.config.evaluator_mode}")
+        enabled_task_strategies = []
+        if self.config.enable_event_tasks:
+            enabled_task_strategies.append("event")
+        if self.config.enable_data_extraction_tasks:
+            enabled_task_strategies.append("data_extraction")
+        logger.info(
+            f"Configuration validated: {len(self.config.projects)} projects, "
+            f"{len(self.config.agents)} agents, {self.config.runs} runs, "
+            f"evaluator_mode={self.config.evaluator_mode}, task_strategies={enabled_task_strategies}"
+        )
 
         if self.config.evaluator_mode == "stateful":
             logger.info(f"Stateful mode: max {self.config.max_steps_per_task} steps per task")
@@ -546,8 +560,14 @@ class Benchmark:
         if self._custom_tasks_cache is not None:
             cached_project, cached_tasks = self._custom_tasks_cache
             if cached_project.id == project.id:
-                logger.info("Using custom tasks JSON. Skipping auto-generated data_extraction strategy for this project.")
-                return {"event": cached_tasks, "data_extraction": []}
+                logger.info("Using custom tasks JSON. Skipping auto-generated strategies for this project.")
+                tasks_by_strategy = {strategy.name: [] for strategy in self._task_strategies}
+                if self.config.enable_event_tasks:
+                    tasks_by_strategy["event"] = cached_tasks
+                elif self._task_strategies:
+                    # Fallback for custom JSON + no event strategy: run under first enabled strategy name.
+                    tasks_by_strategy[self._task_strategies[0].name] = cached_tasks
+                return tasks_by_strategy
 
         tasks_by_strategy: dict[str, list[Task]] = {}
         for strategy in self._task_strategies:

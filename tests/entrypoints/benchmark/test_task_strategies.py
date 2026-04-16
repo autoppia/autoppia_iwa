@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
+import pytest
+
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
 from autoppia_iwa.entrypoints.benchmark.task_strategies import (
     DataExtractionTaskStrategy,
@@ -56,3 +58,14 @@ def test_data_extraction_strategy_defaults_to_project_de_use_cases_when_none(tmp
     project = cfg.projects[0]
     strategy = DataExtractionTaskStrategy()
     assert strategy.get_selected_use_cases(cfg, project) == ["A", "B", "C"]
+
+
+def test_config_requires_at_least_one_enabled_pipeline(tmp_path):
+    with pytest.raises(ValueError, match="At least one task pipeline must be enabled"):
+        BenchmarkConfig(
+            projects=[_make_project()],
+            agents=[SimpleNamespace(id="agent-1")],
+            base_dir=tmp_path,
+            enable_event_tasks=False,
+            enable_data_extraction_tasks=False,
+        )

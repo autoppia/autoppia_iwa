@@ -40,3 +40,29 @@ def test_benchmark_cache_dir_data_extraction_only_uses_data_extraction_folder(tm
 
     cache_dir = benchmark._get_task_cache_dir("data_extraction")
     assert cache_dir.endswith("benchmark-output/cache/DataExtraction")
+
+
+def test_benchmark_uses_only_event_strategy_when_de_is_disabled(tmp_path):
+    cfg = BenchmarkConfig(
+        projects=[_make_project()],
+        agents=[SimpleNamespace(id="agent-1")],
+        base_dir=tmp_path,
+        enable_event_tasks=True,
+        enable_data_extraction_tasks=False,
+    )
+    benchmark = Benchmark(cfg)
+
+    assert [strategy.name for strategy in benchmark._task_strategies] == ["event"]
+
+
+def test_benchmark_uses_only_de_strategy_when_event_is_disabled(tmp_path):
+    cfg = BenchmarkConfig(
+        projects=[_make_project()],
+        agents=[SimpleNamespace(id="agent-1")],
+        base_dir=tmp_path,
+        enable_event_tasks=False,
+        enable_data_extraction_tasks=True,
+    )
+    benchmark = Benchmark(cfg)
+
+    assert [strategy.name for strategy in benchmark._task_strategies] == ["data_extraction"]

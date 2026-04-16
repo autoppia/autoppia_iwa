@@ -39,6 +39,9 @@ class BenchmarkConfig:
     # Optional whitelist of use-case names for the DataExtraction strategy.
     # If None, all DE-compatible use cases are considered.
     data_extraction_use_cases: list[str] | None = None
+    # Pipeline toggles
+    enable_event_tasks: bool = True
+    enable_data_extraction_tasks: bool = True
 
     # Execution
     runs: int = 1
@@ -89,6 +92,9 @@ class BenchmarkConfig:
 
         if self.evaluator_mode == "stateful" and self.max_steps_per_task <= 0:
             raise ValueError("max_steps_per_task must be > 0 when using stateful mode.")
+
+        if not self.enable_event_tasks and not self.enable_data_extraction_tasks:
+            raise ValueError("At least one task pipeline must be enabled: event or data_extraction.")
 
         # Use benchmark-output/ directory for all generated artifacts
         benchmark_dir = self.base_dir / "benchmark-output"

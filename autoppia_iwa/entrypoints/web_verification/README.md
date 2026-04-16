@@ -21,6 +21,17 @@ python -m autoppia_iwa.entrypoints.web_verification.run --project-id autocrm --i
 python -m autoppia_iwa.entrypoints.web_verification.run --project-id autocrm --no-llm-review --no-dynamic-verification
 ```
 
+## CLI Summary
+
+- Minimal run:
+  - `python -m autoppia_iwa.entrypoints.web_verification.run --project-id <project_id>`
+- Skip IWAP check:
+  - `python -m autoppia_iwa.entrypoints.web_verification.run --project-id <project_id> --no-iwap`
+- Disable DE verification:
+  - `python -m autoppia_iwa.entrypoints.web_verification.run --project-id <project_id> --no-data-extraction-verification`
+- Custom seeds and output:
+  - `python -m autoppia_iwa.entrypoints.web_verification.run --project-id <project_id> --seeds 1,50,100 --output-dir ./verification_results`
+
 **Outputs**: One JSON per project is written to `./verification_results/verification_<project_id>.json` (overwritten on rerun unless you change `--output-dir`).
 
 ## Pre-Validation
