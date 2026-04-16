@@ -2,9 +2,9 @@ import asyncio
 import random
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
+from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator
 
-from ..shared_utils import create_constraint_dict
+from ...shared_utils import create_constraint_dict
 from .data import (
     FIELD_OPERATORS_MAP_ADD_REACTION,
     FIELD_OPERATORS_MAP_CHANNEL,
