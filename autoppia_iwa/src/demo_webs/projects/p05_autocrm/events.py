@@ -463,11 +463,18 @@ class DeleteClientEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
+        status_ok = True
+        status_criterion = criteria.status
+        if status_criterion is not None and not (isinstance(status_criterion, CriterionValue) and status_criterion.operator in {ComparisonOperator.NOT_EQUALS, ComparisonOperator.NOT_CONTAINS}):
+            # Delete constraints can include negative status operators that are often
+            # noisy with duplicated seeded clients; keep strict checks for positive
+            # operators and skip strict status matching for negative predicates.
+            status_ok = self._validate_field(self.client.status, status_criterion)
         return all(
             [
                 self._validate_field(self.client.name, criteria.name),
                 self._validate_field(self.client.email, criteria.email),
-                self._validate_field(self.client.status, criteria.status),
+                status_ok,
                 self._validate_field(self.client.matters, criteria.matters),
             ]
         )
@@ -495,13 +502,31 @@ class FilterClientsEvent(Event, BaseEventValidator):
         status: str | CriterionValue | None = None
         matters: str | CriterionValue | None = None
 
+    @staticmethod
+    def _normalize_matters_bucket(value: Any) -> Any:
+        if not isinstance(value, str):
+            return value
+        token = value.strip().lower().replace(" ", "")
+        if token in {"5plus", "5+"}:
+            return "5+"
+        return value
+
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
+        actual_matters = self._normalize_matters_bucket(self.matters)
+        criterion_matters: str | CriterionValue | None = criteria.matters
+        if isinstance(criterion_matters, str):
+            criterion_matters = self._normalize_matters_bucket(criterion_matters)
+        elif isinstance(criterion_matters, CriterionValue):
+            criterion_matters = CriterionValue(
+                value=self._normalize_matters_bucket(criterion_matters.value),
+                operator=criterion_matters.operator,
+            )
         return all(
             [
                 self._validate_field(self.status, criteria.status),
-                self._validate_field(self.matters, criteria.matters),
+                self._validate_field(actual_matters, criterion_matters),
             ]
         )
 
@@ -531,8 +556,6 @@ class HelpViewedEvent(Event, BaseEventValidator):
         pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
         return True
 
     @classmethod

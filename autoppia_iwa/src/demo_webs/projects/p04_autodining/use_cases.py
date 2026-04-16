@@ -8,16 +8,23 @@ from .events import (
     ContactEvent,
     ContactPageViewEvent,
     CountrySelectedEvent,
-    DateDropdownOpenedEvent,
+    DateSelectedEvent,
     HelpCategorySelectedEvent,
     HelpFaqToggledEvent,
     HelpPageViewEvent,
+    LoginEvent,
+    LogoutEvent,
     OccasionSelectedEvent,
-    PeopleDropdownOpenedEvent,
+    PeopleSelectedEvent,
+    RegisterEvent,
     ReservationCompleteEvent,
+    ReviewCreatedEvent,
+    ReviewDeletedEvent,
+    ReviewEditedEvent,
     ScrollViewEvent,
     SearchRestaurantEvent,
-    TimeDropdownOpenedEvent,
+    TagFilterSelectedEvent,
+    TimeSelectedEvent,
     ViewFullMenuEvent,
     ViewRestaurantEvent,
 )
@@ -28,136 +35,138 @@ from .generation_functions import (
     generate_contact_card_click_constraints,
     generate_contact_constraints,
     generate_country_selected_constraints,
-    generate_date_dropdown_opened_constraints,
+    generate_date_selected_constraints,
     generate_help_category_selected_constraints,
     generate_help_faq_toggled_constraints,
+    generate_login_constraints,
+    generate_logout_constraints,
     generate_occasion_selected_constraints,
-    generate_people_dropdown_opened_constraints,
+    generate_people_selected_constraints,
+    generate_register_constraints,
     generate_reservation_complete_constraints,
+    generate_review_created_constraints,
+    generate_review_deleted_constraints,
+    generate_review_edited_constraints,
     generate_scroll_view_constraints,
     generate_search_restaurant_constraints,
-    generate_time_dropdown_opened_constraints,
+    generate_tag_filter_selected_constraints,
+    generate_time_selected_constraints,
     generate_view_full_menu_constraints,
     generate_view_restaurant_constraints,
 )
 
 ###############################################################################
-# DATE_DROPDOWN_OPENED_USE_CASE
+# DATE_SELECTED_USE_CASE
 ###############################################################################
 
-DATE_DROPDOWN_OPENED_INFO = """
+DATE_SELECTED_INFO = """
 CRITICAL REQUIREMENTS: EVERY prompt you generate MUST:
-1. Explicitly instruct the user to open or interact with the date selector dropdown (e.g., "Open the date selector", "Click on the date field").
-2. Clearly describe an action that triggers the date selection interface.
-3. Ensure the action leads directly to the DATE_DROPDOWN_OPENED event.
-4. Do not include date comparison conditions or date selection instructions unless explicitly required by constraints.
-5. Do not include unrelated actions such as confirming, submitting, or selecting other fields.
+1. Explicitly instruct the user to select a date in the date picker.
+2. Ensure the action leads directly to the DATE_SELECTED event.
+3. Do not include unrelated actions such as confirming, submitting, or selecting other fields.
 
 Examples:
-- CORRECT: "Open the date selector and select the date equals '2026-02-23T19:00:00+00:00'."
-- INCORRECT: "Select the date '2026-02-23T19:00:00+00:00'." (does not explicitly open the date selector)
-- INCORRECT: "Confirm the booking date." (wrong action)
+- CORRECT: "Select the date '2026-02-23T19:00:00+00:00'."
 - INCORRECT: "Open the date selector." (missing required date selection when constraints specify a date)
+- INCORRECT: "Confirm the booking date." (wrong action)
 """
 
-DATE_DROPDOWN_OPENED_USE_CASE = UseCase(
-    name="DATE_DROPDOWN_OPENED",
-    description="User interacts with (opens or focuses on) a date selection dropdown/input, which is often pre-filled.",
-    event=DateDropdownOpenedEvent,
-    event_source_code=DateDropdownOpenedEvent.get_source_code_of_class(),
-    additional_prompt_info=DATE_DROPDOWN_OPENED_INFO,
-    constraints_generator=generate_date_dropdown_opened_constraints,
+DATE_SELECTED_USE_CASE = UseCase(
+    name="DATE_SELECTED",
+    description="User selects a date from the date picker.",
+    event=DateSelectedEvent,
+    event_source_code=DateSelectedEvent.get_source_code_of_class(),
+    additional_prompt_info=DATE_SELECTED_INFO,
+    constraints_generator=generate_date_selected_constraints,
     examples=[
         {
-            "prompt": "Open the date selector and select the date '2026-02-23T19:00:00+00:00'.",
-            "prompt_for_task_generation": "Open the date selector and select the date '<date>'.",
+            "prompt": "Select the date '2026-02-23T19:00:00+00:00'.",
+            "prompt_for_task_generation": "Select the date '<date>'.",
         },
         {
-            "prompt": "Open the date selector and select a date not equal to '2026-02-28T19:00:00+00:00'.",
-            "prompt_for_task_generation": "Open the date selector and select a date not equal to '<date>'.",
+            "prompt": "Select a date not equal to '2026-02-28T19:00:00+00:00'.",
+            "prompt_for_task_generation": "Select a date not equal to '<date>'.",
         },
         {
-            "prompt": "Open the date selector and select a date greater than '2026-01-23T12:00:00+00:00'.",
-            "prompt_for_task_generation": "Open the date selector and select a date greater than '<date>'.",
+            "prompt": "Select a date greater than '2026-01-23T12:00:00+00:00'.",
+            "prompt_for_task_generation": "Select a date greater than '<date>'.",
         },
         {
-            "prompt": "Open the date selector and select a date less than '2026-02-21T18:00:00+00:00'.",
-            "prompt_for_task_generation": "Open the date selector and select a date less than '<date>'.",
+            "prompt": "Select a date less than '2026-02-21T18:00:00+00:00'.",
+            "prompt_for_task_generation": "Select a date less than '<date>'.",
         },
         {
-            "prompt": "Open the date selector and select a date greater equals '2026-02-20T21:00:00+00:00'.",
-            "prompt_for_task_generation": "Open the date selector and select a date greater equal '<date>'.",
+            "prompt": "Select a date greater equals '2026-02-20T21:00:00+00:00'.",
+            "prompt_for_task_generation": "Select a date greater equal '<date>'.",
         },
         {
-            "prompt": "Open the date selector and select a date less equals '2026-02-24T13:00:00+00:00'.",
-            "prompt_for_task_generation": "Open the date selector and select a date less equal '<date>'.",
+            "prompt": "Select a date less equals '2026-02-24T13:00:00+00:00'.",
+            "prompt_for_task_generation": "Select a date less equal '<date>'.",
         },
     ],
 )
 
 ###############################################################################
-# TIME_DROPDOWN_OPENED_USE_CASE
+# TIME_SELECTED_USE_CASE
 ###############################################################################
 
-TIME_DROPDOWN_OPENED_INFO = """
+TIME_SELECTED_INFO = """
 CRITICAL REQUIREMENTS: EVERY prompt you generate MUST:
-1. Explicitly indicate interaction with a time selection UI element (e.g., "Open the time selector", "Click on the time field").
-2. The event captures the time displayed or selected at the moment the interaction occurs.
-3. The prompt must clearly lead to the TIME_DROPDOWN_OPENED event.
-4. Do not include unrelated actions such as confirming, submitting, or interacting with other fields.
+1. Explicitly indicate selecting a time from the time picker.
+2. The prompt must clearly lead to the TIME_SELECTED event.
+3. Do not include unrelated actions such as confirming, submitting, or interacting with other fields.
 
 Examples:
-- CORRECT: "Open the time dropdown and select the time equals '2:30 PM'."
-- INCORRECT: "Select the time '2:30 PM'." (does not explicitly open the time dropdown)
-- INCORRECT: "Confirm the booking time." (wrong action)
+- CORRECT: "Select the time equals '2:30 PM'."
 - INCORRECT: "Open the time dropdown." (missing required time selection when constraints specify a time)
+- INCORRECT: "Confirm the booking time." (wrong action)
 """
 
 
-TIME_DROPDOWN_OPENED_USE_CASE = UseCase(
-    name="TIME_DROPDOWN_OPENED",
-    description="User interacts with (opens or focuses on) a time selection dropdown/input.",
-    event=TimeDropdownOpenedEvent,
-    event_source_code=TimeDropdownOpenedEvent.get_source_code_of_class(),
-    additional_prompt_info=TIME_DROPDOWN_OPENED_INFO,
-    constraints_generator=generate_time_dropdown_opened_constraints,
+TIME_SELECTED_USE_CASE = UseCase(
+    name="TIME_SELECTED",
+    description="User selects a time in the time picker.",
+    event=TimeSelectedEvent,
+    event_source_code=TimeSelectedEvent.get_source_code_of_class(),
+    additional_prompt_info=TIME_SELECTED_INFO,
+    constraints_generator=generate_time_selected_constraints,
     examples=[
         {
-            "prompt": "Open the time dropdown and select the time equals '2:30 PM'.",
-            "prompt_for_task_generation": "Open the time dropdown and select the time equals '2:30 PM'.",
+            "prompt": "Select the time equals '2:30 PM'.",
+            "prompt_for_task_generation": "Select the time equals '2:30 PM'.",
         },
         {
-            "prompt": "Open the time dropdown and select a time not equals '2:30 PM'.",
-            "prompt_for_task_generation": "Open the time dropdown and select a time not equals '2:30 PM'.",
+            "prompt": "Select a time not equals '2:30 PM'.",
+            "prompt_for_task_generation": "Select a time not equals '2:30 PM'.",
         },
         {
-            "prompt": "Open the time dropdown and select a time greater than '1:00 PM'.",
-            "prompt_for_task_generation": "Open the time dropdown and select a time greater than '1:00 PM'.",
+            "prompt": "Select a time greater than '1:00 PM'.",
+            "prompt_for_task_generation": "Select a time greater than '1:00 PM'.",
         },
         {
-            "prompt": "Open the time dropdown and select a time less than '5:00 PM'.",
-            "prompt_for_task_generation": "Open the time dropdown and select a time less than '5:00 PM'.",
+            "prompt": "Select a time less than '5:00 PM'.",
+            "prompt_for_task_generation": "Select a time less than '5:00 PM'.",
         },
         {
-            "prompt": "Open the time dropdown and select a time greater equal '3:00 PM'.",
-            "prompt_for_task_generation": "Open the time dropdown and select a time greater equal '3:00 PM'.",
+            "prompt": "Select a time greater equal '3:00 PM'.",
+            "prompt_for_task_generation": "Select a time greater equal '3:00 PM'.",
         },
         {
-            "prompt": "Open the time dropdown and select a time less equals '6:00 PM'.",
-            "prompt_for_task_generation": "Open the time dropdown and select a time less equal '6:00 PM'.",
+            "prompt": "Select a time less equals '6:00 PM'.",
+            "prompt_for_task_generation": "Select a time less equal '6:00 PM'.",
         },
     ],
 )
 
 ###############################################################################
-# PEOPLE_DROPDOWN_OPENED_USE_CASE
+# PEOPLE_SELECTED_USE_CASE
 ###############################################################################
 
-PEOPLE_DROPDOWN_OPENED_INFO = """
+PEOPLE_SELECTED_INFO = """
 CRITICAL REQUIREMENTS: EVERY prompt you generate MUST:
 1. Clearly describe interaction with the guest selection UI element (e.g., "Open the guest selector dropdown", "Click on the guest field").
 2. Ensure the event captures the number of guests selected at the moment of interaction.
-3. The prompt should explicitly trigger the GUEST_SELECTOR_DROPDOWN_OPENED event.
+3. The prompt should explicitly trigger the PEOPLE_SELECTED event.
 4. Avoid including unrelated actions such as confirming, submitting, or interacting with other fields.
 
 Examples:
@@ -167,13 +176,13 @@ Examples:
 - INCORRECT: "Open the guest selector dropdown." (missing required people selection when constraints specify a value)
 """
 
-PEOPLE_DROPDOWN_OPENED_USE_CASE = UseCase(
-    name="PEOPLE_DROPDOWN_OPENED",
-    description="User interacts with (opens or focuses on) a dropdown to select the number of people/guests.",
-    event=PeopleDropdownOpenedEvent,
-    event_source_code=PeopleDropdownOpenedEvent.get_source_code_of_class(),
-    additional_prompt_info=PEOPLE_DROPDOWN_OPENED_INFO,
-    constraints_generator=generate_people_dropdown_opened_constraints,
+PEOPLE_SELECTED_USE_CASE = UseCase(
+    name="PEOPLE_SELECTED",
+    description="User selects the number of people/guests.",
+    event=PeopleSelectedEvent,
+    event_source_code=PeopleSelectedEvent.get_source_code_of_class(),
+    additional_prompt_info=PEOPLE_SELECTED_INFO,
+    constraints_generator=generate_people_selected_constraints,
     examples=[
         {
             "prompt": "Open the guest selector dropdown and select people equals 4.",
@@ -240,6 +249,104 @@ SEARCH_RESTAURANT_USE_CASE = UseCase(
             "prompt": "Search for restaurants with outdoor seating in midtown",
             "prompt_for_task_generation": "Search for restaurants with <query> in midtown",
         },
+    ],
+)
+
+###############################################################################
+# TAG_FILTER_SELECTED_USE_CASE
+###############################################################################
+
+TAG_FILTER_SELECTED_INFO = """
+CRITICAL REQUIREMENTS: EVERY prompt you generate MUST:
+1. Explicitly select or remove a tag filter.
+2. Clearly mention the tag (e.g., "sushi", "top-rated").
+3. Lead to the TAG_FILTER_SELECTED event.
+"""
+
+TAG_FILTER_SELECTED_USE_CASE = UseCase(
+    name="TAG_FILTER_SELECTED",
+    description="User selects or removes a restaurant tag filter.",
+    event=TagFilterSelectedEvent,
+    event_source_code=TagFilterSelectedEvent.get_source_code_of_class(),
+    constraints_generator=generate_tag_filter_selected_constraints,
+    additional_prompt_info=TAG_FILTER_SELECTED_INFO,
+    examples=[
+        {"prompt": "Select the tag filter 'sushi'.", "prompt_for_task_generation": "Select the tag filter '<tag>'."},
+        {"prompt": "Remove the tag filter 'top-rated'.", "prompt_for_task_generation": "Remove the tag filter '<tag>'."},
+    ],
+)
+
+###############################################################################
+# AUTH USE CASES
+###############################################################################
+
+LOGIN_USE_CASE = UseCase(
+    name="LOGIN",
+    description="User logs into their account.",
+    event=LoginEvent,
+    event_source_code=LoginEvent.get_source_code_of_class(),
+    constraints_generator=generate_login_constraints,
+    examples=[
+        {"prompt": "Log in with username 'james'.", "prompt_for_task_generation": "Log in with username '<username>'."},
+    ],
+)
+
+REGISTER_USE_CASE = UseCase(
+    name="REGISTER",
+    description="User creates a new account.",
+    event=RegisterEvent,
+    event_source_code=RegisterEvent.get_source_code_of_class(),
+    constraints_generator=generate_register_constraints,
+    examples=[
+        {"prompt": "Create an account for 'emma' with email 'emma@example.com'.", "prompt_for_task_generation": "Create an account for '<username>' with email '<email>'."},
+    ],
+)
+
+LOGOUT_USE_CASE = UseCase(
+    name="LOGOUT",
+    description="User logs out of their account.",
+    event=LogoutEvent,
+    event_source_code=LogoutEvent.get_source_code_of_class(),
+    constraints_generator=generate_logout_constraints,
+    examples=[
+        {"prompt": "Log out of the account 'james'.", "prompt_for_task_generation": "Log out of the account '<username>'."},
+    ],
+)
+
+###############################################################################
+# REVIEW USE CASES
+###############################################################################
+
+REVIEW_CREATED_USE_CASE = UseCase(
+    name="REVIEW_CREATED",
+    description="User submits a new restaurant review.",
+    event=ReviewCreatedEvent,
+    event_source_code=ReviewCreatedEvent.get_source_code_of_class(),
+    constraints_generator=generate_review_created_constraints,
+    examples=[
+        {"prompt": "Submit a review for restaurant 'rest-1' with rating 5.", "prompt_for_task_generation": "Submit a review for restaurant '<restaurant_id>' with rating <rating>."},
+    ],
+)
+
+REVIEW_EDITED_USE_CASE = UseCase(
+    name="REVIEW_EDITED",
+    description="User edits an existing restaurant review.",
+    event=ReviewEditedEvent,
+    event_source_code=ReviewEditedEvent.get_source_code_of_class(),
+    constraints_generator=generate_review_edited_constraints,
+    examples=[
+        {"prompt": "Edit your review 'review-12' and set rating to 4.", "prompt_for_task_generation": "Edit your review '<review_id>' and set rating to <rating>."},
+    ],
+)
+
+REVIEW_DELETED_USE_CASE = UseCase(
+    name="REVIEW_DELETED",
+    description="User deletes a restaurant review.",
+    event=ReviewDeletedEvent,
+    event_source_code=ReviewDeletedEvent.get_source_code_of_class(),
+    constraints_generator=generate_review_deleted_constraints,
+    examples=[
+        {"prompt": "Delete your review 'review-12'.", "prompt_for_task_generation": "Delete your review '<review_id>'."},
     ],
 )
 
@@ -552,22 +659,28 @@ SCROLL_VIEW_USE_CASE = UseCase(
 
 CONTACT_INFO_USE_CASE = UseCase(
     name="CONTACT_FORM_SUBMIT",
-    description="User contacts to user support.",
+    description="User submits the contact form to reach support.",
     event=ContactEvent,
     event_source_code=ContactEvent.get_source_code_of_class(),
     constraints_generator=generate_contact_constraints,
+    additional_prompt_info="""
+CRITICAL REQUIREMENTS: EVERY prompt you generate MUST:
+1. Explicitly mention submitting the contact form.
+2. Use the field names exactly as in constraints: username, email, subject, message.
+3. Include all constraints verbatim.
+""",
     examples=[
         {
-            "prompt": "Contact where name equals 'James'.",
-            "prompt_for_task_generation": "Contact where name equals 'James'.",
+            "prompt": "Submit the contact form where username equals 'James'.",
+            "prompt_for_task_generation": "Submit the contact form where username equals 'James'.",
         },
         {
-            "prompt": "Contact where name not equals 'William' and message equals 'Can you provide more information about your pricing plans?'.",
-            "prompt_for_task_generation": "Contact where name not equals 'William' and message equals 'Can you provide more information about your pricing plans?'.",
+            "prompt": "Submit the contact form where username not equals 'William' and message equals 'Can you provide more information about your pricing plans?'.",
+            "prompt_for_task_generation": "Submit the contact form where username not equals 'William' and message equals 'Can you provide more information about your pricing plans?'.",
         },
         {
-            "prompt": "Contact where name contains 'liam' and message contains 'report a technical bug' and subject equals 'Inquiry About Your Services' and email equals 'emma.johnson@example.com'",
-            "prompt_for_task_generation": "Contact where name contains 'liam' and message contains 'report a technical bug' and subject equals 'Inquiry About Your Services' and email equals 'emma.johnson@example.com'",
+            "prompt": "Submit the contact form where username contains 'liam' and message contains 'report a technical bug' and subject equals 'Inquiry About Your Services' and email equals 'emma.johnson@example.com'.",
+            "prompt_for_task_generation": "Submit the contact form where username contains 'liam' and message contains 'report a technical bug' and subject equals 'Inquiry About Your Services' and email equals 'emma.johnson@example.com'.",
         },
     ],
 )
@@ -680,10 +793,17 @@ ALL_USE_CASES = [
     VIEW_RESTAURANT_USE_CASE,
     VIEW_FULL_MENU_USE_CASE,
     COLLAPSE_MENU_USE_CASE,
-    DATE_DROPDOWN_OPENED_USE_CASE,
-    TIME_DROPDOWN_OPENED_USE_CASE,
-    PEOPLE_DROPDOWN_OPENED_USE_CASE,
+    DATE_SELECTED_USE_CASE,
+    TIME_SELECTED_USE_CASE,
+    PEOPLE_SELECTED_USE_CASE,
     SEARCH_RESTAURANT_USE_CASE,
+    TAG_FILTER_SELECTED_USE_CASE,
+    LOGIN_USE_CASE,
+    REGISTER_USE_CASE,
+    LOGOUT_USE_CASE,
+    REVIEW_CREATED_USE_CASE,
+    REVIEW_EDITED_USE_CASE,
+    REVIEW_DELETED_USE_CASE,
     SCROLL_VIEW_USE_CASE,
     BOOK_RESTAURANT_USE_CASE,
     COUNTRY_SELECTED_USE_CASE,

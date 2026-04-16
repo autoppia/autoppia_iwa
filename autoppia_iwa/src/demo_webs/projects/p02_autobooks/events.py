@@ -617,9 +617,6 @@ class ViewCartBookEvent(Event, BaseEventValidator):
         pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        # This event has no fields to validate; presence of the event is enough.
         return True
 
     @classmethod
