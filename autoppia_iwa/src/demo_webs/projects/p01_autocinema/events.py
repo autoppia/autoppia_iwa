@@ -174,12 +174,14 @@ class RegistrationEvent(UserEvent):
     event_name: str = "REGISTRATION"
     email: str
     username: str
+    password: str
 
     class ValidationCriteria(UserEvent.ValidationCriteria):
         """Criteria for validating registration events"""
 
         email: str | CriterionValue | None = None
         username: str | CriterionValue | None = None
+        password: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """Validate if this registration event meets the criteria."""
@@ -189,7 +191,9 @@ class RegistrationEvent(UserEvent):
             return True
         if criteria.email is not None and not self._validate_field(self.email, criteria.email):
             return False
-        return not (criteria.username is not None and not self._validate_field(self.username, criteria.username))
+        if criteria.username is not None and not self._validate_field(self.username, criteria.username):
+            return False
+        return not (criteria.password is not None and not self._validate_field(self.password, criteria.password))
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "RegistrationEvent":
@@ -203,6 +207,7 @@ class RegistrationEvent(UserEvent):
             user_id=base_event.user_id,
             username=UserEvent._extract_username(data),
             email=data.get("email", ""),
+            password=data.get("password", ""),
         )
 
 

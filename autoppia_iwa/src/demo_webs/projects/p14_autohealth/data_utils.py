@@ -9,6 +9,13 @@ from loguru import logger
 from autoppia_iwa.src.demo_webs.data_provider import load_dataset_data
 
 
+def _load_initial_data_fallback(entity_type: str, count: int = 50) -> list[dict]:
+    """Fallback dataset hook used when backend dataset service returns no rows."""
+    _ = entity_type
+    _ = count
+    return []
+
+
 async def fetch_data(
     entity_type: str,
     method: str | None = None,
@@ -49,6 +56,7 @@ async def fetch_data(
     )
     if not items:
         logger.error("Dataset fetch failed for {}.", entity_type)
+        return _load_initial_data_fallback(entity_type, count)
     return items
 
 

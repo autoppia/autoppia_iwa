@@ -1,3 +1,4 @@
+import asyncio
 import contextlib
 import random
 import re
@@ -517,7 +518,7 @@ async def generate_cancel_hire_constraint(task_url: str | None = None, dataset: 
     return constraints_list
 
 
-async def generate_job_posting_constraint(
+async def _generate_job_posting_constraint_async(
     task_url: str | None = None,
     dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None,
     test_types: str | None = None,
@@ -600,6 +601,19 @@ async def generate_job_posting_constraint(
             constraints_list.append(constraint)
 
     return constraints_list
+
+
+def generate_job_posting_constraint(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]] | list[str]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    coro = _generate_job_posting_constraint_async(task_url=task_url, dataset=dataset, test_types=test_types)
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coro)
+    return coro
 
 
 def generate_write_job_title_constraint() -> list[dict[str, Any]]:

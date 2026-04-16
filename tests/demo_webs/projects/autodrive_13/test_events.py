@@ -39,12 +39,12 @@ TIME_ONLY = "14:30"
 
 @patch("autoppia_iwa.src.demo_webs.projects.p13_autodrive.events.log_event")
 class TestParseLocationAndDestination:
-    def test_search_location_parse(self):
+    def test_search_location_parse(self, mock_log):
         e = SearchLocationEvent.parse(_be("SEARCH_LOCATION", {"value": "Paris"}))
         assert e.event_name == "SEARCH_LOCATION"
         assert e.location == "Paris"
 
-    def test_enter_location_parse(self):
+    def test_enter_location_parse(self, mock_log):
         e = EnterLocationEvent.parse(_be("ENTER_LOCATION", {"value": "Lyon"}))
         assert e.event_name == "ENTER_LOCATION"
         assert e.location == "Lyon"
@@ -69,11 +69,11 @@ class TestParseLocationAndDestination:
         e = SearchLocationEvent.parse(_be("SEARCH_LOCATION", {"location": "Berlin"}))
         assert e.location == "Berlin"
 
-    def test_search_destination_parse(self):
+    def test_search_destination_parse(self, mock_log):
         e = SearchDestinationEvent.parse(_be("SEARCH_DESTINATION", {"value": "Marseille"}))
         assert e.destination == "Marseille"
 
-    def test_enter_destination_parse(self):
+    def test_enter_destination_parse(self, mock_log):
         e = EnterDestinationEvent.parse(_be("ENTER_DESTINATION", {"value": "Nice"}))
         assert e.event_name == "ENTER_DESTINATION"
         assert e.destination == "Nice"
@@ -95,7 +95,7 @@ class TestParseLocationAndDestination:
 
 @patch("autoppia_iwa.src.demo_webs.projects.p13_autodrive.events.log_event")
 class TestParseSeePrices:
-    def test_see_prices_parse(self):
+    def test_see_prices_parse(self, mock_log):
         e = SeePricesEvent.parse(_be("SEE_PRICES", {"location": "Paris", "destination": "Lyon"}))
         assert e.location == "Paris"
         assert e.destination == "Lyon"
@@ -103,20 +103,20 @@ class TestParseSeePrices:
 
 @patch("autoppia_iwa.src.demo_webs.projects.p13_autodrive.events.log_event")
 class TestParseDateAndTime:
-    def test_select_date_parse_valid_iso(self):
+    def test_select_date_parse_valid_iso(self, mock_log):
         e = SelectDateEvent.parse(_be("SELECT_DATE", {"date": ISO_DATE}))
         assert e.date is not None
         assert e.date.year == 2025 and e.date.month == 3 and e.date.day == 15
 
-    def test_select_date_parse_none(self):
+    def test_select_date_parse_none(self, mock_log):
         e = SelectDateEvent.parse(_be("SELECT_DATE", {}))
         assert e.date is None
 
-    def test_select_time_parse(self):
+    def test_select_time_parse(self, mock_log):
         e = SelectTimeEvent.parse(_be("SELECT_TIME", {"time": TIME_ONLY}))
         assert e.time is not None
 
-    def test_select_time_parse_none(self):
+    def test_select_time_parse_none(self, mock_log):
         e = SelectTimeEvent.parse(_be("SELECT_TIME", {}))
         assert e.time is None
 
@@ -129,7 +129,7 @@ class TestParseDateAndTime:
         t = dt_time(14, 30)
         assert parse_time(t) == t
 
-    def test_next_pickup_parse(self):
+    def test_next_pickup_parse(self, mock_log):
         e = NextPickupEvent.parse(_be("NEXT_PICKUP", {"date": ISO_DATE, "time": TIME_ONLY}))
         assert e.date is not None
         assert e.time is not None
@@ -137,7 +137,7 @@ class TestParseDateAndTime:
 
 @patch("autoppia_iwa.src.demo_webs.projects.p13_autodrive.events.log_event")
 class TestParseSearchRide:
-    def test_search_ride_parse(self):
+    def test_search_ride_parse(self, mock_log):
         e = SearchRideEvent.parse(
             _be(
                 "SEARCH",
@@ -167,7 +167,7 @@ class TestParseSearchRide:
 
 @patch("autoppia_iwa.src.demo_webs.projects.p13_autodrive.events.log_event")
 class TestParseSelectCarAndReserve:
-    def test_select_car_parse(self):
+    def test_select_car_parse(self, mock_log):
         e = SelectCarEvent.parse(
             _be(
                 "SELECT_CAR",
@@ -187,7 +187,7 @@ class TestParseSelectCarAndReserve:
         assert e.price == 25.5
         assert e.seats == 4
 
-    def test_reserve_ride_parse(self):
+    def test_reserve_ride_parse(self, mock_log):
         e = ReserveRideEvent.parse(
             _be(
                 "RESERVE_RIDE",
@@ -204,7 +204,7 @@ class TestParseSelectCarAndReserve:
         assert e.destination == "Y"
         assert e.ride_name == "Comfort"
 
-    def test_trip_details_parse(self):
+    def test_trip_details_parse(self, mock_log):
         e = TripDetailsEvent.parse(
             _be(
                 "TRIP_DETAILS",
@@ -220,7 +220,7 @@ class TestParseSelectCarAndReserve:
         )
         assert e.event_name == "TRIP_DETAILS"
 
-    def test_cancel_reservation_parse(self):
+    def test_cancel_reservation_parse(self, mock_log):
         e = CancelReservationEvent.parse(
             _be(
                 "CANCEL_RESERVATION",
@@ -263,21 +263,21 @@ class TestParseSelectCarAndReserve:
 # Validation tests
 @patch("autoppia_iwa.src.demo_webs.projects.p13_autodrive.events.log_event")
 class TestValidateEvents:
-    def test_search_location_validate_none(self):
+    def test_search_location_validate_none(self, mock_log):
         e = SearchLocationEvent.parse(_be("SEARCH_LOCATION", {"value": "Paris"}))
         assert e.validate_criteria(None) is True
 
-    def test_search_location_validate_location(self):
+    def test_search_location_validate_location(self, mock_log):
         e = SearchLocationEvent.parse(_be("SEARCH_LOCATION", {"value": "Paris"}))
         criteria = SearchLocationEvent.ValidationCriteria(location="Paris")
         assert e.validate_criteria(criteria) is True
 
-    def test_see_prices_validate(self):
+    def test_see_prices_validate(self, mock_log):
         e = SeePricesEvent.parse(_be("SEE_PRICES", {"location": "Paris", "destination": "Lyon"}))
         criteria = SeePricesEvent.ValidationCriteria(location="Paris", destination="Lyon")
         assert e.validate_criteria(criteria) is True
 
-    def test_select_date_validate_none(self):
+    def test_select_date_validate_none(self, mock_log):
         e = SelectDateEvent.parse(_be("SELECT_DATE", {"date": ISO_DATE}))
         assert e.validate_criteria(None) is True
 
@@ -287,12 +287,12 @@ class TestValidateEvents:
         assert d.validate_criteria(SelectDateEvent.ValidationCriteria(date=d.date)) is True
         assert t.validate_criteria(SelectTimeEvent.ValidationCriteria(time=t.time)) is True
 
-    def test_search_ride_validate(self):
+    def test_search_ride_validate(self, mock_log):
         e = SearchRideEvent.parse(_be("SEARCH", {"pickup": "A", "dropoff": "B", "scheduled": ISO_DATETIME}))
         criteria = SearchRideEvent.ValidationCriteria(destination="B", location="A")
         assert e.validate_criteria(criteria) is True
 
-    def test_select_car_validate(self):
+    def test_select_car_validate(self, mock_log):
         e = SelectCarEvent.parse(
             _be(
                 "SELECT_CAR",
@@ -309,7 +309,7 @@ class TestValidateEvents:
         criteria = SelectCarEvent.ValidationCriteria(destination="B", location="A", ride_name="Eco", price=20.0, seats=3)
         assert e.validate_criteria(criteria) is True
 
-    def test_reserve_ride_validate(self):
+    def test_reserve_ride_validate(self, mock_log):
         e = ReserveRideEvent.parse(
             _be(
                 "RESERVE_RIDE",

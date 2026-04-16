@@ -96,6 +96,10 @@ class Task(BaseModel):
         """
         from autoppia_iwa.src.data_generation.tests.classes import BaseTaskTest
 
+        # Seed must live in URL query only; ignore legacy top-level seed field.
+        data = dict(data)
+        data.pop("seed", None)
+
         # Handle use_case deserialization
         if data.get("use_case"):
             data["use_case"] = UseCase.deserialize(data["use_case"])

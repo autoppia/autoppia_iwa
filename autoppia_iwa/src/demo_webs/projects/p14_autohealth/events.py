@@ -590,7 +590,7 @@ class SearchDoctorsEvent(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "SearchDoctorsEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data
+        data = backend_event.data.get("data", {})
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,

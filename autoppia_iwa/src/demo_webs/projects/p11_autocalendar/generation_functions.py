@@ -1,3 +1,4 @@
+import asyncio
 import random
 from collections.abc import Callable
 from datetime import date, datetime, time, timedelta
@@ -274,7 +275,7 @@ def _handle_time_constraints(context: dict) -> list[dict[str, Any]]:
     return [start_constraint, end_constraint]
 
 
-async def generate_create_calendar_constraints(
+async def _generate_create_calendar_constraints_async(
     task_url: str | None = None,
     dataset: dict[str, list[dict[str, Any]]] | None = None,
     test_types: str | None = None,
@@ -297,7 +298,7 @@ async def generate_create_calendar_constraints(
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_CREATE_CALENDAR_MAP)
 
 
-async def generate_unselect_calendar_constraints(
+async def _generate_unselect_calendar_constraints_async(
     task_url: str | None = None,
     dataset: dict[str, list[dict[str, Any]]] | None = None,
     test_types: str | None = None,
@@ -314,6 +315,32 @@ async def generate_unselect_calendar_constraints(
         }
 
     return _generate_constraints_from_single_field("calendar_name", CALENDAR_NAMES, FIELD_OPERATORS_UNSELECT_CALENDAR_MAP)
+
+
+def generate_create_calendar_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    coro = _generate_create_calendar_constraints_async(task_url=task_url, dataset=dataset, test_types=test_types)
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coro)
+    return coro
+
+
+def generate_unselect_calendar_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    coro = _generate_unselect_calendar_constraints_async(task_url=task_url, dataset=dataset, test_types=test_types)
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coro)
+    return coro
 
 
 async def generate_add_new_calendar_constraints(
@@ -416,14 +443,14 @@ def generate_cell_clicked_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_add_event_constraints(
+async def _generate_add_event_constraints_async(
     task_url: str | None = None,
     dataset: dict[str, list[dict[str, Any]]] | None = None,
     test_types: str | None = None,
 ) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for adding a calendar event."""
     if test_types == "data_extraction_only":
-        return await generate_search_submit_constraints(
+        return await _generate_search_submit_constraints_async(
             task_url=task_url,
             dataset=dataset,
             test_types=test_types,
@@ -454,6 +481,19 @@ async def generate_add_event_constraints(
         selected_fields.remove("time")
     reduced_field_map = {field: field_map[field] for field in selected_fields}
     return _generate_constraints_for_event(reduced_field_map, FIELD_OPERATORS_ADD_EVENT_MAP, {"time": _handle_time_constraints})
+
+
+def generate_add_event_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    coro = _generate_add_event_constraints_async(task_url=task_url, dataset=dataset, test_types=test_types)
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coro)
+    return coro
 
 
 async def generate_event_wizard_open_constraints(
@@ -515,7 +555,7 @@ async def generate_event_wizard_open_constraints(
     return constraints_list
 
 
-async def generate_search_submit_constraints(
+async def _generate_search_submit_constraints_async(
     task_url: str | None = None,
     dataset: dict[str, list[dict[str, Any]]] | None = None,
     test_types: str | None = None,
@@ -568,7 +608,20 @@ async def generate_search_submit_constraints(
     return _generate_constraints_from_single_field("query", CALENDAR_NAMES, FIELD_OPERATORS_SEARCH_SUBMIT_MAP)
 
 
-async def generate_event_reminder_constraints(
+def generate_search_submit_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    coro = _generate_search_submit_constraints_async(task_url=task_url, dataset=dataset, test_types=test_types)
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coro)
+    return coro
+
+
+async def _generate_event_reminder_constraints_async(
     task_url: str | None = None,
     dataset: dict[str, list[dict[str, Any]]] | None = None,
     test_types: str | None = None,
@@ -631,7 +684,7 @@ async def generate_event_reminder_constraints(
     return _generate_constraints_from_single_field("minutes", REMINDER_MINUTES, FIELD_OPERATORS_EVENT_REMINDER_MAP)
 
 
-async def generate_event_attendee_constraints(
+async def _generate_event_attendee_constraints_async(
     task_url: str | None = None,
     dataset: dict[str, list[dict[str, Any]]] | None = None,
     test_types: str | None = None,
@@ -689,3 +742,29 @@ async def generate_event_attendee_constraints(
             or []
         )
     return _generate_constraints_from_single_field("email", ATTENDEE_EMAILS, FIELD_OPERATORS_EVENT_ATTENDEE_MAP)
+
+
+def generate_event_reminder_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    coro = _generate_event_reminder_constraints_async(task_url=task_url, dataset=dataset, test_types=test_types)
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coro)
+    return coro
+
+
+def generate_event_attendee_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    coro = _generate_event_attendee_constraints_async(task_url=task_url, dataset=dataset, test_types=test_types)
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coro)
+    return coro
