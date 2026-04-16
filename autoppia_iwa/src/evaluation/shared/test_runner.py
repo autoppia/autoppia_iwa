@@ -14,6 +14,17 @@ from autoppia_iwa.src.evaluation.classes import TestResult
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 
 
+def _criteria_for_log(test: BaseTaskTest) -> object:
+    """Human-readable criteria for logs (DataExtractionTest uses expected_answer, not answer_criteria)."""
+    if getattr(test, "type", None) == "DataExtractionTest":
+        info: dict[str, object] = {"expected_answer": getattr(test, "expected_answer", None)}
+        ac = getattr(test, "answer_criteria", None)
+        if ac is not None:
+            info["answer_criteria"] = ac
+        return info
+    return getattr(test, "event_criteria", "N/A")
+
+
 class TestRunner:
     def __init__(self, tests: list[BaseTaskTest]):
         self.tests = tests
@@ -26,6 +37,7 @@ class TestRunner:
         browser_snapshots: list[BrowserSnapshot],
         current_action_index: int | None = None,
         total_iterations: int | None = None,
+        extracted_data: object | None = None,
     ) -> list[TestResult]:
         """
         Run all tests for a single snapshot (after a single action).
@@ -47,7 +59,7 @@ class TestRunner:
 
             logger.info(f"  🧪 Running Test {test_idx}/{len(self.tests)}: {test.type}")
             logger.info(f"     Description: {test.description}")
-            logger.info(f"     Criteria: {getattr(test, 'event_criteria', 'N/A')}")
+            logger.info(f"     Criteria: {_criteria_for_log(test)}")
 
             success = await test.execute_test(
                 web_project=web_project,
@@ -56,6 +68,7 @@ class TestRunner:
                 snapshot=snapshot,
                 browser_snapshots=browser_snapshots,
                 total_iterations=total_iterations,
+                extracted_data=extracted_data,
             )
 
             # Log test result
@@ -77,6 +90,7 @@ class TestRunner:
         self,
         backend_events: list[BackendEvent] | None = None,
         web_agent_id: str | None = None,
+        extracted_data: object | None = None,
     ) -> list[TestResult]:
         """
         Run all tests after executing the
@@ -88,11 +102,10 @@ class TestRunner:
 
         snapshot_results = []  # Store results for this snapshot
         for test_idx, test in enumerate(self.tests, 1):
-            test_name = getattr(test, "event_name", "Unknown")
-            test_criteria = getattr(test, "event_criteria", {})
+            test_name = getattr(test, "event_name", None) or getattr(test, "type", "Unknown")
 
             _log_backend_test(f"   🧪 Test {test_idx}/{len(self.tests)}: {test_name}", web_agent_id=web_agent_id)
-            _log_backend_test(f"      - Criteria: {test_criteria}", web_agent_id=web_agent_id)
+            _log_backend_test(f"      - Criteria: {_criteria_for_log(test)}", web_agent_id=web_agent_id)
             _log_backend_test(f"      - Test type: {type(test).__name__}", web_agent_id=web_agent_id)
             _log_backend_test(f"      - Test description: {getattr(test, 'description', 'No description')}", web_agent_id=web_agent_id)
 
@@ -106,6 +119,7 @@ class TestRunner:
 
             success = await test.execute_global_test(
                 backend_events=backend_events,
+                extracted_data=extracted_data,
             )
 
             _log_backend_test(f"      - Result: {'✅ PASSED' if success else '❌ FAILED'}", web_agent_id=web_agent_id)

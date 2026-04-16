@@ -3,6 +3,8 @@
 import random
 from typing import Any
 
+from loguru import logger
+
 from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator
 from autoppia_iwa.src.demo_webs.shared_utils import create_constraint_dict
 
@@ -34,8 +36,27 @@ from .data import (
     SELECTED_FIELDS_VIEW_BLOCK,
     SELECTED_FIELDS_VIEW_SUBNET,
     SELECTED_FIELDS_VIEW_VALIDATOR,
+    VISIBLE_FIELD_OPERATORS_MAP_VIEW_VALIDATOR,
+    VISIBLE_FIELD_VIEW_ACCOUNT,
+    VISIBLE_FIELD_VIEW_BLOCK,
+    VISIBLE_FIELD_VIEW_SUBNET,
+    VISIBLE_FIELDS_TRANSFER_COMPLETE,
     WALLET_NAMES,
 )
+
+# UI display: emission always in M; marketCap/volume24h use formatLargeNumber (B/M/K by magnitude).
+_EMISSION_DIVISOR_M = 1_000_000
+
+
+def _scale_large_number(value: float) -> str:
+    """Scale value like UI formatLargeNumber; always 2 decimals (e.g. 6.70K) to match formatNumber(value, 2)."""
+    if value >= 1_000_000_000:
+        return f"{value / 1_000_000_000:.2f}B"
+    if value >= 1_000_000:
+        return f"{value / 1_000_000:.2f}M"
+    if value >= 1_000:
+        return f"{value / 1_000:.2f}K"
+    return f"{value:.2f}"
 
 
 async def _ensure_autostats_dataset(
@@ -169,19 +190,97 @@ def _generate_constraints_static(
     return constraints
 
 
-async def generate_view_subnet_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+def _build_data_extraction_result(
+    selected_item: dict[str, Any],
+    selected_fields: list[str],
+    integer_fields: set[str] | None,
+) -> dict[str, Any] | None:
+    """Build constraints + question_fields_and_values for data_extraction_only; returns None on validation failure."""
+    integer_fields = integer_fields or set()
+    available_fields = [f for f in selected_fields if selected_item.get(f) is not None]
+    if len(available_fields) < 2:
+        logger.warning("Available item fields are less than 2; task generation for Data extraction test needs >= 2.")
+        return None
+    verify_field = random.choice(available_fields)
+    verify_value = selected_item.get(verify_field)
+    if verify_value is None:
+        logger.warning("Verify field has no value; skipping Data extraction task for this item.")
+        return None
+    if verify_field in integer_fields and isinstance(verify_value, int | float):
+        verify_value = round(verify_value)
+    question_candidates = [f for f in available_fields if f != verify_field]
+    if not question_candidates:
+        logger.warning("There is no field for asking question (no question candidates after verify field).")
+        return None
+    num_question_fields = min(len(question_candidates), random.randint(1, len(question_candidates)))
+    question_fields = random.sample(question_candidates, num_question_fields)
+    question_fields_and_values = {}
+    for qf in question_fields:
+        val = selected_item.get(qf)
+        if val is not None:
+            if qf in integer_fields and isinstance(val, int | float):
+                val = round(val)
+            question_fields_and_values[qf] = val
+    if not question_fields_and_values:
+        logger.warning("There is no field for asking question.")
+        return None
+    constraints = [create_constraint_dict(verify_field, ComparisonOperator.EQUALS, verify_value)]
+    return {
+        "constraints": constraints,
+        "question_fields_and_values": question_fields_and_values,
+    }
+
+
+async def generate_view_subnet_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None, test_types: str | None = None) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for VIEW_SUBNET from server data only."""
     data = await _get_autostats_entity_list(task_url, dataset, "subnets")
     if not data:
         return []
+    if test_types == "data_extraction_only":
+        selected_item = random.choice(data)
+        price = selected_item.get("price")
+        emission = selected_item.get("emission")
+        market_cap = selected_item.get("marketCap")
+        volume24h = selected_item.get("volume24h")
+        selected_item["price"] = f"τ{round(price, 4)}"
+        # Emission: always M (UI); marketCap/volume24h: B/M/K by magnitude (formatLargeNumber), 2 decimals
+        selected_item["emission"] = f"{round((emission or 0) / _EMISSION_DIVISOR_M, 2)}M"
+        selected_item["marketCap"] = _scale_large_number(market_cap)
+        selected_item["volume24h"] = _scale_large_number(volume24h)
+        result = _build_data_extraction_result(
+            selected_item,
+            VISIBLE_FIELD_VIEW_SUBNET,
+            None,
+        )
+        return result if result is not None else []
     return _generate_constraints_static(data, FIELD_OPERATORS_MAP_VIEW_SUBNET, SELECTED_FIELDS_VIEW_SUBNET, num_constraints=2)
 
 
-async def generate_view_validator_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_view_validator_constraints(
+    task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None, test_types: str | None = None
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for VIEW_VALIDATOR from server data only."""
     data = await _get_autostats_entity_list(task_url, dataset, "validators")
     if not data:
         return []
+    if test_types == "data_extraction_only":
+        selected_item = random.choice(data)
+        if selected_item.get("totalWeight") is not None:
+            selected_item["totalWeight"] = f"τ{_scale_large_number(float(selected_item['totalWeight']))}"
+        if selected_item.get("rootStake") is not None:
+            selected_item["rootStake"] = f"τ{_scale_large_number(float(selected_item['rootStake']))}"
+        if selected_item.get("alphaStake") is not None:
+            selected_item["alphaStake"] = f"τ{_scale_large_number(float(selected_item['alphaStake']))}"
+        if selected_item.get("dominance") is not None:
+            selected_item["dominance"] = f"{round(float(selected_item['dominance']), 2)}%"
+        if selected_item.get("commission") is not None:
+            selected_item["commission"] = f"{round(float(selected_item['commission']), 2)}%"
+        result = _build_data_extraction_result(
+            selected_item,
+            VISIBLE_FIELD_OPERATORS_MAP_VIEW_VALIDATOR,
+            INTEGER_FIELDS_VIEW_VALIDATOR,
+        )
+        return result if result is not None else []
     return _generate_constraints_static(
         data,
         FIELD_OPERATORS_MAP_VIEW_VALIDATOR,
@@ -191,11 +290,19 @@ async def generate_view_validator_constraints(task_url: str | None = None, datas
     )
 
 
-async def generate_view_block_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_view_block_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None, test_types: str | None = None) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for VIEW_BLOCK from server data only."""
     data = await _get_autostats_entity_list(task_url, dataset, "blocks")
     if not data:
         return []
+    if test_types == "data_extraction_only":
+        selected_item = random.choice(data)
+        result = _build_data_extraction_result(
+            selected_item,
+            VISIBLE_FIELD_VIEW_BLOCK,
+            INTEGER_FIELDS_VIEW_BLOCK,
+        )
+        return result if result is not None else []
     return _generate_constraints_static(
         data,
         FIELD_OPERATORS_MAP_VIEW_BLOCK,
@@ -205,11 +312,35 @@ async def generate_view_block_constraints(task_url: str | None = None, dataset: 
     )
 
 
-async def generate_view_account_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    """Generate constraints for VIEW_ACCOUNT from server data only."""
+async def generate_view_account_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    """Generate constraints for VIEW_ACCOUNT from server data only.
+    When test_types is 'data_extraction_only', returns a dict with
+    constraints (verify field only, equals) and question_fields_and_values for LLM prompt.
+    """
     data = await _get_autostats_entity_list(task_url, dataset, "accounts")
     if not data:
         return []
+
+    if test_types == "data_extraction_only":
+        selected_item = random.choice(data)
+        # UI display format: τ + B/M/K for balance and stakedAmount; % for ratio and 24h; address unchanged
+        balance = selected_item.get("balance")
+        staked = selected_item.get("stakedAmount")
+        staking_ratio = selected_item.get("stakingRatio")
+        selected_item["balance"] = f"τ{_scale_large_number(float(balance))}"
+        selected_item["stakedAmount"] = f"τ{_scale_large_number(float(staked))}"
+        selected_item["stakingRatio"] = f"{round(staking_ratio, 1)}%"
+        result = _build_data_extraction_result(
+            selected_item,
+            VISIBLE_FIELD_VIEW_ACCOUNT,
+            INTEGER_FIELDS_VIEW_ACCOUNT,
+        )
+        return result if result is not None else []
+
     return _generate_constraints_static(
         data,
         FIELD_OPERATORS_MAP_VIEW_ACCOUNT,
@@ -287,11 +418,22 @@ def generate_disconnect_wallet_constraints(task_url: str | None = None, dataset:
     )
 
 
-async def generate_transfer_complete_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+async def generate_transfer_complete_constraints(
+    task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None, test_types: str | None = None
+) -> list[dict[str, Any]] | dict[str, Any]:
     """Generate constraints for TRANSFER_COMPLETE from server data only."""
     data = await _get_autostats_entity_list(task_url, dataset, "transfers")
     if not data:
         return []
+    if test_types == "data_extraction_only":
+        selected_item = random.choice(data)
+        selected_item["amount"] = _scale_large_number(float(selected_item.get("amount") or 0))
+        result = _build_data_extraction_result(
+            selected_item,
+            VISIBLE_FIELDS_TRANSFER_COMPLETE,
+            INTEGER_FIELDS_TRANSFER_COMPLETE,
+        )
+        return result if result is not None else []
     return _generate_constraints_static(
         data,
         FIELD_OPERATORS_MAP_TRANSFER_COMPLETE,

@@ -1,5 +1,6 @@
 import random
 from datetime import UTC, date, datetime, time, timedelta
+from decimal import Decimal, InvalidOperation
 from random import choice, randint, randrange
 from typing import Any
 
@@ -86,6 +87,80 @@ async def _get_drive_entity_list(
 def _collect_field_values_from_dataset(dataset: list[dict[str, Any]], field: str) -> list[Any]:
     """Return unique non-None values for field across dataset rows."""
     return list({v.get(field) for v in dataset if field in v and v.get(field) is not None})
+
+
+def _format_ui_currency(value: Any) -> str | None:
+    """Format numeric backend prices to UI currency style like '$26.10'."""
+    if value is None:
+        return None
+    try:
+        amount = Decimal(str(value))
+    except (InvalidOperation, ValueError, TypeError):
+        return None
+    return f"${amount:.2f}"
+
+
+def _build_data_extraction_result(
+    selected_item: dict[str, Any],
+    visible_fields: list[str],
+    *,
+    verify_field: str | None = None,
+    question_fields_override: list[str] | None = None,
+) -> dict[str, Any] | None:
+    """Build constraints + question_fields_and_values for data_extraction_only; returns None on validation failure."""
+    available_fields = [f for f in visible_fields if selected_item.get(f) is not None]
+    if len(available_fields) < 2:
+        return None
+
+    question_fields: list[str]
+    chosen_verify_field: str
+
+    if question_fields_override:
+        question_fields = [f for f in question_fields_override if f in available_fields and selected_item.get(f) is not None]
+        if question_fields:
+            remaining = [f for f in available_fields if f not in question_fields]
+            if not remaining:
+                return None
+            chosen_verify_field = verify_field if verify_field is not None and verify_field in remaining else random.choice(remaining)
+            remaining_for_extra = [f for f in available_fields if f != chosen_verify_field and f not in question_fields]
+            if len(remaining_for_extra) >= 2:
+                num_extra = random.randint(1, len(remaining_for_extra))
+                question_fields = question_fields + random.sample(remaining_for_extra, num_extra)
+        else:
+            question_fields = []
+            chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+    else:
+        chosen_verify_field = verify_field if verify_field is not None else random.choice(available_fields)
+        question_fields = []
+
+    if chosen_verify_field not in available_fields:
+        return None
+    verify_value = selected_item.get(chosen_verify_field)
+    if verify_value is None:
+        return None
+
+    if question_fields:
+        question_candidates = question_fields
+    else:
+        question_candidates = [f for f in available_fields if f != chosen_verify_field]
+        if not question_candidates:
+            return None
+        num_question_fields = 1 if len(question_candidates) == 1 else 2
+        question_candidates = random.sample(question_candidates, num_question_fields)
+
+    question_fields_and_values: dict[str, Any] = {}
+    for qf in question_candidates:
+        val = selected_item.get(qf)
+        if val is not None:
+            question_fields_and_values[qf] = val
+    if not question_fields_and_values:
+        return None
+
+    constraints = [create_constraint_dict(chosen_verify_field, ComparisonOperator.EQUALS, verify_value)]
+    return {
+        "constraints": constraints,
+        "question_fields_and_values": question_fields_and_values,
+    }
 
 
 def _generate_constraint_value(
@@ -226,6 +301,23 @@ def _random_future_time_from_now(current_datetime: datetime) -> time:
     return time(future_dt.hour, minute_slot)
 
 
+def _first_available_10min_slot_for_today(current_datetime: datetime | None = None) -> time:
+    """Match pickup-now UI default time: now rounded up to the next 10-minute slot."""
+    now = current_datetime or datetime.now()
+    rounded_minute = now.minute if now.minute % 10 == 0 else now.minute + (10 - (now.minute % 10))
+    hour = now.hour
+
+    if rounded_minute == 60:
+        hour += 1
+        rounded_minute = 0
+
+    # If rounding goes past day boundary, clamp to final valid slot.
+    if hour >= 24:
+        return time(23, 50)
+
+    return time(hour, rounded_minute)
+
+
 def _now_optional_utc(use_utc: bool) -> datetime:
     """Return datetime.now(UTC) or datetime.now() to avoid repeating the ternary."""
     return datetime.now(UTC) if use_utc else datetime.now()
@@ -361,11 +453,23 @@ async def generate_see_prices_constraints(task_url: str | None = None, dataset: 
     )
 
 
-def generate_select_date_constraints() -> list[dict[str, Any]]:
+def generate_select_date_constraints(
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        # Match pickup-now UI date display format, e.g. "Apr 01, 2026"
+        today_value = datetime.now().strftime("%b %d, %Y")
+        return [create_constraint_dict("date", ComparisonOperator.EQUALS, today_value)]
     return [_build_date_constraint(field, ops) for field, ops in FIELD_OPERATORS_MAP_SELECT_DATE.items() if field == "date"]
 
 
-def generate_select_time_constraints() -> list[dict[str, Any]]:
+def generate_select_time_constraints(
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        default_slot = _first_available_10min_slot_for_today()
+        ui_time_value = datetime.combine(datetime.now().date(), default_slot).strftime("%I:%M %p")
+        return [create_constraint_dict("time", ComparisonOperator.EQUALS, ui_time_value)]
     current_datetime = datetime.now()
     return [_build_time_constraint(field, ops, current_datetime) for field, ops in FIELD_OPERATORS_MAP_SELECT_TIME.items() if field == "time"]
 
@@ -405,7 +509,63 @@ def _create_scheduled_constraint(field: str, ops: list) -> dict[str, Any]:
     return create_constraint_dict(field, op, date_time)
 
 
-async def generate_search_ride_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_search_ride_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        places_data = await _get_drive_entity_list(task_url, dataset, "places")
+        rides_data = await _get_drive_entity_list(task_url, dataset, "rides")
+        if len(places_data) < 2 or not rides_data:
+            return []
+
+        ride = random.choice(rides_data)
+        if not isinstance(ride, dict):
+            return []
+
+        valid_place_labels = [p.get("main") for p in places_data if isinstance(p, dict) and p.get("main")]
+        valid_place_labels = list({main for main in valid_place_labels if main})
+        if len(valid_place_labels) < 2:
+            return []
+
+        from_location, to_location = random.sample(valid_place_labels, 2)
+        selected_item: dict[str, Any] = {
+            "from": from_location,
+            "to": to_location,
+        }
+
+        ride_field_map = {
+            "ride_name": "name",
+            "eta": "eta",
+            "price": "price",
+            "old_price": "oldPrice",
+            "description": "desc",
+        }
+        for out_field, source_field in ride_field_map.items():
+            val = ride.get(source_field)
+            if val is not None:
+                if out_field in {"price", "old_price"}:
+                    formatted_value = _format_ui_currency(val)
+                    if formatted_value is not None:
+                        selected_item[out_field] = formatted_value
+                else:
+                    selected_item[out_field] = val
+
+        visible_fields = ["from", "to", "ride_name", "eta", "price", "old_price", "description"]
+        verify_candidates = [f for f in ["ride_name", "eta", "price", "old_price", "description"] if selected_item.get(f) is not None]
+        if not verify_candidates:
+            return []
+
+        return (
+            _build_data_extraction_result(
+                selected_item,
+                visible_fields,
+                question_fields_override=["from", "to"],
+            )
+            or []
+        )
+
     field_ops = FIELD_OPERATORS_MAP_SEARCH_RIDE
     places_data = await _get_drive_entity_list(task_url, dataset, "places")
     constraints_list = _generate_constraints(
@@ -423,7 +583,18 @@ async def generate_search_ride_constraints(task_url: str | None = None, dataset:
     return constraints_list
 
 
-async def generate_select_car_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_select_car_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        return await generate_search_ride_constraints(
+            task_url=task_url,
+            dataset=dataset,
+            test_types=test_types,
+        )
+
     fields_ops = FIELD_OPERATORS_MAP_SELECT_CAR.copy()
     scheduled_ops = fields_ops.pop("scheduled")
     places_data = dataset.get("places") if isinstance(dataset, dict) else None
@@ -440,7 +611,51 @@ async def generate_select_car_constraints(task_url: str | None = None, dataset: 
     return constraints_list
 
 
-async def generate_reserve_ride_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_reserve_ride_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        return await generate_select_car_constraints(task_url=task_url, dataset=dataset, test_types=test_types)
     constraints_list = await generate_select_car_constraints(task_url, dataset)
 
+    return constraints_list
+
+
+async def generate_trip_details_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    if test_types == "data_extraction_only":
+        trip_cards = [
+            {"title": "1 Hotel San Francisco", "datetime": "7/17/2025 - 11:21:08 AM", "price": 26.6},
+            {"title": "The Landing San Francisco Apartments", "datetime": "6/13/2024 - 6:17:48 PM", "price": 24.7},
+            {"title": "Avis Car Rental", "datetime": "6/13/2024 - 10:45:32 AM", "price": 24.7},
+            {"title": "The Landing San Francisco Apartments", "datetime": "6/12/2024 - 9:04:31 PM", "price": 19.0},
+        ]
+        selected_card = random.choice(trip_cards)
+        if not isinstance(selected_card, dict):
+            return []
+
+        raw_price = selected_card.get("price")
+        price_str = f"${int(raw_price) if raw_price.is_integer() else raw_price}"
+        if price_str is None:
+            return []
+
+        dt = selected_card.get("datetime")
+        date_part, time_part = dt.split("-")
+
+        selected_item: dict[str, Any] = {"title": selected_card.get("title"), "price": price_str, "date": date_part, "time": time_part}
+        visible_fields = ["title", "date", "price", "time"]
+        return (
+            _build_data_extraction_result(
+                selected_item,
+                visible_fields,
+            )
+            or []
+        )
+
+    constraints_list = await generate_select_car_constraints(task_url, dataset)
     return constraints_list

@@ -71,9 +71,22 @@ Examples:
 - INCORRECT: "Confirm the booking date." (wrong action)
 """
 
+DATE_DROPDOWN_OPENED_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the date field (what date is shown or selected on the page).
+
+Use natural language only. Do NOT use schema-style field names such as "date" or any names with underscores (_).
+
+Do NOT start the question with imperative phrasing like "Select...", "Pick...", or "Open...".
+
+Examples:
+- "What is the date currently selected in the dropdown?"
+- "Which date is displayed on the page?"
+
+The output must be a single question asking only for the date value.
+""".strip()
 DATE_SELECTED_USE_CASE = UseCase(
     name="DATE_SELECTED",
-    description="User selects a date from the date picker.",
+    description="User interacts with (opens or focuses on) a date selection dropdown/input, which is often pre-filled.",
     event=DateSelectedEvent,
     event_source_code=DateSelectedEvent.get_source_code_of_class(),
     additional_prompt_info=DATE_SELECTED_INFO,
@@ -122,6 +135,9 @@ Examples:
 - INCORRECT: "Confirm the booking time." (wrong action)
 """
 
+TIME_DROPDOWN_OPENED_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the time field (what time is shown or selected on the page).
+"""
 
 TIME_SELECTED_USE_CASE = UseCase(
     name="TIME_SELECTED",
@@ -176,6 +192,10 @@ Examples:
 - INCORRECT: "Open the guest selector dropdown." (missing required people selection when constraints specify a value)
 """
 
+PEOPLE_DROPDOWN_OPENED_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the people/guests field (how many guests are shown or selected on the page).
+"""
+
 PEOPLE_SELECTED_USE_CASE = UseCase(
     name="PEOPLE_SELECTED",
     description="User selects the number of people/guests.",
@@ -224,6 +244,26 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 2. Include ONLY the search query for the restaurant or cuisine type.
 3. DO NOT include any other filters like date/time/people in this specific search action.
 """
+
+SEARCH_RESTAURANT_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the restaurant (e.g. rating, cuisine, area, reviews).
+
+Use the provided visible fields (e.g. restaurant name, cuisine, rating, area, reviews) to identify the restaurant.
+
+Use natural language only. Do NOT use schema-style field names like "name", "cuisine", "rating", "area", "reviews", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. restaurant name, cuisine, rating, area, reviews).
+
+Do NOT start the question with phrases like "Search for...", "Find...", or "Look for...".
+
+Examples:
+- "What is the name of the restaurant that serves Italian cuisine and has a rating 4.7?"
+- "Which restaurant in the Downtown area has a rating 4.5?"
+- "What is the cuisine of the restaurant named 'Spice Garden'?"
+- "What is the rating of the restaurant located in the Uptown area that serves Chinese food?"
+
+The output must be a single question asking only for the verify field value.
+""".strip()
 
 SEARCH_RESTAURANT_USE_CASE = UseCase(
     name="SEARCH_RESTAURANT",
@@ -361,6 +401,27 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 3. Lead to the VIEW_RESTAURANT event.
 """
 
+VIEW_RESTAURANT_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the restaurant (e.g. name, rating, cuisine, area).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "desc", "rating", "cuisine", "area", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. restaurant name, cuisine, rating, area).
+
+Identify the restaurant using the provided visible field values (e.g. restaurant name, cuisine, rating, area), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Navigate...", "Show details...", "View...", or "Open...".
+
+Every generated question MUST include a subtle context about viewing the restaurant details and MUST end with a confirmation phrase like "Confirm the value after viewing the details" or "Please confirm the value after checking the details". This must appear at the end of the question.
+
+Examples:
+- "What is the rating of the restaurant 'Spice Garden'? Please confirm the value after viewing the details."
+- "Which cuisine does the restaurant in the Downtown area with a 4.7 rating serve? Confirm the value after checking the details."
+- "What is the name of the restaurant that serves Italian cuisine in the Uptown area? Please confirm the value after viewing the details."
+- "What is the area of the restaurant 'Golden Dragon' that serves Chinese food? Confirm the value after checking the details."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
 VIEW_RESTAURANT_USE_CASE = UseCase(
     name="VIEW_RESTAURANT",
     description="The user explicitly requests to view the details page of a specific restaurant.",
@@ -399,6 +460,28 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 3. Lead to the VIEW_FULL_MENU event.
 """
 
+VIEW_FULL_MENU_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the restaurant (e.g. name, rating, cuisine, area).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "desc", "rating", "cuisine", "area", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. restaurant name, cuisine, rating, area).
+
+Identify the restaurant using the provided visible field values (e.g. restaurant name, cuisine, rating, area), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Show menu...", "View...", "Open...", or "Browse...".
+
+Every generated question MUST include a subtle context about viewing the full menu and MUST end with a confirmation phrase like "Confirm the value before viewing the full menu" or "Please confirm the value before checking the full menu". This must appear at the end of the question.
+
+Examples:
+- "What is the cuisine of the restaurant 'Spice Garden'? Please confirm the value before viewing the full menu."
+- "What is the rating of the restaurant in the Downtown area that serves Italian food? Confirm the value before checking the full menu."
+- "What is the name of the restaurant that serves Chinese cuisine in the Uptown area? Please confirm the value before viewing the full menu."
+- "What is the area of the restaurant 'Golden Dragon' with a rating 4.6? Confirm the value before checking the full menu."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
+
 VIEW_FULL_MENU_USE_CASE = UseCase(
     name="VIEW_FULL_MENU",
     description="User requests to view the full menu of a specific restaurant, possibly with booking context.",
@@ -434,6 +517,28 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 3. Lead to the COLLAPSE_MENU event.
 """
 
+COLLAPSE_MENU_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the restaurant (e.g. name, rating, cuisine, area).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "desc", "rating", "cuisine", "area", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. restaurant name, cuisine, rating, area).
+
+Identify the restaurant using the provided visible field values (e.g. restaurant name, cuisine, rating, area), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Collapse...", "Hide...", "Close...", or "Minimize...".
+
+Every generated question MUST include a subtle context about collapsing the menu and MUST end with a confirmation phrase like "Confirm the value before collapsing the menu" or "Please confirm the value before hiding the menu". This must appear at the end of the question.
+
+Examples:
+- "What is the cuisine of the restaurant 'Spice Garden'? Please confirm the value before collapsing the menu."
+- "What is the rating of the restaurant in the Downtown area that serves Italian food? Confirm the value before hiding the menu."
+- "What is the name of the restaurant that serves Chinese cuisine in the Uptown area? Please confirm the value before collapsing the menu."
+- "What is the area of the restaurant 'Golden Dragon' with a 4.5 rating? Confirm the value before hiding the menu."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
+
 COLLAPSE_MENU_USE_CASE = UseCase(
     name="COLLAPSE_MENU",
     description="User collapses a previously expanded full menu view for a restaurant.",
@@ -461,6 +566,28 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 4. DO NOT CONFUSE DESC with NAME. If the constraints mention DESC (description) just include the constriants do not use name if it is not specified in the prompt
 5. IF NAME IS IN CONSTRAINTS SPECIFY CLEARLY YOU CANNOT SAY Book a table in a restaurant that does NOT contain 'qpehvk'. ONLY IF NAME IS IN CONSTRAINTS, an dthen you have to specify NAME
 """
+
+BOOK_RESTAURANT_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the restaurant (e.g. name, rating, cuisine, area).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "desc", "rating", "cuisine", "area", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. restaurant name, cuisine, rating, area).
+
+Identify the restaurant using the provided visible field values (e.g. restaurant name, cuisine, rating, area), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Book...", "Reserve...", or "Schedule...".
+
+Every generated question MUST end with a confirmation phrase like "Confirm the value before booking" or "Please confirm before booking". This must appear at the end of the question.
+
+Examples:
+- "What is the cuisine of the restaurant 'Spice Garden'? Please confirm before booking."
+- "What is the rating of the restaurant in the Downtown area that serves Italian food? Confirm the value before booking."
+- "What is the name of the restaurant that serves Chinese cuisine in the Uptown area? Please confirm before booking."
+- "What is the area of the restaurant 'Golden Dragon' with a 4.7 rating? Confirm the value before booking."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
 
 BOOK_RESTAURANT_USE_CASE = UseCase(
     name="BOOK_RESTAURANT",

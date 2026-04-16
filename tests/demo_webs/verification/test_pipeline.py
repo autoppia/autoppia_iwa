@@ -90,6 +90,14 @@ def _build_project(use_cases):
     )
 
 
+def _cfg_no_de(**kwargs):
+    """Unit tests use a dummy task generator; skip real DE steps."""
+    return WebVerificationConfig(
+        data_extraction_verification_enabled=False,
+        **kwargs,
+    )
+
+
 def test_pipeline_trajectories_only_uses_stub_llm_not_di_container(monkeypatch):
     def boom():
         raise AssertionError("DIContainer.llm_service() must not run in trajectories-only mode")
@@ -158,7 +166,7 @@ async def test_pipeline_trajectories_only_skips_v2_dataset_diversity(monkeypatch
         event_source_code="",
         examples=[],
     )
-    cfg = WebVerificationConfig(
+    cfg = _cfg_no_de(
         evaluate_trajectories_only=True,
         llm_review_enabled=False,
         iwap_enabled=False,
@@ -204,7 +212,7 @@ async def test_pipeline_run_returns_empty_results_without_use_cases(monkeypatch)
         lambda: object(),
     )
     project = _build_project([])
-    pipeline = WebVerificationPipeline(project, WebVerificationConfig())
+    pipeline = WebVerificationPipeline(project, _cfg_no_de())
 
     result = await pipeline.run()
 
@@ -241,7 +249,7 @@ async def test_pipeline_run_processes_use_cases_and_saves_results(monkeypatch):
         event_source_code="class Event: ...",
         examples=[],
     )
-    pipeline = WebVerificationPipeline(_build_project([use_case]), WebVerificationConfig())
+    pipeline = WebVerificationPipeline(_build_project([use_case]), _cfg_no_de())
     saved = {"called": False}
 
     async def fake_process(u):
@@ -295,7 +303,7 @@ async def test_pipeline_use_case_filter_only_processes_matching(monkeypatch):
         event_source_code="",
         examples=[],
     )
-    cfg = WebVerificationConfig(use_case_filter=["B"])
+    cfg = _cfg_no_de(use_case_filter=["B"])
     pipeline = WebVerificationPipeline(_build_project([uc_a, uc_b]), cfg)
     processed: list[str] = []
 
@@ -377,7 +385,7 @@ async def test_pipeline_evaluate_trajectories_calls_verify_trajectory(monkeypatc
         urls=["http://localhost:8012"],
         use_cases=[use_case],
     )
-    cfg = WebVerificationConfig(
+    cfg = _cfg_no_de(
         evaluate_trajectories=True,
         dynamic_enabled=True,
         dynamic_verification_enabled=True,

@@ -6,6 +6,8 @@ from autoppia_iwa.config.config import PROJECT_BASE_DIR, VALIDATOR_ID
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.web_agents.classes import IWebAgent
 
+TestTypes = Literal["event_only", "data_extraction_only"]
+
 
 @dataclass(slots=True)
 class BenchmarkConfig:
@@ -34,6 +36,11 @@ class BenchmarkConfig:
     prompts_per_use_case: int = 1
     dynamic: bool = False
     use_cached_tasks: bool = False
+    # When "data_extraction_only", tasks and tests follow the data-extraction pipeline
+    # (DataExtractionTest / DEtasks). Mirrors TaskGenerationConfig.test_types.
+    test_types: TestTypes = "event_only"
+    # Optional filter for DE task generators; passed to TaskGenerationConfig.data_extraction_use_cases
+    data_extraction_use_cases: list[str] | None = None
 
     # Evaluation mode
     evaluator_mode: Literal["stateful"] = "stateful"
@@ -67,6 +74,8 @@ class BenchmarkConfig:
             raise ValueError("max_parallel_evaluations must be > 0")
         if self.prompts_per_use_case <= 0:
             raise ValueError("prompts_per_use_case must be > 0")
+        if self.test_types not in ("event_only", "data_extraction_only"):
+            raise ValueError(f"Invalid test_types: {self.test_types!r}")
         self.web_agent_id_prefix = str(self.web_agent_id_prefix or "benchmark-agent").strip() or "benchmark-agent"
         self.validator_id_prefix = str(self.validator_id_prefix or VALIDATOR_ID or "validator_001").strip() or "validator_001"
 
@@ -87,6 +96,8 @@ class BenchmarkConfig:
             "prompts_per_use_case": self.prompts_per_use_case,
             "dynamic": self.dynamic,
             "use_cached_tasks": self.use_cached_tasks,
+            "test_types": self.test_types,
+            "data_extraction_use_cases": list(self.data_extraction_use_cases) if self.data_extraction_use_cases else None,
             "evaluator_mode": self.evaluator_mode,
             "max_steps_per_task": self.max_steps_per_task,
             "runs": self.runs,

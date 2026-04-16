@@ -55,6 +55,30 @@ from .generation_functions import (
 # VIEW_USE_CASE
 ###############################################################################
 
+VIEW_MATTER_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the matter (e.g. name, client, status, updated).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "client", "status", "updated", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. matter name, client name, status, updated).
+
+Identify the matter using the provided visible field values (e.g. matter name, client, status, updated), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Navigate...", "Show details...", "View...", or "Open...".
+
+For the updated field specifically, format the question in a conditional style:
+- "When was the matter named 'Estate Planning' with status 'Archived' updated?"
+
+Every generated question MUST include a subtle confirmation context at the end, such as "Please confirm the value after viewing the detail" or "Confirm the value after viewing the detail". This must appear at the end of the question.
+
+Examples:
+- "What is the client name of the matter 'Estate Planning'? Please confirm the value after viewing the detail."
+- "What is the status of the matter whose client is 'Jones Legal'? Confirm the value after viewing the detail."
+- "When was the matter named 'Estate Planning' with status 'Archived' updated? Please confirm the value after viewing the detail."
+- "What is the name of the matter assigned to client 'Smith & Co'? Confirm the value after viewing the detail."
+
+The output must be a single question asking only for the verify field value and must include the confirmation phrase at the end.
+""".strip()
 
 VIEW_MATTER_USE_CASE = UseCase(
     name="VIEW_MATTER_DETAILS",
@@ -93,6 +117,30 @@ VIEW_MATTER_USE_CASE = UseCase(
 ###############################################################################
 # SEARCH_MATTER_USE_CASE
 ###############################################################################
+
+SEARCH_MATTER_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the matter (e.g. name, client, status, updated).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "client", "status", "updated", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. matter name, client name, status, updated).
+
+Identify the matter using the provided visible field values (e.g. matter name, client, status, updated), then ask for the verify field value naturally.
+
+Do NOT start the question with phrases like "Search for...", "Find...", or "Look for...".
+
+For the updated field specifically, format the question in a conditional style:
+- "When was the matter named 'Estate Planning' with status 'Archived' updated?"
+
+Examples:
+- "What is the client name of the matter that contains 'Estate' in the title?"
+- "What is the status of the matter named 'Compliance Review'?"
+- "What is the name of the matter with client 'Acme Co.' and status 'Active'?"
+- "When was the matter named 'Estate Planning' with status 'Archived' updated?"
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 SEARCH_MATTER_USE_CASE = UseCase(
     name="SEARCH_MATTER",
     description="The user searches for matters using a query string.",
@@ -157,6 +205,31 @@ Critical requirements:
 3. Do not add additional information in the prompt that is not mentioned in the constraints.
 """.strip()
 
+ARCHIVE_MATTER_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the matter (e.g. name, client, status, updated).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "client", "status", "updated", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. matter name, client name, status, updated).
+
+Identify the matter using the provided visible field values (e.g. matter name, client, status, updated), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Archive...", "Delete...", or "Open...".
+
+For the updated field specifically, format the question in a conditional style:
+- "When was the matter named 'Estate Planning' with status 'Archived' updated?"
+
+Every generated question MUST include a subtle confirmation context at the end, such as "Please confirm the value before archiving" or "Confirm the value before archiving". This must appear at the end of the question.
+
+Examples:
+- "What is the client name of the matter 'Estate Planning'? Please confirm the value before archiving."
+- "What is the status of the matter whose client is 'Jones Legal'? Confirm the value before archiving."
+- "When was the matter named 'Estate Planning' with status 'Archived' updated? Please confirm the value before archiving."
+- "What is the name of the matter assigned to client 'Smith & Co'? Confirm the value before archiving."
+
+The output must be a single question asking only for the verify field value and must include the confirmation phrase at the end.
+""".strip()
+
 ARCHIVE_MATTER_USE_CASE = UseCase(
     name="ARCHIVE_MATTER",
     description="The user archives a matter",
@@ -192,6 +265,31 @@ Critical requirements:
 1. The request must start with one of the following: "Delete the matter...".
 2. Do not mention a single constraint more than once in the request.
 3. Do not add additional information in the prompt that is not mentioned in the constraints.
+""".strip()
+
+DELETE_MATTER_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the matter (e.g. name, client, status, updated).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "client", "status", "updated", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. matter name, client name, status, updated).
+
+Identify the matter using the provided visible field values (e.g. matter name, client, status, updated), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Delete...", "Archive...", or "Open...".
+
+For the updated field specifically, format the question in a conditional style:
+- "When was the matter named 'Estate Planning' with status 'Archived' updated?"
+
+Every generated question MUST include a subtle confirmation context at the end, such as "Please confirm the value before deletion" or "Confirm the value before deletion". This must appear at the end of the question.
+
+Examples:
+- "What is the client name of the matter 'Estate Planning'? Please confirm the value before deletion."
+- "What is the status of the matter whose client is 'Jones Legal'? Confirm the value before deletion."
+- "When was the matter named 'Estate Planning' with status 'Archived' updated? Please confirm the value before deletion."
+- "What is the name of the matter assigned to client 'Smith & Co'? Confirm the value before deletion."
+
+The output must be a single question asking only for the verify field value and must include the confirmation phrase at the end.
 """.strip()
 
 DELETE_MATTER_USE_CASE = UseCase(
@@ -232,6 +330,31 @@ DELETE_MATTER_USE_CASE = UseCase(
 ###############################################################################
 # FILTER_MATTER_STATUS_USE_CASE
 ###############################################################################
+FILTER_MATTER_STATUS_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for matters based on their status or other visible attributes (e.g. name, client, status, updated).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "client", "status", "updated", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. matter name, client name, status, updated).
+
+Identify the matter using the provided visible field values (e.g. matter name, client, status, updated), then ask for matters filtered by the status naturally.
+
+Do NOT start questions with imperative phrasing like "Delete...", "Archive...", or "Open...".
+
+For the updated field specifically, format the question in a conditional style:
+- "When was the matter named 'Estate Planning' with status 'Archived' updated"
+
+Every generated question MUST include a subtle confirmation context at the end, such as "Please confirm the value before filtration" or "Confirm the value before filtration". This must appear at the end of the question.
+
+Examples:
+- "What is the client name of the matter 'Estate Planning'? Please confirm the value before filtration."
+- "What is the status of the matter whose client is 'Jones Legal'? Confirm the value before filtration."
+- "When was the matter named 'Estate Planning' with status 'Archived' updated? Please confirm the value before filtration."
+- "What is the name of the matter assigned to client 'Smith & Co'? Confirm the value before filtration."
+
+The output must be a single question asking only for matters filtered by status and must include the confirmation phrase at the end.
+""".strip()
+
 FILTER_MATTER_STATUS_USE_CASE = UseCase(
     name="FILTER_MATTER_STATUS",
     description="The user filters matters by status.",
@@ -278,6 +401,32 @@ SORT_MATTER_BY_CREATED_AT_USE_CASE = UseCase(
 ###############################################################################
 # UPDATE_MATTER_USE_CASE
 ###############################################################################
+
+UPDATE_MATTER_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the matter (e.g. name, client, status, updated).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "client", "status", "updated", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. matter name, client name, status, updated).
+
+Identify the matter using the provided visible field values (e.g. matter name, client, status, updated), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Update...", "Edit...", or "Open...".
+
+For the updated field specifically, format the question in a conditional style:
+- "When was the matter named 'Estate Planning' with status 'Archived' updated?"
+
+Every generated question MUST include a subtle confirmation context at the end, such as "Please confirm the value before updating" or "Confirm the value before updating". This must appear at the end of the question.
+
+Examples:
+- "What is the client name of the matter 'Estate Planning'? Please confirm the value before updating."
+- "What is the status of the matter whose client is 'Jones Legal'? Confirm the value before updating."
+- "When was the matter named 'Estate Planning' with status 'Archived' updated? Please confirm the value before updating."
+- "What is the name of the matter assigned to client 'Smith & Co'? Confirm the value before updating."
+
+The output must be a single question asking only for the verify field value and must include the confirmation phrase at the end.
+""".strip()
+
 UPDATE_MATTER_USE_CASE = UseCase(
     name="UPDATE_MATTER",
     description="The user updates an existing matter.",
@@ -302,6 +451,31 @@ UPDATE_MATTER_USE_CASE = UseCase(
 ###############################################################################
 # VIEW_CLIENT_DETAILS_USE_CASE
 ###############################################################################
+
+VIEW_CLIENT_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the client (e.g. name, email, status, matters count).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "email", "status", "matters", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. client name, email, status, number of matters).
+
+Identify the client using the provided visible field values (e.g. client name, email, status), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Navigate...", "Show details...", "View...", or "Open...".
+
+For the matters field, ask naturally as a count:
+- "How many matters does the client 'Acme Co.' have?"
+
+Every generated question MUST include a subtle confirmation context at the end, such as "Please confirm the value after viewing the detail" or "Confirm the value after viewing the detail". This must appear at the end of the question.
+
+Examples:
+- "What is the email of the client 'Jessica Brown'? Please confirm the value after viewing the detail."
+- "What is the status of the client whose email is 'team@smithco.com'? Confirm the value after viewing the detail."
+- "How many matters does the client 'Acme Co.' have? Please confirm the value after viewing the detail."
+
+The output must be a single question asking only for the verify field value and must include the confirmation phrase at the end.
+""".strip()
+
 VIEW_CLIENT_DETAILS_USE_CASE = UseCase(
     name="VIEW_CLIENT_DETAILS",
     description="The user views the detail of different clients",
@@ -324,6 +498,29 @@ VIEW_CLIENT_DETAILS_USE_CASE = UseCase(
 ###############################################################################
 # SEARCH_CLIENT_USE_CASE
 ###############################################################################
+
+SEARCH_CLIENT_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the client (e.g. name, email, status, number of matters).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "email", "status", "matters", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. client name, email, status, number of matters).
+
+Identify the client using the provided visible field values (e.g. client name, email, status), then ask for the verify field value naturally.
+
+Do NOT start questions with phrases like "Search for...", "Find...", or "Look for...".
+
+For the matters field, ask naturally as a count:
+- "How many matters does the client 'Acme Co.' have?"
+
+Examples:
+- "What is the email of the client named 'Smith'?"
+- "What is the status of the client whose name contains 'Brown'?"
+- "What is the name of the client with email 'jbrown@samplemail.com'?"
+- "How many matters does the client 'Acme Co.' have?"
+
+The output must be a single question asking only for the verify field value.
+""".strip()
 SEARCH_CLIENT_USE_CASE = UseCase(
     name="SEARCH_CLIENT",
     description="The user searches for clients using a query string.",
@@ -350,6 +547,31 @@ DOCUMENT_DELETED_EXTRA_INFO = """
 Critical Requirements:
 1. Make sure to mention **all** the constraints in the prompt accurately.
 2. Do not specify more than one constraint for the same field — name, size, version, status, or updated — in a single request.
+""".strip()
+
+DOCUMENT_DELETED_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the document (e.g. name, size, version, status, updated).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "size", "version", "status", "updated", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. document name, size, version, status, updated).
+
+Identify the document using the provided visible field values (e.g. document name, size, version, status, updated), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Delete...", "Remove...", or "Open...".
+
+For the updated field specifically, format the question in a conditional style:
+- "When was the document named 'Contract-Terms-2025.pdf' with version 'v2' updated?"
+
+Every generated question MUST include a subtle confirmation context at the end, such as "Please confirm the value before deletion" or "Confirm the value before deletion". This must appear at the end of the question.
+
+Examples:
+- "What is the size of the document 'Project Plan'? Please confirm the value before deletion."
+- "What is the version of the document whose name is 'Budget Report'? Confirm the value before deletion."
+- "What is the status of the document with version 'v2'? Please confirm the value before deletion."
+- "When was the document named 'Contract-Terms-2025.pdf' with version 'v2' updated? Confirm the value before deletion."
+
+The output must be a single question asking only for the verify field value and must include the confirmation phrase at the end.
 """.strip()
 
 ###############################################################################
@@ -385,6 +607,31 @@ DOCUMENT_DELETED_USE_CASE = UseCase(
         },
     ],
 )
+
+DOCUMENT_RENAMED_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the document (e.g. name, size, version, status, updated).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "size", "version", "status", "updated", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. document name, size, version, status, updated).
+
+Identify the document using the provided visible field values (e.g. document name, size, version, status, updated), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Rename...", "Update...", or "Open...".
+
+For the updated field specifically, format the question in a conditional style:
+- "When was the document named 'Estate Planning' with version 'v3' updated?"
+
+Every generated question MUST include a subtle confirmation context at the end, such as "Please confirm the value before renaming" or "Confirm the value before renaming". This must appear at the end of the question.
+
+Examples:
+- "What is the size of the document 'Project Plan'? Please confirm the value before renaming."
+- "What is the version of the document whose name is 'Budget Report'? Confirm the value before renaming."
+- "What is the status of the document with version 'v2.1'? Please confirm the value before renaming."
+- "When was the document named 'Retainer-Agreement.pdf' with version 'v3' updated? Confirm the value before renaming."
+
+The output must be a single question asking only for the verify field value and must include the confirmation phrase at the end.
+""".strip()
 
 DOCUMENT_RENAMED_USE_CASE = UseCase(
     name="DOCUMENT_RENAMED",
@@ -512,6 +759,33 @@ Critical requirements:
 3. Do not add additional information in the prompt that is not mentioned in the constraints.
 """.strip()
 
+LOG_EDITED_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the time log (e.g. matter, client, hours, status, description, date).
+
+Use natural language only. Do NOT use schema-style field names such as "matter", "client", "hours", "status", "description", "date", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. matter name, client name, hours, status, description, date).
+
+Identify the log using the provided visible field values (e.g. matter name, client, hours, status, date), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Edit...", "Update...", or "Open...".
+
+For the date field specifically, format the question in a conditional style:
+- "What is the date when the log with matter 'Estate Planning' and hours '5h' recorded?"
+
+For the hours field, ask naturally as a value:
+- "How many hours are recorded for the log with matter 'Estate Planning'?"
+
+Every generated question MUST include a subtle confirmation context at the end, such as "Please confirm the value before editing" or "Confirm the value before editing". This must appear at the end of the question.
+
+Examples:
+- "What is the client name of the log for matter 'Estate Planning'? Please confirm the value before editing."
+- "What is the status of the log with description 'Initial consultation'? Confirm the value before editing."
+- "How many hours are recorded for the log with matter 'Estate Planning'? Please confirm the value before editing."
+- "What is the date when the log with matter 'Estate Planning' and hours '5h' recorded? Confirm the value before editing."
+
+The output must be a single question asking only for the verify field value and must include the confirmation phrase at the end.
+""".strip()
 ###############################################################################
 # LOG_EDITED_USE_CASE
 ###############################################################################
@@ -552,6 +826,34 @@ Prompts:
 ❌ INCORRECT: Delete the time log for 'Court Filing' that recorded hours NOT EQUAL to 2.3, where the client does NOT CONTAIN 'CoreConnect' and the status is equal to 'Billed'.
 
 Explanation: The incorrect prompt does not reflect the specified operator for `matter` (`not_equals`) — it uses a positive equality instead of the required negation. Use the exact operators and value formats shown in the constraint.
+""".strip()
+
+LOG_DELETE_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the time log (e.g. matter, client, hours, status, description, date).
+
+Use natural language only. Do NOT use schema-style field names such as "matter", "client", "hours", "status", "description", "date", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. matter name, client name, hours, status, description, date).
+
+Identify the log using the provided visible field values (e.g. matter name, client, hours, status, date), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Delete...", "Remove...", or "Open...".
+
+For the date field specifically, format the question in a conditional style:
+- "What is the date when the log with matter 'Estate Planning' and hours '5h' recorded?"
+
+For the hours field, ask naturally as a value:
+- "How many hours are recorded for the log with matter 'Estate Planning'?"
+
+Every generated question MUST include a subtle confirmation context at the end, such as "Please confirm the value before deletion" or "Confirm the value before deletion". This must appear at the end of the question.
+
+Examples:
+- "What is the client name of the log for matter 'Estate Planning'? Please confirm the value before deletion."
+- "What is the status of the log with description 'Initial consultation'? Confirm the value before deletion."
+- "How many hours are recorded for the log with matter 'Estate Planning'? Please confirm the value before deletion."
+- "What is the date when the log with matter 'Estate Planning' and hours '5h' recorded? Confirm the value before deletion."
+
+The output must be a single question asking only for the verify field value and must include the confirmation phrase at the end.
 """.strip()
 
 ###############################################################################
@@ -599,6 +901,29 @@ LOG_DELETE_USE_CASE = UseCase(
         },
     ],
 )
+
+BILLING_SEARCH_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for billing or time log entries based on their attributes or other visible values (e.g. matter, client, hours, status, description, date).
+
+Use natural language only. Do NOT use schema-style field names such as "matter", "client", "hours", "status", "description", "date", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. matter name, client name, hours, status, description, date).
+
+Identify the log entry using the provided visible field values (e.g. matter name, client, hours, status, date), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Search...", "Filter...", or "Open...".
+
+For the hours field, ask naturally as a value (e.g. "How many hours are recorded for the log with matter 'X'?").
+For the date field, format in a conditional style (e.g. "What is the date when the log for matter 'X' was recorded?").
+
+Examples:
+- "What is the client name for the billing entry of matter 'Estate Planning'?"
+- "How many hours are recorded for the log with matter 'Jones Legal'?"
+- "What is the status of the billing entry for matter 'Estate Planning'?"
+- "What is the date when the log for matter 'Smith & Co' was recorded?"
+
+The output must be a single question asking only for the verify field value and must include the confirmation phrase at the end.
+""".strip()
 
 BILLING_SEARCH_USE_CASE = UseCase(
     name="BILLING_SEARCH",
@@ -688,6 +1013,31 @@ ADD_CLIENT_USE_CASE = UseCase(
     ],
 )
 
+DELETE_CLIENT_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the client (e.g. name, email, status, number of matters).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "email", "status", "matters", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. client name, email, status, number of matters).
+
+Identify the client using the provided visible field values (e.g. client name, email, status), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Delete...", "Remove...", or "Open...".
+
+For the matters field, ask naturally as a count:
+- "How many matters does the client 'Acme Co.' have?"
+
+Every generated question MUST include a subtle confirmation context at the end, such as "Please confirm the value before deletion" or "Confirm the value before deletion". This must appear at the end of the question.
+
+Examples:
+- "What is the email of the client 'Jessica Brown'? Please confirm the value before deletion."
+- "What is the status of the client whose email is 'team@smithco.com'? Confirm the value before deletion."
+- "How many matters does the client 'Acme Co.' have? Please confirm the value before deletion."
+- "What is the name of the client with email 'jbrown@samplemail.com'? Confirm the value before deletion."
+
+The output must be a single question asking only for the verify field value and must include the confirmation phrase at the end.
+""".strip()
+
 DELETE_CLIENT_USE_CASE = UseCase(
     name="DELETE_CLIENT",
     description="The user deletes a client record.",
@@ -704,6 +1054,31 @@ DELETE_CLIENT_USE_CASE = UseCase(
         {"prompt": "Delete the client not contains 'Partners'.", "prompt_for_task_generation": "Delete the client named not contains 'Partners'."},
     ],
 )
+
+FILTER_CLIENTS_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the client (e.g. name, email, status, number of matters).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "email", "status", "matters", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g. client name, email, status, number of matters).
+
+Identify the client using the provided visible field values (e.g. client name, email, status), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Filter...", "Show...", or "Open...".
+
+For the matters field, ask naturally as a count:
+- "How many matters does the client 'Acme Co.' have?"
+
+Every generated question MUST include a subtle confirmation context at the end, such as "Please confirm the value before applying filter" or "Confirm the value before applying filter". This must appear at the end of the question.
+
+Examples:
+- "What is the email of the client 'Jessica Brown'? Please confirm the value before applying filter."
+- "What is the status of the client whose email is 'team@smithco.com'? Confirm the value before applying filter."
+- "How many matters does the client 'Acme Co.' have? Please confirm the value before applying filter."
+- "What is the name of the client with email 'jbrown@samplemail.com'? Confirm the value before applying filter."
+
+The output must be a single question asking only for the verify field value and must include the confirmation phrase at the end.
+""".strip()
 
 FILTER_CLIENTS_USE_CASE = UseCase(
     name="FILTER_CLIENTS",

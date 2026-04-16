@@ -40,6 +40,17 @@ def _parse_args():
         action="store_true",
         help="Do not use registered trajectories for Step 3 reference solution; use IWAP only when IWAP is enabled",
     )
+    parser.add_argument(
+        "--no-data-extraction-verification",
+        action="store_true",
+        help="Disable data-extraction verification (trajectories and task-generation checks)",
+    )
+    parser.add_argument(
+        "--data-extraction-seed",
+        type=int,
+        default=1,
+        help="Seed value used to select data-extraction trajectories (default: 1)",
+    )
     parser.add_argument("--verbose", "-v", action="store_true")
     return parser.parse_args()
 
@@ -55,6 +66,9 @@ async def run(
     trajectories_only: bool = False,
     trajectory_doability_enabled: bool = True,
     use_cases: list[str] | None = None,
+    *,
+    no_data_extraction_verification: bool = False,
+    data_extraction_seed: int = 1,
 ):
     from autoppia_iwa.src.bootstrap import AppBootstrap
     from autoppia_iwa.src.demo_webs.config import demo_web_projects
@@ -80,6 +94,8 @@ async def run(
         verbose=verbose,
         evaluate_trajectories=evaluate_trajectories or trajectories_only,
         evaluate_trajectories_only=trajectories_only,
+        data_extraction_verification_enabled=not no_data_extraction_verification,
+        data_extraction_seed=int(data_extraction_seed),
     )
 
     pipeline = WebVerificationPipeline(web_project=project, config=config)
@@ -106,6 +122,8 @@ async def _main_async(args) -> int:
             trajectories_only=args.trajectories_only,
             trajectory_doability_enabled=not args.no_trajectory_doability,
             use_cases=args.use_case,
+            no_data_extraction_verification=args.no_data_extraction_verification,
+            data_extraction_seed=args.data_extraction_seed,
         )
     except ValueError as exc:
         print(str(exc))

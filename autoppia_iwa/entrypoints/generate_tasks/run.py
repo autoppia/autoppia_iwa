@@ -4,6 +4,7 @@ Generate tasks and save to JSON.
 Usage:
     python -m autoppia_iwa.entrypoints.generate_tasks.run
     python -m autoppia_iwa.entrypoints.generate_tasks.run -p autocinema -n 3 -o tasks.json
+    python -m autoppia_iwa.entrypoints.generate_tasks.run -p autozone --test-types data_extraction_only -o de-tasks.json
     iwa generate-tasks -p autocinema -o tasks.json
 """
 
@@ -17,6 +18,13 @@ def _parse_args():
     parser = argparse.ArgumentParser(prog="iwa generate-tasks", description="Generate tasks to JSON")
     parser.add_argument("--project", "-p", type=str, action="append", help="Project ID(s)")
     parser.add_argument("--use-case", "-u", type=str, action="append", help="Use case filter")
+    parser.add_argument(
+        "--test-types",
+        type=str,
+        default="event_only",
+        choices=["event_only", "data_extraction_only"],
+        help="event_only: event-based tasks and CheckEventTest. data_extraction_only: DE tasks and DataExtractionTest.",
+    )
     parser.add_argument("--prompts-per-use-case", "-n", type=int, default=2)
     parser.add_argument("--output", "-o", type=str, default="tasks.json")
     parser.add_argument("--dynamic", action="store_true", default=False)
@@ -44,6 +52,8 @@ async def run(
     prompts_per_use_case: int = 2,
     output: str = "tasks.json",
     dynamic: bool = False,
+    *,
+    test_types: str = "event_only",
 ):
     from autoppia_iwa.config.env import init_env
 
@@ -62,12 +72,15 @@ async def run(
     output_path = Path(output)
 
     all_tasks = {}
+    de_uc = use_cases if test_types == "data_extraction_only" else None
     for project in projects:
         print(f"Generating tasks for {project.name}...")
         config = TaskGenerationConfig(
             prompts_per_use_case=prompts_per_use_case,
             use_cases=use_cases,
             dynamic=dynamic,
+            test_types=test_types,
+            data_extraction_use_cases=de_uc,
         )
         tasks = await TaskGenerationPipeline(web_project=project, config=config).generate()
         all_tasks[project.id] = {
@@ -96,6 +109,7 @@ async def _main_async(args) -> int:
             prompts_per_use_case=args.prompts_per_use_case,
             output=args.output,
             dynamic=args.dynamic,
+            test_types=args.test_types,
         )
     except ValueError as exc:
         print(str(exc))

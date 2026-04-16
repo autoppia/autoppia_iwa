@@ -87,6 +87,7 @@ class Event(BaseModel):
         from autoppia_iwa.src.demo_webs.projects.p13_autodrive.events import BACKEND_EVENT_TYPES as web_13_backend_types
         from autoppia_iwa.src.demo_webs.projects.p14_autohealth.events import BACKEND_EVENT_TYPES as web_14_backend_types
         from autoppia_iwa.src.demo_webs.projects.p15_autostats.events import BACKEND_EVENT_TYPES as web_15_backend_types
+        from autoppia_iwa.src.demo_webs.projects.p16_autodiscord.events import BACKEND_EVENT_TYPES as web_16_backend_types
 
         ALL_BACKEND_EVENT_TYPES = {
             **web_1_backend_types,
@@ -104,6 +105,7 @@ class Event(BaseModel):
             **web_13_backend_types,
             **web_14_backend_types,
             **web_15_backend_types,
+            **web_16_backend_types,
         }
         event_class_map = ALL_BACKEND_EVENT_TYPES
 

@@ -5,7 +5,7 @@ from autoppia_iwa.src.data_generation.tasks.classes import (
     Task,
     TaskGenerationConfig,
 )
-from autoppia_iwa.src.data_generation.tests.classes import CheckEventTest
+from autoppia_iwa.src.data_generation.tests.classes import CheckEventTest, DataExtractionTest
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
 
@@ -96,6 +96,52 @@ def test_task_deserialize_roundtrip():
     assert restored.tests[0].event_name == "E1"
 
 
+def test_task_deserialize_with_use_case():
+    from autoppia_iwa.src.demo_webs.projects.base_events import Event
+
+    class FakeEvent(Event):
+        event_name: str = "FAKE"
+
+    use_case = UseCase(
+        name="UC_DESER",
+        description="desc",
+        event=FakeEvent,
+        event_source_code="",
+        examples=[],
+    )
+    task = Task(url="https://example.com/?a=1", prompt="p", use_case=use_case)
+    serialized = task.serialize()
+
+    restored = Task.deserialize(serialized)
+
+    assert restored.use_case is not None
+    assert restored.use_case.name == "UC_DESER"
+
+
+def test_task_serialize_detask_keeps_minimal_payload():
+    task = Task(
+        web_project_id="autocinema",
+        url="https://example.com/?seed=1",
+        prompt="Who is the director?",
+        tests=[DataExtractionTest(expected_answer="Pete Docter")],
+    )
+    task.task_type = "DEtask"
+    task.de_use_case_name = "FIND_DIRECTOR"
+    task.de_expected_answer = "Pete Docter"
+
+    serialized = task.serialize()
+
+    assert "tests" not in serialized
+    assert "specifications" not in serialized
+    assert "use_case" not in serialized
+    assert "should_record" not in serialized
+    assert "is_web_real" not in serialized
+    assert "task_type" not in serialized
+    assert "original_prompt" not in serialized
+    assert serialized["de_use_case_name"] == "FIND_DIRECTOR"
+    assert serialized["de_expected_answer"] == "Pete Docter"
+
+
 def test_task_clean_task_excludes_tests_and_use_case():
     task = Task(
         url="https://example.com",
@@ -145,6 +191,13 @@ def test_task_generation_config_prompts_per_use_case_int():
     assert config.prompts_per_use_case == 5
     assert config.use_cases == ["A"]
     assert config.dynamic is False
+
+
+def test_task_generation_config_prompts_per_use_case_empty_means_none():
+    assert TaskGenerationConfig._empty_prompts_mean_auto("") is None
+    assert TaskGenerationConfig._empty_prompts_mean_auto("None") is None
+    assert TaskGenerationConfig._empty_prompts_mean_auto("none") is None
+    assert TaskGenerationConfig._empty_prompts_mean_auto(3) == 3
 
 
 def test_task_assign_seed_to_url_exception_fallback():

@@ -1,6 +1,6 @@
 # AutoDiscord (Web 16) — field/operator maps for constraint generation
 
-from ..operators import CONTAINS, EQUALS, NOT_CONTAINS, NOT_EQUALS
+from ...operators import CONTAINS, EQUALS, NOT_CONTAINS, NOT_EQUALS
 
 STRING_OPERATORS = [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]
 

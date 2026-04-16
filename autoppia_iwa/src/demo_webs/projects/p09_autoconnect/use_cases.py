@@ -51,6 +51,16 @@ from .generation_functions import (
     generate_view_user_profile_constraints,
 )
 
+GENERIC_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a single natural-language question that asks for the value of the verify field in this use case.
+
+Use only natural wording and avoid schema-style field names or names with underscores (_).
+Use selected identifying fields and their values to identify the target item, then ask for the verify field value.
+Do not include the verify field value in the question text.
+
+The output must be exactly one question.
+""".strip()
+
 VIEW_USER_PROFILE_INFO = """
 Critical requirements:
 1. The request must start with "View user profile" or "View the profile of user" (or similar).
@@ -61,6 +71,35 @@ Critical requirements:
 EXAMPLES:
 ✅ CORRECT: View the profile of user where name not equals 'Smith'.
 ❌ INCORRECT: View the profile of user 'janedoe' where the name is NOT 'sarahlee'. (Do not invent user identifiers not in constraints; use exact constraint field and value.)
+""".strip()
+
+VIEW_USER_PROFILE_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a user profile in the view user profile context (e.g., name, title, bio, company, experience title, experience duration).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "title", "bio", "company", "experience_title", "experience_duration" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., user name, title, bio, company, experience title, experience duration).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "View...", "Open...", or "Show...".
+
+Always end the question naturally with "after viewing profile."
+
+For example, if the verify field is 'company', format the question naturally:
+- "Can you tell me the company of the user 'Alice Johnson', whose title is 'Software Engineer', bio is 'Passionate about building scalable systems', experience title is 'Backend Developer', and experience duration is '3 years', so I can view the user profile?"
+
+Examples:
+- "Can you tell me the bio of the user 'John Smith', whose title is 'Data Scientist', company is 'DataWorks', experience title is 'ML Engineer', and experience duration is '4 years', after viewing profile?"
+- "Can you tell me the experience title of the user 'Emily Clark', whose title is 'UX Designer', bio is 'Designing intuitive interfaces', company is 'Creative Studio', and experience duration is '2 years', after viewing profile?"
+- "Can you tell me the experience duration of the user 'Michael Lee', whose title is 'DevOps Engineer', bio is 'Automation and cloud enthusiast', company is 'CloudNet', and experience title is 'Infrastructure Engineer', after viewing profile?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
 """.strip()
 
 VIEW_USER_PROFILE_USE_CASE = UseCase(
@@ -123,6 +162,35 @@ Critical requirements:
 3. Copy constraint values exactly in single quotes.
 """.strip()
 
+CONNECT_WITH_USER_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a user profile in the connect with user context (e.g., name, title, bio, company, experience title, experience duration).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "title", "bio", "company", "experience_title", "experience_duration" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., user name, title, bio, company, experience title, experience duration).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Connect...", "Add...", or "Follow...".
+
+Always end the question naturally with "so I can connect with the user."
+
+For example, if the verify field is 'company', format the question naturally:
+- "Can you tell me the company of the user 'Alice Johnson', whose title is 'Software Engineer', bio is 'Passionate about building scalable systems', experience title is 'Backend Developer', and experience duration is '3 years', so I can connect with the user?"
+
+Examples:
+- "Can you tell me the bio of the user 'John Smith', whose title is 'Data Scientist', company is 'DataWorks', experience title is 'ML Engineer', and experience duration is '4 years', so I can connect with the user?"
+- "Can you tell me the experience title of the user 'Emily Clark', whose title is 'UX Designer', bio is 'Designing intuitive interfaces', company is 'Creative Studio', and experience duration is '2 years', so I can connect with the user?"
+- "Can you tell me the experience duration of the user 'Michael Lee', whose title is 'DevOps Engineer', bio is 'Automation and cloud enthusiast', company is 'CloudNet', and experience title is 'Infrastructure Engineer', so I can connect with the user?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 CONNECT_WITH_USER_USE_CASE = UseCase(
     name="CONNECT_WITH_USER",
     description="The user sends a connection request to another user.",
@@ -171,6 +239,34 @@ Critical requirements:
 3. Copy constraint values exactly in single quotes.
 """.strip()
 
+LIKE_POST_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a post in the like post context (e.g., poster name, poster content, likes).
+
+Use natural language only. Do NOT use schema-style field names such as "poster_name", "poster_content", "likes" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., poster name, post content, number of likes).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Like...", "React...", or "Tap...".
+
+Always end the question naturally with "so I can like the post."
+
+For example, if the verify field is 'likes', format the question naturally:
+- "Can you tell me how many likes the post by 'Alice Johnson', which has content 'Excited to share my new project!', has, so I can like the post?"
+
+Examples:
+- "Can you tell me the post content shared by 'John Smith', which has 85 likes, so I can like the post?"
+- "Can you tell me how many likes the post by 'Emily Clark', which has content 'Just finished a marathon!', has, so I can like the post?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 LIKE_POST_USE_CASE = UseCase(
     name="LIKE_POST",
     description="The user likes a post",
@@ -213,6 +309,35 @@ Critical requirements:
 3. Copy constraint values exactly in single quotes.
 """.strip()
 
+COMMENT_ON_POST_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a post in the comment on post context (e.g., commenter name, comment text, total number of comments, poster name, post content).
+
+Use natural language only. Do NOT use schema-style field names such as "commenter_name", "comment_text", "total_comments", "poster_name", "poster_content" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., commenter name, comment text, total number of comments, poster name, post content).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Comment...", "Reply...", or "Write...".
+
+Always end the question naturally with "so I can comment on the post."
+
+For example, if the verify field is 'total_comments', format the question naturally:
+- "Can you tell me total number of comments on the post by 'David Wilson', which has content 'Loving the sunny weather today!' and includes a comment 'So true!', has, so I can comment on the post?"
+
+Examples:
+- "Can you tell me the commenter name who wrote 'Amazing work!' on the post by 'Emily Clark', which has content 'Just finished a marathon!' and has 40 comments, so I can comment on the post?"
+- "Can you tell me the post content on which 'Michael Lee' wrote 'Great insights!', which has 30 comments and is posted by 'Sophia Brown', so I can comment on the post?"
+- "Can you tell me total number of comments on the post by 'David Wilson', which has content 'Loving the sunny weather today!' and includes a comment 'So true!', has, so I can comment on the post?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 COMMENT_ON_POST_USE_CASE = UseCase(
     name="COMMENT_ON_POST",
     description="The user comments on a post.",
@@ -247,6 +372,37 @@ Critical requirements:
 2. Include ALL mentioned constraints in the prompt.
 3. Copy constraint values exactly in single quotes.
 """.strip()
+
+APPLY_FOR_JOB_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a job in the apply for job context (e.g., job title, company, location, experience, salary, job type).
+
+Use natural language only. Do NOT use schema-style field names such as "job_title", "company", "location", "experience", "salary", "job_type" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., job title, company, location, experience required, salary, job type).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Apply...", "Submit...", or "Send...".
+
+Always end the question naturally with "so I can apply for the job."
+
+For example, if the verify field is 'salary', format the question naturally:
+- "Can you tell me the salary for the job 'Software Engineer' at 'TechCorp', located in New York, which requires 3 years of experience and is a full-time role, so I can apply for the job?"
+
+Examples:
+- "Can you tell me the job title at 'InnovateX', located in London, which requires 5 years of experience, offers a salary of $120k, and is a full-time role, so I can apply for the job?"
+- "Can you tell me the company offering the job 'Data Scientist', located in San Francisco, which requires 4 years of experience, offers a salary of $110k, and is a contract role, so I can apply for the job?"
+- "Can you tell me the location of the job 'Product Manager' at 'BuildIt', which requires 6 years of experience, offers a salary of $130k, and is a full-time role, so I can apply for the job?"
+- "Can you tell me the job type for the job 'UI Designer' at 'Creative Studio', located in Berlin, which requires 2 years of experience and offers a salary of $70k, so I can apply for the job?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 
 APPLY_FOR_JOB_USE_CASE = UseCase(
     name="APPLY_FOR_JOB",
@@ -307,6 +463,35 @@ Critical requirements:
 1. The request must start with "Follow" and reference a company page (or equivalent).
 2. Include ALL mentioned constraints in the prompt.
 
+""".strip()
+
+FOLLOW_PAGE_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a page in the follow page context (e.g., match score, category, title, reason).
+
+Use natural language only. Do NOT use schema-style field names such as "match_score", "category", "title", "reason" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., match score, category, title, reason).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Follow...", "Subscribe...", or "Join...".
+
+Always end the question naturally with "so I can follow it."
+
+For example, if the verify field is 'title', format the question naturally:
+- "Can you tell me the title of the page which has a match score of 0.92, belongs to the category 'Technology', and has reason 'Recommended based on your interests', so I can follow it?"
+
+Examples:
+- "Can you tell me the category of the page titled 'AI Innovations', which has a match score of 0.88 and reason 'Trending in your network', so I can follow it?"
+- "Can you tell me the match score of the page titled 'Healthy Living', which belongs to the category 'Wellness' and has reason 'Based on your activity', so I can follow it?"
+- "Can you tell me the reason for recommending the page titled 'Travel Diaries', which has a match score of 0.85 and belongs to the category 'Travel', so I can follow it?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
 """.strip()
 
 FOLLOW_PAGE_USE_CASE = UseCase(
@@ -431,6 +616,35 @@ Critical requirements:
 3. Copy constraint values exactly in single quotes.
 """.strip()
 
+FILTER_JOBS_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a job in the filter jobs context (e.g., job title, company, location, experience, salary).
+
+Use natural language only. Do NOT use schema-style field names such as "job_title", "company", "location", "experience", "salary" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., job title, company, location, experience required, salary).
+
+Include only the selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Filter...", "Apply...", or "Select...".
+
+Always end the question naturally with "so I can filter the job."
+
+For example, if the verify field is 'salary', format the question naturally:
+- "Can you tell me the salary for the job 'Software Engineer' at 'TechCorp', located in New York, which requires 3 years of experience, so I can filter the job?"
+
+Examples:
+- "Can you tell me the company offering a job located in San Francisco, which requires 4 years of experience and offers a salary of $110k, so I can filter the job?"
+- "Can you tell me the location of a job titled 'Product Manager', which requires 6 years of experience and offers a salary of $130k, so I can filter the job?"
+- "Can you tell me the experience required for the job 'UI Designer' at 'Creative Studio', located in Berlin, so I can filter the job?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 FILTER_JOBS_USE_CASE = UseCase(
     name="FILTER_JOBS",
     description="The user applies filters to job listings.",
@@ -456,6 +670,36 @@ Critical requirements:
 2. Include ALL mentioned constraints in the prompt.
 3. Copy constraint values exactly in single quotes.
 """.strip()
+
+VIEW_JOB_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a job in the view job context (e.g., job title, company, location, experience, salary, job type).
+
+Use natural language only. Do NOT use schema-style field names such as "job_title", "company", "location", "experience", "salary", "job_type" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., job title, company, location, experience required, salary, job type).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "View...", "Open...", or "See...".
+
+Always end the question naturally with "after viewing the job."
+
+For example, if the verify field is 'salary', format the question naturally:
+- "Can you tell me the salary for the job 'Software Engineer' at 'TechCorp', located in New York, which requires 3 years of experience and is a full-time role, after viewing the job?"
+
+Examples:
+- "Can you tell me the company name offering the job 'Data Scientist', located in San Francisco, which requires 4 years of experience, offers a salary of $110k, after viewing the job?"
+- "Can you tell me the location of the job 'Product Manager' at 'BuildIt', which requires 6 years of experience, offers a salary of $130k, and is a full-time role, after viewing the job?"
+- "Can you tell me the job type for the job 'UI Designer' at 'Creative Studio', located in Berlin, which requires 2 years of experience and offers a salary of $70k, after viewing the job?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 
 VIEW_JOB_USE_CASE = UseCase(
     name="VIEW_JOB",
@@ -513,6 +757,35 @@ Critical requirements:
 2. Include ALL mentioned constraints in the prompt when present; copy values in single quotes.
 """.strip()
 
+SAVE_POST_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which is the poster name in the save post context.
+
+Use natural language only. Do NOT use schema-style field names such as "poster_name", "poster_content" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., poster name, post content).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the poster name.
+
+Do NOT start questions with imperative phrasing like "Save...", "Bookmark...", or "Store...".
+
+Always end the question naturally with "so I can save the post."
+
+For example, format the question naturally like:
+- "Can you tell me the poster name of the post that content 'Excited to share my new project!', so I can save the post?"
+
+Examples:
+- "Can you tell me the poster name of the post that content 'Loving the sunny weather today!', so I can save the post?"
+- "Can you tell me the poster name of the post that content 'Just finished a marathon!', so I can save the post?"
+- "Can you tell me the poster name of the post that content 'Learning new skills every day!', so I can save the post?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value (poster name) itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the poster name.
+""".strip()
+
 SAVE_POST_USE_CASE = UseCase(
     name="SAVE_POST",
     description="The user saves a post to view later.",
@@ -531,6 +804,35 @@ HIDE_POST_INFO = """
 Critical requirements:
 1. The request must start with "Hide the post" or "Hide this post" (or equivalent).
 2. Include ALL mentioned constraints in the prompt when present; copy values in single quotes.
+""".strip()
+
+HIDE_POST_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which is the poster name in the hide post context.
+
+Use natural language only. Do NOT use schema-style field names such as "poster_name", "poster_content" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., poster name, post content).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the poster name.
+
+Do NOT start questions with imperative phrasing like "Hide...", "Remove...", or "Block...".
+
+Always end the question naturally with "so I can hide the post."
+
+For example, format the question naturally like:
+- "Can you tell me the poster name of the post that content 'Excited to share my new project!', so I can hide the post?"
+
+Examples:
+- "Can you tell me the poster name of the post that content 'Loving the sunny weather today!', so I can hide the post?"
+- "Can you tell me the poster name of the post that content 'Just finished a marathon!', so I can hide the post?"
+- "Can you tell me the poster name of the post that content 'Learning new skills every day!', so I can hide the post?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value (poster name) itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the poster name.
 """.strip()
 
 HIDE_POST_USE_CASE = UseCase(
@@ -596,6 +898,34 @@ Critical requirements:
 2. Include ALL mentioned constraints in the prompt; copy values in single quotes.
 """.strip()
 
+EDIT_PROFILE_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a user profile in the edit profile context (e.g., name, title, bio).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "title", "bio" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., user name, title, bio).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Edit...", "Update...", or "Change...".
+
+Always end the question naturally with "so I can update the profile."
+
+For example, if the verify field is 'title', format the question naturally:
+- "Can you tell me the title of the user 'Alice Johnson', whose bio is 'Frontend developer and tech enthusiast', so I can update the profile?"
+
+Examples:
+- "Can you tell me the bio of the user 'John Smith', whose title is 'Project Manager', so I can update the profile?"
+- "Can you tell me the title of the user 'Emily Clark', whose bio is 'UX designer and coffee lover', so I can update the profile?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 EDIT_PROFILE_USE_CASE = UseCase(
     name="EDIT_PROFILE",
     description="The user edits their profile information.",
@@ -613,6 +943,36 @@ EDIT_EXPERIENCE_INFO = """
 Critical requirements:
 1. The request must start with "Edit experience" or "Update experience" (or equivalent).
 2. Include ALL mentioned constraints in the prompt; copy values in single quotes.
+""".strip()
+
+EDIT_EXPERIENCE_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a user experience in the edit experience context (e.g., name, company, experience duration, company location, experience description, experience title).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "company", "experience_duration", "experience_location", "experience_description", "experience_title" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., user name, company, experience duration, location, experience description, experience title).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Edit...", "Update...", or "Change...".
+
+Always end the question naturally with "so I can update the experience."
+
+For example, if the verify field is 'experience title', format the question naturally:
+- "Can you tell me the experience title of the user 'Alice Johnson', who works at 'TechCorp', has an experience duration of '3 years', is located in 'New York', and has experience description 'Worked on backend systems', so I can update the experience?"
+
+Examples:
+- "Can you tell me the company of the user 'John Smith', whose experience title is 'Data Scientist', has an experience duration of '4 years', is located in 'San Francisco', and has experience description 'Built machine learning models', so I can update the experience?"
+- "Can you tell me the experience duration of the user 'Emily Clark', who works at 'Creative Studio', has experience title 'UX Designer', is located in 'London', and has experience description 'Designed user interfaces', so I can update the experience?"
+- "Can you tell me the experience location of the user 'Michael Lee', who works at 'CloudNet', has experience title 'DevOps Engineer', has an experience duration of '5 years', and has experience description 'Managed cloud infrastructure', so I can update the experience?"
+- "Can you tell me the experience description of the user 'Sophia Brown', who works at 'InnovateX', has experience title 'Product Manager', has an experience duration of '6 years', and is located in 'Berlin', so I can update the experience?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
 """.strip()
 
 EDIT_EXPERIENCE_USE_CASE = UseCase(
@@ -637,6 +997,34 @@ Critical requirements:
 2. Include ALL mentioned constraints in the prompt when present; copy values in single quotes.
 """.strip()
 
+ADD_EXPERIENCE_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of a user profile in the add experience context (e.g., name, title, bio).
+
+Use natural language only. Do NOT use schema-style field names such as "name", "title", "bio" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., user name, title, bio).
+
+Include all selected question fields with their values (except the verify field) in the question for identification, then ask naturally for the verify field value.
+
+Do NOT start questions with imperative phrasing like "Add...", "Create...", or "Insert...".
+
+Always end the question naturally with "so I can add the experience."
+
+For example, if the verify field is 'title', format the question naturally:
+- "Can you tell me the title of the user 'Alice Johnson', whose bio is 'Frontend developer and tech enthusiast', so I can add the experience?"
+
+Examples:
+- "Can you tell me the bio of the user 'John Smith', whose title is 'Project Manager', so I can add the experience?"
+- "Can you tell me the title of the user 'Emily Clark', whose bio is 'UX designer and coffee lover', so I can add the experience?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 ADD_EXPERIENCE_USE_CASE = UseCase(
     name="ADD_EXPERIENCE",
     description="The user adds a new experience entry to their profile.",
@@ -654,6 +1042,35 @@ REMOVE_POST_INFO = """
 Critical requirements:
 1. The request must start with "Remove post" or "Delete saved post" (or equivalent).
 2. Include ALL mentioned constraints in the prompt; copy values in single quotes.
+""".strip()
+
+REMOVE_POST_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which is the poster name in the remove post context.
+
+Use natural language only. Do NOT use schema-style field names such as "poster_name", "poster_content" or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., poster name, post content).
+
+Include all question fields with their values (except the verify field) in the question for identification, then ask naturally for the poster name.
+
+Do NOT start questions with imperative phrasing like "Remove...", "Delete...", or "Erase...".
+
+Always end the question naturally with "so I can remove the post."
+
+For example, format the question naturally like:
+- "Can you tell me the poster name of the post that content 'Excited to share my new project!', so I can remove the post?"
+
+Examples:
+- "Can you tell me the poster name of the post that content 'Loving the sunny weather today!', so I can remove the post?"
+- "Can you tell me the poster name of the post that content 'Just finished a marathon!', so I can remove the post?"
+- "Can you tell me the poster name of the post that content 'Learning new skills every day!', so I can remove the post?"
+
+CRITICAL ANTI-LEAK RULES:
+- Never include the verify field value (poster name) itself in the question text.
+- Use only selected question fields with their values for identification.
+- Do NOT include all visible fields—only the selected question fields with values.
+
+The output must be a single question asking only for the poster name.
 """.strip()
 
 REMOVE_POST_USE_CASE = UseCase(

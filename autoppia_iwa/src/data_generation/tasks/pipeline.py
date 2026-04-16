@@ -63,10 +63,20 @@ class TaskGenerationPipeline:
 
         try:
             # Generate tasks
-            tasks = await self.task_generator.generate(prompts_per_use_case=self.task_config.prompts_per_use_case, use_cases=self.task_config.use_cases, dynamic=self.task_config.dynamic)
+            tasks = await self.task_generator.generate(
+                prompts_per_use_case=self.task_config.prompts_per_use_case,
+                use_cases=self.task_config.use_cases,
+                dynamic=self.task_config.dynamic,
+                test_types=self.task_config.test_types,
+                data_extraction_use_cases=self.task_config.data_extraction_use_cases,
+            )
 
             # Add tests to tasks
-            tasks_with_tests = self.global_test_pipeline.add_tests_to_tasks(tasks)
+            tasks_with_tests = self.global_test_pipeline.add_tests_to_tasks(
+                tasks,
+                test_types=self.task_config.test_types,
+                data_extraction_use_cases=self.task_config.data_extraction_use_cases,
+            )
             all_tasks.extend(tasks_with_tests)
 
             # Log completion

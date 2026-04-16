@@ -107,6 +107,7 @@ def test_main_exits_non_zero_on_bad_tasks_file(monkeypatch, tmp_path, capsys):
             "web_agent_prefix": "benchmark-agent",
             "validator_prefix": None,
             "headless": True,
+            "test_types": "event_only",
         },
     )()
     monkeypatch.setattr(benchmark_run, "_parse_args", lambda: args)

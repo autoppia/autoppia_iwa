@@ -34,6 +34,7 @@ from .generation_functions import (
     generate_quantity_change_constraints,
     generate_search_query_constraints,
     generate_share_completed_constraints,
+    generate_view_detail_constraints,
 )
 from .replace_functions import replace_products_placeholders
 
@@ -214,12 +215,31 @@ For example, if the constraints are "brand equals Apple AND price less_than 1000
 ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
 """
 
+PRODUCT_DETAIL_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the product.
+
+Use natural language only. Do NOT use schema-style field names such as "title", "brand", "rating", "price", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., product name, brand, rating, price).
+
+Identify the product using the provided visible field values (e.g. product name, brand, rating, price), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Navigate...", "Show details...", "View...", or "Open...".
+
+Examples:
+- "What is the brand of the product 'iPhone 14'? "
+- "What is the price of the product with rating 4.5?"
+- "What is the rating of the product 'Instant Pot Duo 7-in-1'?"
+
+The output must be a single question asking only for the verify field value.
+""".strip()
+
 PRODUCT_DETAIL_USE_CASE = UseCase(
     name="VIEW_DETAIL",
     description="The user explicitly requests to view the details page of a specific product that meets certain criteria.",
     event=ItemDetailEvent,
     event_source_code=ItemDetailEvent.get_source_code_of_class(),
-    constraints_generator=generate_autozone_products_constraints,
+    constraints_generator=generate_view_detail_constraints,
     replace_func=replace_products_placeholders,
     additional_prompt_info=PRODUCT_DETAIL_INFO,
     examples=[
@@ -251,6 +271,24 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 4. Match the requested end state (expanded=True means open/expand, expanded=False means collapse/close) and avoid mentioning cart, wishlist, or checkout actions.
 """
 
+DETAILS_TOGGLE_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the product.
+
+Use natural language only. Do NOT use schema-style field names such as "title", "brand", "rating", "price", or any names with underscores (_).
+
+Identify the product using the provided visible field values (e.g. product name, brand), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Expand...", "Collapse...", "Open...", or "Show...".
+
+Every generated question MUST end with a confirmation phrase like "Confirm the value before toggling details" or "Please confirm before toggling details". This must appear at the end of the question.
+
+Examples:
+- "What is the brand of the product 'iPhone 14'? Please confirm before toggling details."
+- "What is the price of the product with category 'Wireless Headphones' and rating 4? Confirm the value before toggling details."
+- "What is the rating of the product 'Instant Pot Duo 7-in-1'? Confirm before toggling details."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
 DETAILS_TOGGLE_USE_CASE = UseCase(
     name="DETAILS_TOGGLE",
     description="The user toggles a collapsible section inside a product detail page.",
@@ -294,6 +332,21 @@ For example:
 - INCORRECT: "Show me wireless headphones" (not explicit search)
 """
 
+SEARCH_PRODUCT_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the name of the product.
+
+Use the provided visible fields (e.g. product name, brand, rating, price) to identify the product.
+
+Use natural language only. Do NOT use schema-style field names like "name", "brand", "rating", "price", or any names with underscores (_).
+
+Do NOT start the question with phrases like "Search for...", "Find...", or "Look for...".
+
+Examples:
+- "What is the name of the product with a rating 4.5?"
+- "What is the name of the product with a price below $100 and rating 4?"
+
+The output must be a single question whose answer is the product name only.
+""".strip()
 SEARCH_PRODUCT_USE_CASE = UseCase(
     name="SEARCH_PRODUCT",
     description="The user searches for products using a search query.",
@@ -330,6 +383,28 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 3. If a search query constraint exists, include the same query text verbatim (wrap it in quotes if appropriate) and do not add any extra filters.
 4. Reference the entry point when provided (e.g., "using the header dropdown") and avoid mentioning checkout, cart, or wishlist actions.
 """
+
+CATEGORY_FILTER_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be either the category or the product name.
+
+Use natural language only. Do NOT use schema-style field names such as "category", "name", or any names with underscores (_).
+
+Always refer to fields using simple phrasing like "category" or "product name".
+
+Identify the context using the provided visible field values (e.g. category, product name), then ask for the verify field value naturally.
+
+Do NOT start with imperative phrasing like "Filter...", "Switch category...", "Show only...", or "Browse...".
+
+Every generated question MUST end with a confirmation phrase like "Confirm the value before applying the category filter" or "Please confirm before filtering by category". This must appear at the end of the question.
+
+Examples:
+- "What is the category of the product 'iPhone 14'? Please confirm before applying the category filter."
+- "Which product belongs to the Electronics category? Confirm the value before filtering by category."
+- "What is the product name in the Kitchen category with a rating of 4.4? Please confirm before applying the category filter."
+- "Which category does the product 'Nike Air Max' belong to? Confirm before filtering by category."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
 
 CATEGORY_FILTER_USE_CASE = UseCase(
     name="CATEGORY_FILTER",
@@ -371,6 +446,28 @@ For example:
 - INCORRECT: "Buy Air Fryers" (implies checkout)
 """
 
+ADD_TO_CART_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the product.
+
+Use natural language only. Do NOT use schema-style field names such as "name", "brand", "category", "rating", "price", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., product name, brand, category, rating, price).
+
+Identify the product using the provided visible field values (e.g. product name, brand, category), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Add...", "Buy...", "Purchase...", "Order...", or "Checkout...".
+
+Every generated question MUST end with a confirmation phrase like "Confirm the value before adding to cart" or "Please confirm before adding to cart". This must appear at the end of the question.
+
+Examples:
+- "What is the price of the product 'iPhone 14'? Please confirm before adding to cart."
+- "What is the brand of the product in the Electronics category with a rating of 4.7? Confirm the value before adding to cart."
+- "Which category does the product 'Nike Air Max' belong to? Please confirm before adding to cart."
+- "What is the rating of the product 'Instant Pot Duo 7-in-1'? Confirm before adding to cart."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
+
 ADD_TO_CART_USE_CASE = UseCase(
     name="ADD_TO_CART",
     description="The user adds items to their shopping cart.",
@@ -406,6 +503,28 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 3. When adding or removing an item, include all product attributes provided in the constraints.
 4. Do not mention cart, checkout, or purchase flows in the same prompt.
 """
+
+ADD_TO_WISHLIST_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the product.
+
+Use natural language only. Do NOT use schema-style field names such as "name", "brand", "category", "rating", "price", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., product name, brand, category, rating, price).
+
+Identify the product using the provided visible field values (e.g. product name, brand, category), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Add...", "Save...", "Wishlist...", "Bookmark...", or "Store...".
+
+Every generated question MUST end with a confirmation phrase like "Confirm the value before adding to wishlist" or "Please confirm before adding to wishlist". This must appear at the end of the question.
+
+Examples:
+- "What is the price of the product 'iPhone 14'? Please confirm before adding to wishlist."
+- "What is the brand of the product in the Electronics category with a rating of 4.5? Confirm the value before adding to wishlist."
+- "Which category does the product 'Nike Air Max' belong to? Please confirm before adding to wishlist."
+- "What is the rating of the product 'Instant Pot Duo 7-in-1'? Confirm before adding to wishlist."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
 
 ADD_TO_WISHLIST_USE_CASE = UseCase(
     name="ADD_TO_WISHLIST",
@@ -449,6 +568,26 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 
 SHARE_COMPLETED_ADDITIONAL_PROMPT_INFO = SHARE_PRODUCT_INFO + "\n" + SHARE_COMPLETED_EXTRA_PROMPT_INFO
 
+SHARE_PRODUCT_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the product.
+
+Use natural language only. Do NOT use schema-style field names such as "title", "brand", "rating", "price", or any names with underscores (_).
+
+Always refer to fields using simple phrasing (e.g., product name, brand, rating, price).
+
+Identify the product using the provided visible field values (e.g. product name, brand), then ask for the verify field value naturally.
+
+Do NOT start questions with imperative phrasing like "Share...", "Send...", "Post...", or "Copy link...".
+
+Every generated question MUST end with a confirmation phrase like "Confirm the value before sharing" or "Please confirm before sharing". This must appear at the end of the question.
+
+Examples:
+- "What is the brand of the product 'iPhone 14'? Please confirm before sharing."
+- "What is the price of the product with category 'Wireless Headphones' and rating 4? Confirm the value before sharing."
+- "What is the rating of the product 'Instant Pot Duo 7-in-1'? Confirm before sharing."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
 SHARE_PRODUCT_USE_CASE = UseCase(
     name="SHARE_PRODUCT",
     description="The user shares or copies the link to a specific product.",
