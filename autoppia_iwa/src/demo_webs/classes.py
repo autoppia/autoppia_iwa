@@ -2,17 +2,20 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+import json
+import re
 from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
+from hashlib import sha1
 from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field, ValidationError
 
-if TYPE_CHECKING:
-    from autoppia_iwa.src.data_generation.tests.classes import BaseTaskTest
 from autoppia_iwa.src.execution.actions.all_actions.navigate_action import NavigateAction
 from autoppia_iwa.src.execution.actions.base import BaseAction
 
+if TYPE_CHECKING:
+    from autoppia_iwa.src.data_generation.tests.classes import BaseTaskTest
 # Constants
 CONSTRAINTS_INFO_PLACEHOLDER = "<constraints_info>"
 
@@ -347,4 +350,87 @@ class Trajectory:
             "use_case": self.name,
             "has_success": bool(tool_actions),
             "action_format": "step_tool_calls",
+        }
+
+
+@dataclass
+class DataExtractionTrajectory:
+    """
+    Deterministic data-extraction flow bound to a fixed seed and expected answer.
+    Kept separate from event-based ``Trajectory`` so legacy flows remain unchanged.
+    """
+
+    web_project_id: str
+    seed: int
+    use_case: str | None
+    question: str
+    expected_answer: str | list[str]
+    actions: list[BaseAction] | None
+    id: str | None = None
+
+    def __post_init__(self) -> None:
+        if not self.id:
+            self.id = self._build_auto_id()
+
+    @staticmethod
+    def _to_step_tool_call(action: BaseAction) -> dict[str, Any]:
+        tool_call = action.to_tool_call()
+        name = str(tool_call.get("name") or "").strip()
+        arguments = dict(tool_call.get("arguments") or {})
+        if name.startswith("browser.") or name.startswith("user."):
+            return {"name": name, "arguments": arguments}
+        namespaced = "user.request_input" if name == "request_user_input" else f"browser.{name}"
+        return {"name": namespaced, "arguments": arguments}
+
+    @staticmethod
+    def _slug(value: str | None) -> str:
+        raw = str(value or "").strip().lower()
+        slug = re.sub(r"[^a-z0-9]+", "_", raw).strip("_")
+        return slug or "unknown"
+
+    def _build_auto_id(self) -> str:
+        payload = {
+            "web_project_id": self.web_project_id,
+            "seed": int(self.seed),
+            "use_case": self.use_case,
+            "question": self.question,
+            "expected_answer": self.expected_answer,
+            "actions": [self._to_step_tool_call(action) for action in (self.actions or [])],
+        }
+        fingerprint = sha1(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()[:10]
+        return f"{self.web_project_id}.de.seed{self.seed}.{self._slug(self.use_case)}.{fingerprint}"
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "web_project_id": self.web_project_id,
+            "seed": self.seed,
+            "use_case": self.use_case,
+            "question": self.question,
+            "expected_answer": self.expected_answer,
+            "actions": [self._to_step_tool_call(action) for action in (self.actions or [])],
+            "trajectory_type": "data_extraction",
+        }
+
+    def to_step_tool_calls_trajectory(self) -> dict[str, Any]:
+        actions = self.actions or []
+        url: str | None = None
+        for action in actions:
+            if isinstance(action, NavigateAction) and getattr(action, "url", None):
+                url = action.url
+                break
+
+        tool_actions = [self._to_step_tool_call(x) for x in actions]
+        return {
+            "id": self.id,
+            "web_project_id": self.web_project_id,
+            "seed": self.seed,
+            "use_case": self.use_case,
+            "url": url,
+            "question": self.question,
+            "expected_answer": self.expected_answer,
+            "actions": tool_actions,
+            "has_success": bool(tool_actions),
+            "action_format": "step_tool_calls",
+            "trajectory_type": "data_extraction",
         }
