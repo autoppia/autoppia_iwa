@@ -2,22 +2,22 @@ import sys
 from pathlib import Path
 
 from .classes import WebProject
-from .projects.autobooks_2.main import autobooks_project
-from .projects.autocalendar_11.main import autocalendar_project
-from .projects.autocinema_1.main import autocinema_project
-from .projects.autoconnect_9.main import connect_project
-from .projects.autocrm_5.main import crm_project
-from .projects.autodelivery_7.main import autodelivery_project
-from .projects.autodining_4.main import autodining_project
-from .projects.autodiscord_16.main import discord_project
-from .projects.autodrive_13.main import drive_project
-from .projects.autohealth_14.main import health_project
-from .projects.autolist_12.main import autolist_project
-from .projects.autolodge_8.main import lodge_project
-from .projects.automail_6.main import automail_project
-from .projects.autostats_15.main import autostats_project
-from .projects.autowork_10.main import work_project
-from .projects.autozone_3.main import autozone_project
+from .projects.p01_autocinema.main import autocinema_project
+from .projects.p02_autobooks.main import autobooks_project
+from .projects.p03_autozone.main import autozone_project
+from .projects.p04_autodining.main import autodining_project
+from .projects.p05_autocrm.main import crm_project
+from .projects.p06_automail.main import automail_project
+from .projects.p07_autodelivery.main import autodelivery_project
+from .projects.p08_autolodge.main import lodge_project
+from .projects.p09_autoconnect.main import connect_project
+from .projects.p10_autowork.main import work_project
+from .projects.p11_autocalendar.main import autocalendar_project
+from .projects.p12_autolist.main import autolist_project
+from .projects.p13_autodrive.main import drive_project
+from .projects.p14_autohealth.main import health_project
+from .projects.p15_autostats.main import autostats_project
+from .projects.p16_autodiscord.main import discord_project
 
 sys.path.append(str(Path(__file__).resolve().parents[3]))
 

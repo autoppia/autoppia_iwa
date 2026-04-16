@@ -1,9 +1,19 @@
 import asyncio
 import inspect
+import json
+import re
 from collections.abc import Callable, Coroutine
-from typing import Any
+from dataclasses import dataclass
+from hashlib import sha1
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field, ValidationError
+
+from autoppia_iwa.src.execution.actions.actions import NavigateAction
+from autoppia_iwa.src.execution.actions.base import BaseAction
+
+if TYPE_CHECKING:
+    from autoppia_iwa.src.data_generation.tests.classes import BaseTaskTest
 
 # Constants
 CONSTRAINTS_INFO_PLACEHOLDER = "<constraints_info>"
@@ -31,6 +41,8 @@ class UseCase(BaseModel):
         "Default to 'None'. Set 'False' when no dynamic constraints are needed and hence no events_criteria in CheckEventTest is generated.",
     )
     additional_prompt_info: str | None = Field(default=None)
+    # When constraint generator returns a dict with "question_fields_and_values", used for LLM prompt (entity identifier).
+    question_fields_and_values: dict[str, Any] | None = Field(default=None, exclude=True)
 
     # ============================================================================
     # TEXT REPLACEMENT
@@ -97,7 +109,12 @@ class UseCase(BaseModel):
                 self.constraints = result
         return self.constraints_to_str() if self.constraints else ""
 
-    async def generate_constraints_async(self, task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):
+    async def generate_constraints_async(
+        self,
+        task_url: str | None = None,
+        dataset: dict[str, list[dict]] | None = None,
+        test_types: str | None = None,
+    ):
         """
         Async version that awaits async constraints generators when provided.
 
@@ -106,7 +123,10 @@ class UseCase(BaseModel):
             dataset: Dataset dictionary with all entities (e.g., {"films": [...], "users": [...]})
                     to pass to the generator. Each constraint generator receives the full dataset
                     and extracts the relevant entity list it needs.
+            test_types: Optional test type ("event_only" or "data_extraction_only") for
+                    generators that branch on data-extraction mode.
         """
+        self.question_fields_and_values = None
         if self.constraints_generator:
             # Inspect the generator function signature to see what parameters it accepts
             sig = inspect.signature(self.constraints_generator)
@@ -115,6 +135,7 @@ class UseCase(BaseModel):
             # Check if function accepts task_url and dataset parameters
             has_task_url_param = "task_url" in params
             has_dataset_param = "dataset" in params
+            has_test_types_param = "test_types" in params
 
             # Check if first parameter (excluding self) might be dataset
             param_names = [p for p in params if p != "self"]
@@ -131,6 +152,8 @@ class UseCase(BaseModel):
                 kwargs["task_url"] = task_url
             if has_dataset_param:
                 kwargs["dataset"] = dataset
+            if has_test_types_param and test_types is not None:
+                kwargs["test_types"] = test_types
 
             # Call generator with appropriate parameters
             if kwargs:
@@ -143,7 +166,12 @@ class UseCase(BaseModel):
                 result = self.constraints_generator()
 
             if asyncio.iscoroutine(result):
-                self.constraints = await result
+                result = await result
+
+            # Generator may return a dict for data-extraction mode: {"constraints": [...], "question_fields_and_values": {...}}
+            if isinstance(result, dict):
+                self.constraints = result.get("constraints")
+                self.question_fields_and_values = result.get("question_fields_and_values")
             else:
                 self.constraints = result
         return self.constraints_to_str() if self.constraints else ""
@@ -266,6 +294,7 @@ class WebProject(BaseModel):
     urls: list[str] = []
     events: list[type] = Field(default_factory=list, description="Structured events information")
     use_cases: list[UseCase] | None = Field(default=None, description="Optional list of canonical use cases for this project")
+    data_extraction_use_cases: list[str] | None = Field(default=None, description="Optional list of dedicated data-extraction use case names for DE task generation.")
 
 
 class BackendEvent(BaseModel):
@@ -279,3 +308,124 @@ class BackendEvent(BaseModel):
     user_id: int | None = None
     web_agent_id: str | None = None
     timestamp: Any | None = None
+
+
+@dataclass
+class Trajectory:
+    """
+    Per-use-case concrete flow: `name` is the use case id, `prompt` is the task text,
+    `actions` is the scripted solution, and `tests` mirrors cached CheckEventTest payloads.
+    """
+
+    name: str
+    prompt: str
+    actions: list[BaseAction] | None
+    tests: list["BaseTaskTest"] | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "prompt": self.prompt,
+            "actions": [action.to_tool_call() for action in (self.actions or [])],
+            "tests": [t.model_dump() for t in (self.tests or [])] if self.tests else [],
+        }
+
+    def to_step_tool_calls_trajectory(self) -> dict[str, Any]:
+        actions = self.actions or []
+        url: str | None = None
+        for action in actions:
+            if isinstance(action, NavigateAction) and getattr(action, "url", None):
+                url = action.url
+                break
+        tool_actions = [x.to_tool_call() for x in actions]
+        return {
+            "url": url,
+            "prompt": self.prompt or None,
+            "actions": tool_actions,
+            "use_case": self.name,
+            "has_success": bool(tool_actions),
+            "action_format": "step_tool_calls",
+        }
+
+
+@dataclass
+class DataExtractionTrajectory:
+    """
+    Deterministic data-extraction flow bound to a fixed seed and expected answer.
+    Kept separate from event-based ``Trajectory`` so legacy flows remain unchanged.
+    """
+
+    web_project_id: str
+    seed: int
+    use_case: str | None
+    question: str
+    expected_answer: str | list[str]
+    actions: list[BaseAction] | None
+    id: str | None = None
+
+    def __post_init__(self) -> None:
+        if not self.id:
+            self.id = self._build_auto_id()
+
+    @staticmethod
+    def _to_step_tool_call(action: BaseAction) -> dict[str, Any]:
+        tool_call = action.to_tool_call()
+        name = str(tool_call.get("name") or "").strip()
+        arguments = dict(tool_call.get("arguments") or {})
+        if name.startswith("browser.") or name.startswith("user."):
+            return {"name": name, "arguments": arguments}
+        namespaced = "user.request_input" if name == "request_user_input" else f"browser.{name}"
+        return {"name": namespaced, "arguments": arguments}
+
+    @staticmethod
+    def _slug(value: str | None) -> str:
+        raw = str(value or "").strip().lower()
+        slug = re.sub(r"[^a-z0-9]+", "_", raw).strip("_")
+        return slug or "unknown"
+
+    def _build_auto_id(self) -> str:
+        payload = {
+            "web_project_id": self.web_project_id,
+            "seed": int(self.seed),
+            "use_case": self.use_case,
+            "question": self.question,
+            "expected_answer": self.expected_answer,
+            "actions": [self._to_step_tool_call(action) for action in (self.actions or [])],
+        }
+        fingerprint = sha1(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()[:10]
+        return f"{self.web_project_id}.de.seed{self.seed}.{self._slug(self.use_case)}.{fingerprint}"
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "web_project_id": self.web_project_id,
+            "seed": self.seed,
+            "use_case": self.use_case,
+            "question": self.question,
+            "expected_answer": self.expected_answer,
+            "actions": [self._to_step_tool_call(action) for action in (self.actions or [])],
+            "trajectory_type": "data_extraction",
+        }
+
+    def to_step_tool_calls_trajectory(self) -> dict[str, Any]:
+        actions = self.actions or []
+        url: str | None = None
+        for action in actions:
+            if isinstance(action, NavigateAction) and getattr(action, "url", None):
+                url = action.url
+                break
+
+        tool_actions = [self._to_step_tool_call(x) for x in actions]
+        return {
+            "id": self.id,
+            "web_project_id": self.web_project_id,
+            "seed": self.seed,
+            "use_case": self.use_case,
+            "url": url,
+            "question": self.question,
+            "expected_answer": self.expected_answer,
+            "actions": tool_actions,
+            "has_success": bool(tool_actions),
+            "action_format": "step_tool_calls",
+            "trajectory_type": "data_extraction",
+        }

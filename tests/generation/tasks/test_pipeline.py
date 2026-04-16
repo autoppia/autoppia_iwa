@@ -114,7 +114,7 @@ def test_prompts_per_use_case_auto(monkeypatch):
 
     recorded_counts: list[int] = []
 
-    async def fake_generate_tasks(use_case_arg, number_of_prompts, dynamic=True):
+    async def fake_generate_tasks(use_case_arg, number_of_prompts, dynamic=True, **kwargs):
         recorded_counts.append(number_of_prompts)
         return []
 

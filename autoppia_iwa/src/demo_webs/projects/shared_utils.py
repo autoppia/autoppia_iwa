@@ -210,6 +210,7 @@ def validate_date_field(field_value, criterion):
     def to_date(val):
         if isinstance(val, str):
             try:
+                val = val.replace(" ", "T").replace("Z", "+00:00")
                 return datetime.fromisoformat(val).date() if "T" in val else date.fromisoformat(val)
             except (ValueError, TypeError):
                 return None

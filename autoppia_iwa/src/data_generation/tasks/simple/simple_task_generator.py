@@ -19,6 +19,10 @@ from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.interfaces import ILLM
 
+from .data_extraction_prompts import (
+    DATA_EXTRACTION_TASK_GENERATION_PROMPT_VERIFY_FIELD_ONLY,
+    DATA_EXTRACTION_TASK_GENERATION_PROMPT_WITH_QUESTION_FIELDS,
+)
 from .prompts import GLOBAL_TASK_GENERATION_PROMPT
 
 TASK_GENERATION_LEVEL_NAME = "TASK_GENERATION"
@@ -74,7 +78,15 @@ class SimpleTaskGenerator:
     # PUBLIC METHODS - TASK GENERATION
     # ============================================================================
 
-    async def generate(self, prompts_per_use_case: int = 1, use_cases: list[str] | None = None, dynamic: bool = True) -> list[Task]:
+    async def generate(
+        self,
+        prompts_per_use_case: int = 1,
+        use_cases: list[str] | None = None,
+        dynamic: bool = True,
+        *,
+        test_types: str = "event_only",
+        data_extraction_use_cases: list[str] | None = None,
+    ) -> list[Task]:
         """
         Generate tasks for use cases in the web project.
 
@@ -88,18 +100,51 @@ class SimpleTaskGenerator:
         # Get use cases to process (default: all use cases)
         web_use_cases = self.web_project.use_cases
 
-        # Filter to specific use cases if requested
-        if use_cases:
+        if test_types == "data_extraction_only":
+            # Prefer dedicated DE use cases if the project provides them.
+            # This keeps DE task generation separated from regular event-use-case generation.
+            generated_from_de_use_cases = await self._generate_de_tasks_from_project_use_cases(
+                prompts_per_use_case=prompts_per_use_case,
+                dynamic=dynamic,
+                data_extraction_use_cases=data_extraction_use_cases,
+            )
+            if generated_from_de_use_cases is not None:
+                _log_task_generation(
+                    f"Generated {len(generated_from_de_use_cases)} DEtasks from dedicated DE use cases for project '{self.web_project.id}'",
+                    context="DATA_EXTRACTION",
+                )
+                return generated_from_de_use_cases
+
+            if data_extraction_use_cases is not None:
+                web_use_cases = [uc for uc in self.web_project.use_cases if uc.name in data_extraction_use_cases]
+            # When data_extraction_only, ignore use_cases and select by data_extraction_use_cases
+            if not web_use_cases:
+                logger.warning(f"No matching use cases found for data_extraction_use_cases: {data_extraction_use_cases}. Available: {[uc.name for uc in self.web_project.use_cases]}")
+                return all_tasks
+            _log_task_generation(f"Using {len(web_use_cases)} use cases (data_extraction_only): {[uc.name for uc in web_use_cases]}")
+        elif use_cases:
+            # Filter to specific use cases if requested
             web_use_cases = [uc for uc in self.web_project.use_cases if uc.name in use_cases]
             if not web_use_cases:
                 logger.warning(f"No matching use cases found for: {use_cases}. Available: {[uc.name for uc in self.web_project.use_cases]}")
                 return all_tasks
             _log_task_generation(f"Using {len(web_use_cases)} specified use cases: {[uc.name for uc in web_use_cases]}")
 
+        # Optional additional filter for data-extraction-specific runs
+        data_extraction_allowed_names: set[str] | None = None
+        if data_extraction_use_cases:
+            data_extraction_allowed_names = set(data_extraction_use_cases)
+
         for use_case in web_use_cases:
             _log_task_generation(f"Generating tasks for use case: {use_case.name}", context="USE_CASE")
             try:
-                tasks_for_use_case = await self.generate_tasks_for_use_case(use_case, prompts_per_use_case, dynamic=dynamic)
+                tasks_for_use_case = await self.generate_tasks_for_use_case(
+                    use_case,
+                    number_of_prompts=prompts_per_use_case,
+                    dynamic=dynamic,
+                    test_types=test_types,
+                    data_extraction_allowed_names=data_extraction_allowed_names,
+                )
                 all_tasks.extend(tasks_for_use_case)
                 _log_task_generation(
                     f"Generated {len(tasks_for_use_case)} tasks for use case '{use_case.name}' (requested {prompts_per_use_case})",
@@ -114,7 +159,55 @@ class SimpleTaskGenerator:
 
         return all_tasks
 
-    async def generate_tasks_for_use_case(self, use_case: UseCase, number_of_prompts: int = 1, dynamic: bool = True) -> list[Task]:
+    async def _generate_de_tasks_from_project_use_cases(
+        self,
+        *,
+        prompts_per_use_case: int,
+        dynamic: bool,
+        data_extraction_use_cases: list[str] | None,
+    ) -> list[Task] | None:
+        project_module_name = self._get_project_module_name()
+        if not project_module_name:
+            return None
+
+        module_path = f"autoppia_iwa.src.demo_webs.projects.{project_module_name}.dataExtractionUseCases"
+        try:
+            de_module = importlib.import_module(module_path)
+        except ImportError:
+            return None
+
+        generate_fn = getattr(de_module, "generate_de_tasks", None)
+        if not callable(generate_fn):
+            return None
+
+        selected_use_cases = {name.strip().upper() for name in data_extraction_use_cases or [] if str(name).strip()}
+        selected_use_cases = selected_use_cases or None
+
+        iterations = int(prompts_per_use_case) if prompts_per_use_case and int(prompts_per_use_case) > 0 else 1
+        tasks: list[Task] = []
+        for _ in range(iterations):
+            task_url = self._build_task_url_with_seed(dynamic=dynamic)
+            seed = get_seed_from_url(task_url) if dynamic else 1
+            generated = generate_fn(
+                seed=seed,
+                task_url=task_url,
+                selected_use_cases=selected_use_cases,
+            )
+            de_tasks = await generated if inspect.isawaitable(generated) else generated
+            if isinstance(de_tasks, list):
+                tasks.extend([task for task in de_tasks if isinstance(task, Task)])
+
+        return tasks
+
+    async def generate_tasks_for_use_case(
+        self,
+        use_case: UseCase,
+        number_of_prompts: int = 1,
+        dynamic: bool = True,
+        *,
+        test_types: str = "event_only",
+        data_extraction_allowed_names: set[str] | None = None,
+    ) -> list[Task]:
         """
         Generate tasks for a specific use case by calling the LLM with relevant context.
 
@@ -127,6 +220,10 @@ class SimpleTaskGenerator:
             dynamic: If True, tasks will include random seeds for dynamic content
         """
         tasks: list[Task] = []
+
+        generate_data_extraction = test_types == "data_extraction_only"
+        if data_extraction_allowed_names is not None and use_case.name not in data_extraction_allowed_names:
+            generate_data_extraction = False
 
         # Generate each prompt independently
         for _ in range(number_of_prompts):
@@ -145,7 +242,11 @@ class SimpleTaskGenerator:
                 dataset = await self._load_dataset(seed) or {}
 
                 try:
-                    constraints_info = await use_case_copy.generate_constraints_async(task_url=task_url, dataset=dataset)
+                    constraints_info = await use_case_copy.generate_constraints_async(
+                        task_url=task_url,
+                        dataset=dataset,
+                        test_types=test_types,
+                    )
                 except Exception as e:
                     logger.error(f"Constraint generation failed for '{use_case_copy.name}': {e}")
                     continue  # Skip this iteration
@@ -156,14 +257,47 @@ class SimpleTaskGenerator:
             if not use_case_copy.additional_prompt_info:
                 use_case_copy.additional_prompt_info = f"GENERATE PROMPT LIKE: {use_case_copy.get_example_prompts_str()}"
 
-            llm_prompt = GLOBAL_TASK_GENERATION_PROMPT.format(
-                use_case_name=use_case_copy.name,
-                use_case_description=use_case_copy.description,
-                additional_prompt_info=use_case_copy.additional_prompt_info,
-                constraints_info=constraints_info,
-            )
+            if generate_data_extraction:
+                qfav = getattr(use_case_copy, "question_fields_and_values", None)
+                constraints_list = use_case_copy.constraints or []
+                if not constraints_list:
+                    logger.warning(f"No constraints generated for data-extraction use case '{use_case_copy.name}' (seed={seed}). Skipping iteration.")
+                    continue
+                if qfav and isinstance(qfav, dict) and qfav:
+                    question_fields_info = "\n".join(f"- {k} = {v}" for k, v in qfav.items())
+                    # Verify field is the single constraint's field (what we ask for in the question).
+                    verify_field = constraints_list[0].get("field") if len(constraints_list) == 1 else None
+                    if verify_field is not None and not isinstance(verify_field, str):
+                        verify_field = getattr(verify_field, "value", str(verify_field))
+                    verify_field = verify_field or "the requested field"
+                    llm_prompt = DATA_EXTRACTION_TASK_GENERATION_PROMPT_WITH_QUESTION_FIELDS.format(
+                        use_case_name=use_case_copy.name,
+                        use_case_description=use_case_copy.description,
+                        additional_prompt_info=use_case_copy.additional_prompt_info or "",
+                        question_fields_info=question_fields_info,
+                        verify_field=verify_field,
+                    )
+                else:
+                    # Verify field only (no question_fields_and_values): ask directly for the value of the verify field.
+                    verify_field = constraints_list[0].get("field")
+                    if verify_field is not None and not isinstance(verify_field, str):
+                        verify_field = getattr(verify_field, "value", str(verify_field))
+                    verify_field = verify_field or "the requested field"
+                    llm_prompt = DATA_EXTRACTION_TASK_GENERATION_PROMPT_VERIFY_FIELD_ONLY.format(
+                        use_case_name=use_case_copy.name,
+                        use_case_description=use_case_copy.description,
+                        additional_prompt_info=use_case_copy.additional_prompt_info or "",
+                        verify_field=verify_field,
+                    )
+            else:
+                llm_prompt = GLOBAL_TASK_GENERATION_PROMPT.format(
+                    use_case_name=use_case_copy.name,
+                    use_case_description=use_case_copy.description,
+                    additional_prompt_info=use_case_copy.additional_prompt_info,
+                    constraints_info=constraints_info,
+                )
 
-            # Call the LLM and get a single prompt
+            # Call the LLM and get a single prompt/question
             prompt_list = await self._call_llm_with_retry(llm_prompt)
 
             # Process only the first prompt from the LLM response for this iteration
@@ -172,7 +306,7 @@ class SimpleTaskGenerator:
                 logger.warning(f"No prompts returned from LLM for use case '{use_case_copy.name}'")
                 continue
 
-            # Take only the first prompt for this iteration
+            # Take only the first prompt/question for this iteration
             prompt_text = prompt_list[0]
 
             try:
@@ -374,15 +508,26 @@ class SimpleTaskGenerator:
             "autobooks_2": "books",
             "autozone_3": "products",
             "autodining_4": "restaurants",
-            "automail_6": "emails",
             "autodelivery_7": "restaurants",
             "autolodge_8": "hotels",
-            "autoconnect_9": "users",  # Primary entity, but has multiple
-            "autowork_10": "jobs",  # Primary entity, but has multiple
+            "autoconnect_9": "users",  # Legacy name kept for backwards-compat tests
+            "autowork_10": "jobs",  # Legacy name kept for backwards-compat tests
             "autocalendar_11": "events",
             "autolist_12": "tasks",
-            "autodrive_13": "places",  # Primary entity, but has multiple
-            "autohealth_14": "appointments",  # Primary entity, but has multiple
+            "autodrive_13": "places",  # Legacy name kept for backwards-compat tests
+            "autohealth_14": "appointments",  # Legacy name kept for backwards-compat tests
+            "p01_autocinema": "movies",
+            "p02_autobooks": "books",
+            "p03_autozone": "products",
+            "p04_autodining": "restaurants",
+            "p07_autodelivery": "restaurants",
+            "p08_autolodge": "hotels",
+            "p09_autoconnect": "users",  # Primary entity, but has multiple
+            "p10_autowork": "jobs",  # Primary entity, but has multiple
+            "p11_autocalendar": "events",
+            "p12_autolist": "tasks",
+            "p13_autodrive": "places",  # Primary entity, but has multiple
+            "p14_autohealth": "appointments",  # Primary entity, but has multiple
         }
         return entity_type_map.get(project_dir)
 
@@ -391,30 +536,48 @@ class SimpleTaskGenerator:
         # Map project directories to their entity types
         entity_types_map = {
             "autocrm_5": ["matters", "clients", "logs", "events", "files"],
+            "automail_6": ["emails", "templates"],
             "autoconnect_9": ["users", "posts", "jobs", "recommendations"],
             "autowork_10": ["jobs", "experts", "hires", "skills"],
             "autodrive_13": ["places", "rides"],
             "autohealth_14": ["appointments", "doctors", "prescriptions", "medical-records"],
             "autostats_15": ["validators", "subnets", "blocks", "accounts", "transfers"],
             "autodiscord_16": ["servers", "channels", "messages", "members"],
+            "p05_autocrm": ["matters", "clients", "logs", "events", "files"],
+            "p06_automail": ["emails", "templates"],
+            "p09_autoconnect": ["users", "posts", "jobs", "recommendations"],
+            "p10_autowork": ["jobs", "experts", "hires", "skills"],
+            "p13_autodrive": ["places", "rides"],
+            "p14_autohealth": ["appointments", "doctors", "prescriptions", "medical-records"],
+            "p15_autostats": ["validators", "subnets", "blocks", "accounts", "transfers"],
+            "p16_autodiscord": ["servers", "channels", "messages", "members"],
         }
         return entity_types_map.get(project_dir)
 
     def _get_project_module_name(self) -> str | None:
         """Auto-detect project module name from filesystem.
 
-        Finds the directory in src/demo_webs/projects/ that starts with project.id.
-        Example: "autocinema" → finds "autocinema_1"
+        Finds the directory in src/demo_webs/projects/ that maps to project.id.
+        Examples:
+          - "autocinema" -> "p01_autocinema"
+          - legacy fallback "autocinema_1"
         """
 
         project_id = self.web_project.id
         projects_dir = Path(__file__).resolve().parents[3] / "demo_webs" / "projects"
 
         try:
-            # Find directories starting with project_id
-            matches = [d.name for d in projects_dir.iterdir() if d.is_dir() and d.name.startswith(f"{project_id}_")]
-            if matches:
-                return matches[0]
+            dirs = [d.name for d in projects_dir.iterdir() if d.is_dir()]
+
+            # Preferred format: pNN_<project_id>
+            preferred = [name for name in dirs if name.startswith("p") and name.endswith(f"_{project_id}")]
+            if preferred:
+                return sorted(preferred)[0]
+
+            # Legacy format: <project_id>_<number>
+            legacy = [name for name in dirs if name.startswith(f"{project_id}_")]
+            if legacy:
+                return sorted(legacy)[0]
 
             # Fallback: try exact match
             exact_match = projects_dir / project_id

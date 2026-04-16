@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import base64
+import re
 from typing import Any
 from urllib.parse import urlparse, urlunparse
 
@@ -62,6 +64,7 @@ class ApifiedWebAgent(IWebAgent):
         self.last_cost_usd: float | None = None
         self._task_state: dict[str, Any] = {}
         self._task_state_task_id: str | None = None
+        self._act_rewrite_page_url: str | None = None
         self.allowed_tools: list[dict[str, Any]] = self._build_allowed_tools() if self.send_allowed_tools else []
 
     async def act(
@@ -74,17 +77,21 @@ class ApifiedWebAgent(IWebAgent):
         step_index: int,
         history: list[dict[str, Any]] | None = None,
         state: dict[str, Any] | None = None,
-    ) -> list[BaseAction]:
+    ) -> list[BaseAction] | dict[str, Any]:
         """
         Call the remote /act endpoint and translate the response into BaseAction instances.
+
+        If the JSON body includes an ``extracted_data`` key (DataExtractionTest), returns
+        ``{"actions": [...], "extracted_data": ...}``; otherwise returns a plain list of actions.
         """
+        self._act_rewrite_page_url = url
         state_payload = self._resolve_state_for_step(task=task, step_index=step_index, state=state)
         request = ActRequest(
             task_id=getattr(task, "id", None),
             prompt=getattr(task, "prompt", None),
             url=self._force_localhost(url),
             snapshot_html=snapshot_html,
-            screenshot=screenshot,
+            screenshot=self._screenshot_for_json(screenshot),
             step_index=int(step_index),
             web_project_id=getattr(task, "web_project_id", None),
             history=history,
@@ -101,7 +108,7 @@ class ApifiedWebAgent(IWebAgent):
                 async with session.post(f"{self.base_url}/act", json=payload) as response:
                     response.raise_for_status()
                     data = await response.json()
-                    return self._parse_actions_response(data if isinstance(data, dict) else {})
+                    return self._parse_act_response(data if isinstance(data, dict) else {})
             except Exception:
                 pass
         # If all calls fail, return a NOOP (no actions) so the caller can decide.
@@ -154,6 +161,19 @@ class ApifiedWebAgent(IWebAgent):
             "output_tokens": self.last_output_tokens,
             "cost_usd": self.last_cost_usd,
         }
+
+    @staticmethod
+    def _screenshot_for_json(screenshot: str | bytes | None) -> str | None:
+        """Normalize screenshot payload into JSON-safe string content."""
+        if screenshot is None:
+            return None
+        if isinstance(screenshot, bytes):
+            if not screenshot:
+                return None
+            encoded = base64.b64encode(screenshot).decode("ascii")
+            return f"data:image/png;base64,{encoded}"
+        stripped = str(screenshot).strip()
+        return stripped or None
 
     @staticmethod
     def _strip_optional_text(value: Any, *, allow_empty: bool) -> str | None:
@@ -213,7 +233,7 @@ class ApifiedWebAgent(IWebAgent):
             actions_payload = [
                 {
                     "type": "NavigateAction",
-                    "url": self._rewrite_to_remote(data["navigate_url"]),
+                    "url": self._rewrite_to_remote_with_page(data["navigate_url"]),
                 }
             ]
 
@@ -225,15 +245,21 @@ class ApifiedWebAgent(IWebAgent):
             try:
                 if isinstance(raw, dict) and raw.get("type") in {"NavigateAction", "navigate"}:
                     raw = dict(raw)
-                    raw["url"] = self._rewrite_to_remote(raw.get("url"))
+                    raw["url"] = self._rewrite_to_remote_with_page(raw.get("url"))
                 action = BaseAction.create_action(raw)
                 if action is None:
                     continue
                 if isinstance(action, NavigateAction):
-                    action.url = self._rewrite_to_remote(getattr(action, "url", None))
+                    action.url = self._rewrite_to_remote_with_page(getattr(action, "url", None))
                 actions.append(action)
             except Exception:
                 continue
+        return actions
+
+    def _parse_act_response(self, data: dict[str, Any]) -> list[BaseAction] | dict[str, Any]:
+        actions = self._parse_actions_response(data)
+        if isinstance(data, dict) and "extracted_data" in data:
+            return {"actions": actions, "extracted_data": data.get("extracted_data")}
         return actions
 
     def _build_action_from_tool_call(self, tool_call: ActToolCall) -> BaseAction | None:
@@ -244,7 +270,7 @@ class ApifiedWebAgent(IWebAgent):
                 return None
             if isinstance(action, NavigateAction):
                 # Ensure any navigate URLs are rewritten consistently.
-                action.url = self._rewrite_to_remote(getattr(action, "url", None))
+                action.url = self._rewrite_to_remote_with_page(getattr(action, "url", None))
             return action
         except Exception:
             return None
@@ -334,26 +360,62 @@ class ApifiedWebAgent(IWebAgent):
         rewritten = parsed._replace(netloc=netloc)
         return urlunparse(rewritten)
 
+    _BARE_LOOPBACK = re.compile(r"^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$", re.I)
+
+    def _rewrite_to_remote_with_page(self, original_url: str | None) -> str | None:
+        rewritten = self._rewrite_to_remote(original_url)
+        return self._merge_loopback_origin_with_page(rewritten)
+
     @staticmethod
     def _rewrite_to_remote(original_url: str | None) -> str | None:
         """Rewrite URLs to point at the configured remote demo webs endpoint."""
         if not original_url:
             return original_url
 
+        raw = str(original_url).strip()
+        if raw and "://" not in raw and not raw.startswith("/") and "/" not in raw and ApifiedWebAgent._BARE_LOOPBACK.match(raw):
+            raw = f"http://{raw}/"
+
         remote = DEMO_WEBS_ENDPOINT if DEMO_WEBS_ENDPOINT.startswith("http") else f"http://{DEMO_WEBS_ENDPOINT}"
         remote_parsed = urlparse(remote)
 
         # Relative paths from the agent should be anchored to the remote host
-        if original_url.startswith("/"):
-            return f"{remote_parsed.scheme}://{remote_parsed.netloc}{original_url}"
+        if raw.startswith("/"):
+            return f"{remote_parsed.scheme}://{remote_parsed.netloc}{raw}"
 
-        parsed = urlparse(original_url)
+        parsed = urlparse(raw)
         if not parsed.scheme and not parsed.netloc:
-            cleaned_path = original_url if original_url.startswith("/") else f"/{original_url}"
+            cleaned_path = raw if raw.startswith("/") else f"/{raw}"
             return f"{remote_parsed.scheme}://{remote_parsed.netloc}{cleaned_path}"
 
         new_url = parsed._replace(scheme=remote_parsed.scheme or parsed.scheme, netloc=remote_parsed.netloc)
         return urlunparse(new_url)
+
+    def _merge_loopback_origin_with_page(self, rewritten: str | None) -> str | None:
+        """
+        If remote rewriting yields localhost without port while browser page is loopback with port,
+        preserve the page origin to keep navigation on the active demo web.
+        """
+        if not rewritten or not self._act_rewrite_page_url:
+            return rewritten
+        current = urlparse(rewritten)
+        if current.port is not None:
+            return rewritten
+        if not self._is_loopback_hostname(current.hostname):
+            return rewritten
+
+        page = urlparse(self._act_rewrite_page_url)
+        if not self._is_loopback_hostname(page.hostname) or page.port is None:
+            return rewritten
+        merged = current._replace(netloc=page.netloc)
+        return urlunparse(merged)
+
+    @staticmethod
+    def _is_loopback_hostname(hostname: str | None) -> bool:
+        if not hostname:
+            return False
+        normalized = str(hostname).lower()
+        return normalized in {"localhost", "127.0.0.1", "::1", "[::1]"}
 
 
 ApifiedIterativeWebAgent = ApifiedWebAgent

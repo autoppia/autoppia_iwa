@@ -230,6 +230,19 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--no-data-extraction-verification",
+        action="store_true",
+        help="Disable data-extraction trajectories verification",
+    )
+
+    parser.add_argument(
+        "--data-extraction-seed",
+        type=int,
+        default=1,
+        help="Seed value used to select data-extraction trajectories (default: 1)",
+    )
+
+    parser.add_argument(
         "--iwap-url",
         type=str,
         default=None,
@@ -307,6 +320,8 @@ async def main():
         iwap_base_url=args.iwap_url,
         iwap_use_mock=args.iwap_use_mock,
         dynamic_verification_enabled=not args.no_dynamic_verification,
+        data_extraction_verification_enabled=not args.no_data_extraction_verification,
+        data_extraction_seed=args.data_extraction_seed,
         seed_values=seed_values,
         output_dir=args.output_dir,
         verbose=args.verbose,
@@ -325,13 +340,25 @@ async def main():
         print(pipeline.get_summary())
 
         # Exit with appropriate code
-        # Check if all LLM reviews passed
+        # Check if all required checks passed (LLM reviews + executed DE verification)
         all_passed = True
         for use_case_data in results.get("use_cases", {}).values():
             reviews = use_case_data.get("llm_reviews", [])
             if reviews and not all(r.get("valid", False) for r in reviews):
                 all_passed = False
                 break
+
+        data_extraction = results.get("data_extraction_project_verification", {})
+        if isinstance(data_extraction, dict):
+            skipped = data_extraction.get("skipped", False)
+            if not skipped and data_extraction.get("all_passed") is False:
+                all_passed = False
+
+        data_extraction_task_generation = results.get("data_extraction_task_generation_verification", {})
+        if isinstance(data_extraction_task_generation, dict):
+            skipped = data_extraction_task_generation.get("skipped", False)
+            if not skipped and data_extraction_task_generation.get("all_passed") is False:
+                all_passed = False
 
         sys.exit(0 if all_passed else 1)
 

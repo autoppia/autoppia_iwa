@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.data_generation.tasks.simple.simple_task_generator import (
     SimpleTaskGenerator,
 )
@@ -148,6 +149,32 @@ class TestGenerate:
         result = await gen.generate(prompts_per_use_case=1, use_cases=None)
         # First use case may succeed, second raises; we should get at least partial result or empty
         assert isinstance(result, list)
+
+    @pytest.mark.asyncio
+    async def test_data_extraction_only_uses_project_de_use_cases_when_available(self):
+        use_case = _make_use_case(name="LegacyUC")
+        project = _make_project(project_id="autocinema", use_cases=[use_case], frontend_url="https://app.test/")
+        gen = SimpleTaskGenerator(web_project=project, llm_service=MagicMock())
+
+        expected_task = Task(
+            web_project_id="autocinema",
+            url="https://app.test/?seed=1",
+            prompt="Who is the director?",
+            tests=[],
+        )
+
+        with (
+            patch.object(gen, "_generate_de_tasks_from_project_use_cases", AsyncMock(return_value=[expected_task])) as de_mock,
+            patch.object(gen, "generate_tasks_for_use_case", AsyncMock(return_value=[])) as legacy_mock,
+        ):
+            result = await gen.generate(
+                prompts_per_use_case=1,
+                test_types="data_extraction_only",
+            )
+
+        assert result == [expected_task]
+        de_mock.assert_awaited_once()
+        legacy_mock.assert_not_called()
 
 
 # -----------------------------------------------------------------------------

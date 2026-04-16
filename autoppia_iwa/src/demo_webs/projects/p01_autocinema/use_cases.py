@@ -1,0 +1,1164 @@
+# -----------------------------------------------------------------------------
+# use_cases.py
+# -----------------------------------------------------------------------------
+from autoppia_iwa.src.demo_webs.classes import UseCase
+
+from .data_utils import fetch_data
+from .events import (
+    AddCommentEvent,
+    AddFilmEvent,
+    AddToWatchlistEvent,
+    ContactEvent,
+    DeleteFilmEvent,
+    EditFilmEvent,
+    EditUserEvent,
+    FilmDetailEvent,
+    FilterFilmEvent,
+    LoginEvent,
+    LogoutEvent,
+    RegistrationEvent,
+    RemoveFromWatchlistEvent,
+    SearchFilmEvent,
+    ShareFilmEvent,
+    WatchTrailer,
+)
+from .generation_functions import (
+    generate_add_comment_constraints,
+    generate_add_film_constraints,
+    generate_add_to_watchlist_constraints,
+    generate_contact_constraints,
+    generate_delete_film_constraints,
+    generate_edit_film_constraints,
+    generate_edit_profile_constraints,
+    generate_film_detail_constraints,
+    generate_film_filter_constraints,
+    generate_login_constraints,
+    generate_logout_constraints,
+    generate_registration_constraints,
+    generate_remove_from_watchlist_constraints,
+    generate_search_film_constraints,
+    generate_share_film_constraints,
+    generate_watch_trailer_constraints,
+)
+from .replace_functions import login_and_film_replace_func, login_replace_func, register_replace_func, replace_film_placeholders
+
+STRICT_COPY_INSTRUCTION = "CRITICAL: Copy values EXACTLY as provided in the constraints. Do NOT correct typos, do NOT remove numbers, do NOT truncate or summarize strings, and do NOT 'clean up' names or titles (e.g., if constraint is 'Sofia 4', write 'Sofia 4', NOT 'Sofia'; if it is 'ng', write 'ng', NOT 'an')."
+
+
+async def _get_movies_data_for_prompts(seed_value: int | None = None, count: int = 50) -> list[dict]:
+    """Fetch movies data from API for use in prompt generation."""
+    return await fetch_data(seed_value=seed_value, count=count)
+
+
+def _generate_movie_names_list(movies_data: list[dict]) -> str:
+    """Generate a newline-separated list of movie names from movies data."""
+    if not movies_data:
+        return "No movies available"
+    return "\n".join([movie.get("name", "") for movie in movies_data if movie.get("name")])
+
+
+def _generate_allowed_years_list(movies_data: list[dict]) -> list[int]:
+    """Generate a list of unique years from movies data."""
+    if not movies_data:
+        return []
+    return sorted({movie.get("year") for movie in movies_data if movie.get("year") is not None})
+
+
+def _generate_allowed_genres_list(movies_data: list[dict]) -> list[str]:
+    """Generate a list of unique genres from movies data."""
+    if not movies_data:
+        return []
+    genres = set()
+    for movie in movies_data:
+        movie_genres = movie.get("genres", [])
+        if isinstance(movie_genres, list):
+            genres.update(movie_genres)
+        elif isinstance(movie_genres, str):
+            genres.add(movie_genres)
+    return sorted(genres)
+
+
+###############################################################################
+# REGISTRATION_USE_CASE
+###############################################################################
+REGISTRATION_ADDITIONAL_PROMPT_INFO = f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above (username, email, and password).
+2. Explicitly include instruction to register using username equals 'signup_username', email equals 'signup_email' and password equals 'signup_password' (**strictly** containing these identifiers).
+3. Be phrased as a request to register or create a new account (e.g., "Please register using...", "Create an account with...", "Sign up using...").
+4. {STRICT_COPY_INSTRUCTION}
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+REGISTRATION_USE_CASE = UseCase(
+    name="REGISTRATION",
+    description="The user fills out the registration form and successfully creates a new account.",
+    event=RegistrationEvent,
+    event_source_code=RegistrationEvent.get_source_code_of_class(),
+    replace_func=register_replace_func,
+    constraints_generator=generate_registration_constraints,
+    additional_prompt_info=REGISTRATION_ADDITIONAL_PROMPT_INFO,
+    examples=[
+        {
+            "prompt": "Register where username equals signup_username, email equals signup_email and password equals signup_password",
+            "prompt_for_task_generation": "Register where username equals signup_username, email equals signup_email and password equals signup_password",
+        },
+        {
+            "prompt": "Create a new account where username equals signup_username, email equals signup_email and password equals signup_password",
+            "prompt_for_task_generation": "Create a new account where username equals signup_username, email equals signup_email and password equals signup_password",
+        },
+        {
+            "prompt": "Fill the registration form where username equals signup_username, email equals signup_email and password equals signup_password",
+            "prompt_for_task_generation": "Fill the registration form where username equals signup_username, email equals signup_email and password equals signup_password",
+        },
+        {
+            "prompt": "Sign up for an account where username equals signup_username, email equals signup_email and password equals signup_password",
+            "prompt_for_task_generation": "Sign up for an account where username equals signup_username, email equals signup_email and password equals signup_password",
+        },
+    ],
+)
+
+###############################################################################
+# LOGIN_USE_CASE
+###############################################################################
+LOGIN_ADDITIONAL_PROMPT_INFO = f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include instruction to login using username equals '<username>' and password equals '<password> (**strictly** containing both the username and password placeholders)'.
+2. Be phrased as a request to login or sign in.
+3. {STRICT_COPY_INSTRUCTION}
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+LOGIN_USE_CASE = UseCase(
+    name="LOGIN",
+    description="The user fills out the login form and logs in successfully.",
+    event=LoginEvent,
+    event_source_code=LoginEvent.get_source_code_of_class(),
+    replace_func=login_replace_func,
+    constraints_generator=generate_login_constraints,
+    additional_prompt_info=LOGIN_ADDITIONAL_PROMPT_INFO,
+    examples=[
+        {
+            "prompt": "Login where username equals <username> and password equals <password>",
+            "prompt_for_task_generation": "Login where username equals <username> and password equals <password>",
+        },
+        {
+            "prompt": "Login with a specific username equals <username> and password equals <password>",
+            "prompt_for_task_generation": "Login with a specific username equals <username> and password equals <password>",
+        },
+        {
+            "prompt": "Fill the Login Form where username equals <username> and password equals <password>",
+            "prompt_for_task_generation": "Fill the Login Form where username equals <username> and password equals <password>",
+        },
+        {
+            "prompt": "Sign in to the website where username equals <username> and password equals <password>",
+            "prompt_for_task_generation": "Sign in to the website where username equals <username> and password equals <password>",
+        },
+    ],
+)
+
+###############################################################################
+# LOGOUT_USE_CASE
+###############################################################################
+LOGOUT_ADDITIONAL_PROMPT_INFO = f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include instruction to login using username equals '<username>' and password equals '<password> (**strictly** containing both the username and password placeholders)'.
+2. Be phrased as a request to login and then logout.
+3. {STRICT_COPY_INSTRUCTION}
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+LOGOUT_USE_CASE = UseCase(
+    name="LOGOUT",
+    description="The user logs out of the platform after logging in.",
+    event=LogoutEvent,
+    event_source_code=LogoutEvent.get_source_code_of_class(),
+    replace_func=login_replace_func,
+    constraints_generator=generate_logout_constraints,
+    additional_prompt_info=LOGOUT_ADDITIONAL_PROMPT_INFO,
+    examples=[
+        {
+            "prompt": "Login where username equals <username> and password equals <password>, then logout",
+            "prompt_for_task_generation": "Login where username equals <username> and password equals <password>, then logout",
+        },
+        {
+            "prompt": "Login with a specific username equals <username> and password equals <password>, then sign out from the system",
+            "prompt_for_task_generation": "Login with a specific username equals <username> and password equals <password>, then sign out from the system",
+        },
+        {
+            "prompt": "Fill the Login Form where username equals <username> and password equals <password>, once logged in, logout from my account",
+            "prompt_for_task_generation": "Fill the Login Form where username equals <username> and password equals <password>, once logged in, logout from my account",
+        },
+        {
+            "prompt": "Sign in to the website where username equals <username> and password equals <password>, after that please log me out",
+            "prompt_for_task_generation": "Sign in to the website where username equals <username> and password equals <password>, after that please log me out",
+        },
+        {
+            "prompt": "Authenticate where username equals <username> and password equals <password>, then end my session",
+            "prompt_for_task_generation": "Authenticate where username equals <username> and password equals <password>, then end my session",
+        },
+    ],
+)
+
+###############################################################################
+# FILM_DETAIL_USE_CASE
+###############################################################################
+
+
+def _get_film_detail_info(movies_data: list[dict]) -> str:
+    """Generate film detail info dynamically from API data."""
+    _generate_movie_names_list(movies_data)
+    return f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above (field, operator, and value).
+2. Include ONLY the constraints mentioned above - do not add any other criteria.
+3. Be phrased as a request to **view details** of a movie (e.g., "Show details for...", "Navigate to the details page for...", "Go to the film page for...").
+4. {STRICT_COPY_INSTRUCTION}
+
+For example, if the constraints are "director not_equals Robert Zemeckis AND year greater_than 2010":
+- CORRECT: "Show me details about a movie not directed by Robert Zemeckis that was released after 2010"
+- INCORRECT: "Show me details about a movie directed by Christopher Nolan" (you added a random director, and missing the year constraint)
+- INCORRECT: "Show me details about a movie released after 2010 with a high rating" (adding an extra constraint about rating and missing director)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
+"""
+
+
+FILM_DETAIL_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field.
+
+Use natural language only. Do NOT use schema-style field names such as
+"director", "rating", "duration", or any names with underscores (_).
+
+Always refer to fields using natural phrasing.
+
+Identify the film using the provided visible field values (e.g. film name, year, genre),
+then ask for the verify field value.
+
+Examples:
+- "Who directed the film Inception?"
+- "What is the rating of the film released in 2010 that is in the Sci-Fi genre?"
+- "How long is the movie The Matrix?"
+- "What genre is the film Interstellar?"
+
+Do NOT start with imperative phring like "Navigate..." or "Go to...".
+The output must be a single question.
+""".strip()
+
+FILM_DETAIL_USE_CASE = UseCase(
+    name="FILM_DETAIL",
+    description="The user explicitly requests to navigate to or go to the details page of a specific movie that meets certain criteria, where they can view information including director, year, genres, rating, duration, and cast.",
+    event=FilmDetailEvent,
+    event_source_code=FilmDetailEvent.get_source_code_of_class(),
+    additional_prompt_info=None,  # Will be populated dynamically from API
+    constraints_generator=generate_film_detail_constraints,
+    examples=[
+        {
+            "prompt": "Navigate to The Matrix movie page",
+            "prompt_for_task_generation": "Navigate to <movie> movie page",
+        },
+        {
+            "prompt": "Go to the film details page for Interstellar by Christopher Nolan",
+            "prompt_for_task_generation": "Go to the film details page for <movie> by <director>",
+        },
+        {
+            "prompt": "Navigate directly to a sci-fi movie page from 2010",
+            "prompt_for_task_generation": "Navigate directly to a <genre> movie page from <year>",
+        },
+        {
+            "prompt": "Go directly to a movie page with rating above 4.5",
+            "prompt_for_task_generation": "Go directly to a movie page with rating above <rating>",
+        },
+        {
+            "prompt": "Take me directly to the Pulp Fiction film details page",
+            "prompt_for_task_generation": "Take me directly to the <movie> film details page",
+        },
+        {
+            "prompt": "Navigate to a comedy film page less than 100 minutes long",
+            "prompt_for_task_generation": "Navigate to a <genre> film page less than <duration> minutes long",
+        },
+        {
+            "prompt": "Go to a film details page from the 90s with Al Pacino",
+            "prompt_for_task_generation": "Go to a film details page from the <decade>s with <actor>",
+        },
+        {
+            "prompt": "Navigate me to a horror movie page not directed by Wes Craven",
+            "prompt_for_task_generation": "Navigate me to a <genre> movie page not directed by <director>",
+        },
+        {
+            "prompt": "Go directly to the highest-rated James Cameron film page",
+            "prompt_for_task_generation": "Go directly to the highest-rated <director> film page",
+        },
+    ],
+)
+
+
+def _get_add_to_watchlist_info(movies_data: list[dict] | None = None) -> str:
+    """Generate add to watchlist / remove from watchlist info dynamically from API data (auth required)."""
+    _ = movies_data  # Unused parameter kept for backward compatibility
+    return f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Begin with a login instruction using username equals <username> and password equals <password> (exact constraint values).
+2. Include ALL mentioned constraints in the prompt.
+3. Include ONLY the constraints mentioned above - do not add any other criteria.
+4. Be phrased as a request to **add to watchlist or wishlist** (or **remove from watchlist**) of a movie (e.g., "Add to wishlist...", "Remove from watchlist...").
+5. {STRICT_COPY_INSTRUCTION}
+
+For example: "Login with username equals <username> and password equals <password> and then Add to wishlist a movie whose name contains 'ng' and that has a rating greater than 3.8."
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
+"""
+
+
+ADD_TO_WATCHLIST_FILM_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the film.
+
+Use natural language only. Do NOT use schema-style field names such as "name", "rating", "duration", "genre", or any names with underscores (_).
+
+Identify the film using the provided visible fields (e.g., rating, duration, genre, year), then ask for the verify field value naturally.
+
+Every generated question MUST end with a confirmation phrase like "Confirm the value before adding to the watchlist" or "Please confirm before adding to the watchlist". This must appear at the end of the question.
+
+Do NOT start questions with imperative phrasing (e.g., Add..., Delete..., Remove..., Watch..., Share...).
+
+Examples:
+- "What is the rating of the movie with a duration of 120 minutes released in 2010? Please confirm before adding to the watchlist."
+- "Which movie released in 2018? Confirm the value before adding to the watchlist."
+- "Please provide the duration of the film 'Inception' to confirm before adding to the watchlist."
+- "What is the genre of the movie with a 2015 release year? Confirm before adding to the watchlist."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
+
+ADD_TO_WATCHLIST_USE_CASE = UseCase(
+    name="ADD_TO_WATCHLIST",
+    description="The user explicitly requests to add a film into wishlist of a specific movie that meets certain criteria, where they can view information including director, year, genres, rating, duration, and cast.",
+    event=AddToWatchlistEvent,
+    event_source_code=AddToWatchlistEvent.get_source_code_of_class(),
+    replace_func=login_and_film_replace_func,
+    additional_prompt_info=None,  # Will be populated dynamically from API
+    constraints_generator=generate_add_to_watchlist_constraints,
+    examples=[
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then add to watchlist The Matrix movie",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then add to watchlist <movie> movie",
+        },
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then add to watchlist Interstellar by Christopher Nolan",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then add to watchlist <movie> by <director>",
+        },
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then add to watchlist sci-fi movie from 2010",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then add to watchlist <genre> movie from <year>",
+        },
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then add to watchlist movie with rating above 4.5",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then add to watchlist a movie with rating above <rating>",
+        },
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then add to watchlist Pulp Fiction film",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then add to watchlist <movie> film",
+        },
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then add to watchlist a comedy film less than 100 minutes long",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then add to watchlist a <genre> film less than <duration> minutes long",
+        },
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then add to watchlist a film from the 90s with Al Pacino",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then add to watchlist a film from the <decade>s with <actor>",
+        },
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then add to watchlist a horror movie not directed by Wes Craven",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then add to watchlist a <genre> movie not directed by <director>",
+        },
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then add to watchlist a highest-rated James Cameron film",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then add to watchlist a highest-rated <director> film",
+        },
+    ],
+)
+
+
+REMOVE_FROM_WATCHLIST_USE_CASE = UseCase(
+    name="REMOVE_FROM_WATCHLIST",
+    description="Remove a film from the watchlist using the provided constraints (used to validate removal events).",
+    event=RemoveFromWatchlistEvent,
+    event_source_code=RemoveFromWatchlistEvent.get_source_code_of_class(),
+    replace_func=login_and_film_replace_func,
+    additional_prompt_info=None,  # populated dynamically
+    constraints_generator=generate_remove_from_watchlist_constraints,
+    examples=[
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then remove from watchlist The Matrix movie",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then remove from watchlist <movie> movie",
+        },
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then remove from watchlist Interstellar by Christopher Nolan",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then remove from watchlist <movie> by <director>",
+        },
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then remove from watchlist sci-fi movie from 2010",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then remove from watchlist <genre> movie from <year>",
+        },
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then remove from watchlist movie with rating above 4.5",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then remove from watchlist a movie with rating above <rating>",
+        },
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then remove from watchlist Pulp Fiction film",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then remove from watchlist <movie> film",
+        },
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then remove from watchlist a comedy film less than 100 minutes long",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then remove from watchlist a <genre> film less than <duration> minutes long",
+        },
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then remove from watchlist a film from the 90s with Al Pacino",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then remove from watchlist a film from the <decade>s with <actor>",
+        },
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then remove from watchlist a horror movie not directed by Wes Craven",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then remove from watchlist a <genre> movie not directed by <director>",
+        },
+        {
+            "prompt": "Login with the username equals <username> and password equals <password> and then remove from watchlist a highest-rated James Cameron film",
+            "prompt_for_task_generation": "Login with the username equals <username> and password equals <password> and then remove from watchlist a highest-rated <director> film",
+        },
+    ],
+)
+
+
+def _get_share_film_info(movies_data: list[dict] | None = None) -> str:
+    """Generate share film info dynamically from API data."""
+    _ = movies_data  # Unused parameter kept for backward compatibility
+    return f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above (field, operator, and value).
+2. Include ONLY the constraints mentioned above - do not add any other criteria.
+3. Be phrased as a request to **share a movie** (e.g., "Share this movie...", "I want to share the film...", "Send the film info...").
+4. {STRICT_COPY_INSTRUCTION}
+
+For example, if the constraints are "director equals 'James Cameron' AND rating greater_than 4.0":
+- CORRECT: "Share a movie directed by James Cameron with a rating higher than 4.0"
+- INCORRECT: "Share the details of Titanic" (missing constraints)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
+"""
+
+
+SHARE_FILM_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the film.
+
+Use natural language only. Do NOT use schema-style field names such as "name", "rating", "duration", "genre", or any names with underscores (_).
+
+Identify the film using the provided visible fields (e.g., rating, duration, genre, year), then ask for the verify field value naturally.
+
+Every generated question MUST end with a confirmation phrase like "Confirm the value before sharing" or "Please confirm before sharing". This must appear at the end of the question.
+
+Do NOT start questions with imperative phrasing (e.g., Share..., Add..., Delete..., Remove..., Watch...).
+
+Examples:
+- "What is the rating of the movie with a duration of 120 minutes released in 2010? Please confirm before sharing."
+- "Which movie released in 2018? Confirm the value before sharing."
+- "Please provide the duration of the film 'Inception' to confirm before sharing."
+- "What is the genre of the movie with a 2015 release year? Confirm before sharing."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
+
+SHARE_FILM_USE_CASE = UseCase(
+    name="SHARE_MOVIE",
+    description="The user requests to share a specific movie that meets certain criteria, where they can view information including director, year, genres, rating, duration, and cast.",
+    event=ShareFilmEvent,
+    event_source_code=ShareFilmEvent.get_source_code_of_class(),
+    additional_prompt_info=None,  # Will be populated dynamically from API
+    constraints_generator=generate_share_film_constraints,
+    examples=[
+        {
+            "prompt": "Share The Matrix movie",
+            "prompt_for_task_generation": "Share <movie> movie",
+        },
+        {
+            "prompt": "Share Interstellar by Christopher Nolan",
+            "prompt_for_task_generation": "Share <movie> by <director>",
+        },
+        {
+            "prompt": "Share sci-fi movie from 2010",
+            "prompt_for_task_generation": "Share <genre> movie from <year>",
+        },
+        {
+            "prompt": "Share movie with rating above 4.5",
+            "prompt_for_task_generation": "Share movie with rating above <rating>",
+        },
+        {
+            "prompt": "Share Pulp Fiction film details",
+            "prompt_for_task_generation": "Share <movie> film details",
+        },
+        {
+            "prompt": "Share comedy film less than 100 minutes long",
+            "prompt_for_task_generation": "Share <genre> film less than <duration> minutes long",
+        },
+        {
+            "prompt": "Share film details from the 90s with Al Pacino",
+            "prompt_for_task_generation": "Share film details from the <decade>s with <actor>",
+        },
+        {
+            "prompt": "Share horror movie not directed by Wes Craven",
+            "prompt_for_task_generation": "Share <genre> movie not directed by <director>",
+        },
+        {
+            "prompt": "Share highest-rated James Cameron film",
+            "prompt_for_task_generation": "Share highest-rated <director> film",
+        },
+    ],
+)
+
+
+def _get_watch_trailer_info(movies_data: list[dict] | None = None) -> str:
+    """Generate watch trailer info dynamically from API data."""
+    _ = movies_data  # Unused parameter kept for backward compatibility
+    return f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above (field, operator, and value).
+2. Include ONLY the constraints mentioned above - do not add any other criteria.
+3. Be phrased as a request to **watch the trailer** of a movie (e.g., "Watch trailer for...", "Play the trailer of...", "View the trailer for...").
+4. {STRICT_COPY_INSTRUCTION}
+
+For example, if the constraints are "director not_equals Robert Zemeckis AND year greater_than 2010":
+- CORRECT: "Watch the trailer for a movie not directed by Robert Zemeckis produced after 2010"
+- INCORRECT: "Watch the trailer for Titanic" (missing constraints)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
+"""
+
+
+WATCH_TRAILER_FILM_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the film.
+
+Use natural language only. Do NOT use schema-style field names such as "name", "rating", "duration", "genre", or any names with underscores (_).
+
+Identify the film using the provided visible fields (e.g., rating, duration, genre, year), then ask for the verify field value naturally.
+
+Every generated question MUST end with a confirmation phrase like "Confirm the value before watching the trailer" or "Please confirm before watching the trailer". This must appear at the end of the question.
+
+Do NOT start questions with imperative phrasing (e.g., Watch..., Share..., Add..., Delete..., Remove...).
+
+Examples:
+- "What is the rating of the movie with a duration of 120 minutes released in 2010? Please confirm before watching the trailer."
+- "Which movie released in 2018? Confirm the value before watching the trailer."
+- "Please provide the duration of the film 'Inception' to confirm before watching the trailer."
+- "What is the genre of the movie with a 2015 release year? Confirm before watching the trailer."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
+
+WATCH_TRAILER_USE_CASE = UseCase(
+    name="WATCH_TRAILER",
+    description="The user requests to watch the trailer of a specific movie that meets certain criteria, where they can view information including director, year, genres, rating, duration, and cast.",
+    event=WatchTrailer,
+    event_source_code=WatchTrailer.get_source_code_of_class(),
+    additional_prompt_info=None,  # Will be populated dynamically from API
+    constraints_generator=generate_watch_trailer_constraints,
+    examples=[
+        {
+            "prompt": "Watch the trailer for The Matrix movie",
+            "prompt_for_task_generation": "Watch the trailer for <movie> movie",
+        },
+        {
+            "prompt": "Play the trailer of Interstellar by Christopher Nolan",
+            "prompt_for_task_generation": "Play the trailer of <movie> by <director>",
+        },
+        {
+            "prompt": "Watch the trailer for a sci-fi movie from 2010",
+            "prompt_for_task_generation": "Watch the trailer for a <genre> movie from <year>",
+        },
+        {
+            "prompt": "View the trailer for a movie with rating above 4.5",
+            "prompt_for_task_generation": "View the trailer for a movie with rating above <rating>",
+        },
+        {
+            "prompt": "Watch the trailer for Pulp Fiction film",
+            "prompt_for_task_generation": "Watch the trailer for <movie> film",
+        },
+        {
+            "prompt": "Play the trailer of a comedy film less than 100 minutes long",
+            "prompt_for_task_generation": "Play the trailer of a <genre> film less than <duration> minutes long",
+        },
+        {
+            "prompt": "Watch the trailer for a film from the 90s with Al Pacino",
+            "prompt_for_task_generation": "Watch the trailer for a film from the <decade>s with <actor>",
+        },
+        {
+            "prompt": "View the trailer for a horror movie not directed by Wes Craven",
+            "prompt_for_task_generation": "View the trailer for a <genre> movie not directed by <director>",
+        },
+        {
+            "prompt": "Watch the trailer for the highest-rated James Cameron film",
+            "prompt_for_task_generation": "Watch the trailer for the highest-rated <director> film",
+        },
+    ],
+)
+###############################################################################
+# SEARCH_FILM_USE_CASE
+###############################################################################
+SEARCH_FILM_INFO = f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Make it EXPLICIT that this is a SEARCH for a movie using clear terms (e.g., "Search for...", "Find a movie...").
+2. DO NOT include ANY constraints other than the movie title ('query' field).
+3. {STRICT_COPY_INSTRUCTION}
+
+For example:
+- CORRECT: "Search for the movie 'Inception'"
+- INCORRECT: "Show me details about Inception" (doesn't specify it's a search)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL clearly indicating that it is a simple SEARCH.
+"""
+
+SEARCH_FILM_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the name of the movie.
+
+Use the provided visible fields (e.g. director, year, genre, rating) to identify the film.
+Use natural language only. Do NOT use schema-style field names like "director", "year", "genre", "rating" in the question.
+Do NOT start the question with phrases like "Search for...".
+
+Examples:
+- "What is the name of the movie directed by Christopher Nolan released in 2010?"
+- "Which movie released in 1999 is a Sci-Fi action film?"
+- "What is the name of the film that was released in 2014?"
+
+The output must be a single question whose answer is the movie name.
+""".strip()
+SEARCH_FILM_USE_CASE = UseCase(
+    name="SEARCH_FILM",
+    description="The user searches for a film using a query.",
+    event=SearchFilmEvent,
+    event_source_code=SearchFilmEvent.get_source_code_of_class(),
+    replace_func=replace_film_placeholders,
+    constraints_generator=generate_search_film_constraints,
+    additional_prompt_info=SEARCH_FILM_INFO,
+    examples=[
+        {
+            "prompt": "Look for the film 'The Shawshank Redemption'",
+            "prompt_for_task_generation": "Look for the film '<movie>'",
+        },
+        {
+            "prompt": "Find a movie not called 'Forrest Gump'",
+            "prompt_for_task_generation": "Find a movie not called '<movie>'",
+        },
+        {
+            "prompt": "Search for Interestellar in the movie database",
+            "prompt_for_task_generation": "Search for '<movie>' in the movie database",
+        },
+        {
+            "prompt": "Look up a movie different from'The Dark Knight'",
+            "prompt_for_task_generation": "Look up a movie different from'<movie>'",
+        },
+    ],
+)
+
+###############################################################################
+# ADD_FILM_USE_CASE
+###############################################################################
+ADD_FILM_ADDITIONAL_PROMPT_INFO = f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Begin with a login instruction using username equals <username> and password equals <password> (exact constraint values).
+2. Include ALL constraints mentioned above (field, operator, and value).
+3. Include ONLY the constraints mentioned above - do not add any other criteria.
+4. Be phrased as a request to add or insert a film (e.g., "Add the movie...", "Insert a new film...", "Register a movie...").
+5. {STRICT_COPY_INSTRUCTION}
+
+For example: "Login with username equals <username> and password equals <password>. Add a film whose year equals 2014 and that is directed by Wes Anderson."
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+
+ADD_FILM_USE_CASE = UseCase(
+    name="ADD_FILM",
+    description="The user adds a new film to the system, specifying details such as name, director, year, genres, duration, language, and cast.",
+    event=AddFilmEvent,
+    event_source_code=AddFilmEvent.get_source_code_of_class(),
+    replace_func=login_and_film_replace_func,
+    constraints_generator=generate_add_film_constraints,
+    additional_prompt_info=ADD_FILM_ADDITIONAL_PROMPT_INFO,
+    examples=[
+        {
+            "prompt": "Add the movie 'The Grand Budapest Hotel' directed by 'Wes Anderson'",
+            "prompt_for_task_generation": "Add the movie '<movie>' directed by '<director>'",
+        },
+        {
+            "prompt": "Add the film 'Whiplash' released in 2014",
+            "prompt_for_task_generation": "Add the film '<movie>' released in <year>",
+        },
+        {
+            "prompt": "Add the movie 'Spirited Away' with genres Animation, Fantasy, and Adventure",
+            "prompt_for_task_generation": "Add the movie '<movie>' with genres <genre>, <genre> and <genre>",
+        },
+        {
+            "prompt": "Add the movie 'Django Unchained' with a duration under 180 minutes",
+            "prompt_for_task_generation": "Add the movie '<movie>' with a duration under <duration> minutes",
+        },
+        {
+            "prompt": "Add a movie 'Parasite' that is not in English",
+            "prompt_for_task_generation": "Add a movie '<movie>' that is not in <language>",
+        },
+        {
+            "prompt": "Add a movie 'The Shining' from one of these directors: Kubrick, Spielberg, or Scorsese",
+            "prompt_for_task_generation": "Add a movie '<movie>' from one of these directors: <director>, <director>, or <director>",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "ADD_FILM",
+                "event_criteria": {"name": {"value": "The Shining", "operator": "equals"}, "director": {"value": ["Kubrick", "Spielberg", "Scorsese"], "operator": "in_list"}},
+                "reasoning": "Validates that the director is one of the allowed options using the in_list operator.",
+            },
+        },
+        {
+            "prompt": "Add the movie 'Amélie' with running time at least 120 minutes starring Audrey Tautou",
+            "prompt_for_task_generation": "Add the movie '<movie>' with running time at least <duration> minutes starring <cast>",
+        },
+    ],
+)
+
+###############################################################################
+# EDIT_FILM_USE_CASE
+###############################################################################
+EDIT_FILM_ADDITIONAL_PROMPT_INFO = f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Begin with a login instruction using username equals <username> and password equals <password> (exact constraint values).
+2. Be explicitly phrased as a request to edit your movie.
+3. Include editable numeric fields in this style: "edit your movie by setting year to <year>, duration to <duration>, and rating to <rating>."
+4. Keep the same field names and operators exactly ("equals" wording) for the constraints that are explicitly mentioned.
+5. Include ONLY the constraints that should be explicit in the prompt text - do not add any other criteria.
+6. Do not ask to edit any movie other than your movie.
+7. {STRICT_COPY_INSTRUCTION}
+
+For example: "Login with username equals <username> and password equals <password>. Edit your movie by setting year to 1987, duration to 138, and rating to 5.5."
+ALL prompts must follow this pattern exactly, each phrased slightly differently while preserving the same explicit criteria and wording requirements.
+"""
+EDIT_FILM_USE_CASE = UseCase(
+    name="EDIT_FILM",
+    description="The user edits an existing film, modifying one or more attributes such as name, director, year, genres, rating, duration, or cast.",
+    event=EditFilmEvent,
+    event_source_code=EditFilmEvent.get_source_code_of_class(),
+    replace_func=login_and_film_replace_func,
+    constraints_generator=generate_edit_film_constraints,
+    additional_prompt_info=EDIT_FILM_ADDITIONAL_PROMPT_INFO,
+    examples=[
+        {
+            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Edit your movie by setting year to 1987, duration to 138, and rating to 5.5.",
+            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Edit your movie by setting year to <year>, duration to <duration>, and rating to <rating>.",
+        },
+        {
+            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Update your movie by setting year to 2004, duration to 121, and rating to 7.8.",
+            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Update your movie by setting year to <year>, duration to <duration>, and rating to <rating>.",
+        },
+        {
+            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Modify your movie by setting year to 1999, duration to 167, and rating to 8.4.",
+            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Modify your movie by setting year to <year>, duration to <duration>, and rating to <rating>.",
+        },
+        {
+            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Please edit your movie by setting year to 2012, duration to 150, and rating to 9.1.",
+            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Please edit your movie by setting year to <year>, duration to <duration>, and rating to <rating>.",
+        },
+        {
+            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Adjust your movie by setting year to 1976, duration to 102, and rating to 6.4.",
+            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Adjust your movie by setting year to <year>, duration to <duration>, and rating to <rating>.",
+        },
+        {
+            "prompt": "Login with username equals user<web_agent_id> and password equals <password>. Edit your movie by setting year to 2020, duration to 89, and rating to 4.3.",
+            "prompt_for_task_generation": "Login with username equals user<web_agent_id> and password equals <password>. Edit your movie by setting year to <year>, duration to <duration>, and rating to <rating>.",
+        },
+    ],
+)
+###############################################################################
+# DELETE_FILM_USE_CASE
+###############################################################################
+DELETE_FILM_ADDITIONAL_PROMPT_INFO = f"""
+CRITICAL REQUIREMENT — STRICT COMPLIANCE REQUIRED:
+
+You MUST follow ALL rules below EXACTLY. Any violation makes the output invalid.
+
+1. ALWAYS begin with:
+   "Login with username equals <username> and password equals <password>."
+
+2. The request MUST ONLY ask to delete your movie.
+   - Use phrasing like: "delete your movie"
+   - Do NOT reference any specific movie details.
+
+3. STRICT PROHIBITION:
+   - You MUST NOT mention ANY identifying attributes of the movie.
+   - This includes (but is not limited to): title, name, id, movie_id, director, genre, or any other property.
+   - The prompt must remain completely generic.
+
+4. DO NOT introduce ANY filters, conditions, or qualifiers.
+   - No descriptions
+   - No attributes
+   - No уточнение (clarification of which movie)
+
+5. The sentence MUST remain simple, generic, and direct.
+
+6. If you accidentally include any identifying detail, you MUST remove it and rewrite the sentence.
+
+7. {STRICT_COPY_INSTRUCTION}
+
+VALID EXAMPLE:
+"Login with username equals <username> and password equals <password>. Then, delete your movie."
+
+All generated prompts must strictly follow this structure, with only minor natural wording variations.
+"""
+
+DELETE_FILM_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the film.
+
+Use natural language only. Do NOT use schema-style field names such as "name", "rating", "duration", "genre", or any names with underscores (_).
+
+Identify the film using the provided visible fields (e.g., rating, duration, genre, year), then ask for the verify field value naturally.
+
+Every generated question MUST end with a confirmation phrase like "Confirm the value before deletion" or "Please confirm before deletion". This must appear at the end of the question.
+
+Do NOT start questions with imperative phrasing (e.g., Delete..., Remove..., Watch..., Add...).
+
+Examples:
+- "What is the rating of the movie with a duration of 120 minutes released in 2010? Please confirm before deletion."
+- "Which movie released in 2018? Confirm the value before deletion."
+- "Please provide the duration of the film 'Inception' to confirm before deletion."
+- "What is the genre of the movie with a 2015 release year? Confirm before deletion."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
+
+DELETE_FILM_USE_CASE = UseCase(
+    name="DELETE_FILM",
+    description="The user deletes a film from the system.",
+    event=DeleteFilmEvent,
+    event_source_code=DeleteFilmEvent.get_source_code_of_class(),
+    additional_prompt_info=DELETE_FILM_ADDITIONAL_PROMPT_INFO,
+    constraints_generator=generate_delete_film_constraints,
+    examples=[
+        {
+            "prompt": "Log in with username equals user<web_agent_id> and password equals <password>. Then, delete your movie.",
+            "prompt_for_task_generation": "Log in with username equals user<web_agent_id> and password equals <password>. Then, delete your movie.",
+        },
+        {
+            "prompt": "After logging in with username equals user<web_agent_id> and password equals <password>, remove your movie.",
+            "prompt_for_task_generation": "After logging in with username equals user<web_agent_id> and password equals <password>, remove your movie.",
+        },
+        {
+            "prompt": "Log in with username equals user<web_agent_id> and password equals <password>, then permanently delete your movie.",
+            "prompt_for_task_generation": "Log in with username equals user<web_agent_id> and password equals <password>, then permanently delete your movie.",
+        },
+        {
+            "prompt": "Sign into your account with username equals user<web_agent_id> and password equals <password>, and discard your movie.",
+            "prompt_for_task_generation": "Sign into your account with username equals user<web_agent_id> and password equals <password>, and discard your movie.",
+        },
+        {
+            "prompt": "Initiate a session with username equals user<web_agent_id> and password equals <password>, then remove your movie.",
+            "prompt_for_task_generation": "Initiate a session with username equals user<web_agent_id> and password equals <password>, then remove your movie.",
+        },
+        {
+            "prompt": "Once logged in as username equals user<web_agent_id> and password equals <password>, delete your movie.",
+            "prompt_for_task_generation": "Once logged in as username equals user<web_agent_id> and password equals <password>, delete your movie.",
+        },
+        {
+            "prompt": "Begin by signing in with username equals user<web_agent_id> and password equals <password>. Then, delete your movie.",
+            "prompt_for_task_generation": "Begin by signing in with username equals user<web_agent_id> and password equals <password>. Then, delete your movie.",
+        },
+        {
+            "prompt": "First, log into the system with username equals user<web_agent_id> and password equals <password>, then discard your movie.",
+            "prompt_for_task_generation": "First, log into the system with username equals user<web_agent_id> and password equals <password>, then discard your movie.",
+        },
+        {
+            "prompt": "Authenticate yourself with username equals user<web_agent_id> and password equals <password>. Then, remove your movie.",
+            "prompt_for_task_generation": "Authenticate yourself with username equals user<web_agent_id> and password equals <password>. Then, remove your movie.",
+        },
+        {
+            "prompt": "Using your credentials username equals user<web_agent_id> and password equals <password>, sign in and erase your movie.",
+            "prompt_for_task_generation": "Using your credentials username equals user<web_agent_id> and password equals <password>, sign in and erase your movie.",
+        },
+    ],
+)
+
+
+###############################################################################
+# CONTACT_USE_CASE
+###############################################################################
+
+CONTACT_ADDITIONAL_PROMPT_INFO = f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above (field, operator, and value).
+2. Include ONLY the constraints mentioned above - do not add any other fields.
+3. Be phrased as a request to fill or submit the contact form (e.g., "Fill out the contact form...", "Submit feedback...").
+4. {STRICT_COPY_INSTRUCTION}
+
+For example, if the constraints are "name not_equals 'John' AND message contains 'services'":
+- CORRECT: "Fill out the contact form with a name NOT 'John' and a message that contains 'services'."
+- INCORRECT: "Fill out the form with name = John" (contradicts constraint)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+CONTACT_USE_CASE = UseCase(
+    name="CONTACT",
+    description="The user navigates to the contact form page, fills out fields, and submits the form successfully.",
+    event=ContactEvent,
+    event_source_code=ContactEvent.get_source_code_of_class(),
+    constraints_generator=generate_contact_constraints,
+    additional_prompt_info=CONTACT_ADDITIONAL_PROMPT_INFO,
+    examples=[
+        {
+            "prompt": "Send a contact form with the subject 'Test Subject'",
+            "prompt_for_task_generation": "Send a contact form with the subject 'Test Subject'",
+        },
+        {
+            "prompt": "Fill out the contact form and include 'Hello, I would like information about your services' in the message",
+            "prompt_for_task_generation": "Fill out the contact form and include 'Hello, I would like information about your services' in the message",
+        },
+        {
+            "prompt": "Complete the contact form using the email address 'test@example.com' and different value for field name :'jhon'",
+            "prompt_for_task_generation": "Complete the contact form using the email address 'test@example.com' and different value for field name :'jhon'",
+        },
+        {
+            "prompt": "Complete the contact form using the email address different to 'test@example.com'",
+            "prompt_for_task_generation": "Complete the contact form using the email address different to 'test@example.com'",
+        },
+        {
+            "prompt": "Send a contact form with subject 'Partnership Inquiry' and include the phrase 'potential collaboration' in your message",
+            "prompt_for_task_generation": "Send a contact form with subject 'Partnership Inquiry' and include the phrase 'potential collaboration' in your message",
+        },
+        {
+            "prompt": "Go to the contact page and submit a form with name 'John Smith', email 'john@example.com', subject 'Feedback', and message 'Great website, I love the design'",
+            "prompt_for_task_generation": "Go to the contact page and submit a form with name 'John Smith', email 'john@example.com', subject 'Feedback', and message 'Great website, I love the design'",
+        },
+        {
+            "prompt": "Go to the contact page and submit a form with name 'John Smith', email 'john@example.com', subject 'Feedback', and cannot contains any 'e'",
+            "prompt_for_task_generation": "Go to the contact page and submit a form with name 'John Smith', email 'john@example.com', subject 'Feedback', and cannot contains any 'e'",
+        },
+    ],
+)
+###############################################################################
+# EDIT_USER_PROFILE_USE_CASE
+###############################################################################
+EDIT_PROFILE_ADDITIONAL_PROMPT_INFO = f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints — every field (username, password, first_name, last_name, bio, location, website, favorite_genres) that appears in the constraints MUST be explicitly mentioned in the prompt with its exact value and operator.
+2. Use clear operator indicators (e.g., "equals", "contains"). For ComparisonOperator.CONTAINS, use the word "contains" explicitly (e.g., "website contains 'filmcritics'"). DO NOT use ambiguous words like "include" or "contains the word".
+3. Use the EXACT constraint values in the prompt — do NOT replace them with placeholders like <username> or <password>. If the constraint says "username equals user<web_agent_id>", the prompt must contain "user<web_agent_id>". If it says "password equals Passw0rd!", the prompt must contain "Passw0rd!".
+4. Begin with a login instruction that states username and password using their exact constraint values (e.g. "Login with username equals user<web_agent_id> and password equals Passw0rd!").
+5. Then add an edit-profile instruction that explicitly mentions each remaining constraint field and its exact value and operator.
+6. {STRICT_COPY_INSTRUCTION}
+
+Example: constraints "username equals <web_agent_id>, password equals pass456, website contains 'filmcritics', bio contains 'cinema'":
+- CORRECT: "Login with username equals <web_agent_id> and password equals pass456. Edit your profile: ensure your website contains 'filmcritics' and your bio contains 'cinema'."
+- INCORRECT: "Login and edit your profile." (missing exact values).
+
+ALL prompts must mention every constraint field and use EXACTLY the values and operators from the constraints.
+"""
+
+EDIT_USER_PROFILE_USE_CASE = UseCase(
+    name="EDIT_USER",
+    description="The user edits their profile, modifying one or more attributes such as first name, last name, bio, location, website, or favorite genres. Username and email cannot be edited.",
+    event=EditUserEvent,
+    event_source_code=EditUserEvent.get_source_code_of_class(),
+    replace_func=login_replace_func,
+    constraints_generator=generate_edit_profile_constraints,
+    additional_prompt_info=EDIT_PROFILE_ADDITIONAL_PROMPT_INFO,
+    examples=[
+        {
+            "prompt": "Login where username equals user1 and password equals pass123. Update your first name to John.",
+            "prompt_for_task_generation": "Login where username equals <username> and password equals <password>. Update your first name to <first_name>.",
+        },
+        {
+            "prompt": "Login where username equals filmfan and password equals pass456. Modify your bio to include your passion for cinema.",
+            "prompt_for_task_generation": "Login where username equals <username> and password equals <password>. Modify your bio to include <bio_content>.",
+        },
+        {
+            "prompt": "Login where username equals movielover and password equals pass789. Change your location to New York, USA.",
+            "prompt_for_task_generation": "Login where username equals <username> and password equals <password>. Change your location to <location>.",
+        },
+        {
+            "prompt": "Login where username equals cinephile and password equals pass321. Edit your website to https://myfilmblog.example.com.",
+            "prompt_for_task_generation": "Login where username equals <username> and password equals <password>. Edit your website to <website>.",
+        },
+        {
+            "prompt": "Login where username equals director101 and password equals pass654. Update your favorite genre to Sci-Fi.",
+            "prompt_for_task_generation": "Login where username equals <username> and password equals <password>. Update your favorite genre to <genre>.",
+        },
+        {
+            "prompt": "Login where username equals producer and password equals pass987. Change your last name to Smith.",
+            "prompt_for_task_generation": "Login where username equals <username> and password equals <password>. Change your last name to <last_name>.",
+        },
+        {
+            "prompt": "Login where username equals user<web_agent_id> and password equals Passw0rd!. Modify your profile to ensure that your location does NOT contain 'a' and that your website contains 'https://cinephileworld.example.org'",
+            "prompt_for_task_generation": "Login where username equals user<web_agent_id> and password equals Passw0rd!. Modify your profile to ensure that your location does NOT contain 'a' and that your website contains <website>",
+        },
+    ],
+)
+
+
+###############################################################################
+# FILTER_FILM_USE_CASE
+###############################################################################
+def _get_filter_film_info(movies_data: list[dict] | None = None) -> str:
+    """Generate filter film info dynamically from API data."""
+    _ = movies_data  # Unused parameter kept for backward compatibility
+    return f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above (field, operator, and value).
+2. Include ONLY the constraints mentioned above - do not add any other criteria.
+3. Be phrased as a request to filter or browse films (e.g., "Filter...", "Show only...", "Display...", "Browse...").
+4. {STRICT_COPY_INSTRUCTION}
+
+For example, if the constraints are "genres equals 'Action' AND year equals 1999":
+- CORRECT: "Filter for Action movies released in 1999"
+- CORRECT: "Browse films from 1999 in the Action genre."
+- INCORRECT: "Show all Action films" (missing year)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
+"""
+
+
+FILTER_FILM_DATA_EXTRACTION_PROMPT_INFO = """
+Generate a QUESTION that asks for the value of the verify field, which could be the genre or release year of the film.
+
+Use natural language only. Do NOT use schema-style field names such as "genre", "year", or any names with underscores (_).
+
+Identify the film using the provided visible field values, then ask for the verify field value naturally.
+
+Every generated question MUST end with a confirmation phrase like "Confirm the value before applying the filter" or "Please confirm before filtering". This must appear at the end of the question.
+
+Do NOT start questions with imperative phrasing (e.g., Filter..., Browse..., Search..., Show...).
+
+Examples:
+- "What is the genre of the movie released in 2010 with a rating of PG-13? Please confirm before applying the filter."
+- "Which movie released in 2018 has a duration under 120 minutes? Confirm the value before filtering."
+- "Please provide the release year of the film 'Inception' to confirm before applying the filter."
+- "What is the genre of the film with a 2015 release year? Confirm before applying the filter."
+
+The output must be a single question asking only for the verify field value, and must include the confirmation phrase at the end.
+""".strip()
+
+FILTER_FILM_USE_CASE = UseCase(
+    name="FILTER_FILM",
+    description="The user applies filters to search for films by genre and/or year. Includes Filter in the prompt",
+    event=FilterFilmEvent,
+    event_source_code=FilterFilmEvent.get_source_code_of_class(),
+    constraints_generator=generate_film_filter_constraints,
+    additional_prompt_info=None,  # Will be populated dynamically from API
+    examples=[
+        {
+            "prompt": "Filter movies released in the year 1994",
+            "prompt_for_task_generation": "Filter movies released in the year 1994",
+        },
+        {
+            "prompt": "Filter for Action movies",
+            "prompt_for_task_generation": "Filter for Action movies",
+        },
+        {
+            "prompt": "Browse films from 2010 in the Drama genre",
+            "prompt_for_task_generation": "Browse films from 2010 in the Drama genre",
+        },
+        {
+            "prompt": "Filter Screen movies from 1999",
+            "prompt_for_task_generation": "Filter Screen movies from 1999",
+        },
+        {
+            "prompt": "Filter movie list to Sci-Fi genre",
+            "prompt_for_task_generation": "Filter movie list to Sci-Fi genre",
+        },
+    ],
+)
+
+###############################################################################
+# ADD_COMMENT_USE_CASE
+###############################################################################
+ADD_COMMENT_ADDITIONAL_PROMPT_INFO = f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above (field, operator, and value).
+2. Explicitly mention the field names (movie_name, commenter_name, content). For movie_name, you can use "movie_name" or "movie name".
+3. Include ONLY the constraints mentioned above - do not add any other fields.
+4. Be phrased as a request to add a comment to a movie (e.g., "Add a comment...", "Post a review...").
+5. {STRICT_COPY_INSTRUCTION}
+
+For example, if the constraints are "movie_name contains 'Inception' AND content not_contains 'boring'":
+- CORRECT: "Add a comment to the movie_name that contains 'Inception' with a content that does NOT contain the word 'boring'."
+- CORRECT: "Post a review for the movie name 'Inception' where the content does NOT have 'boring'."
+- INCORRECT: "Write a comment about any movie" (missing specific constraints)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria and mentioning the field names.
+"""
+ADD_COMMENT_USE_CASE = UseCase(
+    name="ADD_COMMENT",
+    description="The user adds a comment to a movie.",
+    event=AddCommentEvent,
+    event_source_code=AddCommentEvent.get_source_code_of_class(),
+    constraints_generator=generate_add_comment_constraints,
+    additional_prompt_info=ADD_COMMENT_ADDITIONAL_PROMPT_INFO,
+    examples=[
+        {
+            "prompt": "Navigate to a movie and add a comment about Inception",
+            "prompt_for_task_generation": "Navigate to <movie> and add a comment",
+        },
+        {
+            "prompt": "Write a review for a movie, ensuring the commenter is not John",
+            "prompt_for_task_generation": "Write a review for <movie>",
+        },
+        {
+            "prompt": "Post a comment containing the word 'masterpiece'",
+            "prompt_for_task_generation": "Post a comment for <movie>",
+        },
+        {
+            "prompt": "Add a comment for a movie not called The Matrix by someone other than John",
+            "prompt_for_task_generation": "Add a comment for <movie>",
+        },
+        {
+            "prompt": "Write a detailed review with specific movie, content, and commenter constraints",
+            "prompt_for_task_generation": "Write a review for <movie>",
+        },
+    ],
+)
+
+
+###############################################################################
+# DYNAMIC PROMPT INFO UPDATER
+###############################################################################
+async def update_use_cases_prompt_info(
+    seed_value: int | None = None,
+    dataset: list[dict] | None = None,
+    count: int | None = 50,
+):
+    """
+    Update use cases' additional_prompt_info with data from API.
+    This should be called before generating tasks to ensure prompt info uses current API data.
+    """
+    movies_data = dataset
+    if movies_data is None:
+        movies_data = await _get_movies_data_for_prompts(seed_value=seed_value, count=count or 50)
+    if movies_data is None:
+        return
+
+    # Update use cases that need movie data
+    FILM_DETAIL_USE_CASE.additional_prompt_info = _get_film_detail_info(movies_data)
+    ADD_TO_WATCHLIST_USE_CASE.additional_prompt_info = _get_add_to_watchlist_info(movies_data)
+    REMOVE_FROM_WATCHLIST_USE_CASE.additional_prompt_info = _get_add_to_watchlist_info(movies_data)
+    SHARE_FILM_USE_CASE.additional_prompt_info = _get_share_film_info(movies_data)
+    WATCH_TRAILER_USE_CASE.additional_prompt_info = _get_watch_trailer_info(movies_data)
+    FILTER_FILM_USE_CASE.additional_prompt_info = _get_filter_film_info(movies_data)
+
+
+###############################################################################
+# FINAL LIST: ALL_USE_CASES
+###############################################################################
+ALL_USE_CASES = [
+    FILM_DETAIL_USE_CASE,
+    LOGIN_USE_CASE,
+    DELETE_FILM_USE_CASE,
+    LOGOUT_USE_CASE,
+    FILTER_FILM_USE_CASE,
+    SEARCH_FILM_USE_CASE,
+    CONTACT_USE_CASE,
+    REGISTRATION_USE_CASE,
+    ADD_COMMENT_USE_CASE,
+    EDIT_FILM_USE_CASE,
+    ADD_FILM_USE_CASE,
+    EDIT_USER_PROFILE_USE_CASE,
+    ADD_TO_WATCHLIST_USE_CASE,
+    REMOVE_FROM_WATCHLIST_USE_CASE,
+    SHARE_FILM_USE_CASE,
+    WATCH_TRAILER_USE_CASE,
+]

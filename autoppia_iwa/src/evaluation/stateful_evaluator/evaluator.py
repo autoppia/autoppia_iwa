@@ -188,9 +188,12 @@ class AsyncStatefulEvaluator(AsyncWebAgentSession):
         self._history: list[ActionExecutionResult] = []
         self._session_start_utc: datetime | None = None
         self._last_score = ScoreDetails()
+        # Latest agent-reported answer for DataExtractionTest (partial tests); updated by benchmark per /act response.
+        self.latest_extracted_data: Any | None = None
 
     async def reset(self) -> StepResult:
         logger.info("[AsyncStatefulEvaluator] reset start")
+        self.latest_extracted_data = None
         await self._close_async()
         await self._init_async()
         self._session_start_utc = datetime.now(UTC)
@@ -421,7 +424,12 @@ class AsyncStatefulEvaluator(AsyncWebAgentSession):
                             seen_ids.add(event_id)
                             merged.append(event)
                         last_snapshot.backend_events = merged
-        matrix = await run_partial_tests(self._project, self.task, self._history)
+        matrix = await run_partial_tests(
+            self._project,
+            self.task,
+            self._history,
+            extracted_data=self.latest_extracted_data,
+        )
         if not matrix:
             self._last_score = ScoreDetails()
             return self._last_score
@@ -509,6 +517,14 @@ class StatefulEvaluator(SyncWebAgentSession):
             config=config,
         )
         self._loop: asyncio.AbstractEventLoop | None = None
+
+    @property
+    def latest_extracted_data(self) -> Any | None:
+        return self._async.latest_extracted_data
+
+    @latest_extracted_data.setter
+    def latest_extracted_data(self, value: Any | None) -> None:
+        self._async.latest_extracted_data = value
 
     def __enter__(self) -> StatefulEvaluator:
         return self

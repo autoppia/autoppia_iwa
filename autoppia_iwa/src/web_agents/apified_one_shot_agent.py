@@ -60,6 +60,9 @@ class ApifiedOneShotWebAgent(IWebAgent):
             # First call: generate solution and cache it
             solution = await self.solve_task(task)
             self._cached_solution = solution
+            # Return dict when extracted_data is present so benchmark can set it on TaskSolution (DataExtractionTest path)
+            if solution.extracted_data is not None:
+                return {"actions": solution.actions, "extracted_data": solution.extracted_data}
             return solution.actions
         else:
             # Subsequent calls: return empty list (all actions already returned)
@@ -93,13 +96,14 @@ class ApifiedOneShotWebAgent(IWebAgent):
             actions_data = response_json.get("actions", [])
             web_agent_id = response_json.get("web_agent_id", "unknown")
             recording_str = response_json.get("recording", "")
+            extracted_data = response_json.get("extracted_data")
             rebuilt_actions: list[BaseAction] = []
             for a in actions_data:
                 if isinstance(a, dict):
                     built = self._create_action(a)
                     if built is not None:
                         rebuilt_actions.append(built)
-        return TaskSolution(task_id=task.id, actions=rebuilt_actions, web_agent_id=web_agent_id, recording=recording_str)
+        return TaskSolution(task_id=task.id, actions=rebuilt_actions, web_agent_id=web_agent_id, recording=recording_str, extracted_data=extracted_data)
 
     def solve_task_sync(self, task: Task) -> TaskSolution:
         return asyncio.run(self.solve_task(task))

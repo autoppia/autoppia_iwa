@@ -1,0 +1,94 @@
+from ..operators import CONTAINS, EQUALS, GREATER_EQUAL, GREATER_THAN, IN_LIST, LESS_EQUAL, LESS_THAN, NOT_CONTAINS, NOT_EQUALS, NOT_IN_LIST
+
+ALLOWED_EVENT_COLORS = [
+    "Matter/Event",  # originally "forest"
+    "Internal",  # originally "indigo"
+    "Filing",  # originally "blue"
+    "Other",  # originally "zinc"
+]
+
+
+# AutoCRM (Web 5)
+STRING_OPERATORS = [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]
+LOGICAL_OPERATORS = [EQUALS, NOT_EQUALS, GREATER_THAN, LESS_THAN, GREATER_EQUAL, LESS_EQUAL]
+ARRAY_OPERATORS = [EQUALS, NOT_EQUALS, IN_LIST, NOT_IN_LIST]
+EQUALITY_OPERATORS = [EQUALS, NOT_EQUALS]
+
+
+FIELD_OPERATORS_MAP_MATTER = {
+    "name": STRING_OPERATORS,
+    "client": STRING_OPERATORS,
+    "status": STRING_OPERATORS,
+    "updated": STRING_OPERATORS,
+}
+
+FIELD_OPERATORS_MAP_CLIENT_VIEW_MATTER = {
+    "name": STRING_OPERATORS,
+    "email": EQUALITY_OPERATORS,
+    "status": STRING_OPERATORS,
+    "matters": LOGICAL_OPERATORS,
+}
+
+FIELD_OPERATORS_MAP_CHANGE_USER_NAME = {
+    "name": STRING_OPERATORS,
+}
+
+FIELD_OPERATORS_MAP_DOCUMENT = {
+    "name": STRING_OPERATORS,
+    "size": LOGICAL_OPERATORS,
+    "version": EQUALITY_OPERATORS,
+    # "updated": EQUALITY_OPERATORS,
+    "status": STRING_OPERATORS,
+}
+FIELD_OPERATORS_MAP_DOCUMENT_RENAME = {
+    "name": STRING_OPERATORS,
+    "new_name": STRING_OPERATORS,
+}
+FIELD_OPERATORS_MAP_CALENDAR = {
+    "label": STRING_OPERATORS,
+    "date": LOGICAL_OPERATORS,
+    "time": LOGICAL_OPERATORS,
+    "event_type": STRING_OPERATORS,
+}
+
+FIELD_OPERATORS_MAP_LOG = {
+    "matter": STRING_OPERATORS,
+    "client": STRING_OPERATORS,
+    "hours": LOGICAL_OPERATORS,
+    "status": STRING_OPERATORS,
+}
+
+FIELD_OPERATORS_MAP_BILLING_SEARCH = {
+    "query": STRING_OPERATORS,
+    "date_filter": STRING_OPERATORS,
+    "custom_date": LOGICAL_OPERATORS,
+}
+
+FIELD_OPERATORS_MAP_NEW_LOG = {
+    "matter": STRING_OPERATORS,
+    "description": STRING_OPERATORS,
+    "hours": [EQUALS, GREATER_THAN, LESS_THAN, GREATER_EQUAL, LESS_EQUAL],
+}
+
+FIELD_OPERATORS_MAP_CLIENT = {
+    "name": STRING_OPERATORS,
+    "email": STRING_OPERATORS,
+    "matters": LOGICAL_OPERATORS,
+    "status": STRING_OPERATORS,
+    "last": STRING_OPERATORS,
+}
+
+FIELD_OPERATORS_MAP_CLIENT_FILTERS = {
+    "status": STRING_OPERATORS,
+    "matters": LOGICAL_OPERATORS,
+    "query": STRING_OPERATORS,
+    "results": LOGICAL_OPERATORS,
+}
+
+# Visible fields for data-extraction tasks (detail and search)
+VISIBLE_FIELDS_MATTER_DETAIL = ["name", "client", "status", "updated"]
+VISIBLE_FIELDS_CLIENT_DETAIL = ["name", "email", "status", "matters"]
+VISIBLE_FIELDS_SEARCH_MATTER = ["name", "client", "status", "updated"]
+VISIBLE_FIELDS_SEARCH_CLIENT = ["name", "email", "status", "matters"]
+VISIBLE_FIELDS_DOCUMENT = ["name", "size", "version", "status", "updated"]
+VISIBLE_FIELDS_LOG = ["matter", "client", "hours", "status", "description", "date"]

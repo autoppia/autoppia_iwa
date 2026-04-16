@@ -120,13 +120,16 @@ class IWebAgent(ABC):
         step_index: int,
         history: list[dict[str, Any]] | None = None,
         state: dict[str, Any] | None = None,
-    ) -> list[BaseAction]:
+    ) -> list[BaseAction] | dict[str, Any]:
         """
         Decide actions based on the current browser state.
 
         This method is used in both concurrent and stateful mode:
         - Concurrent: Called ONCE with initial snapshot, returns ALL actions
         - Stateful: Called ITERATIVELY, returns actions for the next step
+
+        Implementations may return a dict ``{"actions": [...], "extracted_data": ...}`` for
+        DataExtractionTest (stateful / one-shot); otherwise a plain list of actions.
 
         Args:
             task: The task to solve
@@ -170,11 +173,14 @@ class TaskSolution(BaseModel):
     Solution to a task consisting of a sequence of actions.
 
     This is the standard output format that all web agents must return.
+    For data-extraction tasks, agents may also return extracted_data (e.g. subnet name)
+    which is evaluated by DataExtractionTest without running the browser evaluator.
     """
 
     task_id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique identifier for the task, auto-generated using UUID4")
     actions: list[BaseAction] = Field(default_factory=list, description="List of actions to execute")
     web_agent_id: str | None = None
+    extracted_data: Any | None = Field(default=None, description="Agent's extracted answer for DataExtractionTest (e.g. subnet name); no evaluator run for this test.")
     recording: Any | None = Field(default=None, description="Optional recording data associated with the task solution")
     # Optional cost/token tracking (agents can set these; API may compute cost when missing)
     cost_usd: float = Field(default=0.0, description="Estimated cost in USD for this solution")

@@ -1,9 +1,10 @@
 # Web Verification Pipeline
 
-A comprehensive, five-step pipeline that:
+A comprehensive pipeline that:
 - **Step 0**: Pre-validates project configuration (events, use cases, URLs)
 - **Step 1 (V1)**: Generates web tasks with constraints and reviews them with an LLM
 - **Step 2 (V2)**: Verifies that datasets are different with different seeds (dynamic data validation)
+- **Step 2.5 (DE)**: Runs seed-filtered data-extraction trajectories for the whole project and returns a boolean pass/fail
 - **Step 3**: Checks if anyone has solved the use case via the IWAP API (with mock fallback)
 - **Step 4 (V3)**: Replays found solutions across multiple dynamic seeds to prove they generalize
 
@@ -36,11 +37,12 @@ If validation fails, the pipeline stops immediately with clear error messages. T
 
 ## Overview
 
-The Web Verification Pipeline is a five-step process designed to:
+The Web Verification Pipeline is designed to:
 
 0. **Pre-Validation**: Automatically validates project setup (events, use cases, URLs) before proceeding
 1. **Task Generation and LLM Review (V1)**: Create multiple tasks per use case with constraints (tests) and validate them using GPT
 2. **Dataset Diversity Verification (V2)**: Verify that `get_all_data()` returns different datasets with different seeds, ensuring dynamic data generation works correctly
+2.5. **Data Extraction Trajectories Verification (DE)**: Run deterministic DE trajectories for the project and seed (default seed=1), and check expected answers
 3. **IWAP Use Case Doability Check**: Query the IWAP API to check if the use case is doable (has any successful solution). We don't compare specific constraints - we just need to know if the use case has been solved before.
 4. **Dynamic Verification (V3)**: Take the successful solution from Step 3 and test it with different seed values to ensure the solution works across different dynamic content variations
 
@@ -135,6 +137,20 @@ V2 Verification: PASSED - All 3 datasets are different. Dynamic data generation 
 ```
 
 **Note**: This step is **independent** and does not affect other steps. If V2 fails, the pipeline continues normally.
+
+### Step 2.5: Data Extraction Trajectories Verification (DE)
+
+**Purpose**: Verify deterministic data extraction for the whole project using curated trajectories.
+
+**Process**:
+- Loads DE trajectories from the project registry
+- Filters by configured seed (`--data-extraction-seed`, default `1`)
+- If trajectory has actions: replays browser actions and captures `ExtractAction` outputs
+- If trajectory has `actions=None`: validates `expected_answer` directly against loaded seed dataset
+
+**Output**:
+- Project-level boolean in console: `DataExtraction trajectories passed: YES/NO` (or `N/A` if skipped)
+- Per-trajectory details with expected vs extracted context
 
 ### Step 3: IWAP Use Case Doability Check
 
@@ -242,6 +258,8 @@ V2 Verification: PASSED - All 3 datasets are different. Dynamic data generation 
 | `--no-iwap` | flag | `False` | Disable IWAP doability check |
 | `--iwap-use-mock` | flag | `False` | Use mock IWAP API response instead of real API |
 | `--no-dynamic-verification` | flag | `False` | Disable dynamic verification with different seeds |
+| `--no-data-extraction-verification` | flag | `False` | Disable data-extraction trajectories verification |
+| `--data-extraction-seed` | int | `1` | Seed used to select DE trajectories |
 | `--iwap-url` | str | From env/config | Base URL for IWAP service (default: `https://api-leaderboard.autoppia.com`) |
 | `--seeds` | str | `"1,50,100,200,300"` | Comma-separated list of seed values to test |
 | `--output-dir` | str | `"./verification_results"` | Directory to save results JSON files |
@@ -277,6 +295,10 @@ class WebVerificationConfig:
     dynamic_verification_enabled: bool = True
     seed_values: list[int] = [1, 50, 100, 200, 300]
 
+    # Data extraction verification
+    data_extraction_verification_enabled: bool = True
+    data_extraction_seed: int = 1
+
     # Output
     output_dir: str = "./verification_results"
     verbose: bool = False
@@ -307,7 +329,8 @@ python -m autoppia_iwa.entrypoints.web_verification.run \
 python -m autoppia_iwa.entrypoints.web_verification.run \
     --project-id autocrm \
     --no-llm-review \
-    --no-dynamic-verification
+    --no-dynamic-verification \
+    --no-data-extraction-verification
 ```
 
 ## Output Structure
