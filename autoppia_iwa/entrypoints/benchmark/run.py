@@ -10,7 +10,9 @@ CLI execution (optional overrides):
 
 import argparse
 import asyncio
+import json
 from collections.abc import Sequence
+from pathlib import Path
 from typing import Literal
 
 from loguru import logger
@@ -210,17 +212,153 @@ def build_config(args: argparse.Namespace | None = None) -> BenchmarkConfig:
 CFG = build_config()
 
 
+def _build_agent(agent: str):
+    """Compatibility helper used by legacy benchmark run API/tests."""
+    from autoppia_iwa.src.web_agents.examples.random_clicker.agent import RandomClickerWebAgent
+
+    normalized = agent.strip()
+    if normalized in {"random-clicker", "random", "random_clicker"}:
+        return RandomClickerWebAgent(id="random-clicker", name="Random Clicker")
+    return ApifiedWebAgent(base_url=normalized, name=f"agent@{normalized}")
+
+
+def _write_staged_tasks(cache_dir: Path, payload: dict) -> None:
+    pid = str(payload.get("project_id", "unknown"))
+    (cache_dir / f"{pid}_tasks.json").write_text(json.dumps(payload, indent=2, ensure_ascii=False, default=str))
+
+
+def _stage_tasks(tasks_path: Path, config) -> None:
+    """Compatibility helper to stage tasks JSON in benchmark cache."""
+    test_types = getattr(config, "test_types", "event_only")
+    sub = "DataExtraction" if test_types == "data_extraction_only" else "tasks"
+    cache_dir = config.base_dir / "benchmark-output" / "cache" / sub
+    cache_dir.mkdir(parents=True, exist_ok=True)
+
+    data = json.loads(tasks_path.read_text())
+    if "project_id" in data and "tasks" in data:
+        _write_staged_tasks(cache_dir, data)
+        return
+
+    if isinstance(data, dict):
+        wrote = False
+        for payload in data.values():
+            if isinstance(payload, dict) and "project_id" in payload and "tasks" in payload:
+                _write_staged_tasks(cache_dir, payload)
+                wrote = True
+        if wrote:
+            return
+
+    raise ValueError(f"Unsupported tasks file format: {tasks_path}")
+
+
+async def run(
+    agent: str,
+    project_ids: list[str] | None = None,
+    use_cases: list[str] | None = None,
+    tasks_file: str | None = None,
+    output_dir: str = "./benchmark-output",
+    mode: str = "stateful",
+    max_steps: int = 50,
+    prompts_per_use_case: int = 1,
+    runs: int = 1,
+    parallel: int = 1,
+    web_agent_prefix: str = "benchmark-agent",
+    validator_prefix: str | None = None,
+    headless: bool = True,
+    *,
+    test_types: str = "event_only",
+):
+    """
+    Legacy programmatic API kept for compatibility with existing tests/callers.
+    Uses the stateful benchmark runtime under autoppia_iwa.src.evaluation.benchmark.
+    """
+    from autoppia_iwa.src.bootstrap import AppBootstrap
+    from autoppia_iwa.src.evaluation.benchmark import Benchmark as StatefulBenchmark, BenchmarkConfig as StatefulBenchmarkConfig
+    from autoppia_iwa.src.evaluation.benchmark.utils.task_generation import get_projects_by_ids as get_projects_by_ids_stateful
+
+    AppBootstrap()
+
+    if mode != "stateful":
+        raise ValueError("Only stateful benchmark mode is supported. Concurrent evaluation has moved to autoppia_iwa.src.evaluation.legacy.")
+
+    projects = get_projects_by_ids_stateful(demo_web_projects, project_ids) if project_ids else demo_web_projects
+    web_agent = _build_agent(agent)
+
+    base_dir = Path(output_dir)
+    if base_dir.name == "benchmark-output":
+        base_dir = base_dir.parent
+
+    data_extraction_use_cases = use_cases if test_types == "data_extraction_only" else None
+    config = StatefulBenchmarkConfig(
+        projects=projects,
+        agents=[web_agent],
+        use_cases=use_cases,
+        prompts_per_use_case=prompts_per_use_case,
+        max_steps_per_task=max_steps,
+        runs=runs,
+        max_parallel_evaluations=parallel,
+        web_agent_id_prefix=web_agent_prefix,
+        validator_id_prefix=validator_prefix or "validator_001",
+        headless=headless,
+        base_dir=base_dir,
+        use_cached_tasks=bool(tasks_file),
+        test_types=test_types,
+        data_extraction_use_cases=data_extraction_use_cases,
+    )
+
+    if tasks_file:
+        _stage_tasks(Path(tasks_file), config)
+
+    benchmark = StatefulBenchmark(config)
+    await benchmark.run()
+    return benchmark.last_run_report or {}
+
+
+def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
+    """Default parser for current benchmark CLI; monkeypatch target for compatibility tests."""
+    return parse_args(argv)
+
+
+async def _main_async_legacy(args: argparse.Namespace) -> int:
+    """Compatibility async main for legacy positional-agent argument object."""
+    try:
+        await run(
+            agent=args.agent,
+            project_ids=args.project,
+            use_cases=args.use_case,
+            tasks_file=args.tasks,
+            output_dir=args.output,
+            max_steps=args.max_steps,
+            prompts_per_use_case=args.prompts_per_use_case,
+            runs=args.runs,
+            parallel=args.parallel,
+            web_agent_prefix=args.web_agent_prefix,
+            validator_prefix=args.validator_prefix,
+            headless=args.headless,
+            test_types=args.test_types,
+        )
+    except ValueError as exc:
+        print(str(exc))
+        return 1
+    return 0
+
+
 def main(argv: Sequence[str] | None = None):
-    args = parse_args(argv)
+    args = _parse_args() if argv is None else _parse_args(argv)
+
+    # Compatibility path (legacy API/tests monkeypatch this object shape).
+    if hasattr(args, "agent"):
+        raise SystemExit(asyncio.run(_main_async_legacy(args)))
+
     cfg = build_config(args)
 
     setup_logging(str(cfg.benchmark_log_file))
     if not cfg.projects:
         logger.error("No projects. Set PROJECT_IDS in run.py or pass --project-id / --project-ids.")
-        return
+        raise SystemExit(1)
     if not cfg.agents:
         logger.error("No agents. Set AGENTS in run.py.")
-        return
+        raise SystemExit(1)
 
     strategy_names = []
     if cfg.enable_event_tasks:
@@ -233,6 +371,7 @@ def main(argv: Sequence[str] | None = None):
     )
 
     asyncio.run(Benchmark(cfg).run())
+    raise SystemExit(0)
 
 
 if __name__ == "__main__":

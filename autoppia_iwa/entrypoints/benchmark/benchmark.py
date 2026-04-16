@@ -1,6 +1,14 @@
-"""Backward-compatible re-export. Logic lives in src/evaluation/benchmark/."""
+import asyncio
+import base64
+import contextlib
+import json
+import time
+from collections import defaultdict
+from datetime import datetime
+from pathlib import Path
+from typing import Any
 
-from autoppia_iwa.src.evaluation.benchmark.benchmark import Benchmark
+from loguru import logger
 
 from autoppia_iwa.config.config import VALIDATOR_ID
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
@@ -13,10 +21,10 @@ from autoppia_iwa.entrypoints.benchmark.utils.metrics import TimingMetrics
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
-from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStats, EvaluatorConfig
+from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStats
 from autoppia_iwa.src.evaluation.concurrent_evaluator import ConcurrentEvaluator
-from autoppia_iwa.src.evaluation.stateful_evaluator import AsyncStatefulEvaluator
-from autoppia_iwa.src.evaluation.stateful_evaluator.evaluator import BrowserSnapshot, StepResult
+from autoppia_iwa.src.evaluation.legacy.concurrent_config import EvaluatorConfig
+from autoppia_iwa.src.evaluation.stateful_evaluator import AsyncStatefulEvaluator, BrowserSnapshot, StepResult
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer
 from autoppia_iwa.src.web_agents.act_response_utils import actions_to_act_response
 from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution, sanitize_snapshot_html

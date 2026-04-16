@@ -4,7 +4,7 @@ from collections.abc import Callable
 
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.data_provider import get_seed_from_url
 
 from .prompts import (
     DATA_EXTRACTION_TASK_GENERATION_PROMPT_VERIFY_FIELD_ONLY,

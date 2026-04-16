@@ -1,14 +1,9 @@
 """
 Run web verification pipeline for a project.
 
-Usage from terminal:
-    python -m autoppia_iwa.entrypoints.web_verification.run -p <project_id> [options]
-
-Usage from PyCharm:
-    Set up a run configuration with:
-    - Script path: path/to/autoppia_iwa/autoppia_iwa/entrypoints/web_verification/run.py
-    - Parameters: -p <project_id> [options]
-    - Working directory: path/to/autoppia_iwa
+Usage:
+    python -m autoppia_iwa.entrypoints.web_verification.run --project autocinema
+    iwa verify -p autocinema
 """
 
 import argparse
@@ -17,36 +12,30 @@ import asyncio
 
 def _parse_args():
     parser = argparse.ArgumentParser(prog="iwa verify", description="Run web verification pipeline")
-    parser.add_argument("--project", "-p", type=str, required=True, help="Project ID")
     parser.add_argument(
-        "-p",
+        "--project",
         "--project-id",
+        "-p",
+        dest="project",
+        type=str,
+        required=True,
+        help="Project ID",
+    )
+    parser.add_argument(
+        "--use-case",
+        "-u",
         type=str,
         action="append",
         dest="use_case",
         help="Restrict verification to this use case (repeat for multiple); same as iwa benchmark",
     )
-    parser.add_argument("--output", "-o", type=str, default="./verification_results")
-    parser.add_argument("--tasks-per-use-case", type=int, default=2)
-    parser.add_argument("--seeds", type=str, default="1,50,100,200,300")
+    parser.add_argument("--output", "--output-dir", "-o", type=str, default="./verification_results")
+    parser.add_argument("--tasks-per-use-case", "-n", type=int, default=2)
+    parser.add_argument("--seeds", "-s", type=str, default="1,50,100,200,300")
+    parser.add_argument("--dynamic", action=argparse.BooleanOptionalAction, default=True, help="Enable/disable dynamic seed generation")
     parser.add_argument("--no-llm-review", action="store_true")
     parser.add_argument(
-        "-n",
-        "--tasks-per-use-case",
-        type=int,
-        default=2,
-        help="Number of tasks to generate per use case (default: 2)",
-    )
-
-    parser.add_argument(
-        "--dynamic",
-        action=argparse.BooleanOptionalAction,
-        default=True,
-        help="Enable or disable dynamic seed generation (default: enabled)",
-    )
-
-    parser.add_argument(
-        "--no-llm-review",
+        "--evaluate-trajectories",
         action="store_true",
         help="Also replay repo-local trajectories after the normal pipeline (requires OPENAI_API_KEY for task generation)",
     )
@@ -60,12 +49,11 @@ def _parse_args():
         action="store_true",
         help="Do not use registered trajectories for Step 3 reference solution; use IWAP only when IWAP is enabled",
     )
-    parser.add_argument(
-        "--no-event-trajectory-verification",
-        action="store_true",
-        help="Disable event trajectories verification",
-    )
-
+    parser.add_argument("--no-iwap", action="store_true", help="Disable IWAP doability check")
+    parser.add_argument("--iwap-use-mock", action="store_true", help="Use mock IWAP response instead of real API")
+    parser.add_argument("--iwap-url", "-i", type=str, default=None, help="Base URL for IWAP service")
+    parser.add_argument("--no-dynamic-verification", action="store_true", help="Disable dynamic verification with different seeds")
+    parser.add_argument("--no-event-trajectory-verification", action="store_true", help="Disable event trajectories verification")
     parser.add_argument(
         "--no-data-extraction-verification",
         action="store_true",
@@ -77,38 +65,7 @@ def _parse_args():
         default=1,
         help="Seed value used to select data-extraction trajectories (default: 1)",
     )
-
-    parser.add_argument(
-        "-i",
-        "--iwap-url",
-        type=str,
-        default=None,
-        help="Base URL for IWAP service (default: from env or config)",
-    )
-
-    parser.add_argument(
-        "-s",
-        "--seeds",
-        type=str,
-        default="1,50,100,200,300",
-        help="Comma-separated list of seed values to test (default: 1,50,100,200,300)",
-    )
-
-    parser.add_argument(
-        "-o",
-        "--output-dir",
-        type=str,
-        default="./verification_results",
-        help="Directory to save results (default: ./verification_results)",
-    )
-
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        action="store_true",
-        help="Enable verbose logging",
-    )
-
+    parser.add_argument("--verbose", "-v", action="store_true")
     return parser.parse_args()
 
 
@@ -124,6 +81,12 @@ async def run(
     trajectory_doability_enabled: bool = True,
     use_cases: list[str] | None = None,
     *,
+    dynamic_enabled: bool = True,
+    iwap_enabled: bool = True,
+    iwap_base_url: str | None = None,
+    iwap_use_mock: bool = False,
+    dynamic_verification_enabled: bool = True,
+    no_event_trajectory_verification: bool = False,
     no_data_extraction_verification: bool = False,
     data_extraction_seed: int = 1,
 ):
@@ -141,19 +104,23 @@ async def run(
     project = projects[0]
 
     config = WebVerificationConfig(
-        tasks_per_use_case=args.tasks_per_use_case,
-        dynamic_enabled=args.dynamic,
-        llm_review_enabled=not args.no_llm_review,
-        iwap_enabled=not args.no_iwap,
-        iwap_base_url=args.iwap_url,
-        iwap_use_mock=args.iwap_use_mock,
-        dynamic_verification_enabled=not args.no_dynamic_verification,
-        event_trajectory_verification_enabled=not args.no_event_trajectory_verification,
-        data_extraction_verification_enabled=not args.no_data_extraction_verification,
-        data_extraction_seed=args.data_extraction_seed,
-        seed_values=seed_values,
-        output_dir=args.output_dir,
-        verbose=args.verbose,
+        use_case_filter=use_cases,
+        tasks_per_use_case=tasks_per_use_case,
+        dynamic_enabled=dynamic_enabled,
+        llm_review_enabled=(not trajectories_only) and (not no_llm_review),
+        trajectory_doability_enabled=trajectory_doability_enabled,
+        iwap_enabled=(not trajectories_only) and iwap_enabled,
+        iwap_base_url=iwap_base_url,
+        iwap_use_mock=iwap_use_mock,
+        dynamic_verification_enabled=dynamic_verification_enabled,
+        seed_values=[int(s.strip()) for s in seeds.split(",")],
+        output_dir=output_dir,
+        verbose=verbose,
+        evaluate_trajectories=evaluate_trajectories or trajectories_only,
+        evaluate_trajectories_only=trajectories_only,
+        event_trajectory_verification_enabled=not no_event_trajectory_verification,
+        data_extraction_verification_enabled=not no_data_extraction_verification,
+        data_extraction_seed=int(data_extraction_seed),
     )
 
     pipeline = WebVerificationPipeline(web_project=project, config=config)
@@ -169,46 +136,30 @@ def main():
 
 async def _main_async(args) -> int:
     try:
-        results = await pipeline.run()
-
-        # Print summary
-        print(pipeline.get_summary())
-
-        # Exit with appropriate code
-        # Check if all required checks passed (LLM reviews + executed DE verification)
-        all_passed = True
-        for use_case_data in results.get("use_cases", {}).values():
-            reviews = use_case_data.get("llm_reviews", [])
-            if reviews and not all(r.get("valid", False) for r in reviews):
-                all_passed = False
-                break
-
-        data_extraction = results.get("data_extraction_project_verification", {})
-        if isinstance(data_extraction, dict):
-            skipped = data_extraction.get("skipped", False)
-            if not skipped and data_extraction.get("all_passed") is False:
-                all_passed = False
-
-        event_trajectory = results.get("event_trajectory_project_verification", {})
-        if isinstance(event_trajectory, dict):
-            skipped = event_trajectory.get("skipped", False)
-            if not skipped and event_trajectory.get("all_passed") is False:
-                all_passed = False
-
-        data_extraction_task_generation = results.get("data_extraction_task_generation_verification", {})
-        if isinstance(data_extraction_task_generation, dict):
-            skipped = data_extraction_task_generation.get("skipped", False)
-            if not skipped and data_extraction_task_generation.get("all_passed") is False:
-                all_passed = False
-
-        sys.exit(0 if all_passed else 1)
-
-    except KeyboardInterrupt:
-        logger.warning("Pipeline interrupted by user")
-        sys.exit(130)
-    except Exception as e:
-        logger.exception(f"Pipeline failed with error: {e}")
-        sys.exit(1)
+        await run(
+            project_id=args.project,
+            output_dir=args.output,
+            tasks_per_use_case=args.tasks_per_use_case,
+            seeds=args.seeds,
+            no_llm_review=args.no_llm_review,
+            verbose=args.verbose,
+            evaluate_trajectories=args.evaluate_trajectories,
+            trajectories_only=args.trajectories_only,
+            trajectory_doability_enabled=not args.no_trajectory_doability,
+            use_cases=args.use_case,
+            dynamic_enabled=getattr(args, "dynamic", True),
+            iwap_enabled=not getattr(args, "no_iwap", False),
+            iwap_base_url=getattr(args, "iwap_url", None),
+            iwap_use_mock=getattr(args, "iwap_use_mock", False),
+            dynamic_verification_enabled=not getattr(args, "no_dynamic_verification", False),
+            no_event_trajectory_verification=getattr(args, "no_event_trajectory_verification", False),
+            no_data_extraction_verification=args.no_data_extraction_verification,
+            data_extraction_seed=args.data_extraction_seed,
+        )
+    except ValueError as exc:
+        print(str(exc))
+        return 1
+    return 0
 
 
 if __name__ == "__main__":

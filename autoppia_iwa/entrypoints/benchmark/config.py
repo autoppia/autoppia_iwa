@@ -1,6 +1,8 @@
-"""Backward-compatible re-export. Logic lives in src/evaluation/benchmark/."""
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Literal
 
-from autoppia_iwa.src.evaluation.benchmark.config import BenchmarkConfig
+from loguru import logger
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.demo_webs.classes import WebProject
@@ -109,7 +111,6 @@ class BenchmarkConfig:
         ):
             try:
                 d.mkdir(parents=True, exist_ok=True)
-                # logger.debug(f"Ensured directory exists: {d}")
             except Exception as e:
                 logger.error(f"Failed to create directory {d}: {e}")
                 raise
