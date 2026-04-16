@@ -281,7 +281,7 @@ TAG_FILTER_SELECTED_USE_CASE = UseCase(
 ###############################################################################
 
 LOGIN_USE_CASE = UseCase(
-    name="LOGIN",
+    name="AUTODINING_LOGIN",
     description="User logs into their account.",
     event=LoginEvent,
     event_source_code=LoginEvent.get_source_code_of_class(),
@@ -292,7 +292,7 @@ LOGIN_USE_CASE = UseCase(
 )
 
 REGISTER_USE_CASE = UseCase(
-    name="REGISTER",
+    name="AUTODINING_REGISTER",
     description="User creates a new account.",
     event=RegisterEvent,
     event_source_code=RegisterEvent.get_source_code_of_class(),
@@ -303,7 +303,7 @@ REGISTER_USE_CASE = UseCase(
 )
 
 LOGOUT_USE_CASE = UseCase(
-    name="LOGOUT",
+    name="AUTODINING_LOGOUT",
     description="User logs out of their account.",
     event=LogoutEvent,
     event_source_code=LogoutEvent.get_source_code_of_class(),

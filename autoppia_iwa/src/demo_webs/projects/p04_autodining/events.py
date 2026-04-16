@@ -363,7 +363,7 @@ class TagFilterSelectedEvent(Event, BaseEventValidator):
 class LoginEvent(Event, BaseEventValidator):
     """Event triggered when a user logs in."""
 
-    event_name: str = "LOGIN"
+    event_name: str = "AUTODINING_LOGIN"
     username: str | None = None
     source: str | None = None
 
@@ -398,7 +398,7 @@ class LoginEvent(Event, BaseEventValidator):
 class RegisterEvent(Event, BaseEventValidator):
     """Event triggered when a user registers."""
 
-    event_name: str = "REGISTER"
+    event_name: str = "AUTODINING_REGISTER"
     username: str | None = None
     email: str | None = None
     source: str | None = None
@@ -437,7 +437,7 @@ class RegisterEvent(Event, BaseEventValidator):
 class LogoutEvent(Event, BaseEventValidator):
     """Event triggered when a user logs out."""
 
-    event_name: str = "LOGOUT"
+    event_name: str = "AUTODINING_LOGOUT"
     username: str | None = None
 
     class ValidationCriteria(BaseModel):
@@ -1381,9 +1381,9 @@ BACKEND_EVENT_TYPES = {
     "TIME_SELECTED": TimeSelectedEvent,
     "PEOPLE_SELECTED": PeopleSelectedEvent,
     "TAG_FILTER_SELECTED": TagFilterSelectedEvent,
-    "LOGIN": LoginEvent,
-    "REGISTER": RegisterEvent,
-    "LOGOUT": LogoutEvent,
+    "AUTODINING_LOGIN": LoginEvent,
+    "AUTODINING_REGISTER": RegisterEvent,
+    "AUTODINING_LOGOUT": LogoutEvent,
     "REVIEW_CREATED": ReviewCreatedEvent,
     "REVIEW_EDITED": ReviewEditedEvent,
     "REVIEW_DELETED": ReviewDeletedEvent,
