@@ -5,7 +5,7 @@ Default execution (no flags):
     python -m autoppia_iwa.entrypoints.benchmark.run
 
 CLI execution (optional overrides):
-    python -m autoppia_iwa.entrypoints.benchmark.run --task-types data_extraction_only --project-id autocinema
+    python -m autoppia_iwa.entrypoints.benchmark.run -t data_extraction_only -p autocinema -d EXTRACT_MOVIES
 """
 
 import argparse
@@ -105,6 +105,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         description="Run benchmark for event tasks, data extraction tasks, or both.",
     )
     parser.add_argument(
+        "-t",
         "--task-types",
         choices=("both", "event_only", "data_extraction_only"),
         default=None,
@@ -135,13 +136,14 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "-u",
         "--use-cases",
         type=str,
         default=None,
         help="Comma-separated EventTask use cases",
     )
     parser.add_argument(
-        "-u",
+        "-U",
         "--use-case",
         action="append",
         dest="use_case",
@@ -150,12 +152,14 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "-d",
         "--data-extraction-use-cases",
         type=str,
         default=None,
         help="Comma-separated DataExtraction use cases",
     )
     parser.add_argument(
+        "-D",
         "--de-use-case",
         action="append",
         dest="de_use_case",

@@ -2,12 +2,12 @@
 Script to run the Web Verification Pipeline
 
 Usage from terminal:
-    python -m autoppia_iwa.entrypoints.web_verification.run --project-id <project_id> [options]
+    python -m autoppia_iwa.entrypoints.web_verification.run -p <project_id> [options]
 
 Usage from PyCharm:
     Set up a run configuration with:
     - Script path: path/to/autoppia_iwa/autoppia_iwa/entrypoints/web_verification/run.py
-    - Parameters: --project-id <project_id> [options]
+    - Parameters: -p <project_id> [options]
     - Working directory: path/to/autoppia_iwa
 """
 
@@ -185,6 +185,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Run web verification pipeline for a specific web project")
 
     parser.add_argument(
+        "-p",
         "--project-id",
         type=str,
         required=True,
@@ -192,6 +193,7 @@ def parse_args():
     )
 
     parser.add_argument(
+        "-n",
         "--tasks-per-use-case",
         type=int,
         default=2,
@@ -243,6 +245,7 @@ def parse_args():
     )
 
     parser.add_argument(
+        "-i",
         "--iwap-url",
         type=str,
         default=None,
@@ -250,6 +253,7 @@ def parse_args():
     )
 
     parser.add_argument(
+        "-s",
         "--seeds",
         type=str,
         default="1,50,100,200,300",
@@ -257,6 +261,7 @@ def parse_args():
     )
 
     parser.add_argument(
+        "-o",
         "--output-dir",
         type=str,
         default="./verification_results",
@@ -264,6 +269,7 @@ def parse_args():
     )
 
     parser.add_argument(
+        "-v",
         "--verbose",
         action="store_true",
         help="Enable verbose logging",

@@ -123,35 +123,40 @@ Run only EventTasks:
 
 ```bash
 python -m autoppia_iwa.entrypoints.benchmark.run \
-  --task-types event_only \
-  --project-id autocinema \
-  --use-case FIND_MOVIE
+  -t event_only \
+  -p autocinema \
+  -u FIND_MOVIE
 ```
 
 Run only DataExtraction tasks:
 
 ```bash
 python -m autoppia_iwa.entrypoints.benchmark.run \
-  --task-types data_extraction_only \
-  --project-id autocinema \
-  --de-use-case EXTRACT_MOVIES
+  -t data_extraction_only \
+  -p autocinema \
+  -d EXTRACT_MOVIES
 ```
 
 Run both with explicit filters:
 
 ```bash
 python -m autoppia_iwa.entrypoints.benchmark.run \
-  --task-types both \
-  --project-id autocinema \
-  --use-cases FIND_MOVIE,BUY_TICKET \
-  --data-extraction-use-cases EXTRACT_MOVIES,EXTRACT_TOP_RATED
+  -t both \
+  -p autocinema \
+  -u FIND_MOVIE,BUY_TICKET \
+  -d EXTRACT_MOVIES,EXTRACT_TOP_RATED
 ```
 
-Available pipeline flags:
-- `--task-types {both,event_only,data_extraction_only}`
-- `--use-cases` / `--use-case` for EventTask use cases
-- `--data-extraction-use-cases` / `--de-use-case` for DataExtraction use cases
-- `--project-ids` / `--project-id` for project selection
+Short flags (recommended):
+- `-t` = `--task-types {both,event_only,data_extraction_only}`
+- `-p` = `--project-id` (repeatable)
+- `-u` = `--use-cases` (comma-separated EventTask use cases)
+- `-d` = `--data-extraction-use-cases` (comma-separated DE use cases)
+
+Additional compatible flags:
+- `--project-ids` for comma-separated project ids
+- `-U` / `--use-case` for repeatable single EventTask use case
+- `-D` / `--de-use-case` for repeatable single DE use case
 
 Legacy alias kept for compatibility:
 - `--test {both,event_only,data_extraction_only}`

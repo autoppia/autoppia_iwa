@@ -15,11 +15,11 @@ def test_build_config_without_args_uses_run_py_defaults():
 
 def test_cli_event_only_enables_only_event_pipeline():
     args = run.parse_args([
-        "--task-types",
+        "-t",
         "event_only",
-        "--project-id",
+        "-p",
         "autocinema",
-        "--use-case",
+        "-u",
         "FIND_MOVIE",
     ])
 
@@ -35,9 +35,9 @@ def test_cli_data_extraction_only_enables_only_de_pipeline_with_legacy_alias():
     args = run.parse_args([
         "--test",
         "data_extraction_only",
-        "--project-id",
+        "-p",
         "autocinema",
-        "--de-use-case",
+        "-d",
         "EXTRACT_MOVIES",
     ])
 
