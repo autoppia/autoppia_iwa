@@ -219,6 +219,45 @@ class ConcurrentEvaluator(IEvaluator):
         for action in actions:
             stats.action_types[action.type] = stats.action_types.get(action.type, 0) + 1
 
+        # Option B: DataExtractionTest only — no evaluator (no browser). Compare agent's extracted_data to expected.
+        has_check_event_test = any(getattr(t, "type", None) == "CheckEventTest" for t in task.tests)
+        if not has_check_event_test:
+            _log_evaluation_event("DataExtractionTest only: skipping browser; evaluating extracted_data vs criteria", context=f"DATA EXTRACTION | agent={web_agent_id}")
+            test_start_time = time.time()
+            extracted_data = getattr(task_solution, "extracted_data", None)
+            test_results = await run_global_tests(
+                task,
+                backend_events=[],
+                web_agent_id=web_agent_id,
+                extracted_data=extracted_data,
+            )
+            stats.test_execution_time = time.time() - test_start_time
+            raw_score = 0.0
+            tests_passed_count = 0
+            num_tests = len(test_results) if test_results else 0
+            if test_results:
+                stats.total_tests = num_tests
+                for test_result in test_results:
+                    if test_result.success:
+                        tests_passed_count += 1
+                raw_score = 1.0 if tests_passed_count > 0 else 0.0
+            stats.tests_passed = tests_passed_count
+            stats.raw_score = raw_score
+            stats.final_score = raw_score
+            stats.total_time = time.time() - stats.start_time
+            feedback = generate_feedback(task, [], test_results)
+            return EvaluationResult(
+                web_agent_id=web_agent_id,
+                final_score=raw_score,
+                raw_score=raw_score,
+                test_results=test_results,
+                feedback=feedback,
+                execution_history=[],
+                evaluation_time=stats.total_time,
+                stats=stats,
+                gif_recording="",
+            )
+
         # If no actions, return an immediate error
         if not actions:
             stats.had_errors = True
@@ -297,46 +336,6 @@ class ConcurrentEvaluator(IEvaluator):
                         stats=stats,
                         gif_recording="",
                     )
-
-        # Option B: DataExtractionTest only — no evaluator (no browser). Compare agent's extracted_data to expected.
-        has_check_event_test = any(getattr(t, "type", None) == "CheckEventTest" for t in task.tests)
-        if not has_check_event_test:
-            _log_evaluation_event("DataExtractionTest only: skipping browser; evaluating extracted_data vs criteria", context=f"DATA EXTRACTION | agent={web_agent_id}")
-            evaluation_gif = ""
-            test_start_time = time.time()
-            extracted_data = getattr(task_solution, "extracted_data", None)
-            test_results = await run_global_tests(
-                task,
-                backend_events=[],
-                web_agent_id=web_agent_id,
-                extracted_data=extracted_data,
-            )
-            stats.test_execution_time = time.time() - test_start_time
-            raw_score = 0.0
-            tests_passed_count = 0
-            num_tests = len(test_results) if test_results else 0
-            if test_results:
-                stats.total_tests = num_tests
-                for test_result in test_results:
-                    if test_result.success:
-                        tests_passed_count += 1
-                raw_score = 1.0 if tests_passed_count > 0 else 0.0
-            stats.tests_passed = tests_passed_count
-            stats.raw_score = raw_score
-            stats.final_score = raw_score
-            stats.total_time = time.time() - stats.start_time
-            feedback = generate_feedback(task, [], test_results)
-            return EvaluationResult(
-                web_agent_id=web_agent_id,
-                final_score=raw_score,
-                raw_score=raw_score,
-                test_results=test_results,
-                feedback=feedback,
-                execution_history=[],
-                evaluation_time=stats.total_time,
-                stats=stats,
-                gif_recording="",
-            )
 
         _log_evaluation_event("Executing actions in browser", context=f"ACTION EXECUTION | agent={web_agent_id}")
         evaluation_gif = ""

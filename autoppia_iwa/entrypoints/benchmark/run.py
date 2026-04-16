@@ -75,7 +75,6 @@ CFG = BenchmarkConfig(
     # Tasks
     prompts_per_use_case=1,
     # use_cases=None means all use-cases
-    test_types="data_extraction_only",
     data_extraction_use_cases=None,
     # use_cases=USE_CASES,
     # Execution

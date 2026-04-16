@@ -12,6 +12,10 @@ from loguru import logger
 
 from autoppia_iwa.config.config import VALIDATOR_ID
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
+from autoppia_iwa.entrypoints.benchmark.task_strategies import (
+    DataExtractionTaskStrategy,
+    EventTaskStrategy,
+)
 from autoppia_iwa.entrypoints.benchmark.utils.logging import log_step, log_task_end, log_task_start, setup_logging
 from autoppia_iwa.entrypoints.benchmark.utils.metrics import TimingMetrics
 from autoppia_iwa.src.data_generation.tasks.classes import Task
@@ -51,6 +55,10 @@ class Benchmark:
         self.per_project_results = {}
         # When using tasks_json_path, (project, tasks) loaded once at start of run()
         self._custom_tasks_cache: tuple[WebProject, list[Task]] | None = None
+        self._task_strategies = (
+            EventTaskStrategy(),
+            DataExtractionTaskStrategy(),
+        )
 
     def _validate_config(self) -> None:
         """
@@ -109,6 +117,10 @@ class Benchmark:
                 }
             )
         return out
+
+    @staticmethod
+    def _is_data_extraction_task(task: Task) -> bool:
+        return bool(task.tests) and all(getattr(test, "type", None) == "DataExtractionTest" for test in task.tests)
 
     # ---------------------------------------------------------------------
     # Evaluator creation
@@ -233,7 +245,7 @@ class Benchmark:
 
                 if not actions:
                     # No actions = agent finished or error
-                    if self.config.test_types == "data_extraction_only" and isinstance(act_result, dict) and "extracted_data" in act_result:
+                    if self._is_data_extraction_task(task) and isinstance(act_result, dict) and "extracted_data" in act_result:
                         score_details = await evaluator.get_score_details()
                         final_score = score_details.raw_score
                         tests_passed = score_details.tests_passed
@@ -385,8 +397,11 @@ class Benchmark:
                     extracted_data = None
 
                 if not actions:
-                    logger.warning(f"{agent.name} returned empty actions for task {task.id}")
-                    return None
+                    if self._is_data_extraction_task(task) and extracted_data is not None:
+                        logger.info(f"{agent.name} returned extracted_data without actions for DE task {task.id}")
+                    else:
+                        logger.warning(f"{agent.name} returned empty actions for task {task.id}")
+                        return None
 
                 task_solution = TaskSolution(
                     task_id=task.id,
@@ -525,71 +540,41 @@ class Benchmark:
     # ---------------------------------------------------------------------
     # Per-project execution
     # ---------------------------------------------------------------------
-    async def _get_tasks_for_project(self, project: WebProject, run_index: int) -> list[Task]:
-        """Return tasks for this project: from custom JSON cache if applicable, else generate or load from cache."""
+    async def _get_tasks_for_project(self, project: WebProject, run_index: int) -> dict[str, list[Task]]:
+        """Return tasks grouped by strategy for this project."""
+        _ = run_index
         if self._custom_tasks_cache is not None:
             cached_project, cached_tasks = self._custom_tasks_cache
             if cached_project.id == project.id:
-                return cached_tasks
-        return await self._generate_tasks_for_project(project)
+                logger.info("Using custom tasks JSON. Skipping auto-generated data_extraction strategy for this project.")
+                return {"event": cached_tasks, "data_extraction": []}
 
-    def _get_task_cache_dir(self) -> str:
-        """
-        Return the cache directory for generated tasks.
+        tasks_by_strategy: dict[str, list[Task]] = {}
+        for strategy in self._task_strategies:
+            tasks_by_strategy[strategy.name] = await self._generate_tasks_for_project(project, strategy_name=strategy.name)
+        return tasks_by_strategy
 
-        Keeps event tasks and data-extraction tasks separated:
-        - event_only -> benchmark-output/cache/tasks
-        - data_extraction_only -> benchmark-output/cache/DataExtraction
-        """
-        cache_root = self.config.base_dir / "benchmark-output" / "cache"
-        if getattr(self.config, "test_types", "event_only") == "data_extraction_only":
-            return str(cache_root / "DataExtraction")
-        return str(cache_root / "tasks")
+    def _get_task_cache_dir(self, strategy_name: str = "event") -> str:
+        for strategy in self._task_strategies:
+            if strategy.name == strategy_name:
+                return strategy.get_cache_dir(self.config)
+        raise ValueError(f"Unknown strategy_name: {strategy_name}")
 
-    async def _generate_tasks_for_project(self, project: WebProject) -> list[Task]:
-        from autoppia_iwa.entrypoints.benchmark.utils.task_generation import filter_tasks_by_use_cases, load_tasks_from_json, save_tasks_to_json
-        from autoppia_iwa.src.data_generation.tasks.classes import TaskGenerationConfig
-        from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
+    def _get_task_strategy(self, strategy_name: str):
+        for strategy in self._task_strategies:
+            if strategy.name == strategy_name:
+                return strategy
+        raise ValueError(f"Unknown strategy_name: {strategy_name}")
 
-        # Check if we should use cached tasks
-        use_cached = getattr(self.config, "use_cached_tasks", False)
-        cache_dir = self._get_task_cache_dir()
-
-        if use_cached:
-            cached_tasks = await load_tasks_from_json(project, cache_dir)
-            if cached_tasks:
-                filtered = filter_tasks_by_use_cases(cached_tasks, self.config.use_cases)
-                if self.config.use_cases:
-                    logger.info(f"use_cases {self.config.use_cases!r}: {len(filtered)}/{len(cached_tasks)} cached tasks for '{project.name}'")
-                else:
-                    logger.info(f"Using {len(filtered)} cached tasks for '{project.name}'")
-                return filtered
-            else:
-                logger.info(f"No cached tasks found for '{project.name}', generating new tasks...")
-
-        # Generate new tasks
-        config = TaskGenerationConfig(
-            prompts_per_use_case=self.config.prompts_per_use_case,
-            use_cases=self.config.use_cases,
-            dynamic=self.config.dynamic,
-            test_types=self.config.test_types,
-            data_extraction_use_cases=self.config.data_extraction_use_cases,
-        )
-        pipeline = TaskGenerationPipeline(web_project=project, config=config)
-        tasks = await pipeline.generate()
-
+    async def _generate_tasks_for_project(self, project: WebProject, strategy_name: str = "event") -> list[Task]:
+        strategy = self._get_task_strategy(strategy_name)
+        tasks = await strategy.load_or_generate_tasks(project, self.config)
         if tasks:
-            # Save generated tasks to cache so they can be reused (e.g. via use_cached_tasks or tasks_json_path)
-            saved = await save_tasks_to_json(tasks, project, cache_dir)
-            if saved:
-                logger.info(f"Saved {len(tasks)} generated tasks for '{project.name}' to cache")
-
             try:
                 for task in tasks:
                     visualizer.show_task_with_tests(task)
             except Exception as e:
-                logger.warning(f"Task visualization failed: {e}")
-
+                logger.warning(f"Task visualization failed ({strategy_name}): {e}")
         return tasks
 
     async def _execute_single_project_run(self, project: WebProject, run_index: int) -> dict[str, dict]:
@@ -608,92 +593,100 @@ class Benchmark:
               ...
             }
         """
-        tasks = await self._get_tasks_for_project(project, run_index)
-        if not tasks:
+        tasks_by_strategy = await self._get_tasks_for_project(project, run_index)
+        total_tasks = sum(len(task_list) for task_list in tasks_by_strategy.values())
+        if total_tasks == 0:
             logger.warning(f"No tasks for project '{project.name}' — skipping run {run_index}")
             return {}
 
-        # Configure task settings for this run
-        for task in tasks:
-            task.should_record = self.config.record_gif
-
         per_agent_results_for_run: dict[str, dict] = {}
 
-        for task in tasks:
-            # Solve with all agents (skip in stateful mode - evaluator will call agents directly)
-            if self.config.evaluator_mode == "stateful":
-                # In stateful mode, don't pre-generate solutions
-                # The evaluator will call agents directly and iteratively
-                task_solutions = [None] * len(self.config.agents)
-            else:
-                # In concurrent mode, generate solutions first
-                task_solutions = await asyncio.gather(*[self._solve_task_with_agent(project, agent, task, run_index) for agent in self.config.agents])
+        for task_strategy, tasks in tasks_by_strategy.items():
+            if not tasks:
+                continue
 
-            # Structured log: task start per agent
-            for agent in self.config.agents:
-                log_task_start(
-                    getattr(project, "id", "") or "",
-                    getattr(task, "id", "") or "",
-                    getattr(agent, "id", "") or "",
-                    run_index,
-                )
+            logger.info(f"[{task_strategy}] Running benchmark for {len(tasks)} tasks")
 
-            # Evaluate solutions with visualization
-            evaluations = await self._evaluate_solutions_for_task_with_visualization(project, task, task_solutions, VALIDATOR_ID, run_index)
+            # Configure task settings for this run
+            for task in tasks:
+                task.should_record = self.config.record_gif
 
-            # Aggregate results by agent (include metrics for report) and log task_end
-            for _idx, ev in enumerate(evaluations):
-                use_case_name = getattr(task.use_case, "name", getattr(task, "de_use_case_name", "Unknown"))
-                execution_history = getattr(ev, "execution_history", [])
-                # Store actions in IWA format (tool_calls: list of {name, arguments})
-                if execution_history:
-                    base_actions = [e.action for e in execution_history if getattr(e, "action", None) is not None]
-                    act_resp = actions_to_act_response(base_actions, done=False)
-                    actions = [{"name": tc.name, "arguments": tc.arguments} for tc in act_resp.tool_calls]
+            for task in tasks:
+                # Solve with all agents (skip in stateful mode - evaluator will call agents directly)
+                if self.config.evaluator_mode == "stateful":
+                    # In stateful mode, don't pre-generate solutions
+                    # The evaluator will call agents directly and iteratively
+                    task_solutions = [None] * len(self.config.agents)
                 else:
-                    actions = []
-                eval_time = getattr(ev, "evaluation_time", None) or (getattr(ev, "stats", None) and getattr(ev.stats, "total_time", None))
-                steps_count = len(execution_history) if execution_history else (getattr(ev, "stats", None) and getattr(ev.stats, "action_count", None))
-                cost_usd = getattr(ev, "cost_usd", None)
-                input_tokens = getattr(ev, "input_tokens", None)
-                output_tokens = getattr(ev, "output_tokens", None)
-                # Concurrent mode: attach cost/tokens from solution if available (match by web_agent_id)
-                if self.config.evaluator_mode == "concurrent":
-                    sol = next((s for s in task_solutions if s is not None and getattr(s, "web_agent_id", None) == ev.web_agent_id), None)
-                    if sol is not None:
-                        if cost_usd is None and hasattr(sol, "cost_usd"):
-                            cost_usd = getattr(sol, "cost_usd", None)
-                        if input_tokens is None and hasattr(sol, "input_tokens"):
-                            input_tokens = getattr(sol, "input_tokens", None)
-                        if output_tokens is None and hasattr(sol, "output_tokens"):
-                            output_tokens = getattr(sol, "output_tokens", None)
-                per_agent_results_for_run.setdefault(ev.web_agent_id, {})[task.id] = {
-                    "prompt": task.prompt,
-                    "score": ev.final_score,
-                    "task_use_case": use_case_name,
-                    "actions": actions,
-                    "base64_gif": ev.gif_recording if self.config.record_gif else None,
-                    "evaluation_time": eval_time,
-                    "cost_usd": cost_usd,
-                    "input_tokens": input_tokens,
-                    "output_tokens": output_tokens,
-                    "steps_count": steps_count,
-                }
+                    # In concurrent mode, generate solutions first
+                    task_solutions = await asyncio.gather(*[self._solve_task_with_agent(project, agent, task, run_index) for agent in self.config.agents])
 
-                solution_time_s = self._timing_metrics.solution_times.get(ev.web_agent_id, {}).get(task.id, 0.0)
-                eval_time_s = float(eval_time) if eval_time is not None else 0.0
-                log_task_end(
-                    getattr(project, "id", "") or "",
-                    getattr(task, "id", "") or "",
-                    ev.web_agent_id or "",
-                    run_index,
-                    ev.final_score,
-                    solution_time_s,
-                    eval_time_s,
-                    cost_usd=cost_usd,
-                    input_tokens=input_tokens,
-                    output_tokens=output_tokens,
-                )
+                # Structured log: task start per agent
+                for agent in self.config.agents:
+                    log_task_start(
+                        getattr(project, "id", "") or "",
+                        getattr(task, "id", "") or "",
+                        getattr(agent, "id", "") or "",
+                        run_index,
+                    )
+
+                # Evaluate solutions with visualization
+                evaluations = await self._evaluate_solutions_for_task_with_visualization(project, task, task_solutions, VALIDATOR_ID, run_index)
+
+                # Aggregate results by agent (include metrics for report) and log task_end
+                for _idx, ev in enumerate(evaluations):
+                    use_case_name = getattr(task.use_case, "name", getattr(task, "de_use_case_name", "Unknown"))
+                    execution_history = getattr(ev, "execution_history", [])
+                    # Store actions in IWA format (tool_calls: list of {name, arguments})
+                    if execution_history:
+                        base_actions = [e.action for e in execution_history if getattr(e, "action", None) is not None]
+                        act_resp = actions_to_act_response(base_actions, done=False)
+                        actions = [{"name": tc.name, "arguments": tc.arguments} for tc in act_resp.tool_calls]
+                    else:
+                        actions = []
+                    eval_time = getattr(ev, "evaluation_time", None) or (getattr(ev, "stats", None) and getattr(ev.stats, "total_time", None))
+                    steps_count = len(execution_history) if execution_history else (getattr(ev, "stats", None) and getattr(ev.stats, "action_count", None))
+                    cost_usd = getattr(ev, "cost_usd", None)
+                    input_tokens = getattr(ev, "input_tokens", None)
+                    output_tokens = getattr(ev, "output_tokens", None)
+                    # Concurrent mode: attach cost/tokens from solution if available (match by web_agent_id)
+                    if self.config.evaluator_mode == "concurrent":
+                        sol = next((s for s in task_solutions if s is not None and getattr(s, "web_agent_id", None) == ev.web_agent_id), None)
+                        if sol is not None:
+                            if cost_usd is None and hasattr(sol, "cost_usd"):
+                                cost_usd = getattr(sol, "cost_usd", None)
+                            if input_tokens is None and hasattr(sol, "input_tokens"):
+                                input_tokens = getattr(sol, "input_tokens", None)
+                            if output_tokens is None and hasattr(sol, "output_tokens"):
+                                output_tokens = getattr(sol, "output_tokens", None)
+                    per_agent_results_for_run.setdefault(ev.web_agent_id, {})[task.id] = {
+                        "prompt": task.prompt,
+                        "score": ev.final_score,
+                        "task_use_case": use_case_name,
+                        "task_strategy": task_strategy,
+                        "actions": actions,
+                        "base64_gif": ev.gif_recording if self.config.record_gif else None,
+                        "evaluation_time": eval_time,
+                        "cost_usd": cost_usd,
+                        "input_tokens": input_tokens,
+                        "output_tokens": output_tokens,
+                        "steps_count": steps_count,
+                    }
+
+                    solution_time_s = self._timing_metrics.solution_times.get(ev.web_agent_id, {}).get(task.id, 0.0)
+                    eval_time_s = float(eval_time) if eval_time is not None else 0.0
+                    log_task_end(
+                        getattr(project, "id", "") or "",
+                        getattr(task, "id", "") or "",
+                        ev.web_agent_id or "",
+                        run_index,
+                        ev.final_score,
+                        solution_time_s,
+                        eval_time_s,
+                        cost_usd=cost_usd,
+                        input_tokens=input_tokens,
+                        output_tokens=output_tokens,
+                    )
 
         return per_agent_results_for_run
 
@@ -713,6 +706,7 @@ class Benchmark:
         config_summary: dict[str, Any] = {
             "evaluator_mode": self.config.evaluator_mode,
             "tasks_source": tasks_source,
+            "task_strategies": [strategy.name for strategy in self._task_strategies],
         }
         if getattr(self.config, "tasks_json_path", None):
             config_summary["tasks_json_path"] = str(self.config.tasks_json_path)
@@ -774,7 +768,9 @@ class Benchmark:
                     continue
 
                 for task_id, res in run_result[a_id].items():
-                    use_case = res.get("task_use_case", "Unknown")
+                    strategy = res.get("task_strategy", "event")
+                    use_case_name = res.get("task_use_case", "Unknown")
+                    use_case = f"{strategy}::{use_case_name}"
                     score = float(res.get("score", 0.0))
 
                     # Timing per (agent, task) recorded by TimingMetrics
@@ -835,6 +831,7 @@ class Benchmark:
                         "prompt": prompt,
                         "actions": action,
                         "base64_gif": gif,
+                        "task_strategy": uc.split("::", 1)[0] if "::" in uc else "event",
                     }
                     if eval_t is not None:
                         entry["evaluation_time"] = round(float(eval_t), 3) if isinstance(eval_t, int | float) else eval_t

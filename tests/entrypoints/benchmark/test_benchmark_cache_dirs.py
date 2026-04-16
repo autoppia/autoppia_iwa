@@ -22,12 +22,11 @@ def test_benchmark_cache_dir_event_only_uses_tasks_folder(tmp_path):
     cfg = BenchmarkConfig(
         projects=[_make_project()],
         agents=[SimpleNamespace(id="agent-1")],
-        test_types="event_only",
         base_dir=tmp_path,
     )
     benchmark = Benchmark(cfg)
 
-    cache_dir = benchmark._get_task_cache_dir()
+    cache_dir = benchmark._get_task_cache_dir("event")
     assert cache_dir.endswith("benchmark-output/cache/tasks")
 
 
@@ -35,10 +34,9 @@ def test_benchmark_cache_dir_data_extraction_only_uses_data_extraction_folder(tm
     cfg = BenchmarkConfig(
         projects=[_make_project()],
         agents=[SimpleNamespace(id="agent-1")],
-        test_types="data_extraction_only",
         base_dir=tmp_path,
     )
     benchmark = Benchmark(cfg)
 
-    cache_dir = benchmark._get_task_cache_dir()
+    cache_dir = benchmark._get_task_cache_dir("data_extraction")
     assert cache_dir.endswith("benchmark-output/cache/DataExtraction")
