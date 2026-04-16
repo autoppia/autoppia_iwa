@@ -1,9 +1,9 @@
 from collections.abc import Callable
 from typing import Any
 
-from ..criterion_helper import ComparisonOperator
-from ..operators import CONTAINS, EQUALS, IN_LIST, NOT_CONTAINS, NOT_EQUALS, NOT_IN_LIST
-from ..shared_utils import constraints_exist_in_db
+from ...criterion_helper import ComparisonOperator
+from ...operators import CONTAINS, EQUALS, IN_LIST, NOT_CONTAINS, NOT_EQUALS, NOT_IN_LIST
+from ...shared_utils import constraints_exist_in_db
 
 
 def _parse_bracketed_or_single(value_str: str, parse_item: Callable[[str], Any]) -> Any:

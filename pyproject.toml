@@ -9,6 +9,9 @@ description = "Autoppia IWA Sythetic Benchmark for Web Agents Evaluation"
 requires-python = ">=3.11"
 dynamic = ["dependencies"]
 
+[project.scripts]
+iwa = "autoppia_iwa.cli.main:main"
+
 [tool.setuptools.dynamic]
 dependencies = { file = ["requirements.txt"] }
 
@@ -72,5 +75,6 @@ dev = [
     "pytest>=7.0.0",
     "black>=23.0.0",
     "isort>=5.0.0",
-    "ruff>=0.3.0"
+    "ruff>=0.3.0",
+    "flake8>=7.0.0",
 ]

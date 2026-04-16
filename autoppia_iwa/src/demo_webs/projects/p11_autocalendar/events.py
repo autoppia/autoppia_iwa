@@ -2,10 +2,10 @@ from datetime import datetime, time
 
 from pydantic import BaseModel
 
+from autoppia_iwa.src.demo_webs.base_events import BaseEventValidator, Event
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue
-from autoppia_iwa.src.demo_webs.projects.shared_utils import parse_datetime, validate_date_field
+from autoppia_iwa.src.demo_webs.criterion_helper import CriterionValue
+from autoppia_iwa.src.demo_webs.shared_utils import parse_datetime, validate_date_field
 
 
 class SelectViewEvent(Event, BaseEventValidator):
@@ -185,7 +185,7 @@ class EventWizardOpenEvent(Event, BaseEventValidator):
         )
 
     @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "EVENT_WIZARD_OPEN":
+    def parse(cls, backend_event: BackendEvent) -> "EventWizardOpenEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
         return cls(

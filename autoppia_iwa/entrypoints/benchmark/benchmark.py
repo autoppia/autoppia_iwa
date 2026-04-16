@@ -1,14 +1,6 @@
-import asyncio
-import base64
-import contextlib
-import json
-import time
-from collections import defaultdict
-from datetime import datetime
-from pathlib import Path
-from typing import Any
+"""Backward-compatible re-export. Logic lives in src/evaluation/benchmark/."""
 
-from loguru import logger
+from autoppia_iwa.src.evaluation.benchmark.benchmark import Benchmark
 
 from autoppia_iwa.config.config import VALIDATOR_ID
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig

@@ -3,12 +3,27 @@
 import pytest
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.projects.autocinema_1.events import (
+from autoppia_iwa.src.demo_webs.criterion_helper import CriterionValue
+from autoppia_iwa.src.demo_webs.projects.p01_autocinema.events import (
     BACKEND_EVENT_TYPES,
+    AddCommentEvent,
+    AddFilmEvent,
+    AddToWatchlistEvent,
+    ContactEvent,
+    DeleteFilmEvent,
+    EditFilmEvent,
+    EditUserEvent,
     FilmDetailEvent,
     FilterFilmEvent,
     LoginEvent,
+    LogoutEvent,
+    RegistrationEvent,
+    RemoveFromWatchlistEvent,
     SearchFilmEvent,
+    ShareFilmEvent,
+    WatchTrailer,
+    parse_genres_from_data,
+    validate_genre_criteria,
 )
 
 from ..event_parse_helpers import assert_parse_cls_kwargs_match_model
@@ -60,6 +75,48 @@ class TestParseAutocinemaEvents:
         assert e.genre_name == "Action"
         assert e.year == 2020
 
+    def test_registration_logout_and_edit_user_parse(self):
+        registration = RegistrationEvent.parse(_be("REGISTRATION", {"username": "alice", "email": "a@a.com", "password": "secret"}))
+        logout = LogoutEvent.parse(_be("LOGOUT", {"username": "alice"}))
+        edit_user = EditUserEvent.parse(
+            _be(
+                "EDIT_USER",
+                {
+                    "username": "alice",
+                    "email": "a@a.com",
+                    "first_name": "Alice",
+                    "favorite_genres": [{"name": "Drama"}],
+                    "previous_values": {"favorite_genres": [{"name": "Action"}]},
+                },
+            )
+        )
+        assert registration.email == "a@a.com"
+        assert logout.username == "alice"
+        assert edit_user.favorite_genres == ["Drama"]
+
+    def test_parse_various_film_related_events(self):
+        add = AddFilmEvent.parse(_be("ADD_FILM", {"name": "X", "year": 2001, "genres": [{"name": "Drama"}]}))
+        edit = EditFilmEvent.parse(_be("EDIT_FILM", {"name": "X", "year": 2002, "genres": [], "rating": 4.0, "duration": 120}))
+        delete = DeleteFilmEvent.parse(_be("DELETE_FILM", {"name": "X", "year": 2002, "genres": ["Drama"]}))
+        watchlist = AddToWatchlistEvent.parse(_be("ADD_TO_WATCHLIST", {"name": "X", "genres": ["Drama"]}))
+        removed = RemoveFromWatchlistEvent.parse(_be("REMOVE_FROM_WATCHLIST", {"name": "X", "genres": ["Drama"]}))
+        shared = ShareFilmEvent.parse(_be("SHARE_MOVIE", {"name": "X", "genres": ["Drama"]}))
+        trailer = WatchTrailer.parse(_be("WATCH_TRAILER", {"name": "X", "genres": ["Drama"]}))
+        assert add.movie_name == "X"
+        assert edit.movie_year == 2002
+        assert delete.movie_genres == ["Drama"]
+        assert watchlist.movie_name == "X"
+        assert removed.movie_name == "X"
+        assert shared.movie_name == "X"
+        assert trailer.movie_name == "X"
+
+    def test_parse_add_comment_and_contact(self):
+        comment = AddCommentEvent.parse(_be("ADD_COMMENT", {"name": "Alice", "content": "Nice", "movie": {"id": 3, "name": "Dune"}}))
+        contact = ContactEvent.parse(_be("CONTACT", {"name": "Alice", "email": "a@a.com", "subject": "Hi", "message": "Hello"}))
+        assert comment.commenter_name == "Alice"
+        assert comment.movie_name == "Dune"
+        assert contact.email == "a@a.com"
+
 
 class TestValidateAutocinemaEvents:
     def test_login_validate_none(self):
@@ -74,6 +131,132 @@ class TestValidateAutocinemaEvents:
         e = SearchFilmEvent.parse(_be("SEARCH_FILM", {"query": "inception"}))
         criteria = SearchFilmEvent.ValidationCriteria(query="inception")
         assert e.validate_criteria(criteria) is True
+
+    def test_validate_genre_criteria_variants(self):
+        assert validate_genre_criteria(["Sci-Fi", "Drama"], None) is True
+        assert validate_genre_criteria(["Sci-Fi", "Drama"], "sci") is True
+        assert validate_genre_criteria(["Sci-Fi", "Drama"], CriterionValue(value="Drama", operator="equals")) is True
+        assert validate_genre_criteria(["Sci-Fi", "Drama"], CriterionValue(value="ram", operator="contains")) is True
+        assert validate_genre_criteria(["Sci-Fi", "Drama"], CriterionValue(value="Horror", operator="not_contains")) is True
+        assert validate_genre_criteria(["Sci-Fi", "Drama"], CriterionValue(value=["Drama", "Comedy"], operator="in_list")) is True
+        assert validate_genre_criteria(["Sci-Fi", "Drama"], CriterionValue(value=["Comedy"], operator="not_in_list")) is True
+
+    def test_edit_user_validate_criteria(self):
+        event = EditUserEvent.parse(
+            _be(
+                "EDIT_USER",
+                {
+                    "username": "alice",
+                    "email": "a@a.com",
+                    "first_name": "Alice",
+                    "bio": "Movie fan",
+                    "location": "Madrid",
+                    "website": "https://alice.dev",
+                    "favorite_genres": ["Drama"],
+                },
+            )
+        )
+        criteria = EditUserEvent.ValidationCriteria(username="alice", email="a@a.com", first_name="Alice", favorite_genres="Drama")
+        assert event.validate_criteria(criteria) is True
+
+    def test_registration_and_logout_validate_criteria(self):
+        registration = RegistrationEvent.parse(_be("REGISTRATION", {"username": "alice", "email": "a@a.com", "password": "secret"}))
+        logout = LogoutEvent.parse(_be("LOGOUT", {"username": "alice"}))
+        assert registration.validate_criteria(RegistrationEvent.ValidationCriteria(username="alice", email="a@a.com", password="secret")) is True
+        assert logout.validate_criteria(LogoutEvent.ValidationCriteria(username="alice")) is True
+
+    def test_edit_and_delete_film_validate_criteria(self):
+        edit = EditFilmEvent.parse(_be("EDIT_FILM", {"name": "Inception", "director": "Nolan", "year": 2010, "rating": 4.5, "duration": 148, "genres": ["Sci-Fi"]}))
+        delete = DeleteFilmEvent.parse(_be("DELETE_FILM", {"name": "Inception", "director": "Nolan", "year": 2010, "genres": ["Sci-Fi"]}))
+        edit_criteria = EditFilmEvent.ValidationCriteria(name="Inception", director="Nolan", movie_year=2010, movie_rating=4.5, movie_duration=148)
+        delete_criteria = DeleteFilmEvent.ValidationCriteria(name="Inception", director="Nolan", year=2010, genre="Sci-Fi")
+        assert edit.validate_criteria(edit_criteria) is True
+        assert delete.validate_criteria(delete_criteria) is True
+
+    def test_parse_genres_from_data_supports_mixed_values(self):
+        assert parse_genres_from_data({"genres": [{"name": "Drama"}, "Sci-Fi"]}) == ["Drama", "Sci-Fi"]
+
+    def test_validate_genre_criteria_edge_cases(self):
+        assert validate_genre_criteria(["Drama"], CriterionValue(value="Drama", operator="in_list")) is False
+        assert validate_genre_criteria(["Drama"], CriterionValue(value="Drama", operator="not_in_list")) is False
+        assert validate_genre_criteria(["Drama"], CriterionValue(value="Drama", operator="greater_than")) is False
+
+    def test_registration_validate_false_paths(self):
+        event = RegistrationEvent.parse(_be("REGISTRATION", {"username": "alice", "email": "a@a.com", "password": "secret"}))
+        assert event.validate_criteria(RegistrationEvent.ValidationCriteria(username="bob")) is False
+        assert event.validate_criteria(RegistrationEvent.ValidationCriteria(username="alice", email="x@x.com")) is False
+        assert event.validate_criteria(RegistrationEvent.ValidationCriteria(username="alice", email="a@a.com", password="bad")) is False
+
+    def test_edit_user_validate_false_paths(self):
+        event = EditUserEvent.parse(
+            _be(
+                "EDIT_USER",
+                {
+                    "username": "alice",
+                    "email": "a@a.com",
+                    "first_name": "Alice",
+                    "bio": "Movie fan",
+                    "location": "Madrid",
+                    "website": "https://alice.dev",
+                    "favorite_genres": ["Drama"],
+                },
+            )
+        )
+        assert event.validate_criteria(EditUserEvent.ValidationCriteria(username="bob")) is False
+        assert event.validate_criteria(EditUserEvent.ValidationCriteria(username="alice", bio="Other")) is False
+        assert event.validate_criteria(EditUserEvent.ValidationCriteria(username="alice", favorite_genres="Comedy")) is False
+
+    def test_film_related_validation_false_paths(self):
+        detail = FilmDetailEvent.parse(
+            _be(
+                "FILM_DETAIL",
+                {"name": "Inception", "director": "Nolan", "year": 2010, "rating": 4.5, "duration": 148, "genres": ["Sci-Fi"], "cast": "DiCaprio"},
+            )
+        )
+        add = AddFilmEvent.parse(_be("ADD_FILM", {"name": "Inception", "director": "Nolan", "year": 2010, "rating": 4.5, "duration": 148, "genres": ["Sci-Fi"]}))
+        edit = EditFilmEvent.parse(_be("EDIT_FILM", {"name": "Inception", "director": "Nolan", "year": 2010, "rating": 4.5, "duration": 148, "genres": ["Sci-Fi"]}))
+        delete = DeleteFilmEvent.parse(_be("DELETE_FILM", {"name": "Inception", "director": "Nolan", "year": 2010, "genres": ["Sci-Fi"]}))
+
+        assert detail.validate_criteria(FilmDetailEvent.ValidationCriteria(name="Other")) is False
+        assert detail.validate_criteria(FilmDetailEvent.ValidationCriteria(genre="Comedy")) is False
+        assert detail.validate_criteria(FilmDetailEvent.ValidationCriteria(director="Scott")) is False
+        assert detail.validate_criteria(FilmDetailEvent.ValidationCriteria(year=2000)) is False
+        assert detail.validate_criteria(FilmDetailEvent.ValidationCriteria(rating=3.0)) is False
+        assert detail.validate_criteria(FilmDetailEvent.ValidationCriteria(cast=["Other"])) is False
+        assert detail.validate_criteria(FilmDetailEvent.ValidationCriteria(duration=100)) is False
+        assert add.validate_criteria(AddFilmEvent.ValidationCriteria(name="Other")) is False
+        assert edit.validate_criteria(EditFilmEvent.ValidationCriteria(movie_year=2001)) is False
+        assert edit.validate_criteria(EditFilmEvent.ValidationCriteria(movie_rating=3.0)) is False
+        assert edit.validate_criteria(EditFilmEvent.ValidationCriteria(name="Other")) is False
+        assert edit.validate_criteria(EditFilmEvent.ValidationCriteria(director="Other")) is False
+        assert edit.validate_criteria(EditFilmEvent.ValidationCriteria(movie_duration=100)) is False
+        assert delete.validate_criteria(DeleteFilmEvent.ValidationCriteria(name="Other")) is False
+        assert delete.validate_criteria(DeleteFilmEvent.ValidationCriteria(genre="Comedy")) is False
+        assert delete.validate_criteria(DeleteFilmEvent.ValidationCriteria(director="Other")) is False
+        assert delete.validate_criteria(DeleteFilmEvent.ValidationCriteria(year=2001)) is False
+
+    def test_search_comment_contact_and_filter_false_paths(self):
+        search = SearchFilmEvent.parse(_be("SEARCH_FILM", {"query": "matrix"}))
+        comment = AddCommentEvent.parse(_be("ADD_COMMENT", {"name": "Alice", "content": "Nice", "movie": {"name": "Dune"}}))
+        contact = ContactEvent.parse(_be("CONTACT", {"name": "Alice", "email": "a@a.com", "subject": "Hi", "message": "Hello"}))
+        filter_event = FilterFilmEvent.parse(_be("FILTER_FILM", {"genre": {"name": "Action"}, "year": 2020}))
+
+        assert search.validate_criteria(SearchFilmEvent.ValidationCriteria(query="other")) is False
+        assert comment.validate_criteria(AddCommentEvent.ValidationCriteria(content="bad")) is False
+        assert comment.validate_criteria(AddCommentEvent.ValidationCriteria(commenter_name="Bob")) is False
+        assert comment.validate_criteria(AddCommentEvent.ValidationCriteria(movie_name="Other")) is False
+        assert contact.validate_criteria(ContactEvent.ValidationCriteria(name="Bob")) is False
+        assert contact.validate_criteria(ContactEvent.ValidationCriteria(email="x@x.com")) is False
+        assert contact.validate_criteria(ContactEvent.ValidationCriteria(subject="Other")) is False
+        assert contact.validate_criteria(ContactEvent.ValidationCriteria(message="Other")) is False
+        assert filter_event.validate_criteria(FilterFilmEvent.ValidationCriteria(genre_name="Drama")) is False
+        assert filter_event.validate_criteria(FilterFilmEvent.ValidationCriteria(year=2001)) is False
+
+    def test_filter_film_and_search_none_criteria_paths(self):
+        search = SearchFilmEvent.parse(_be("SEARCH_FILM", {"query": "matrix"}))
+        filter_event = FilterFilmEvent.parse(_be("FILTER_FILM", {"genre": None, "year": None}))
+        assert search.validate_criteria(None) is True
+        assert filter_event.validate_criteria(None) is True
 
 
 @pytest.mark.parametrize("event_name,data", AUTOCINEMA_PARSE_PAYLOADS)

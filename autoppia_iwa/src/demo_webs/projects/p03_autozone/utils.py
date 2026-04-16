@@ -1,5 +1,5 @@
-from ..criterion_helper import ComparisonOperator
-from ..shared_utils import constraints_exist_in_db
+from ...criterion_helper import ComparisonOperator
+from ...shared_utils import constraints_exist_in_db
 
 
 def build_constraints_info(data: list[dict], max_attempts: int = 10) -> str | None:

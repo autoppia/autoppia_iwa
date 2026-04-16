@@ -2,7 +2,7 @@
 Shared dataset helpers for autowork_10.
 """
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+from autoppia_iwa.src.demo_webs.data_provider import load_dataset_data
 
 
 async def fetch_data(

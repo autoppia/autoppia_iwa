@@ -5,10 +5,10 @@ from datetime import date, datetime, time, timedelta
 from random import choice
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.data_provider import get_seed_from_url
 
-from ..criterion_helper import ComparisonOperator
-from ..shared_utils import create_constraint_dict, random_str_not_contained_in
+from ...criterion_helper import ComparisonOperator
+from ...shared_utils import create_constraint_dict, random_str_not_contained_in
 from .data import (
     FIELD_MAP_CONTACT_DOCTOR_SUCCESSFULLY,
     FIELD_OPERATORS_MAP_APPOINTMENT_BOOKED_SUCCESSFULLY,

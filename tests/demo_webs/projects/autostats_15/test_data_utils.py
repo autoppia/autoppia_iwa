@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from autoppia_iwa.src.demo_webs.projects.autostats_15.data_utils import (
+from autoppia_iwa.src.demo_webs.projects.p15_autostats.data_utils import (
     _account_to_account_with_details,
     _add_trends_to_subnets,
     _block_to_block_with_details,
@@ -279,7 +279,7 @@ class TestAccountToAccountWithDetails:
         assert out["address"] == "5PDQkfbnQa6ffdoziyeHsfd9ZLavP28Yq3QLSdWGsou8YE6v"
 
 
-_MODULE = "autoppia_iwa.src.demo_webs.projects.autostats_15.data_utils"
+_MODULE = "autoppia_iwa.src.demo_webs.projects.p15_autostats.data_utils"
 
 
 @pytest.mark.asyncio

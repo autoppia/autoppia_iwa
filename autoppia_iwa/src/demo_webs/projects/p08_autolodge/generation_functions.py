@@ -4,11 +4,11 @@ from typing import Any
 
 from loguru import logger
 
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator
+from autoppia_iwa.src.demo_webs.data_provider import get_seed_from_url
 
-from ..operators import EQUALS, GREATER_EQUAL, LESS_EQUAL
-from ..shared_utils import create_constraint_dict, parse_datetime
+from ...operators import EQUALS, GREATER_EQUAL, LESS_EQUAL
+from ...shared_utils import create_constraint_dict, parse_datetime
 from .data import (
     FIELD_OPERATORS_APPLY_FILTERS_MAP,
     FIELD_OPERATORS_BOOK_FROM_WISHLIST_MAP,
@@ -1148,14 +1148,11 @@ async def generate_book_from_wishlist_constraints(task_url: str | None = None, d
         return []
     sample = random.choice(data)
     constraints: list[dict[str, Any]] = []
-    for field in ["hotel_id", "title"]:
-        allowed_ops = FIELD_OPERATORS_BOOK_FROM_WISHLIST_MAP.get(field, [])
-        if not allowed_ops:
-            continue
-        op = ComparisonOperator(random.choice(allowed_ops))
-        # Extract nested conditional expression
-        value = sample.get("id", 0) if field == "hotel_id" else (sample.get("title") or "")[:5]
-        constraints.append(create_constraint_dict(field, op, value))
+    field = "title"
+    allowed_ops = FIELD_OPERATORS_BOOK_FROM_WISHLIST_MAP.get(field, [])
+    op = ComparisonOperator(random.choice(allowed_ops))
+    value = sample.get(field)
+    constraints.append(create_constraint_dict(field, op, value))
     return constraints
 
 

@@ -4,7 +4,7 @@ Shared restaurant dataset helpers for autodining_4.
 
 from loguru import logger
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+from autoppia_iwa.src.demo_webs.data_provider import load_dataset_data
 
 _RESTAURANT_DATA_CACHE: dict[tuple[int | None, int], list[dict]] = {}
 

@@ -7,11 +7,7 @@ from autoppia_iwa.src.data_generation.tasks.classes import (
     Task,
     TaskGenerationConfig,
 )
-
-try:  # pragma: no cover - optional dependency guard
-    from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
-except ModuleNotFoundError:  # pragma: no cover
-    TaskGenerationPipeline = None
+from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
 
 __all__ = [
     "BrowserSpecification",

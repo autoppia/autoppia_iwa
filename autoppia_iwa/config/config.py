@@ -1,19 +1,9 @@
 import os
 from pathlib import Path
 
-try:
-    from distutils.util import strtobool
-except ImportError:
-    # Python 3.12+ removed distutils, use alternative
-    def strtobool(val: str) -> int:
-        """Convert a string representation of truth to 1 or 0."""
-        val = val.lower()
-        if val in ("y", "yes", "t", "true", "on", "1"):
-            return 1
-        elif val in ("n", "no", "f", "false", "off", "0"):
-            return 0
-        else:
-            raise ValueError(f"invalid truth value {val!r}")
+
+def _env_bool(key: str, default: str = "false") -> bool:
+    return os.getenv(key, default).lower() in ("1", "true", "yes", "on")
 
 
 # ============================
@@ -35,24 +25,16 @@ CHUTES_API_KEY = os.getenv("CHUTES_API_KEY")
 CHUTES_MODEL = os.getenv("CHUTES_MODEL", "meta-llama/Llama-3.1-8B-Instruct")
 CHUTES_MAX_TOKENS = int(os.getenv("CHUTES_MAX_TOKENS", 2048))
 CHUTES_TEMPERATURE = float(os.getenv("CHUTES_TEMPERATURE", 0.7))
-CHUTES_USE_BEARER = bool(strtobool(os.getenv("CHUTES_USE_BEARER", "False")))
+CHUTES_USE_BEARER = _env_bool("CHUTES_USE_BEARER")
 
-# Validate critical environment variables
-has_openai_credentials = bool(OPENAI_API_KEY)
-has_chutes_credentials = bool(CHUTES_API_KEY)
-
-if not has_openai_credentials and not has_chutes_credentials:
-    raise ValueError("No LLM credentials configured. Set OPENAI_API_KEY or CHUTES_API_KEY (and LLM_PROVIDER=chutes if you want to use Chutes for generation).")
-
-if LLM_PROVIDER == "openai" and not has_openai_credentials:
-    raise ValueError("LLM_PROVIDER is set to 'openai' but OPENAI_API_KEY is missing. Set OPENAI_API_KEY or switch to LLM_PROVIDER='chutes' with CHUTES_API_KEY.")
-if LLM_PROVIDER == "chutes" and not has_chutes_credentials:
-    raise ValueError("LLM_PROVIDER is set to 'chutes' but CHUTES_API_KEY is missing. Set CHUTES_API_KEY or switch to LLM_PROVIDER='openai' with OPENAI_API_KEY.")
+# LLM credentials (validated lazily when actually used, not at import time)
+HAS_OPENAI_CREDENTIALS = bool(OPENAI_API_KEY)
+HAS_CHUTES_CREDENTIALS = bool(CHUTES_API_KEY)
 
 # ============================
 # Application Configuration
 # ============================
-EVALUATOR_HEADLESS = bool(strtobool(os.getenv("EVALUATOR_HEADLESS", "True")))
+EVALUATOR_HEADLESS = _env_bool("EVALUATOR_HEADLESS", "true")
 
 # ============================
 # Project Base Directory Path
@@ -70,7 +52,7 @@ DEMO_WEB_SERVICE_PORT = int(os.getenv("DEMO_WEB_SERVICE_PORT", "8090"))
 # Agent Configurations
 # ============================
 AGENT_NAME = os.getenv("AGENT_NAME", "Newbie Agent")
-USE_APIFIED_AGENT = bool(strtobool(os.getenv("USE_APIFIED_AGENT", "true")))
+USE_APIFIED_AGENT = _env_bool("USE_APIFIED_AGENT", "true")
 AGENT_HOST = os.getenv("AGENT_HOST", "localhost")
 AGENT_PORT = int(os.getenv("AGENT_PORT", "5000"))
 

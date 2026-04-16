@@ -1,13 +1,13 @@
 from datetime import datetime
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
+from autoppia_iwa.src.demo_webs.base_events import BaseEventValidator, Event
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
+from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 
-from ..shared_utils import parse_price
+from ...shared_utils import parse_price
 
 
 class ProductSummary(BaseModel):
@@ -20,8 +20,7 @@ class ProductSummary(BaseModel):
     category: str | None = None
     rating: float | None = None
 
-    class Config:
-        frozen = True
+    model_config = ConfigDict(frozen=True)
 
     @classmethod
     def parse_from_data(cls, data: dict[str, Any]) -> Optional["ProductSummary"]:
@@ -65,9 +64,10 @@ class ItemDetailEvent(Event, BaseEventValidator):
         rating: float | CriterionValue | None = None
         price: float | CriterionValue | None = None
 
-        class Config:
-            title = "Item Detail Validation"
-            description = "Validates that an item detail page was viewed with specific attributes"
+        model_config = ConfigDict(
+            title="Item Detail Validation",
+            description="Validates that an item detail page was viewed with specific attributes",
+        )
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -223,8 +223,7 @@ class ProceedToCheckoutEvent(Event, BaseEventValidator):
         total_amount: float | CriterionValue | None = None
         product_titles: list[str] | None = None
 
-        class Config:
-            extra = "forbid"  # Prevent extra fields
+        model_config = ConfigDict(extra="forbid")
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """Validate the event against the given criteria."""
@@ -289,8 +288,7 @@ class AddToCartEvent(Event, BaseEventValidator):
         rating: float | CriterionValue | None = None
         quantity: int | CriterionValue | None = None
 
-        class Config:
-            populate_by_name = True
+        model_config = ConfigDict(populate_by_name=True)
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -388,8 +386,7 @@ class QuantityChangedEvent(Event, BaseEventValidator):
         price: float | CriterionValue | None = None
         rating: float | CriterionValue | None = None
 
-        class Config:
-            populate_by_name = True
+        model_config = ConfigDict(populate_by_name=True)
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -540,6 +537,10 @@ class CarouselScrollEvent(Event, BaseEventValidator):
         """Parse a carousel scroll event from backend data."""
         base_event = Event.parse(backend_event)
         data = backend_event.data
+        derived_title = data.get("title", "")
+        title = derived_title.split()[0] if derived_title else ""
+
+        title = f"Top Sellers In {title}"
 
         return cls(
             event_name=base_event.event_name,
@@ -547,7 +548,7 @@ class CarouselScrollEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             direction=data.get("direction", "").upper(),
-            title=data.get("title", ""),
+            title=title,
         )
 
 

@@ -3,10 +3,10 @@ import random
 from random import choice
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator
+from autoppia_iwa.src.demo_webs.data_provider import get_seed_from_url
 
-from ..shared_utils import create_constraint_dict, generate_mock_date_strings, generate_mock_dates
+from ...shared_utils import create_constraint_dict, generate_mock_date_strings, generate_mock_dates
 from .data import (
     ABOUT_FEATURES,
     CONTACT_CARD_TYPES,

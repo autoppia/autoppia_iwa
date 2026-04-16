@@ -1,4 +1,5 @@
 from dependency_injector import containers, providers
+from dependency_injector.wiring import Provide
 
 from autoppia_iwa.config.config import (
     CHUTES_API_KEY,
@@ -13,7 +14,8 @@ from autoppia_iwa.config.config import (
     OPENAI_MODEL,
     OPENAI_TEMPERATURE,
 )
-from autoppia_iwa.src.llms.service import LLMConfig, LLMFactory
+from autoppia_iwa.src.llms.factory import LLMFactory
+from autoppia_iwa.src.llms.interfaces import LLMConfig
 
 
 class DIContainer(containers.DeclarativeContainer):
@@ -35,29 +37,45 @@ class DIContainer(containers.DeclarativeContainer):
 
     @staticmethod
     def _get_llm_service():
-        if LLM_PROVIDER == "openai":
-            config = LLMConfig(
-                model=OPENAI_MODEL,
-                temperature=OPENAI_TEMPERATURE,
-                max_tokens=OPENAI_MAX_TOKENS,
-            )
-            return LLMFactory.create_llm(
-                llm_type="openai",
-                config=config,
-                api_key=OPENAI_API_KEY,
-            )
-        elif LLM_PROVIDER == "chutes":
-            config = LLMConfig(
-                model=CHUTES_MODEL,
-                temperature=CHUTES_TEMPERATURE,
-                max_tokens=CHUTES_MAX_TOKENS,
-            )
-            return LLMFactory.create_llm(
-                llm_type="chutes",
-                config=config,
-                base_url=CHUTES_BASE_URL,
-                api_key=CHUTES_API_KEY,
-                use_bearer=CHUTES_USE_BEARER,
-            )
-        else:
-            raise ValueError(f"Unsupported LLM_PROVIDER: {LLM_PROVIDER}")
+        providers = {
+            "openai": dict(
+                config=LLMConfig(
+                    model=OPENAI_MODEL,
+                    temperature=OPENAI_TEMPERATURE,
+                    max_tokens=OPENAI_MAX_TOKENS,
+                ),
+                kwargs=dict(
+                    api_key=OPENAI_API_KEY,
+                ),
+            ),
+            "chutes": dict(
+                config=LLMConfig(
+                    model=CHUTES_MODEL,
+                    temperature=CHUTES_TEMPERATURE,
+                    max_tokens=CHUTES_MAX_TOKENS,
+                ),
+                kwargs=dict(
+                    base_url=CHUTES_BASE_URL,
+                    api_key=CHUTES_API_KEY,
+                    use_bearer=CHUTES_USE_BEARER,
+                ),
+            ),
+        }
+
+        try:
+            provider = providers[LLM_PROVIDER]
+        except KeyError:
+            raise ValueError(f"Unsupported LLM_PROVIDER: {LLM_PROVIDER}") from None
+
+        return LLMFactory.create_llm(
+            llm_type=LLM_PROVIDER,
+            config=provider["config"],
+            **provider["kwargs"],
+        )
+
+    @classmethod
+    def resolve_llm_service(cls, llm_service=None):
+        """Resolve lazy/default DI values into a concrete LLM service."""
+        if llm_service is None or isinstance(llm_service, Provide):
+            return cls.llm_service()
+        return llm_service

@@ -2,9 +2,9 @@ import random
 from random import choice, randint, sample, uniform
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.data_provider import get_seed_from_url
 
-from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
+from ...criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER, VISIBLE_FIELDS_BOOK_DETAIL, VISIBLE_FIELDS_FILTER_BOOK, VISIBLE_FIELDS_SEARCH_BOOK
 from .data_utils import fetch_data
 

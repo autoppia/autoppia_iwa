@@ -1,4 +1,4 @@
-"""Tests for entrypoints.benchmark.utils.task_generation."""
+"""Tests for canonical benchmark task generation utilities."""
 
 from __future__ import annotations
 
@@ -8,9 +8,9 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from autoppia_iwa.entrypoints.benchmark.utils import task_generation
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.evaluation.benchmark.utils import task_generation
 
 
 def _make_project(pid: str = "p1", name: str = "Project 1") -> WebProject:
@@ -52,12 +52,23 @@ def test_filter_tasks_by_use_cases_matches_name_case_insensitive():
     assert all(t.use_case.name.startswith("REQUEST") for t in out)
 
 
-def test_filter_tasks_by_use_cases_drops_tasks_without_use_case():
+def test_filter_tasks_by_use_cases_drops_tasks_without_use_case_or_de_name():
     class _T:
         use_case = None
 
     tasks = [_T(), _T()]
     assert task_generation.filter_tasks_by_use_cases(tasks, ["LOGIN"]) == []
+    assert task_generation.filter_tasks_by_use_cases(tasks, ["LOGIN"], test_types="data_extraction_only") == []
+
+
+def test_filter_tasks_by_use_cases_matches_de_use_case_name_for_data_extraction():
+    class _T:
+        use_case = None
+        de_use_case_name = "FIND_PRICE"
+
+    tasks = [_T()]
+    out = task_generation.filter_tasks_by_use_cases(tasks, ["find_price"], test_types="data_extraction_only")
+    assert len(out) == 1
 
 
 def test_get_cache_filename():
@@ -178,3 +189,10 @@ def test_get_projects_by_ids_missing_raises():
     p1 = _make_project("a", "A")
     with pytest.raises(ValueError, match="Project IDs not found"):
         task_generation.get_projects_by_ids([p1], ["a", "missing"])
+
+
+def test_entrypoint_task_generation_module_re_exports_canonical_objects():
+    from autoppia_iwa.entrypoints.benchmark.utils import task_generation as entrypoint_task_generation
+
+    assert entrypoint_task_generation.get_projects_by_ids is task_generation.get_projects_by_ids
+    assert entrypoint_task_generation.save_tasks_to_json is task_generation.save_tasks_to_json

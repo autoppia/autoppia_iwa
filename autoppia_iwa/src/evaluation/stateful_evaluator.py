@@ -1,0 +1,486 @@
+from __future__ import annotations
+
+"""
+Async-first stateful evaluator for Autoppia IWA tasks.
+
+This module provides:
+- TaskExecutionSession: async runtime session over a single Task.
+- AsyncStatefulEvaluator/StatefulEvaluator: backward-compatible aliases.
+"""
+
+import asyncio
+import contextlib
+import json
+import os
+from dataclasses import dataclass
+from datetime import UTC, datetime
+from typing import Any
+from urllib.parse import urlparse
+
+from loguru import logger
+from playwright.async_api import async_playwright
+
+from autoppia_iwa.config.config import EVALUATOR_HEADLESS, VALIDATOR_ID
+from autoppia_iwa.src.data_generation.tasks.classes import BrowserSpecification, Task
+from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.config import demo_web_projects
+from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
+from autoppia_iwa.src.evaluation.scoring import ScoreDetails, TaskExecutionScorer
+from autoppia_iwa.src.evaluation.shared.utils import extract_seed_from_url, run_partial_tests
+from autoppia_iwa.src.execution.actions.actions import NavigateAction
+from autoppia_iwa.src.execution.actions.base import BaseAction
+from autoppia_iwa.src.execution.classes import ActionExecutionResult, BrowserSnapshot as ExecutionBrowserSnapshot
+from autoppia_iwa.src.execution.playwright_browser_executor import PlaywrightBrowserExecutor
+from autoppia_iwa.src.web_agents.classes import replace_credentials_in_action
+from autoppia_iwa.src.web_agents.interfaces import AsyncTaskExecutionSession
+
+
+@dataclass
+class BrowserSnapshot:
+    html: str
+    url: str
+    screenshot: bytes | None = None
+
+
+@dataclass
+class StepResult:
+    score: ScoreDetails
+    snapshot: BrowserSnapshot
+    action_result: ActionExecutionResult | None = None
+
+
+@dataclass
+class TaskExecutionSessionConfig:
+    """
+    Lightweight configuration for StatefulEvaluator behaviour.
+    """
+
+    action_timeout_s: float = 15.0
+    page_default_timeout_ms: int = 10_000
+
+
+def _event_timestamp_utc(event: Any) -> datetime | None:
+    raw_ts = None
+    raw_ts = event.get("timestamp") or (event.get("data") or {}).get("timestamp") if isinstance(event, dict) else getattr(event, "timestamp", None)
+
+    if isinstance(raw_ts, datetime):
+        return raw_ts.astimezone(UTC) if raw_ts.tzinfo else raw_ts.replace(tzinfo=UTC)
+    if isinstance(raw_ts, int | float):
+        return datetime.fromtimestamp(float(raw_ts), tz=UTC)
+    if isinstance(raw_ts, str) and raw_ts.strip():
+        ts = raw_ts.strip()
+        if ts.endswith("Z"):
+            ts = ts[:-1] + "+00:00"
+        with contextlib.suppress(Exception):
+            parsed = datetime.fromisoformat(ts)
+            return parsed.astimezone(UTC) if parsed.tzinfo else parsed.replace(tzinfo=UTC)
+    return None
+
+
+def _event_identity(event: Any) -> str:
+    if isinstance(event, dict):
+        payload = event
+    else:
+        payload = {
+            "event_name": getattr(event, "event_name", None),
+            "timestamp": getattr(event, "timestamp", None),
+            "data": getattr(event, "data", None),
+            "web_agent_id": getattr(event, "web_agent_id", None),
+        }
+    with contextlib.suppress(Exception):
+        return json.dumps(payload, sort_keys=True, default=str, ensure_ascii=False)
+    return str(payload)
+
+
+def _url_hostname(url: str | None) -> str | None:
+    if not url:
+        return None
+    parsed = urlparse(url)
+    return parsed.hostname.lower() if parsed.hostname else None
+
+
+def _is_testing_mode() -> bool:
+    return os.getenv("SUBNET_TESTING", "").lower() in ("1", "true", "yes")
+
+
+def _is_navigation_url_allowed(*, is_web_real: bool, task_url: str | None, candidate_url: str | None) -> tuple[bool, str | None]:
+    """
+    Security guardrails for NavigateAction:
+    - Demo webs (is_web_real=False): only allow loopback hosts.
+    - Real webs: allow navigating within the task host.
+    """
+    if not candidate_url:
+        return True, None
+
+    parsed = urlparse(candidate_url)
+
+    # Block non-http(s) schemes even if they have no hostname (e.g. javascript:, data:, file:).
+    if parsed.scheme and parsed.scheme not in {"http", "https"}:
+        return False, f"NavigateAction scheme '{parsed.scheme}' is not allowed"
+
+    target_host = (parsed.hostname or "").lower() or None
+    if target_host is None:
+        # Relative URLs are OK.
+        return True, None
+
+    if not is_web_real:
+        if _is_testing_mode():
+            return True, None
+        if target_host in {"localhost", "127.0.0.1", "::1"}:
+            return True, None
+        allowed_host = _url_hostname(task_url)
+        if allowed_host and target_host == allowed_host:
+            return True, None
+        return False, f"NavigateAction host '{target_host}' is not allowed for demo webs"
+
+    allowed_host = _url_hostname(task_url)
+    if not allowed_host:
+        return False, "Task URL host could not be determined"
+    if target_host != allowed_host:
+        return False, f"NavigateAction host '{target_host}' does not match task host '{allowed_host}'"
+    return True, None
+
+
+class TaskExecutionSession(AsyncTaskExecutionSession):
+    """
+    Async Web-agent-compatible session for a single Task.
+    """
+
+    def __init__(
+        self,
+        task: Task,
+        web_agent_id: str = "autoppia-rl-env",
+        validator_id: str | None = None,
+        enable_score_cheating: bool = False,
+        should_record_gif: bool = False,
+        capture_screenshot: bool = False,
+        config: TaskExecutionSessionConfig | None = None,
+        headless: bool | None = None,
+    ) -> None:
+        self.task = task
+        self.web_agent_id = web_agent_id
+        self.validator_id = str(validator_id or VALIDATOR_ID or os.getenv("VALIDATOR_ID", "validator_001")).strip() or "validator_001"
+        self.enable_score_cheating = bool(enable_score_cheating)
+        self.should_record_gif = should_record_gif
+        self.capture_screenshot = capture_screenshot
+        self.config = config or TaskExecutionSessionConfig()
+        self._headless = headless
+
+        self._playwright = None
+        self._browser = None
+        self._context = None
+        self._page = None
+        self._backend: BackendDemoWebService | None = None
+        self._project: WebProject | None = None
+        self._executor: PlaywrightBrowserExecutor | None = None
+        self._history: list[ActionExecutionResult] = []
+        self._session_start_utc: datetime | None = None
+        self._last_score = ScoreDetails()
+        # Latest agent-reported answer for DataExtractionTest (partial tests); updated by benchmark per /act response.
+        self.latest_extracted_data: Any | None = None
+        self._scorer = TaskExecutionScorer()
+
+    async def reset(self) -> StepResult:
+        logger.info("[AsyncStatefulEvaluator] reset start")
+        self.latest_extracted_data = None
+        await self._close_async()
+        await self._init_async()
+        self._session_start_utc = datetime.now(UTC)
+        self._last_score = ScoreDetails()
+
+        # Guardrail: do not allow demo tasks to navigate off loopback.
+        is_allowed, reason = _is_navigation_url_allowed(
+            is_web_real=bool(getattr(self.task, "is_web_real", False)),
+            task_url=str(getattr(self.task, "url", "") or ""),
+            candidate_url=str(getattr(self.task, "url", "") or ""),
+        )
+        if not is_allowed:
+            raise RuntimeError(f"Task URL blocked: {reason}")
+
+        nav = NavigateAction(url=self.task.url)
+        logger.info(f"[TaskExecutionSession] navigate {self.task.url}")
+        res = await self._executor.execute_single_action(  # type: ignore[union-attr]
+            nav,
+            self.web_agent_id,
+            iteration=0,
+            is_web_real=self.task.is_web_real,
+            should_record=self.should_record_gif,
+        )
+        self._history.clear()
+        self._history.append(res)
+
+        score = await self._score_async()
+        snapshot = await self._snapshot_async()
+        return StepResult(score=score, snapshot=snapshot, action_result=res)
+
+    async def step(self, action: BaseAction | None) -> StepResult:
+        logger.info(
+            "[TaskExecutionSession] step action={} i={}",
+            type(action).__name__ if action is not None else "NOOP",
+            len(self._history),
+        )
+        return await self._step_async(action)
+
+    async def get_score_details(self) -> ScoreDetails:
+        return await self._score_async()
+
+    async def close(self) -> None:
+        await self._close_async()
+
+    async def run_with_timeout(self, awaitable: Any, timeout_s: float) -> Any:
+        return await asyncio.wait_for(awaitable, timeout_s)
+
+    async def _init_async(self) -> None:
+        project: WebProject | None = None
+        try:
+            if getattr(self.task, "web_project_id", None):
+                pid = str(self.task.web_project_id)
+                for p in demo_web_projects:
+                    if getattr(p, "id", None) == pid:
+                        project = p
+                        break
+        except Exception:
+            project = None
+
+        if project is None:
+            raise RuntimeError("TaskExecutionSession: could not resolve WebProject from Task")
+        self._project = project
+
+        self._backend = BackendDemoWebService(
+            web_project=project,
+            web_agent_id=self.web_agent_id,
+            validator_id=self.validator_id,
+        )
+        logger.info("[TaskExecutionSession] reset backend")
+        await self._backend.reset_database()
+        logger.info("[TaskExecutionSession] backend ok")
+
+        logger.info("[TaskExecutionSession] launching browser")
+        self._playwright = await async_playwright().start()
+        specs = self.task.specifications or BrowserSpecification()
+        headless = self._headless if self._headless is not None else EVALUATOR_HEADLESS
+        self._browser = await self._playwright.chromium.launch(
+            headless=headless,
+            args=[f"--window-size={specs.screen_width},{specs.screen_height}"],
+        )
+        self._context = await self._browser.new_context(
+            no_viewport=True,
+            extra_http_headers={
+                "X-WebAgent-Id": self.web_agent_id,
+                "X-Validator-Id": self.validator_id,
+            },
+        )
+        await self._setup_attribution_init_script()
+        self._context.set_default_timeout(self.config.page_default_timeout_ms)
+        self._page = await self._context.new_page()
+
+        self._executor = PlaywrightBrowserExecutor(specs, self._page, self._backend)
+
+    async def _setup_attribution_init_script(self) -> None:
+        """Inject localStorage attribution ids so demo web event logging is correctly attributed."""
+        await self._context.add_init_script(
+            f"""
+(() => {{
+  try {{
+    localStorage.setItem("web_agent_id", {json.dumps(self.web_agent_id)});
+    localStorage.setItem("validator_id", {json.dumps(self.validator_id)});
+  }} catch (e) {{}}
+}})();
+"""
+        )
+
+    async def _step_async(self, action: BaseAction | None) -> StepResult:
+        action_result: ActionExecutionResult | None = None
+        if action is not None:
+            if not self._executor:
+                raise RuntimeError("TaskExecutionSession: not initialized. Call reset() first.")
+
+            current_url = self._page.url if self._page else ""
+            assigned_seed = extract_seed_from_url(self.task.url) if isinstance(self.task.url, str) else None
+
+            failure_snapshot = ExecutionBrowserSnapshot(
+                iteration=len(self._history),
+                action=action,
+                prev_html="",
+                current_html="",
+                screenshot_before="",
+                screenshot_after="",
+                backend_events=[],
+                timestamp=datetime.now(UTC),
+                current_url=current_url,
+            )
+
+            if isinstance(action, NavigateAction) and isinstance(action.url, str):
+                is_allowed, reason = _is_navigation_url_allowed(
+                    is_web_real=bool(getattr(self.task, "is_web_real", False)),
+                    task_url=str(getattr(self.task, "url", "") or ""),
+                    candidate_url=action.url,
+                )
+                if not is_allowed:
+                    action_result = ActionExecutionResult(
+                        successfully_executed=False,
+                        error=reason or "NavigateAction blocked",
+                        action=action,
+                        action_event=action.type,
+                        browser_snapshot=failure_snapshot,
+                        execution_time=0.0,
+                    )
+                elif assigned_seed is not None:
+                    nav_seed = extract_seed_from_url(action.url)
+                    if nav_seed is None or nav_seed != assigned_seed:
+                        action_result = ActionExecutionResult(
+                            successfully_executed=False,
+                            error=f"Seed mismatch in NavigateAction (expected={assigned_seed}, got={nav_seed})",
+                            action=action,
+                            action_event=action.type,
+                            browser_snapshot=failure_snapshot,
+                            execution_time=0.0,
+                        )
+
+            if action_result is None:
+                replace_credentials_in_action(action, self.web_agent_id)
+                idx = len(self._history)
+                try:
+                    action_result = await asyncio.wait_for(
+                        self._executor.execute_single_action(
+                            action,
+                            self.web_agent_id,
+                            iteration=idx,
+                            is_web_real=self.task.is_web_real,
+                            should_record=self.should_record_gif,
+                        ),
+                        timeout=self.config.action_timeout_s,
+                    )
+                except TimeoutError:
+                    logger.warning("[TaskExecutionSession] execute timeout")
+                    action_result = ActionExecutionResult(
+                        successfully_executed=False,
+                        error="timeout",
+                        action=action,
+                        action_event=action.type,
+                        browser_snapshot=failure_snapshot,
+                        execution_time=0.0,
+                    )
+            self._history.append(action_result)
+
+        score = await self._score_async()
+        snapshot = await self._snapshot_async()
+        return StepResult(score=score, snapshot=snapshot, action_result=action_result)
+
+    async def _score_async(self) -> ScoreDetails:
+        if not self._project:
+            self._last_score = ScoreDetails()
+            return self._last_score
+        # Some frontends log events asynchronously after the UI action.
+        # Merge backend events for the current evaluator session and ignore
+        # stale events from previous runs.
+        with contextlib.suppress(Exception):
+            if self._backend and self._history:
+                latest_events = await self._backend.get_backend_events(self.web_agent_id)
+                if latest_events:
+                    last_snapshot = getattr(self._history[-1], "browser_snapshot", None)
+                    if last_snapshot is not None:
+                        baseline_events = list(getattr(last_snapshot, "backend_events", []) or [])
+                        session_floor = self._session_start_utc
+
+                        merged: list[Any] = []
+                        seen_ids: set[str] = set()
+                        for event in baseline_events:
+                            event_dt = _event_timestamp_utc(event)
+                            if session_floor is not None and event_dt is not None and event_dt < session_floor:
+                                continue
+                            event_id = _event_identity(event)
+                            if event_id in seen_ids:
+                                continue
+                            seen_ids.add(event_id)
+                            merged.append(event)
+                        for event in latest_events:
+                            event_dt = _event_timestamp_utc(event)
+                            if session_floor is not None and event_dt is not None and event_dt < session_floor:
+                                continue
+                            event_id = _event_identity(event)
+                            if event_id in seen_ids:
+                                continue
+                            seen_ids.add(event_id)
+                            merged.append(event)
+                        last_snapshot.backend_events = merged
+        matrix = await run_partial_tests(
+            self._project,
+            self.task,
+            self._history,
+            extracted_data=self.latest_extracted_data,
+        )
+        if not matrix:
+            self._last_score = ScoreDetails()
+            return self._last_score
+        last = matrix[-1] if matrix else []
+        passed = sum(1 for r in last if getattr(r, "success", False))
+        total = len(last)
+        raw = (passed / total) if total > 0 else 0.0
+        self._last_score = ScoreDetails(
+            raw_score=raw,
+            tests_passed=passed,
+            total_tests=total,
+            success=(total > 0 and passed == total),
+        )
+        return self._last_score
+
+    async def _snapshot_async(self) -> BrowserSnapshot:
+        if not self._page:
+            return BrowserSnapshot(html="", url="", screenshot=None)
+        html = await self._page.content()
+        url = self._page.url
+        screenshot = None
+        if self.capture_screenshot:
+            try:
+                screenshot = await self._page.screenshot(full_page=True)
+            except Exception as e:
+                logger.warning(f"[TaskExecutionSession] screenshot failed: {e}")
+        return BrowserSnapshot(html=html, url=url, screenshot=screenshot)
+
+    async def _close_async(self) -> None:
+        try:
+            if self._context:
+                await self._context.close()
+        finally:
+            self._context = None
+
+        try:
+            if self._browser:
+                await self._browser.close()
+        finally:
+            self._browser = None
+
+        try:
+            if self._playwright:
+                await self._playwright.stop()
+        finally:
+            self._playwright = None
+
+        try:
+            if self._backend:
+                await self._backend.close()
+        finally:
+            self._backend = None
+
+    @property
+    def page(self):
+        return self._page
+
+    @property
+    def history(self) -> list[ActionExecutionResult]:
+        return list(self._history)
+
+
+AsyncStatefulEvaluator = TaskExecutionSession
+StatefulEvaluator = TaskExecutionSession
+
+__all__ = [
+    "AsyncStatefulEvaluator",
+    "BrowserSnapshot",
+    "ScoreDetails",
+    "StatefulEvaluator",
+    "StepResult",
+    "TaskExecutionSession",
+    "TaskExecutionSessionConfig",
+]

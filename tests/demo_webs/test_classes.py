@@ -2,13 +2,15 @@
 
 from unittest.mock import MagicMock
 
+import pytest
+
 from autoppia_iwa.src.demo_webs.classes import (
     CONSTRAINTS_INFO_PLACEHOLDER,
     BackendEvent,
     UseCase,
     WebProject,
 )
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
+from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator
 
 
 class TestUseCaseConstraintsToStr:
@@ -86,6 +88,109 @@ class TestUseCaseReplacements:
         result = uc.apply_replacements("Hello X")
         assert result == "Hello Y"
 
+    def test_apply_replacements_sync_coro_fallback_returns_original_when_loop_running(self, monkeypatch):
+        async def replace(text, **kwargs):
+            return text.replace("X", "Y")
+
+        uc = UseCase(
+            name="UC",
+            description="d",
+            event=None,
+            event_source_code="",
+            examples=[],
+            replace_func=replace,
+        )
+
+        def _raise_runtime(coro):
+            coro.close()
+            raise RuntimeError("running loop")
+
+        monkeypatch.setattr("asyncio.run", _raise_runtime)
+        assert uc.apply_replacements("Hello X") == "Hello X"
+
+    @pytest.mark.asyncio
+    async def test_apply_replacements_async_replace_func(self):
+        async def replace(text, **kwargs):
+            return text.replace("X", "Y")
+
+        uc = UseCase(
+            name="UC",
+            description="d",
+            event=None,
+            event_source_code="",
+            examples=[],
+            replace_func=replace,
+        )
+        result = await uc.apply_replacements_async("Hello X")
+        assert result == "Hello Y"
+
+
+class TestUseCaseConstraintsGeneration:
+    @pytest.mark.asyncio
+    async def test_generate_constraints_async_passes_dataset_to_single_param_generator(self):
+        captured = {}
+
+        def generator(dataset):
+            captured["dataset"] = dataset
+            return [{"field": "name", "operator": "equals", "value": "Alice"}]
+
+        uc = UseCase(
+            name="UC",
+            description="d",
+            event=None,
+            event_source_code="",
+            examples=[],
+            constraints_generator=generator,
+        )
+
+        result = await uc.generate_constraints_async(dataset={"users": [{"name": "Alice"}]})
+        assert "Alice" in result
+        assert captured["dataset"] == {"users": [{"name": "Alice"}]}
+
+    @pytest.mark.asyncio
+    async def test_generate_constraints_async_passes_named_kwargs(self):
+        captured = {}
+
+        async def generator(*, task_url=None, dataset=None):
+            captured["task_url"] = task_url
+            captured["dataset"] = dataset
+            return [{"field": "city", "operator": "equals", "value": "Madrid"}]
+
+        uc = UseCase(
+            name="UC",
+            description="d",
+            event=None,
+            event_source_code="",
+            examples=[],
+            constraints_generator=generator,
+        )
+
+        result = await uc.generate_constraints_async(task_url="http://localhost/?seed=5", dataset={"users": []})
+        assert "Madrid" in result
+        assert captured["task_url"] == "http://localhost/?seed=5"
+        assert captured["dataset"] == {"users": []}
+
+    def test_generate_constraints_sync_coro_fallback_sets_none(self, monkeypatch):
+        async def generator():
+            return [{"field": "name", "operator": "equals", "value": "Alice"}]
+
+        uc = UseCase(
+            name="UC",
+            description="d",
+            event=None,
+            event_source_code="",
+            examples=[],
+            constraints_generator=generator,
+        )
+
+        def _raise_runtime(coro):
+            coro.close()
+            raise RuntimeError("running loop")
+
+        monkeypatch.setattr("asyncio.run", _raise_runtime)
+        assert uc.generate_constraints() == ""
+        assert uc.constraints is None
+
 
 class TestUseCaseExamples:
     def test_get_example_prompts_from_use_case(self):
@@ -130,6 +235,51 @@ class TestUseCaseSerialize:
         assert data["name"] == "UC1"
         assert data["event"] == "MockEvent"
         assert data.get("constraints") is not None
+
+    def test_deserialize_rehydrates_event_class(self, monkeypatch):
+        class FakeEvent:
+            @staticmethod
+            def get_source_code_of_class():
+                return "class FakeEvent: ..."
+
+        monkeypatch.setattr(
+            "autoppia_iwa.src.demo_webs.base_events.EventRegistry.get_event_class",
+            lambda name: FakeEvent,
+        )
+
+        uc = UseCase.deserialize(
+            {
+                "name": "UC1",
+                "description": "d",
+                "event": "FakeEvent",
+                "event_source_code": True,
+                "examples": [],
+            }
+        )
+
+        assert uc.event is FakeEvent
+        assert uc.event_source_code == "class FakeEvent: ..."
+
+    def test_deserialize_raises_for_missing_event_name(self):
+        with pytest.raises(ValueError, match="missing"):
+            UseCase.deserialize({"name": "UC1", "description": "d", "examples": []})
+
+    def test_deserialize_raises_for_unknown_event(self, monkeypatch):
+        monkeypatch.setattr(
+            "autoppia_iwa.src.demo_webs.base_events.EventRegistry.get_event_class",
+            lambda name: (_ for _ in ()).throw(KeyError(name)),
+        )
+
+        with pytest.raises(ValueError, match="not found"):
+            UseCase.deserialize(
+                {
+                    "name": "UC1",
+                    "description": "d",
+                    "event": "MissingEvent",
+                    "event_source_code": True,
+                    "examples": [],
+                }
+            )
 
 
 class TestWebProject:

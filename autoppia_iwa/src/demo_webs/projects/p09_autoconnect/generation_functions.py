@@ -3,10 +3,10 @@ from datetime import datetime, timedelta
 from random import choice
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.data_provider import get_seed_from_url
 
-from ..criterion_helper import ComparisonOperator
-from ..shared_utils import create_constraint_dict
+from ...criterion_helper import ComparisonOperator
+from ...shared_utils import create_constraint_dict
 from .data import (
     FIELD_OPERATORS_APPLY_FOR_JOB_MAP,
     FIELD_OPERATORS_BACK_TO_ALL_JOBS_MAP,

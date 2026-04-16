@@ -12,43 +12,24 @@ from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.execution.actions.base import BaseAction
 
 # ============================================================================
-# CONSTANTS
+# Credential utilities
 # ============================================================================
 
 DEFAULT_PASSWORD = "Passw0rd!"  # NOSONAR - test password for placeholder replacement, not a real credential
 
 
 def replace_credential_placeholders_in_string(s: str, web_agent_id: str) -> str:
-    """
-    Replace credential placeholders in a string with actual values.
-    Used in actions (replace_credentials_in_action) and in event criteria validation (base_events).
-    Replaces: <username>, <password>, <signup_username>, <signup_email>, <signup_password>, <web_agent_id>.
-    """
     s = s.replace("<username>", f"user{web_agent_id}")
     s = s.replace("<password>", DEFAULT_PASSWORD)
     s = s.replace("<signup_username>", f"newuser{web_agent_id}")
     s = s.replace("<signup_email>", f"newuser{web_agent_id}@gmail.com")
     s = s.replace("<signup_password>", DEFAULT_PASSWORD)
-    s = s.replace("<web_agent_id>", web_agent_id)  # NOSONAR - literal placeholder is part of the protocol, keeping as-is for clarity
+    s = s.replace("<web_agent_id>", web_agent_id)  # NOSONAR
     return s
 
 
 def replace_credentials_in_action(action: BaseAction, web_agent_id: str) -> None:
-    """
-    Replace credential placeholders in a single action with actual values.
-    This should be called AFTER receiving actions from the agent but BEFORE evaluating them.
-
-    Replaces:
-    - <username> → user{web_agent_id}
-    - <password> → Passw0rd!
-    - <signup_username> → newuser{web_agent_id}
-    - <signup_email> → newuser{web_agent_id}@gmail.com
-    - <signup_password> → Passw0rd!
-    """
-    # Common fields in actions that may contain credential placeholders
     credential_fields = ["text", "value", "url", "email", "username", "password"]
-
-    # Check common fields first (more efficient)
     for field_name in credential_fields:
         if hasattr(action, field_name):
             value = getattr(action, field_name)
@@ -57,7 +38,6 @@ def replace_credentials_in_action(action: BaseAction, web_agent_id: str) -> None
                 if new_value != value:
                     setattr(action, field_name, new_value)
 
-    # Also check selector.value if it exists (for actions with selectors)
     if hasattr(action, "selector") and action.selector and hasattr(action.selector, "value"):
         selector_value = action.selector.value
         if isinstance(selector_value, str):
@@ -66,20 +46,10 @@ def replace_credentials_in_action(action: BaseAction, web_agent_id: str) -> None
                 action.selector.value = new_selector_value
 
 
-def sanitize_snapshot_html(snapshot_html: str, web_agent_id: str) -> str:
-    """
-    Mask concrete credentials inside snapshot HTML so the agent sees placeholders.
-
-    Replaces:
-    - user{web_agent_id} -> <username>
-    - newuser{web_agent_id} -> <signup_username>
-    - newuser{web_agent_id}@gmail.com -> <signup_email>
-    - Passw0rd! -> <password>
-    """
-    if not snapshot_html:
-        return snapshot_html
-
-    sanitized = snapshot_html
+def sanitize_html(html: str, web_agent_id: str) -> str:
+    if not html:
+        return html
+    sanitized = html
     sanitized = sanitized.replace(f"newuser{web_agent_id}@gmail.com", "<signup_email>")
     sanitized = sanitized.replace(f"newuser{web_agent_id}", "<signup_username>")
     sanitized = sanitized.replace(f"user{web_agent_id}", "<username>")
@@ -87,72 +57,53 @@ def sanitize_snapshot_html(snapshot_html: str, web_agent_id: str) -> str:
     return sanitized
 
 
+def sanitize_snapshot_html(snapshot_html: str, web_agent_id: str) -> str:
+    """Backward-compatible alias for sanitize_html()."""
+    return sanitize_html(snapshot_html, web_agent_id)
+
+
+# ============================================================================
+# Agent interface
+# ============================================================================
+
+
 class IWebAgent(ABC):
     """
     Interface for all web agents in IWA.
 
-    ✅ IMPORTANT: All agents use the same endpoint /act.
-
-    Agents are HTTP services that expose the /act endpoint.
+    All agents expose a single async step() method.
     They receive the browser state and return actions to execute.
-
-    This interface is used in both:
-    - Concurrent mode: Called once and the agent returns all actions
-    - Stateful mode: Called iteratively, the agent sees the state at each step
-
-    Example implementations:
-    - ApifiedWebAgent: HTTP API-based iterative agent (for benchmark and subnet)
-    - ApifiedOneShotWebAgent: one-shot /solve_task agent
-    - Miners: GitHub repositories deployed as HTTP containers
     """
 
     id: str
     name: str
 
     @abstractmethod
-    async def act(
+    async def step(
         self,
         *,
         task: Task,
-        snapshot_html: str,
+        html: str,
         screenshot: str | bytes | None = None,
         url: str,
         step_index: int,
         history: list[dict[str, Any]] | None = None,
-        state: dict[str, Any] | None = None,
-    ) -> list[BaseAction] | dict[str, Any]:
+    ) -> list[BaseAction]:
         """
         Decide actions based on the current browser state.
 
-        This method is used in both concurrent and stateful mode:
-        - Concurrent: Called ONCE with initial snapshot, returns ALL actions
-        - Stateful: Called ITERATIVELY, returns actions for the next step
-
-        Implementations may return a dict ``{"actions": [...], "extracted_data": ...}`` for
-        DataExtractionTest (stateful / one-shot); otherwise a plain list of actions.
-
         Args:
             task: The task to solve
-            snapshot_html: Current page HTML
-            screenshot: Visual snapshot of the current state (bytes or base64 str). Optional.
+            html: Current page HTML
+            screenshot: Visual snapshot (bytes or base64 str). Optional.
             url: Current URL
-            step_index: Iteration number (0 in concurrent, increments in stateful)
+            step_index: Iteration number
             history: Optional history of previous actions
-            state: Estado opcional serializable del agente para continuidad entre pasos
-
 
         Returns:
-            List of actions to execute (may be multiple for batch execution)
+            List of actions to execute
         """
-        pass  # pragma: no cover
-
-    @abstractmethod
-    async def solve_task(self, task: Task) -> "TaskSolution":
-        """
-        Optional: return a full task solution (sequence of actions) in one shot.
-        Used by one-shot agents (e.g. POST /solve_task_at_once). Agents that only support
-        """
-        pass  # pragma: no cover
+        pass
 
 
 class BaseAgent(IWebAgent):
@@ -163,81 +114,50 @@ class BaseAgent(IWebAgent):
         self.name = name if name is not None else f"Agent {self.id}"
 
     def generate_random_web_agent_id(self, length=16):
-        """Generates a random alphanumeric string for the web_agent ID."""
         letters_and_digits = string.ascii_letters + string.digits
         return "".join(random.choice(letters_and_digits) for _ in range(length))
 
 
+# ============================================================================
+# TaskSolution (kept for backward compatibility with concurrent evaluator)
+# ============================================================================
+
+
 class TaskSolution(BaseModel):
-    """
-    Solution to a task consisting of a sequence of actions.
+    """Solution to a task consisting of a sequence of actions."""
 
-    This is the standard output format that all web agents must return.
-    For data-extraction tasks, agents may also return extracted_data (e.g. subnet name)
-    which is evaluated by DataExtractionTest without running the browser evaluator.
-    """
-
-    task_id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique identifier for the task, auto-generated using UUID4")
-    actions: list[BaseAction] = Field(default_factory=list, description="List of actions to execute")
+    task_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    actions: list[BaseAction] = Field(default_factory=list)
     web_agent_id: str | None = None
-    extracted_data: Any | None = Field(default=None, description="Agent's extracted answer for DataExtractionTest (e.g. subnet name); no evaluator run for this test.")
-    recording: Any | None = Field(default=None, description="Optional recording data associated with the task solution")
-    # Optional cost/token tracking (agents can set these; API may compute cost when missing)
-    cost_usd: float = Field(default=0.0, description="Estimated cost in USD for this solution")
-    input_tokens: int = Field(default=0, description="Number of input tokens used")
-    output_tokens: int = Field(default=0, description="Number of output tokens used")
-    model_used: str | None = Field(default=None, description="Model identifier used for cost calculation")
+    recording: Any | None = Field(default=None)
+    cost_usd: float = Field(default=0.0)
+    input_tokens: int = Field(default=0)
+    output_tokens: int = Field(default=0)
+    model_used: str | None = Field(default=None)
 
     @computed_field
     @property
     def total_tokens(self) -> int:
-        """Total tokens (input + output)."""
         return self.input_tokens + self.output_tokens
 
     def nested_model_dump(self, *args, **kwargs) -> dict[str, Any]:
-        """Serialize with nested action dumps."""
         base_dump = super().model_dump(*args, **kwargs)
         base_dump["actions"] = [action.model_dump() for action in self.actions]
         return base_dump
 
     def replace_web_agent_id(self) -> list[BaseAction]:
-        """Replace <web_agent_id> placeholders in action fields with actual agent ID."""
         if self.web_agent_id is None:
             return self.actions
-
         for action in self.actions:
             for field in ("text", "url", "value"):
                 if hasattr(action, field):
                     value = getattr(action, field)
-                    if isinstance(value, str) and ("<web_agent_id>" in value or "your_book_id" in value):  # NOSONAR - literal placeholder is part of the protocol
+                    if isinstance(value, str) and ("<web_agent_id>" in value or "your_book_id" in value):  # NOSONAR
                         new_val = value.replace("<web_agent_id>", str(self.web_agent_id)).replace("<your_book_id>", str(self.web_agent_id))
                         setattr(action, field, new_val)
         return self.actions
 
     def replace_credentials(self, web_agent_id: str) -> list[BaseAction]:
-        """
-        Replace credential placeholders in ALL actions with actual values.
-
-        ✅ THIS IS THE CORRECT METHOD TO USE.
-        This should be called AFTER receiving actions from the agent but BEFORE evaluating them.
-
-        The agent receives the task WITH placeholders and returns actions WITH placeholders.
-        This method replaces placeholders in all actions before evaluation.
-
-        Replaces in all action fields (text, value, url, email, username, password, selector.value):
-        - <username> → user{web_agent_id}
-        - <password> → Passw0rd!
-        - <signup_username> → newuser{web_agent_id}
-        - <signup_email> → newuser{web_agent_id}@gmail.com
-        - <signup_password> → Passw0rd!
-        - <web_agent_id> → web_agent_id (for backward compatibility)
-
-        Args:
-            web_agent_id: The web agent ID to use for credential replacement
-
-        Returns:
-            The list of actions with credentials replaced (modifies actions in place)
-        """
         for action in self.actions:
             replace_credentials_in_action(action, web_agent_id)
         return self.actions

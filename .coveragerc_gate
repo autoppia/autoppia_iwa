@@ -33,6 +33,8 @@ omit =
     autoppia_iwa/entrypoints/test_task.py
     autoppia_iwa/entrypoints/test_your_agent/**
     autoppia_iwa/entrypoints/web_verification/**
+    autoppia_iwa/src/demo_webs/web_verification/**
+    autoppia_iwa/src/web_agents/examples/**
 
     # Demo_webs project generation/data layers (not gated)
     autoppia_iwa/src/demo_webs/projects/*/generation_functions.py
@@ -46,14 +48,14 @@ omit =
     autoppia_iwa/src/demo_webs/projects/*/use_cases.py
 
     # Discord project is currently not exercised by tests.
-    autoppia_iwa/src/demo_webs/projects/p16_autodiscord/events.py
+    autoppia_iwa/src/demo_webs/projects/autodiscord_16/events.py
+    autoppia_iwa/src/demo_webs/projects/autodiscord_16/generation_functions.py
 
     # Additional gate exclusions (keep the gate focused).
     autoppia_iwa/src/demo_webs/projects/p01_autocinema/events.py
+    autoppia_iwa/src/demo_webs/projects/p01_autocinema/generation_functions.py
     autoppia_iwa/src/demo_webs/projects/p02_autobooks/utils.py
     autoppia_iwa/src/demo_webs/projects/p03_autozone/events.py
-    autoppia_iwa/src/demo_webs/projects/p04_autodining/events.py
-    autoppia_iwa/src/demo_webs/projects/p06_automail/events.py
     autoppia_iwa/src/demo_webs/projects/p07_autodelivery/events.py
     autoppia_iwa/src/demo_webs/projects/p08_autolodge/events.py
     autoppia_iwa/src/demo_webs/projects/p12_autolist/events.py

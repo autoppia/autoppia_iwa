@@ -1,6 +1,6 @@
 # Web Verification Pipeline
 
-A comprehensive pipeline that:
+A comprehensive, five-step pipeline that:
 - **Step 0**: Pre-validates project configuration (events, use cases, URLs)
 - **Step 1 (V1)**: Generates web tasks with constraints and reviews them with an LLM
 - **Step 2 (V2)**: Verifies that datasets are different with different seeds (dynamic data validation)
@@ -287,12 +287,14 @@ V2 Verification: PASSED - All 3 datasets are different. Dynamic data generation 
 
 | Argument | Type | Default | Description |
 |----------|------|---------|-------------|
-| `--project-id` | str | **Required** | ID of the web project to verify (e.g., `'autocinema_1'`, `'autocrm'`) |
+| `--project` / `-p` | str | **Required** | ID of the web project to verify (e.g., `autocrm`, `autodrive`) |
+| `--use-case` / `-u` | str | (none) | Restrict to this use case name (exact match); repeat for multiple |
 | `--tasks-per-use-case` | int | `2` | Number of tasks to generate per use case |
-| `--dynamic` | flag | `True` | Enable dynamic seed generation |
 | `--no-llm-review` | flag | `False` | Disable LLM review of tasks and tests |
 | `--no-iwap` | flag | `False` | Disable IWAP doability check |
 | `--iwap-use-mock` | flag | `False` | Use mock IWAP API response instead of real API |
+| `--evaluate-trajectories` | flag | `False` | Add trajectory replay to the full pipeline (needs `OPENAI_API_KEY` for task generation) |
+| `--trajectories-only` | flag | `False` | Trajectory replay only; skips V2 bulk dataset loads, OpenAI, IWAP, and generated tasks |
 | `--no-dynamic-verification` | flag | `False` | Disable dynamic verification with different seeds |
 | `--no-event-trajectory-verification` | flag | `False` | Disable event trajectories verification |
 | `--no-data-extraction-verification` | flag | `False` | Disable data-extraction trajectories verification |
@@ -313,6 +315,9 @@ The `WebVerificationConfig` dataclass provides programmatic configuration:
 ```python
 @dataclass
 class WebVerificationConfig:
+    # Scope: None = all use cases; else only listed names (exact match)
+    use_case_filter: list[str] | None = None
+
     # Task generation
     tasks_per_use_case: int = 2
     dynamic_enabled: bool = True
@@ -335,6 +340,10 @@ class WebVerificationConfig:
     # Data extraction verification
     data_extraction_verification_enabled: bool = True
     data_extraction_seed: int = 1
+
+    # Trajectory evaluation
+    evaluate_trajectories: bool = False
+    evaluate_trajectories_only: bool = False  # implies evaluate_trajectories
 
     # Output
     output_dir: str = "./verification_results"

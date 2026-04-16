@@ -1,6 +1,6 @@
 """Static data and field-operator maps for autostats_15 constraint generation."""
 
-from ..operators import (
+from ...operators import (
     CONTAINS,
     EQUALS,
     GREATER_EQUAL,

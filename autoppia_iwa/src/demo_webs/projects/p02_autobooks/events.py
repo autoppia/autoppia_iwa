@@ -1,8 +1,8 @@
 from pydantic import BaseModel, Field
 
+from autoppia_iwa.src.demo_webs.base_events import BaseEventValidator, Event
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator, CriterionValue
+from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator, CriterionValue
 
 from .utils import extract_genres_from_data, get_author_from_data, get_pages_from_data
 
@@ -63,6 +63,16 @@ def _validate_genre_criteria(book_genres: list[str], criteria_genre: str | Crite
             val_list = []
         val_lower = [str(v).lower() for v in val_list]
         return any(genre.lower() in val_lower for genre in book_genres)
+    if crit.operator == ComparisonOperator.NOT_IN_LIST:
+        val = crit.value
+        if isinstance(val, str):
+            val_list = [val]
+        elif isinstance(val, list):
+            val_list = val
+        else:
+            val_list = []
+        val_lower = [str(v).lower() for v in val_list]
+        return not any(genre.lower() in val_lower for genre in book_genres)
     return False
 
 
@@ -607,7 +617,6 @@ class ViewCartBookEvent(Event, BaseEventValidator):
         pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        # VIEW_CART_BOOK has no constraint fields; an empty criteria object must pass.
         return True
 
     @classmethod

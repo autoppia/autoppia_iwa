@@ -14,7 +14,7 @@ WEB_PROJECT_ID = "autoconnect"
 
 from autoppia_iwa.src.data_generation.tests.classes import BaseTaskTest
 from autoppia_iwa.src.demo_webs.classes import Trajectory
-from autoppia_iwa.src.execution.actions.actions import (
+from autoppia_iwa.src.execution.actions import (
     ClickAction,
     NavigateAction,
     SelectDropDownOptionAction,

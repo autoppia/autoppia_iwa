@@ -3,10 +3,27 @@
 import pytest
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.projects.autodelivery_7.events import (
+from autoppia_iwa.src.demo_webs.criterion_helper import CriterionValue
+from autoppia_iwa.src.demo_webs.projects.p07_autodelivery.events import (
     BACKEND_EVENT_TYPES,
+    AddressAddedEvent,
+    AddToCartEvent,
+    AddToCartModalOpenEvent,
+    BackToAllRestaurantsEvent,
+    DeleteReviewEvent,
+    DeliveryPrioritySelectedEvent,
+    DropoffPreferenceEvent,
+    EditCartItemEvent,
+    EmptyCartEvent,
+    OpenCheckoutPageEvent,
+    PlaceOrderEvent,
+    QuickReorderEvent,
+    RestaurantFilterEvent,
+    RestaurantNextPageEvent,
+    ReviewSubmittedEvent,
     SearchRestaurantEvent,
     ViewAllRestaurantsEvent,
+    ViewRestaurantEvent,
 )
 
 from ..event_parse_helpers import assert_parse_cls_kwargs_match_model
@@ -61,3 +78,208 @@ def test_backend_event_types_parse(event_name, data):
     e = event_class.parse(_be(event_name, data))
     assert e.event_name == event_name
     assert_parse_cls_kwargs_match_model(event_class)
+
+
+def test_restaurant_filter_validate_without_criteria():
+    event = RestaurantFilterEvent.parse(_be("RESTAURANT_FILTER", {"cuisine": "Thai", "rating": 4.5}))
+    assert event._validate_criteria(None) is True
+
+
+def test_open_checkout_page_validate_matches_item():
+    event = OpenCheckoutPageEvent.parse(_be("OPEN_CHECKOUT_PAGE", {"items": [{"name": "Pizza", "quantity": 2, "price": 15.0}]}))
+    criteria = OpenCheckoutPageEvent.ValidationCriteria(item="Pizza", quantity=2, price=15.0)
+    assert event._validate_criteria(criteria) is True
+
+
+def test_open_checkout_page_validate_fails_for_empty_items():
+    event = OpenCheckoutPageEvent.parse(_be("OPEN_CHECKOUT_PAGE", {"items": []}))
+    criteria = OpenCheckoutPageEvent.ValidationCriteria(item="Pizza")
+    assert event._validate_criteria(criteria) is False
+
+
+def test_dropoff_preference_validate_base_only():
+    event = DropoffPreferenceEvent.parse(
+        _be(
+            "DROPOFF_PREFERENCE",
+            {"selectedPreference": "door", "restaurantName": "Roma", "items": [{"name": "Pasta", "quantity": 1, "price": 12.0}]},
+        )
+    )
+    criteria = DropoffPreferenceEvent.ValidationCriteria(delivery_preference="door", restaurant="Roma")
+    assert event._validate_criteria(criteria) is True
+
+
+def test_dropoff_preference_validate_item_mismatch():
+    event = DropoffPreferenceEvent.parse(
+        _be(
+            "DROPOFF_PREFERENCE",
+            {"selectedPreference": "door", "restaurantName": "Roma", "items": [{"name": "Pasta", "quantity": 1, "price": 12.0}]},
+        )
+    )
+    criteria = DropoffPreferenceEvent.ValidationCriteria(delivery_preference="door", restaurant="Roma", item="Burger")
+    assert event._validate_criteria(criteria) is False
+
+
+def test_place_order_validate_matches_all_fields():
+    event = PlaceOrderEvent.parse(
+        _be(
+            "PLACE_ORDER",
+            {
+                "name": "Alice",
+                "phone": "123",
+                "address": "Main St",
+                "dropoff": "door",
+                "mode": "delivery",
+                "total": 19.5,
+                "items": [{"name": "Pizza", "quantity": 2, "price": 9.75}],
+            },
+        )
+    )
+    criteria = PlaceOrderEvent.ValidationCriteria(
+        username="Alice",
+        phone="123",
+        address="Main St",
+        delivery_preference="door",
+        mode="delivery",
+        total=19.5,
+        item="Pizza",
+        quantity=2,
+        price=9.75,
+    )
+    assert event._validate_criteria(criteria) is True
+
+
+def test_address_added_validate_matches_item_and_totals():
+    event = AddressAddedEvent.parse(
+        _be(
+            "ADDRESS_ADDED",
+            {
+                "address": "Main St",
+                "mode": "delivery",
+                "restaurantName": "Roma",
+                "totalPrice": 15.0,
+                "items": [{"name": "Pizza", "quantity": 1, "price": 15.0}],
+            },
+        )
+    )
+    criteria = AddressAddedEvent.ValidationCriteria(
+        address="Main St",
+        mode="delivery",
+        restaurant="Roma",
+        total_price=15.0,
+        item="Pizza",
+        quantity=1,
+        price=15.0,
+    )
+    assert event._validate_criteria(criteria) is True
+
+
+def test_review_submitted_validate_criterion_value():
+    event = ReviewSubmittedEvent.parse(
+        _be(
+            "REVIEW_SUBMITTED",
+            {
+                "author": "Bob",
+                "rating": 5,
+                "comment": "Great",
+                "restaurantName": "Roma",
+                "restaurantRating": 4.5,
+                "cuisine": "Italian",
+            },
+        )
+    )
+    criteria = ReviewSubmittedEvent.ValidationCriteria(
+        author=CriterionValue(operator="equals", value="Bob"),
+        rating=5,
+        restaurant_name="Roma",
+        cuisine="Italian",
+        comment="Great",
+        restaurant_rating=4.5,
+    )
+    assert event._validate_criteria(criteria) is True
+
+
+def test_delivery_priority_selected_validate_and_parse():
+    event = DeliveryPrioritySelectedEvent.parse(_be("DELIVERY_PRIORITY_SELECTED", {"priority": "fast", "items": [{"name": "Pizza", "quantity": 1, "price": 10.0}]}))
+    criteria = DeliveryPrioritySelectedEvent.ValidationCriteria(priority="fast", item="Pizza", quantity=1, price=10.0)
+    assert event._validate_criteria(criteria) is True
+
+
+def test_additional_negative_and_edge_paths():
+    assert SearchRestaurantEvent.parse(_be("SEARCH_DELIVERY_RESTAURANT", {"query": "pizza"}))._validate_criteria(SearchRestaurantEvent.ValidationCriteria(query="burger")) is False
+
+    restaurant = ViewRestaurantEvent.parse(_be("VIEW_DELIVERY_RESTAURANT", {"name": "R", "cuisine": "Italian", "rating": 4.5}))
+    assert restaurant._validate_criteria(ViewRestaurantEvent.ValidationCriteria(name="Other")) is False
+
+    filtered = RestaurantFilterEvent.parse(_be("RESTAURANT_FILTER", {"cuisine": "Thai", "rating": 4.5}))
+    assert filtered._validate_criteria(RestaurantFilterEvent.ValidationCriteria(cuisine="Italian")) is False
+
+    modal = AddToCartModalOpenEvent.parse(_be("ADD_TO_CART_MODAL_OPEN", {"restaurantName": "R", "itemName": "I", "itemPrice": 10.0}))
+    assert modal._validate_criteria(AddToCartModalOpenEvent.ValidationCriteria(item="Other")) is False
+
+    cart = AddToCartEvent.parse(_be("ADD_TO_CART_MENU_ITEM", {"itemName": "I", "basePrice": 10.0, "size": "L", "restaurantName": "R", "preferences": "No onions", "quantity": 2, "totalPrice": 20.0}))
+    assert cart._validate_criteria(AddToCartEvent.ValidationCriteria(item="Other")) is False
+
+    quick = QuickReorderEvent.parse(_be("QUICK_REORDER", {"itemName": "I", "restaurantName": "R"}))
+    assert quick._validate_criteria(QuickReorderEvent.ValidationCriteria(item="Other")) is False
+
+    edit = EditCartItemEvent.parse(_be("EDIT_CART_ITEM", {"itemName": "I", "restaurantName": "R"}))
+    assert edit._validate_criteria(EditCartItemEvent.ValidationCriteria(restaurant="Other")) is False
+
+    empty = EmptyCartEvent.parse(_be("EMPTY_CART", {"itemName": "I", "price": 1.0, "quantity": 1, "restaurantName": "R"}))
+    assert empty._validate_criteria(EmptyCartEvent.ValidationCriteria(item="Other")) is False
+
+    deleted = DeleteReviewEvent.parse(
+        _be(
+            "DELETE_REVIEW",
+            {
+                "author": "A",
+                "rating": 5,
+                "comment": "c",
+                "date": "2025-01-01",
+                "restaurantName": "R",
+                "cuisine": "Italian",
+                "restaurantRating": 4.5,
+                "restaurantDescription": "Nice",
+            },
+        )
+    )
+    assert deleted._validate_criteria(DeleteReviewEvent.ValidationCriteria(author="Other")) is False
+
+    back = BackToAllRestaurantsEvent.parse(_be("BACK_TO_ALL_RESTAURANTS", {"fromRestaurantName": "Roma"}))
+    assert back._validate_criteria(BackToAllRestaurantsEvent.ValidationCriteria(from_restaurant_name="Other")) is False
+
+    address = AddressAddedEvent.parse(
+        _be("ADDRESS_ADDED", {"address": "Main", "restaurantName": "R", "items": [{"name": "Pizza", "quantity": 1, "price": 15.0}], "mode": "delivery", "totalPrice": 15.0})
+    )
+    assert address._validate_criteria(AddressAddedEvent.ValidationCriteria(address="Other")) is False
+
+    priority = DeliveryPrioritySelectedEvent.parse(_be("DELIVERY_PRIORITY_SELECTED", {"priority": "fast", "items": []}))
+    assert priority._validate_criteria(DeliveryPrioritySelectedEvent.ValidationCriteria(priority="fast", item="Pizza")) is False
+    assert priority._validate_criteria(DeliveryPrioritySelectedEvent.ValidationCriteria(priority="slow")) is False
+
+
+def test_page_events_and_place_order_item_mismatch():
+    next_page = RestaurantNextPageEvent.parse(_be("RESTAURANT_NEXT_PAGE", {}))
+    prev_page = BACKEND_EVENT_TYPES["RESTAURANT_PREV_PAGE"].parse(_be("RESTAURANT_PREV_PAGE", {}))
+    assert next_page._validate_criteria(None) is True
+    assert prev_page._validate_criteria(None) is True
+
+    order = PlaceOrderEvent.parse(
+        _be(
+            "PLACE_ORDER",
+            {
+                "name": "Alice",
+                "phone": "123",
+                "address": "Main St",
+                "dropoff": "door",
+                "mode": "delivery",
+                "total": 19.5,
+                "items": [{"name": "Pizza", "quantity": 2, "price": 9.75}],
+            },
+        )
+    )
+    assert order._validate_criteria(PlaceOrderEvent.ValidationCriteria(username="Bob")) is False
+    assert order._validate_criteria(PlaceOrderEvent.ValidationCriteria(username="Alice", item="Burger")) is False
+
+    review = ReviewSubmittedEvent.parse(_be("REVIEW_SUBMITTED", {"author": "A", "rating": 5, "comment": "Great", "restaurantName": "R", "restaurantRating": 4.5, "cuisine": "Italian"}))
+    assert review._validate_criteria(ReviewSubmittedEvent.ValidationCriteria(comment="Bad")) is False

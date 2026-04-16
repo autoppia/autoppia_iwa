@@ -3,7 +3,7 @@
 import pytest
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.projects.autocalendar_11.events import (
+from autoppia_iwa.src.demo_webs.projects.p11_autocalendar.events import (
     BACKEND_EVENT_TYPES,
     CreateCalendarEvent,
     SearchSubmitEvent,

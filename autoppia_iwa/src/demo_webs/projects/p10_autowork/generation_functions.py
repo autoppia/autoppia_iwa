@@ -7,8 +7,8 @@ from typing import Any
 
 from loguru import logger
 
-from ..criterion_helper import ComparisonOperator
-from ..shared_utils import (
+from ...criterion_helper import ComparisonOperator
+from ...shared_utils import (
     constraint_value_for_datetime_date,
     constraint_value_for_numeric,
     constraint_value_for_time,
@@ -220,7 +220,7 @@ async def _ensure_dataset(
         For "skills": list[str] of skill names
     """
     _ = dataset  # Unused parameter kept for backward compatibility
-    from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+    from autoppia_iwa.src.demo_webs.data_provider import get_seed_from_url
 
     from .data_utils import fetch_data
 

@@ -1,8 +1,6 @@
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Literal
+"""Backward-compatible re-export. Logic lives in src/evaluation/benchmark/."""
 
-from loguru import logger
+from autoppia_iwa.src.evaluation.benchmark.config import BenchmarkConfig
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.demo_webs.classes import WebProject

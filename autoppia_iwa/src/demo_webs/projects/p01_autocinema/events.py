@@ -2,9 +2,9 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from autoppia_iwa.src.demo_webs.base_events import BaseEventValidator, Event
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
+from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 
 # =============================================================================
 #                            HELPER FUNCTIONS
@@ -173,13 +173,13 @@ class RegistrationEvent(UserEvent):
 
     event_name: str = "REGISTRATION"
     email: str
-    password: str
+    username: str
 
     class ValidationCriteria(UserEvent.ValidationCriteria):
         """Criteria for validating registration events"""
 
         email: str | CriterionValue | None = None
-        password: str | CriterionValue | None = None
+        username: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """Validate if this registration event meets the criteria."""
@@ -189,7 +189,7 @@ class RegistrationEvent(UserEvent):
             return True
         if criteria.email is not None and not self._validate_field(self.email, criteria.email):
             return False
-        return not (criteria.password is not None and not self._validate_field(self.password, criteria.password))
+        return not (criteria.username is not None and not self._validate_field(self.username, criteria.username))
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "RegistrationEvent":
@@ -203,7 +203,6 @@ class RegistrationEvent(UserEvent):
             user_id=base_event.user_id,
             username=UserEvent._extract_username(data),
             email=data.get("email", ""),
-            password=data.get("password", ""),
         )
 
 
@@ -427,6 +426,13 @@ class AddFilmEvent(FilmEvent):
         base_event = Event.parse(backend_event)
         data = backend_event.data
         film_data = FilmEvent._extract_film_data(data)
+        # Ensure rating is always float when present
+        rating = film_data.get("movie_rating")
+        try:
+            film_data["movie_rating"] = float(rating) if rating is not None else None
+        except (TypeError, ValueError):
+            film_data["movie_rating"] = None
+
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,

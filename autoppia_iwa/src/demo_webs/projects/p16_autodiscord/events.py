@@ -3,9 +3,9 @@
 
 from pydantic import BaseModel
 
+from autoppia_iwa.src.demo_webs.base_events import BaseEventValidator, Event
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue
+from autoppia_iwa.src.demo_webs.criterion_helper import CriterionValue
 
 # =============================================================================
 #                           EVENT CLASSES

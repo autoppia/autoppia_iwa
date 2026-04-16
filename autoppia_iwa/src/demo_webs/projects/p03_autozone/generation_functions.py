@@ -4,10 +4,10 @@ from typing import Any
 
 from loguru import logger
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.data_provider import get_seed_from_url
 
-from ..criterion_helper import ComparisonOperator
-from ..shared_utils import create_constraint_dict, parse_price
+from ...criterion_helper import ComparisonOperator
+from ...shared_utils import create_constraint_dict, parse_price
 from .data import (
     FIELD_OPERATORS_MAP_PRODUCTS,
     VISIBLE_FIELDS_CATEGORY_FILTER,

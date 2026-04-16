@@ -38,7 +38,7 @@ def test_get_trajectory_map_unknown_project_returns_none():
 
 
 def test_get_trajectory_map_autolodge_loads_from_python():
-    from autoppia_iwa.src.execution.actions.actions import NavigateAction
+    from autoppia_iwa.src.execution.actions import NavigateAction
 
     m = get_trajectory_map("autolodge")
     assert m is not None
@@ -50,7 +50,7 @@ def test_get_trajectory_map_autolodge_loads_from_python():
 
 
 def test_get_trajectory_map_autoconnect_loads_from_python():
-    from autoppia_iwa.src.execution.actions.actions import NavigateAction
+    from autoppia_iwa.src.execution.actions import NavigateAction
 
     m = get_trajectory_map("autoconnect")
     assert m is not None

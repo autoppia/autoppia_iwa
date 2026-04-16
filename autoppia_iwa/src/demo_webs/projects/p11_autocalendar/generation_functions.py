@@ -5,8 +5,8 @@ from typing import Any
 
 from loguru import logger
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
-from autoppia_iwa.src.demo_webs.projects.shared_utils import (
+from autoppia_iwa.src.demo_webs.data_provider import get_seed_from_url
+from autoppia_iwa.src.demo_webs.shared_utils import (
     constraint_value_for_datetime_date,
     constraint_value_for_numeric,
     constraint_value_for_time,
@@ -16,7 +16,7 @@ from autoppia_iwa.src.demo_webs.projects.shared_utils import (
     random_str_not_contained_in,
 )
 
-from ..criterion_helper import ComparisonOperator
+from ...criterion_helper import ComparisonOperator
 from .data import (
     ATTENDEE_EMAILS,
     CALENDAR_NAMES,

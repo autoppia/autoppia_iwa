@@ -1,8 +1,8 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
+from autoppia_iwa.src.demo_webs.base_events import BaseEventValidator, Event
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue
+from autoppia_iwa.src.demo_webs.criterion_helper import CriterionValue
 
 
 # =============================================================================
@@ -12,9 +12,10 @@ class Email(BaseModel):
     body: str
     subject: str
 
-    class Config:
-        title = "Email"
-        description = "Email from adding a label to a single email or bulk of emails"
+    model_config = ConfigDict(
+        title="Email",
+        description="Email from adding a label to a single email or bulk of emails",
+    )
 
 
 class ViewEmailEvent(Event, BaseEventValidator):
@@ -527,8 +528,7 @@ class EmailsNextPageEvent(Event, BaseEventValidator):
         pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
+        return True
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "EmailsNextPageEvent":
@@ -559,6 +559,7 @@ class TemplatesViewedEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
+        return True
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "TemplatesViewedEvent":

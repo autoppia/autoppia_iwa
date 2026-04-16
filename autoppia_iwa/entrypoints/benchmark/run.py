@@ -1,5 +1,5 @@
 """
-Benchmark: evaluate agents on demo-web tasks (stateful or concurrent).
+Run benchmark against a web agent.
 
 Default execution (no flags):
     python -m autoppia_iwa.entrypoints.benchmark.run
