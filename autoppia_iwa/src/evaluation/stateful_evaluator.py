@@ -9,6 +9,7 @@ This module provides:
 """
 
 import asyncio
+import contextlib
 import json
 import os
 from dataclasses import dataclass
@@ -25,7 +26,7 @@ from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.evaluation.scoring import ScoreDetails, TaskExecutionScorer
-from autoppia_iwa.src.evaluation.shared.utils import extract_seed_from_url
+from autoppia_iwa.src.evaluation.shared.utils import extract_seed_from_url, run_partial_tests
 from autoppia_iwa.src.execution.actions.actions import NavigateAction
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.execution.classes import ActionExecutionResult, BrowserSnapshot as ExecutionBrowserSnapshot
