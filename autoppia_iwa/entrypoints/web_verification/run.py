@@ -232,6 +232,12 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--no-event-trajectory-verification",
+        action="store_true",
+        help="Disable event trajectories verification",
+    )
+
+    parser.add_argument(
         "--no-data-extraction-verification",
         action="store_true",
         help="Disable data-extraction trajectories verification",
@@ -326,6 +332,7 @@ async def main():
         iwap_base_url=args.iwap_url,
         iwap_use_mock=args.iwap_use_mock,
         dynamic_verification_enabled=not args.no_dynamic_verification,
+        event_trajectory_verification_enabled=not args.no_event_trajectory_verification,
         data_extraction_verification_enabled=not args.no_data_extraction_verification,
         data_extraction_seed=args.data_extraction_seed,
         seed_values=seed_values,
@@ -358,6 +365,12 @@ async def main():
         if isinstance(data_extraction, dict):
             skipped = data_extraction.get("skipped", False)
             if not skipped and data_extraction.get("all_passed") is False:
+                all_passed = False
+
+        event_trajectory = results.get("event_trajectory_project_verification", {})
+        if isinstance(event_trajectory, dict):
+            skipped = event_trajectory.get("skipped", False)
+            if not skipped and event_trajectory.get("all_passed") is False:
                 all_passed = False
 
         data_extraction_task_generation = results.get("data_extraction_task_generation_verification", {})

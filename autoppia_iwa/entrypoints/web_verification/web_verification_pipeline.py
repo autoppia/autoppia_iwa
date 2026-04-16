@@ -5,6 +5,7 @@ Main pipeline that orchestrates:
 0. Pre-validation (project setup, events, use cases)
 1. Task generation (2 tasks per use case with constraints) + LLM Review (V1)
 2. Dataset diversity verification - verify datasets differ with different seeds (V2)
+2.4. Event trajectories verification (project-level deterministic checks)
 2.5. Data extraction trajectories verification (project-level, seed-filtered deterministic checks)
 2.6. Data extraction task generation verification (project-level, one DEtask per DE use case)
 3. IWAP doability check (find any successful solution for use case)
@@ -31,6 +32,7 @@ from .config import WebVerificationConfig
 from .data_extraction_task_generation_verifier import DataExtractionTaskGenerationVerifier
 from .data_extraction_verifier import DataExtractionTrajectoryVerifier
 from .dynamic_verifier import DynamicVerifier
+from .event_trajectory_verifier import EventTrajectoryVerifier
 from .iwap_client import IWAPClient
 from .llm_reviewer import LLMReviewer
 
@@ -101,6 +103,16 @@ class WebVerificationPipeline:
             else None
         )
 
+        self.event_trajectory_verifier = (
+            EventTrajectoryVerifier(
+                web_project=web_project,
+                frontend_url=web_project.frontend_url,
+                headless=True,
+            )
+            if config.event_trajectory_verification_enabled
+            else None
+        )
+
         self.data_extraction_verifier = (
             DataExtractionTrajectoryVerifier(
                 web_project=web_project,
@@ -123,6 +135,7 @@ class WebVerificationPipeline:
         self.results: dict[str, Any] = {
             "project_id": web_project.id,
             "project_name": web_project.name,
+            "event_trajectory_project_verification": None,
             "data_extraction_project_verification": None,
             "data_extraction_task_generation_verification": None,
             "use_cases": {},
@@ -141,6 +154,8 @@ class WebVerificationPipeline:
             logger.warning(f"No use cases found for project {self.web_project.id}")
             return self.results
 
+        # Step 2.4: Project-level event trajectories verification
+        await self._run_event_trajectory_project_verification()
         # Step 2.5: Project-level DE trajectories verification
         await self._run_data_extraction_project_verification()
         # Step 2.6: Project-level DE task generation verification
@@ -157,6 +172,39 @@ class WebVerificationPipeline:
 
         logger.info("Web verification pipeline completed")
         return self.results
+
+    async def _run_event_trajectory_project_verification(self) -> None:
+        """Run event trajectories once per project and store a single boolean verdict."""
+        if not self.event_trajectory_verifier:
+            self.results["event_trajectory_project_verification"] = {
+                "skipped": True,
+                "reason": "Event trajectory verification disabled by config",
+                "all_passed": None,
+                "total_count": 0,
+                "passed_count": 0,
+                "results": [],
+            }
+            return
+
+        self._print_step_banner(
+            "🔎 STEP 2.4: EVENT TRAJECTORIES VERIFICATION",
+            f"Project ID: {self.web_project.id}",
+            "Running all event trajectories for this project and validating tests.",
+        )
+        event_result = await self.event_trajectory_verifier.verify_for_project()
+        self.results["event_trajectory_project_verification"] = event_result
+
+        if event_result.get("skipped", False):
+            print(f"Event trajectories passed: ⏭️ SKIPPED ({event_result.get('reason', UNKNOWN_REASON)})")
+        else:
+            passed_count = event_result.get("passed_count", 0)
+            total_count = event_result.get("total_count", 0)
+            all_passed = event_result.get("all_passed", False)
+            print(f"Event trajectories passed: {'✅ YES' if all_passed else '❌ NO'} ({passed_count}/{total_count})")
+            for item in event_result.get("results", []):
+                status = "✓" if item.get("ok", False) else "✗"
+                print(f"  {status} [{item.get('use_case')}] {item.get('trajectory_id')}: {item.get('detail')}")
+        print("=" * 80 + "\n")
 
     async def _run_data_extraction_project_verification(self) -> None:
         """Run DE trajectories once per project and store a single boolean verdict."""
@@ -699,6 +747,7 @@ class WebVerificationPipeline:
         formatted_results = {
             "project_id": self.web_project.id,
             "project_name": self.web_project.name,
+            "event_trajectory_project_verification": self.results.get("event_trajectory_project_verification"),
             "data_extraction_project_verification": self.results.get("data_extraction_project_verification"),
             "data_extraction_task_generation_verification": self.results.get("data_extraction_task_generation_verification"),
             "use_cases": {},
@@ -855,6 +904,10 @@ class WebVerificationPipeline:
         dynamic_verification_status = "N/A"
         if has_dynamic_verification:
             dynamic_verification_status = "Pass" if all_dynamic_verification_passed else "Fail"
+        event_trajectory_verification_status = "N/A"
+        event_trajectory_project = self.results.get("event_trajectory_project_verification")
+        if isinstance(event_trajectory_project, dict) and not event_trajectory_project.get("skipped", False):
+            event_trajectory_verification_status = "Pass" if event_trajectory_project.get("all_passed", False) else "Fail"
         data_extraction_verification_status = "N/A"
         data_extraction_project = self.results.get("data_extraction_project_verification")
         if isinstance(data_extraction_project, dict) and not data_extraction_project.get("skipped", False):
@@ -868,6 +921,7 @@ class WebVerificationPipeline:
             "task_generation": "Pass" if all_tasks_generated and total_tasks > 0 else "Fail",
             "number_of_tasks_generated": total_tasks,
             "llm_review": "Pass" if (all_llm_reviews_passed or not self.llm_reviewer) else "Fail",
+            "event_trajectory_verification": event_trajectory_verification_status,
             "data_extraction_verification": data_extraction_verification_status,
             "data_extraction_task_generation": data_extraction_task_generation_status,
             "dynamic_verification": dynamic_verification_status,
@@ -1364,7 +1418,7 @@ class WebVerificationPipeline:
             else:
                 summary_lines.append("  Step 2 (V2 Dataset): ⏭️ Skipped (no data)")
 
-            summary_lines.append("  Step 2.5-2.6 (Data Extraction): ↪ Project-level verification (see final conclusion)")
+            summary_lines.append("  Step 2.4-2.6 (Trajectories/DE): ↪ Project-level verification (see final conclusion)")
 
             # Step 3: IWAP API / Doability check
             iwap_status = use_case_data.get("iwap_status")
@@ -1513,31 +1567,29 @@ class WebVerificationPipeline:
         # Overall Status
         summary_lines.append("\n📈 Overall Status:")
         total_use_cases = len(self.results["use_cases"])
+        event_trajectory_project = self.results.get("event_trajectory_project_verification")
         data_extraction_project = self.results.get("data_extraction_project_verification")
-        data_extraction_status = "N/A"
-        if isinstance(data_extraction_project, dict) and not data_extraction_project.get("skipped", False):
-            passed_count = data_extraction_project.get("passed_count", 0)
-            total_count = data_extraction_project.get("total_count", 0)
-            status = "YES" if data_extraction_project.get("all_passed", False) else "NO"
-            data_extraction_status = f"{status} ({passed_count}/{total_count} trajectories)"
         data_extraction_task_generation = self.results.get("data_extraction_task_generation_verification")
-        data_extraction_task_generation_status = "N/A"
-        if isinstance(data_extraction_task_generation, dict) and not data_extraction_task_generation.get("skipped", False):
-            passed_count = data_extraction_task_generation.get("passed_count", 0)
-            total_count = data_extraction_task_generation.get("total_count", 0)
-            status = "YES" if data_extraction_task_generation.get("all_passed", False) else "NO"
-            data_extraction_task_generation_status = f"{status} ({passed_count}/{total_count} DE_usecases)"
         summary_lines.append(f"  Total Use Cases: {total_use_cases}")
         summary_lines.append(f"  - Good generation: {len(categories['generation_ok'])}/{total_use_cases}")
         summary_lines.append(f"  - Dataset diverse (V2): {len(categories['dataset_diverse'])}/{total_use_cases}")
-        summary_lines.append(f"  - DataExtraction trajectories passed: {data_extraction_status}")
-        summary_lines.append(f"  - DE task generation passed: {data_extraction_task_generation_status}")
         summary_lines.append(f"  - Has solutions: {len(categories['has_solution'])}/{total_use_cases}")
         summary_lines.append(f"  - Truly dynamic (V3): {len(categories['truly_dynamic'])}/{total_use_cases}")
         summary_lines.append(f"  - Needs review (not dynamic): {len(categories['not_dynamic'])}/{total_use_cases}")
 
-        # Data Extraction details at the end of final report
-        summary_lines.append("\n🧠 Data Extraction:")
+        # Trajectories/Data Extraction details at the end of final report
+        summary_lines.append("\n🧭 Trajectories & Data Extraction:")
+        if not isinstance(event_trajectory_project, dict):
+            summary_lines.append("  Event trajectories passed: N/A (no data)")
+        elif event_trajectory_project.get("skipped", False):
+            reason = event_trajectory_project.get("reason", UNKNOWN_REASON)
+            summary_lines.append(f"  Event trajectories passed: N/A (skipped: {reason})")
+        else:
+            passed_count = event_trajectory_project.get("passed_count", 0)
+            total_count = event_trajectory_project.get("total_count", 0)
+            status = "✅ YES" if event_trajectory_project.get("all_passed", False) else "❌ NO"
+            summary_lines.append(f"  Event trajectories passed: {status} ({passed_count}/{total_count})")
+
         if not isinstance(data_extraction_project, dict):
             summary_lines.append("  DataExtraction trajectories passed: N/A (no data)")
         elif data_extraction_project.get("skipped", False):

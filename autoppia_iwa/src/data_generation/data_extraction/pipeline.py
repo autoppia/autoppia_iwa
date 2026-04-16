@@ -49,9 +49,7 @@ class DataExtractionTaskGenerationPipeline:
             all_tasks.extend(tasks_with_tests)
 
             total_time = (datetime.now() - start_time).total_seconds()
-            logger.info(
-                f"[DATA_EXTRACTION] DE task generation completed in {total_time:.2f} seconds. Generated {len(all_tasks)} tasks."
-            )
+            logger.info(f"[DATA_EXTRACTION] DE task generation completed in {total_time:.2f} seconds. Generated {len(all_tasks)} tasks.")
             return all_tasks
         except Exception as e:
             logger.exception(f"[DATA_EXTRACTION] DE task generation failed: {e}")

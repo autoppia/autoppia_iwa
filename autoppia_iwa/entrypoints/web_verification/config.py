@@ -28,6 +28,9 @@ class WebVerificationConfig:
     dynamic_verification_enabled: bool = True
     seed_values: list[int] | None = None  # Default seeds to test
 
+    # Event trajectories verification (project-level)
+    event_trajectory_verification_enabled: bool = True
+
     # Data extraction trajectories verification
     data_extraction_verification_enabled: bool = True
     data_extraction_seed: int = 1

@@ -14,14 +14,16 @@ def test_build_config_without_args_uses_run_py_defaults():
 
 
 def test_cli_event_only_enables_only_event_pipeline():
-    args = run.parse_args([
-        "-t",
-        "event_only",
-        "-p",
-        "autocinema",
-        "-u",
-        "FIND_MOVIE",
-    ])
+    args = run.parse_args(
+        [
+            "-t",
+            "event_only",
+            "-p",
+            "autocinema",
+            "-u",
+            "FIND_MOVIE",
+        ]
+    )
 
     cfg = run.build_config(args)
 
@@ -32,14 +34,16 @@ def test_cli_event_only_enables_only_event_pipeline():
 
 
 def test_cli_data_extraction_only_enables_only_de_pipeline_with_legacy_alias():
-    args = run.parse_args([
-        "--test",
-        "data_extraction_only",
-        "-p",
-        "autocinema",
-        "-d",
-        "EXTRACT_MOVIES",
-    ])
+    args = run.parse_args(
+        [
+            "--test",
+            "data_extraction_only",
+            "-p",
+            "autocinema",
+            "-d",
+            "EXTRACT_MOVIES",
+        ]
+    )
 
     cfg = run.build_config(args)
 

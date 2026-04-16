@@ -44,18 +44,13 @@ class DataExtractionTaskGenerator(SimpleTaskGenerator):
             build_task_url_with_seed=self._build_task_url_with_seed,
         )
         if generated_from_de_use_cases is not None:
-            logger.info(
-                f"[DATA_EXTRACTION] Generated {len(generated_from_de_use_cases)} DE tasks from dedicated DE use cases for project '{self.web_project.id}'"
-            )
+            logger.info(f"[DATA_EXTRACTION] Generated {len(generated_from_de_use_cases)} DE tasks from dedicated DE use cases for project '{self.web_project.id}'")
             return generated_from_de_use_cases
 
         if data_extraction_use_cases is not None:
             web_use_cases = [uc for uc in self.web_project.use_cases if uc.name in data_extraction_use_cases]
             if not web_use_cases:
-                logger.warning(
-                    f"No matching use cases found for data_extraction_use_cases: {data_extraction_use_cases}. "
-                    f"Available: {[uc.name for uc in self.web_project.use_cases]}"
-                )
+                logger.warning(f"No matching use cases found for data_extraction_use_cases: {data_extraction_use_cases}. Available: {[uc.name for uc in self.web_project.use_cases]}")
                 return all_tasks
         elif use_cases:
             web_use_cases = [uc for uc in self.web_project.use_cases if uc.name in use_cases]
