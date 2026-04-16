@@ -5,6 +5,7 @@ Usage:
     python -m autoppia_iwa.entrypoints.benchmark.run http://localhost:8000
     python -m autoppia_iwa.entrypoints.benchmark.run random-clicker
     python -m autoppia_iwa.entrypoints.benchmark.run http://localhost:8000 -p autocinema -u login
+    python -m autoppia_iwa.entrypoints.benchmark.run http://localhost:8000 -p autozone --test-types data_extraction_only
     iwa benchmark http://localhost:8000
 """
 
@@ -25,6 +26,13 @@ def _parse_args():
     parser.add_argument("--prompts-per-use-case", "-n", type=int, default=1)
     parser.add_argument("--runs", type=int, default=1)
     parser.add_argument("--parallel", "-j", type=int, default=1, help="Max parallel evaluations (browsers)")
+    parser.add_argument(
+        "--test-types",
+        type=str,
+        default="event_only",
+        choices=["event_only", "data_extraction_only"],
+        help="Task generation mode: event_only (default) or data_extraction_only (DataExtractionTest / DEtasks).",
+    )
     parser.add_argument("--web-agent-prefix", type=str, default="benchmark-agent", help="Prefix used to generate unique web_agent_id values per evaluation")
     parser.add_argument("--validator-prefix", type=str, default=None, help="Prefix used to generate unique validator_id values per evaluation")
     parser.add_argument("--headless", action="store_true", default=True)
@@ -56,6 +64,8 @@ async def run(
     web_agent_prefix: str = "benchmark-agent",
     validator_prefix: str | None = None,
     headless: bool = True,
+    *,
+    test_types: str = "event_only",
 ):
     from autoppia_iwa.src.bootstrap import AppBootstrap
     from autoppia_iwa.src.demo_webs.config import demo_web_projects
@@ -87,6 +97,7 @@ async def run(
         headless=headless,
         base_dir=base_dir,
         use_cached_tasks=bool(tasks_file),
+        test_types=test_types,
     )
 
     if tasks_file:
@@ -142,6 +153,7 @@ async def _main_async(args) -> int:
             web_agent_prefix=args.web_agent_prefix,
             validator_prefix=args.validator_prefix,
             headless=args.headless,
+            test_types=args.test_types,
         )
     except ValueError as exc:
         print(str(exc))

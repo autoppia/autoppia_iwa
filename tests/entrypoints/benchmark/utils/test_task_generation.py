@@ -52,12 +52,23 @@ def test_filter_tasks_by_use_cases_matches_name_case_insensitive():
     assert all(t.use_case.name.startswith("REQUEST") for t in out)
 
 
-def test_filter_tasks_by_use_cases_drops_tasks_without_use_case():
+def test_filter_tasks_by_use_cases_drops_tasks_without_use_case_or_de_name():
     class _T:
         use_case = None
 
     tasks = [_T(), _T()]
     assert task_generation.filter_tasks_by_use_cases(tasks, ["LOGIN"]) == []
+    assert task_generation.filter_tasks_by_use_cases(tasks, ["LOGIN"], test_types="data_extraction_only") == []
+
+
+def test_filter_tasks_by_use_cases_matches_de_use_case_name_for_data_extraction():
+    class _T:
+        use_case = None
+        de_use_case_name = "FIND_PRICE"
+
+    tasks = [_T()]
+    out = task_generation.filter_tasks_by_use_cases(tasks, ["find_price"], test_types="data_extraction_only")
+    assert len(out) == 1
 
 
 def test_get_cache_filename():

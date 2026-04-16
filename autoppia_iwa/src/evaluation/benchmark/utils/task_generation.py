@@ -52,12 +52,22 @@ def _read_tasks_from_file(filename: Path) -> dict:
         return json.load(f)
 
 
-def filter_tasks_by_use_cases(tasks: list[Task], use_cases: list[str] | None) -> list[Task]:
+def filter_tasks_by_use_cases(
+    tasks: list[Task],
+    use_cases: list[str] | None,
+    *,
+    test_types: str = "event_only",
+) -> list[Task]:
     """
     Keep tasks whose use_case.name matches one of use_cases (case-insensitive).
 
-    When use_cases is None or empty, returns tasks unchanged. Tasks with no use_case
-    are dropped when filtering is active.
+    When use_cases is None or empty, returns tasks unchanged.
+
+    For data-extraction-only tasks without ``use_case`` (e.g. DEtasks from
+    ``build_de_task``), matches ``de_use_case_name`` when filtering is active.
+
+    When filtering is active, tasks with neither a matching use_case nor
+    ``de_use_case_name`` are dropped.
     """
     if not use_cases:
         return tasks
@@ -71,6 +81,11 @@ def filter_tasks_by_use_cases(tasks: list[Task], use_cases: list[str] | None) ->
         name = getattr(uc, "name", None) if uc is not None else None
         if isinstance(name, str) and name.strip().casefold() in wanted:
             out.append(t)
+            continue
+        if test_types == "data_extraction_only":
+            de_name = getattr(t, "de_use_case_name", None)
+            if isinstance(de_name, str) and de_name.strip().casefold() in wanted:
+                out.append(t)
     return out
 
 
@@ -105,13 +120,21 @@ async def generate_tasks_for_project(
     prompts_per_use_case: int = 1,
     use_cases: list[str] | None = None,
     dynamic: bool = False,
+    *,
+    test_types: str = "event_only",
+    data_extraction_use_cases: list[str] | None = None,
 ) -> list[Task]:
     """Generate tasks for the given project."""
     try:
+        de_uc = data_extraction_use_cases
+        if test_types == "data_extraction_only" and de_uc is None:
+            de_uc = use_cases
         config = TaskGenerationConfig(
             prompts_per_use_case=prompts_per_use_case,
             use_cases=use_cases,
             dynamic=dynamic,
+            test_types=test_types,
+            data_extraction_use_cases=de_uc,
         )
 
         pipeline = TaskGenerationPipeline(web_project=project, config=config)

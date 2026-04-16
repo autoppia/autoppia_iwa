@@ -57,6 +57,7 @@ def test_main_exits_zero_on_success(monkeypatch):
             "prompts_per_use_case": 1,
             "output": "tasks.json",
             "dynamic": False,
+            "test_types": "event_only",
         },
     )()
     monkeypatch.setattr(generate_tasks_run, "_parse_args", lambda: args)
@@ -78,6 +79,7 @@ def test_main_exits_non_zero_on_value_error(monkeypatch, capsys):
             "prompts_per_use_case": 1,
             "output": "tasks.json",
             "dynamic": False,
+            "test_types": "event_only",
         },
     )()
     monkeypatch.setattr(generate_tasks_run, "_parse_args", lambda: args)
@@ -120,11 +122,23 @@ def test_parse_args_reads_multiple_projects_and_flags(monkeypatch):
     assert args.prompts_per_use_case == 3
     assert args.output == "out.json"
     assert args.dynamic is True
+    assert args.test_types == "event_only"
 
 
 @pytest.mark.asyncio
 async def test_main_async_returns_zero_on_success(monkeypatch):
-    args = type("Args", (), {"project": None, "use_case": None, "prompts_per_use_case": 2, "output": "tasks.json", "dynamic": False})()
+    args = type(
+        "Args",
+        (),
+        {
+            "project": None,
+            "use_case": None,
+            "prompts_per_use_case": 2,
+            "output": "tasks.json",
+            "dynamic": False,
+            "test_types": "event_only",
+        },
+    )()
     monkeypatch.setattr(generate_tasks_run, "run", AsyncMock(return_value={"ok": True}))
 
     assert await generate_tasks_run._main_async(args) == 0

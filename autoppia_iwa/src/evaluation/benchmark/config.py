@@ -3,6 +3,8 @@ from pathlib import Path
 from typing import Literal
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR, VALIDATOR_ID
+
+TestTypes = Literal["event_only", "data_extraction_only"]
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.web_agents.classes import IWebAgent
 
@@ -34,6 +36,9 @@ class BenchmarkConfig:
     prompts_per_use_case: int = 1
     dynamic: bool = False
     use_cached_tasks: bool = False
+    # When "data_extraction_only", tasks and tests follow the data-extraction pipeline
+    # (DataExtractionTest / DEtasks). Mirrors TaskGenerationConfig.test_types.
+    test_types: TestTypes = "event_only"
 
     # Evaluation mode
     evaluator_mode: Literal["stateful"] = "stateful"
@@ -87,6 +92,7 @@ class BenchmarkConfig:
             "prompts_per_use_case": self.prompts_per_use_case,
             "dynamic": self.dynamic,
             "use_cached_tasks": self.use_cached_tasks,
+            "test_types": self.test_types,
             "evaluator_mode": self.evaluator_mode,
             "max_steps_per_task": self.max_steps_per_task,
             "runs": self.runs,
