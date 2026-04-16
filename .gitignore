@@ -7,6 +7,7 @@ notebooks/
 .env*
 !.env.example
 .venv
+.venv311
 env/
 venv/
 .idea

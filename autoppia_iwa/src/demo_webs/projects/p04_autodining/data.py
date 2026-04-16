@@ -40,6 +40,20 @@ RESTAURANT_COUNTRIES = [
 RESTAURANT_OCCASIONS = ["birthday", "anniversary", "business", "other"]
 SCROLL_DIRECTIONS = ["left", "right"]
 SCROLL_SECTIONS_TITLES = ["Premium", "Popular", "Great value"]
+SCROLL_SECTIONS_TITLES = ["Available for lunch now", "Introducing OpenDinning Icons", "Award Winners"]
+TAG_OPTIONS = [
+    "top-rated",
+    "local favourite",
+    "outdoor seating",
+    "good for groups",
+    "romantic",
+    "gourmet",
+    "sushi",
+    "pasta",
+    "burgers",
+    "spicy",
+    "tapas",
+]
 
 CUISINE = ["Japanese", "Mexican", "American"]
 NAMES = [
@@ -167,6 +181,18 @@ OPERATORS_ALLOWED_PEOPLE_DROPDOWN_OPENED = {
     "people": [EQUALS, GREATER_EQUAL],
 }
 
+OPERATORS_ALLOWED_DATE_SELECTED = {
+    "date": [EQUALS, GREATER_EQUAL, LESS_EQUAL],
+}
+
+OPERATORS_ALLOWED_TIME_SELECTED = {
+    "time": [EQUALS],
+}
+
+OPERATORS_ALLOWED_PEOPLE_SELECTED = {
+    "people": [EQUALS, GREATER_EQUAL, LESS_EQUAL],
+}
+
 OPERATORS_ALLOWED_SEARCH_RESTAURANT = {
     "query": [EQUALS, CONTAINS],
 }
@@ -208,6 +234,45 @@ OPERATORS_ALLOWED_RESERVATION_COMPLETE = {
 OPERATORS_ALLOWED_SCROLL_VIEW = {
     "section": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
     "direction": [EQUALS, NOT_EQUALS],
+}
+
+OPERATORS_ALLOWED_TAG_FILTER_SELECTED = {
+    "tag": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "action": [EQUALS, NOT_EQUALS],
+    "search": [EQUALS, CONTAINS, NOT_CONTAINS],
+}
+
+OPERATORS_ALLOWED_LOGIN = {
+    "username": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "source": [EQUALS, NOT_EQUALS],
+}
+
+OPERATORS_ALLOWED_REGISTER = {
+    "username": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "email": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "source": [EQUALS, NOT_EQUALS],
+}
+
+OPERATORS_ALLOWED_LOGOUT = {
+    "username": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+}
+
+OPERATORS_ALLOWED_REVIEW_CREATED = {
+    "review_id": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "restaurant_id": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "username": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "rating": [EQUALS, NOT_EQUALS, GREATER_EQUAL, LESS_EQUAL, GREATER_THAN, LESS_THAN],
+    "comment_length": [EQUALS, NOT_EQUALS, GREATER_EQUAL, LESS_EQUAL, GREATER_THAN, LESS_THAN],
+}
+
+OPERATORS_ALLOWED_REVIEW_EDITED = {
+    **OPERATORS_ALLOWED_REVIEW_CREATED,
+}
+
+OPERATORS_ALLOWED_REVIEW_DELETED = {
+    "review_id": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "restaurant_id": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "username": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
 }
 OPERATORS_ALLOWED_CONTACT = {
     "username": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
