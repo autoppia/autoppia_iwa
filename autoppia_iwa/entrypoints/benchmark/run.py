@@ -43,6 +43,7 @@ AGENTS = REMOTE_AGENTS if AGENT_TARGET == "remote" else [LOCAL_AGENTS[5]]
 # Projects and use cases (must exist in demo_web_projects / project use_cases)
 PROJECT_IDS = ["autocinema"]
 USE_CASES = None
+DATA_EXTRACTION_USE_CASES = None
 
 # =====================================================
 # CONFIGURATION: Choose the evaluation mode here
@@ -75,7 +76,7 @@ CFG = BenchmarkConfig(
     # Tasks
     prompts_per_use_case=1,
     # use_cases=None means all use-cases
-    data_extraction_use_cases=None,
+    data_extraction_use_cases=DATA_EXTRACTION_USE_CASES,
     # use_cases=USE_CASES,
     # Execution
     runs=1,  # single run is enough for this fixed agent

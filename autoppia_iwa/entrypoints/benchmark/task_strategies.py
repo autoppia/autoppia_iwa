@@ -24,7 +24,8 @@ class EventTaskStrategy:
     name: str = "event"
     cache_subdir: str = "tasks"
 
-    def get_selected_use_cases(self, config: BenchmarkConfig) -> list[str] | None:
+    def get_selected_use_cases(self, config: BenchmarkConfig, project: WebProject) -> list[str] | None:
+        _ = project
         return config.use_cases
 
     def get_cache_dir(self, config: BenchmarkConfig) -> str:
@@ -33,7 +34,7 @@ class EventTaskStrategy:
 
     async def load_or_generate_tasks(self, project: WebProject, config: BenchmarkConfig) -> list[Task]:
         cache_dir = self.get_cache_dir(config)
-        selected_use_cases = self.get_selected_use_cases(config)
+        selected_use_cases = self.get_selected_use_cases(config, project)
 
         if getattr(config, "use_cached_tasks", False):
             cached_tasks = await load_tasks_from_json(project, cache_dir)
@@ -63,8 +64,11 @@ class DataExtractionTaskStrategy:
     name: str = "data_extraction"
     cache_subdir: str = "DataExtraction"
 
-    def get_selected_use_cases(self, config: BenchmarkConfig) -> list[str] | None:
-        return config.data_extraction_use_cases
+    def get_selected_use_cases(self, config: BenchmarkConfig, project: WebProject) -> list[str] | None:
+        if config.data_extraction_use_cases is not None:
+            return config.data_extraction_use_cases
+        # If run-level filter is not specified, default to all DE use cases defined by the project.
+        return getattr(project, "data_extraction_use_cases", None)
 
     def get_cache_dir(self, config: BenchmarkConfig) -> str:
         cache_root = Path(config.base_dir) / "benchmark-output" / "cache"
@@ -72,7 +76,7 @@ class DataExtractionTaskStrategy:
 
     async def load_or_generate_tasks(self, project: WebProject, config: BenchmarkConfig) -> list[Task]:
         cache_dir = self.get_cache_dir(config)
-        selected_use_cases = self.get_selected_use_cases(config)
+        selected_use_cases = self.get_selected_use_cases(config, project)
 
         if getattr(config, "use_cached_tasks", False):
             cached_tasks = await load_tasks_from_json(project, cache_dir)
