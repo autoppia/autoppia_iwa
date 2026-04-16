@@ -126,7 +126,7 @@ class SelectHiringTeamEvent(Event, BaseEventValidator):
         return _validate_criteria_fields(self, criteria, ["name", "team"])
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "SelectHiringTeamEventData":
+    def parse(cls, backend_event: "BackendEvent") -> "SelectHiringTeamEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
         return cls(**_base_event_kwargs(base_event, name=data.get("expertName"), team=data.get("team")))

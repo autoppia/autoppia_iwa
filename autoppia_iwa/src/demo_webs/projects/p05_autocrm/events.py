@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 from autoppia_iwa.src.demo_webs.base_events import BaseEventValidator, Event
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.criterion_helper import CriterionValue
+from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator, CriterionValue
 
 # =============================================================================
 #                           BASE MODELS

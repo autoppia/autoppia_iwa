@@ -185,7 +185,7 @@ class EventWizardOpenEvent(Event, BaseEventValidator):
         )
 
     @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "EVENT_WIZARD_OPEN":
+    def parse(cls, backend_event: BackendEvent) -> "EventWizardOpenEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
         return cls(
