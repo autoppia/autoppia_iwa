@@ -84,6 +84,7 @@ async def run(
     if base_dir.name == "benchmark-output":
         base_dir = base_dir.parent
 
+    data_extraction_use_cases = use_cases if test_types == "data_extraction_only" else None
     config = BenchmarkConfig(
         projects=projects,
         agents=[web_agent],
@@ -98,6 +99,7 @@ async def run(
         base_dir=base_dir,
         use_cached_tasks=bool(tasks_file),
         test_types=test_types,
+        data_extraction_use_cases=data_extraction_use_cases,
     )
 
     if tasks_file:
@@ -109,7 +111,9 @@ async def run(
 
 
 def _stage_tasks(tasks_path: Path, config):
-    cache_dir = config.base_dir / "benchmark-output" / "cache" / "tasks"
+    test_types = getattr(config, "test_types", "event_only")
+    sub = "DataExtraction" if test_types == "data_extraction_only" else "tasks"
+    cache_dir = config.base_dir / "benchmark-output" / "cache" / sub
     cache_dir.mkdir(parents=True, exist_ok=True)
     data = json.loads(tasks_path.read_text())
     if "project_id" in data and "tasks" in data:

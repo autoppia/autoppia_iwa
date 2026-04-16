@@ -43,7 +43,7 @@ def _parse_args():
     parser.add_argument(
         "--no-data-extraction-verification",
         action="store_true",
-        help="Disable data-extraction trajectories verification",
+        help="Disable data-extraction verification (trajectories and task-generation checks)",
     )
     parser.add_argument(
         "--data-extraction-seed",
@@ -94,7 +94,7 @@ async def run(
         verbose=verbose,
         evaluate_trajectories=evaluate_trajectories or trajectories_only,
         evaluate_trajectories_only=trajectories_only,
-        data_extraction_trajectories_enabled=not no_data_extraction_verification,
+        data_extraction_verification_enabled=not no_data_extraction_verification,
         data_extraction_seed=int(data_extraction_seed),
     )
 

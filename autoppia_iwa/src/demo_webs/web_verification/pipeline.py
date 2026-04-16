@@ -133,9 +133,8 @@ class WebVerificationPipeline:
                 web_project=web_project,
                 frontend_url=web_project.frontend_url,
                 headless=True,
-                show_extract_chars=220,
             )
-            if config.data_extraction_trajectories_enabled
+            if config.data_extraction_verification_enabled
             else None
         )
         self.data_extraction_task_generation_verifier = (
@@ -143,7 +142,7 @@ class WebVerificationPipeline:
                 web_project=web_project,
                 task_generator=self.task_generator,
             )
-            if config.data_extraction_task_generation_enabled
+            if config.data_extraction_verification_enabled
             else None
         )
 
@@ -165,14 +164,13 @@ class WebVerificationPipeline:
         """
         logger.info(f"Starting web verification pipeline for project: {self.web_project.name} ({self.web_project.id})")
 
-        # Step 2.5 / 2.6 first: project-level DE verification runs even when event use-case filters match nothing.
-        await self._run_data_extraction_project_verification()
-        await self._run_data_extraction_task_generation_verification()
-
         if not self.web_project.use_cases:
             logger.warning(f"No use cases found for project {self.web_project.id}")
-            await self._save_results()
             return self.results
+
+        # Step 2.5 / 2.6: project-level data extraction verification (same gate as main branch)
+        await self._run_data_extraction_project_verification()
+        await self._run_data_extraction_task_generation_verification()
 
         use_cases_to_run = self._use_cases_matching_filter()
         if not use_cases_to_run:
@@ -199,7 +197,7 @@ class WebVerificationPipeline:
         if not self.data_extraction_verifier:
             self.results["data_extraction_project_verification"] = {
                 "skipped": True,
-                "reason": "Data extraction trajectory verification disabled by config",
+                "reason": "Data extraction verification disabled by config",
                 "seed": self.config.data_extraction_seed,
                 "all_passed": None,
                 "total_count": 0,
@@ -235,7 +233,7 @@ class WebVerificationPipeline:
         if not self.data_extraction_task_generation_verifier:
             self.results["data_extraction_task_generation_verification"] = {
                 "skipped": True,
-                "reason": "Data extraction task generation verification disabled by config",
+                "reason": "Data extraction verification disabled by config",
                 "seed": self.config.data_extraction_seed,
                 "all_passed": None,
                 "total_count": 0,

@@ -99,6 +99,11 @@ class Benchmark:
             f"parallel={self.config.max_parallel_evaluations}"
         )
 
+    def _get_task_cache_dir(self) -> str:
+        """Cache JSON under cache/tasks or cache/DataExtraction (aligned with task generation mode)."""
+        sub = "DataExtraction" if self.config.test_types == "data_extraction_only" else "tasks"
+        return str(self.config.base_dir / "benchmark-output" / "cache" / sub)
+
     # ── Public API ──────────────────────────────────────────────────────
 
     async def run(self) -> dict:
@@ -142,7 +147,7 @@ class Benchmark:
     # ── Task generation ─────────────────────────────────────────────────
 
     async def _generate_tasks(self, project: WebProject) -> list[Task]:
-        cache_dir = str(self.config.base_dir / "benchmark-output" / "cache" / "tasks")
+        cache_dir = self._get_task_cache_dir()
 
         if self.config.use_cached_tasks:
             cached = await load_tasks_from_json(project, cache_dir)
@@ -158,17 +163,12 @@ class Benchmark:
                     logger.info(f"Using {len(filtered)} cached tasks for {project.name}")
                 return filtered
 
-        de_use_cases = None
-        if self.config.test_types == "data_extraction_only":
-            # Dedicated DE generators read data_extraction_use_cases; mirror --use-case into it when set.
-            de_use_cases = self.config.use_cases
-
         config = TaskGenerationConfig(
             prompts_per_use_case=self.config.prompts_per_use_case,
             use_cases=self.config.use_cases,
             dynamic=self.config.dynamic,
             test_types=self.config.test_types,
-            data_extraction_use_cases=de_use_cases,
+            data_extraction_use_cases=self.config.data_extraction_use_cases,
         )
         tasks = await TaskGenerationPipeline(web_project=project, config=config).generate()
         if tasks:

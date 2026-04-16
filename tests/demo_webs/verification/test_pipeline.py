@@ -93,8 +93,7 @@ def _build_project(use_cases):
 def _cfg_no_de(**kwargs):
     """Unit tests use a dummy task generator; skip real DE steps."""
     return WebVerificationConfig(
-        data_extraction_trajectories_enabled=False,
-        data_extraction_task_generation_enabled=False,
+        data_extraction_verification_enabled=False,
         **kwargs,
     )
 

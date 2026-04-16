@@ -39,10 +39,8 @@ class WebVerificationConfig:
     # Skip task generation, LLM review, and IWAP; only V2 + trajectory replay (no OpenAI init).
     evaluate_trajectories_only: bool = False
 
-    # Step 2.5: data_extraction_trajectories.py (replay / dataset checks)
-    data_extraction_trajectories_enabled: bool = True
-    # Step 2.6: generate_de_tasks validation (always on unless explicitly disabled in code/tests)
-    data_extraction_task_generation_enabled: bool = True
+    # Data extraction (steps 2.5 + 2.6): trajectories + DE task generation verification
+    data_extraction_verification_enabled: bool = True
     data_extraction_seed: int = 1
 
     # Output
