@@ -546,19 +546,6 @@ class SubmitTripReviewEvent(Event, BaseEventValidator):
         )
 
 
-class SubmitReviewRouterEvent(Event):
-    """Dispatches SUBMIT_REVIEW: autodrive trip review vs autolodge hotel review (merged map uses p13 entry)."""
-
-    @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "Event":
-        data = backend_event.data or {}
-        if data.get("tripId") is not None or isinstance(data.get("tripData"), dict):
-            return SubmitTripReviewEvent.parse(backend_event)
-        from autoppia_iwa.src.demo_webs.projects.p08_autolodge.events import SubmitHotelReviewEvent
-
-        return SubmitHotelReviewEvent.parse(backend_event)
-
-
 class ViewAvailableTripsEvent(Event, BaseEventValidator):
     event_name: str = "VIEW_AVAILABLE_TRIPS"
     total_trips: int | None = None
@@ -586,11 +573,9 @@ class ViewAvailableTripsEvent(Event, BaseEventValidator):
 
 class BookTripEvent(ReserveRideEvent):
     event_name: str = "BOOK_TRIP"
-    trip_id: str | None = None
     source: str | None = None
 
     class ValidationCriteria(ReserveRideEvent.ValidationCriteria):
-        trip_id: str | CriterionValue | None = None
         source: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
@@ -598,8 +583,7 @@ class BookTripEvent(ReserveRideEvent):
             return True
         return all(
             [
-                super()._validate_criteria(criteria),
-                self._validate_field(self.trip_id, criteria.trip_id),
+                ReserveRideEvent()._validate_criteria(criteria),
                 self._validate_field(self.source, criteria.source),
             ]
         )
@@ -609,13 +593,12 @@ class BookTripEvent(ReserveRideEvent):
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
         kw = _reserve_ride_field_values(data, backend_event.timestamp)
-        tid = data.get("tripId")
+        data.get("tripId")
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            trip_id=str(tid) if tid is not None else None,
             source=data.get("source"),
             **kw,
         )
@@ -778,7 +761,6 @@ EVENTS = [
     TripDetailsEvent,
     CancelReservationEvent,
     SubmitTripReviewEvent,
-    SubmitReviewRouterEvent,
     ViewAvailableTripsEvent,
     BookTripEvent,
     FilterTripsEvent,
@@ -797,7 +779,7 @@ BACKEND_EVENT_TYPES = {
     "RESERVE_RIDE": ReserveRideEvent,
     "TRIP_DETAILS": TripDetailsEvent,
     "CANCEL_RESERVATION": CancelReservationEvent,
-    "SUBMIT_REVIEW": SubmitReviewRouterEvent,
+    "SUBMIT_REVIEW": SubmitTripReviewEvent,
     "VIEW_AVAILABLE_TRIPS": ViewAvailableTripsEvent,
     "BOOK_TRIP": BookTripEvent,
     "FILTER_TRIPS": FilterTripsEvent,

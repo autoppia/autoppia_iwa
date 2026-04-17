@@ -18,7 +18,6 @@ from ...shared_utils import (
     random_str_not_contained_in,
 )
 from .data import (
-    FIELD_OPERATORS_MAP_BOOK_TRIP,
     FIELD_OPERATORS_MAP_ENTER_DESTINATION,
     FIELD_OPERATORS_MAP_ENTER_LOCATION,
     FIELD_OPERATORS_MAP_FILTER_TRIPS,
@@ -705,18 +704,6 @@ async def generate_view_available_trips_constraints(
     _ = (task_url, dataset)
     op = ComparisonOperator(choice(FIELD_OPERATORS_MAP_VIEW_AVAILABLE_TRIPS["total_trips"]))
     return [create_constraint_dict("total_trips", op, randint(1, 12))]
-
-
-async def generate_book_trip_constraints(
-    task_url: str | None = None,
-    dataset: dict[str, list[dict[str, Any]]] | list[dict[str, Any]] | None = None,
-) -> list[dict[str, Any]]:
-    base = await generate_reserve_ride_constraints(task_url, dataset)
-    op_t = ComparisonOperator(choice(FIELD_OPERATORS_MAP_BOOK_TRIP["trip_id"]))
-    base.append(create_constraint_dict("trip_id", op_t, f"trip-{randint(1, 99)}"))
-    op_s = ComparisonOperator(choice(FIELD_OPERATORS_MAP_BOOK_TRIP["source"]))
-    base.append(create_constraint_dict("source", op_s, "available_trips"))
-    return base
 
 
 async def generate_filter_trips_constraints(

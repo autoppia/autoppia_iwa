@@ -19,7 +19,6 @@ from .events import (
     ViewAvailableTripsEvent,
 )
 from .generation_functions import (
-    generate_book_trip_constraints,
     generate_enter_destination_constraints,
     generate_enter_location_constraints,
     generate_filter_trips_constraints,
@@ -685,7 +684,7 @@ BOOK_TRIP_USE_CASE = UseCase(
     description="The user books a trip from the available trips page (includes trip id and source).",
     event=BookTripEvent,
     event_source_code=BookTripEvent.get_source_code_of_class(),
-    constraints_generator=generate_book_trip_constraints,
+    constraints_generator=generate_reserve_ride_constraints,
     additional_prompt_info="",
     examples=[
         {
