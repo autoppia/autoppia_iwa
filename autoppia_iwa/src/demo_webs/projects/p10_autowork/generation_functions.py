@@ -18,6 +18,8 @@ from ...shared_utils import (
     random_str_not_contained_in,
 )
 from .data import (
+    FIELD_OPERATORS_CONTACT_FORM_SUBMITTED_MAP,
+    FIELD_OPERATORS_CONTACT_PAGE_VIEWED_MAP,
     FIELD_OPERATORS_MAP_ADD_SKILL,
     FIELD_OPERATORS_MAP_BROWSE_FAVORITE_EXPERT,
     FIELD_OPERATORS_MAP_BUDGET_TYPE,
@@ -1014,3 +1016,85 @@ def generate_to_and_from_constraints(from_ops: list[int], to_ops: list[int]) -> 
     all_constraints.append(create_constraint_dict(rate_from, rate_from_op, rate_from_value))
     all_constraints.append(create_constraint_dict(rate_to, rate_to_op, rate_to_value))
     return all_constraints
+
+
+def _contact_form_synthetic_dataset_autowork() -> list[dict[str, str]]:
+    """Sample rows for AUTOWORK_CONTACT_FORM_SUBMITTED (web_10 autowork contact form)."""
+    return [
+        {
+            "name": "Alex Morgan",
+            "email": "alex@example.com",
+            "subject": "Partnership inquiry",
+            "message": "I would like to discuss a long-term collaboration on upcoming projects.",
+        },
+        {
+            "name": "Jordan Lee",
+            "email": "jordan@work.test",
+            "subject": "Hiring question",
+            "message": "Can you confirm your availability for a full-time remote role?",
+        },
+        {
+            "name": "Sam Rivera",
+            "email": "sam@mail.demo",
+            "subject": "Project brief",
+            "message": "Please review the attached scope and let me know your hourly rate.",
+        },
+        {
+            "name": "Riley Chen",
+            "email": "riley@example.org",
+            "subject": "Consultation follow-up",
+            "message": "Thank you for the call yesterday; I have a few more questions.",
+        },
+    ]
+
+
+async def generate_autowork_contact_page_viewed_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    """
+    Constraints for AUTOWORK_CONTACT_PAGE_VIEWED (``page`` in payload; web sends ``contact``).
+    """
+    _ = (task_url, dataset)
+    if test_types == "data_extraction_only":
+        return []
+
+    field = "page"
+    page_value = "contact"
+    allowed_ops = FIELD_OPERATORS_CONTACT_PAGE_VIEWED_MAP[field]
+    operator = ComparisonOperator(random.choice(allowed_ops))
+    page_dataset = [{"page": "contact"}, {"page": "help"}, {"page": "support"}]
+    value = _generate_constraint_value(operator, page_value, field, page_dataset)
+    return [create_constraint_dict(field, operator, value)]
+
+
+async def generate_autowork_contact_form_submitted_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    """
+    Constraints for AUTOWORK_CONTACT_FORM_SUBMITTED (name, email, subject, message).
+    """
+    _ = (task_url, dataset)
+    synth = _contact_form_synthetic_dataset_autowork()
+    if test_types == "data_extraction_only":
+        picked = random.choice(synth)
+        visible = ["name", "email", "subject", "message"]
+        verify_field = random.choice(visible)
+        return _build_data_extraction_result(picked, visible, verify_field=verify_field) or []
+
+    fields_pool = ["name", "email", "subject", "message"]
+    num_fields = random.randint(1, min(3, len(fields_pool)))
+    selected = random.sample(fields_pool, num_fields)
+    sample_row = random.choice(synth)
+    constraints: list[dict[str, Any]] = []
+    for field in selected:
+        allowed_ops = FIELD_OPERATORS_CONTACT_FORM_SUBMITTED_MAP[field]
+        operator = ComparisonOperator(random.choice(allowed_ops))
+        raw = sample_row[field]
+        value = _generate_constraint_value(operator, raw, field, synth)
+        if value is not None:
+            constraints.append(create_constraint_dict(field, operator, value))
+    return constraints

@@ -68,6 +68,8 @@ AUTOLODGE_PAYLOADS = [
     ("POPULAR_HOTELS_VIEWED", {}),
     ("HELP_VIEWED", {}),
     ("FAQ_OPENED", {}),
+    ("AUTOLODGE_CONTACT_PAGE_VIEWED", {}),
+    ("AUTOLODGE_CONTACT_FORM_SUBMITTED", {"name": "n", "email": "e@e.com", "subject": "s", "message": "m"}),
 ]
 # Events that need complex HotelInfo or payment payloads (covered by other tests):
 # RESERVE_HOTEL, EDIT_NUMBER_OF_GUESTS, EDIT_CHECK_IN_OUT_DATES, PAYMENT_METHOD_SELECTED,

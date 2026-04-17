@@ -30,7 +30,9 @@ AUTOCONNECT_PARSE_PAYLOADS = [
     ("HIDE_POST", {"userName": "u", "posterName": "p", "posterContent": "c"}),
     ("APPLY_FOR_JOB", {"jobTitle": "t", "company": "c"}),
     ("SEARCH_USERS", {"query": "q"}),
-    ("VIEW_ALL_RECOMMENDATIONS", {}),
+    ("AUTOCONNECT_CONTACT_PAGE_VIEWED", {"page": "contact"}),
+    ("AUTOCONNECT_CONTACT_FORM_SUBMITTED", {"name": "n", "email": "e@e.com", "subject": "s", "message": "m"}),
+    ("VIEW_ALL_RECOMMENDATIONS", {"source": "recommendations_page"}),
     ("FOLLOW_PAGE", {"pageName": "p", "data": {"recommendation": "r"}}),
     ("UNFOLLOW_PAGE", {"pageName": "p", "data": {"recommendation": "r"}}),
     ("SEARCH_JOBS", {"query": "q"}),
@@ -46,6 +48,11 @@ AUTOCONNECT_PARSE_PAYLOADS = [
     ("VIEW_HIDDEN_POSTS", {}),
     ("UNHIDE_POST", {"userName": "u", "posterName": "p", "posterContent": "c"}),
     ("ADD_EXPERIENCE", {"experience": {"company": "C", "description": "d", "duration": "1y", "location": "L", "title": "T"}}),
+    ("VIEW_NOTIFICATIONS", {"totalCount": 5, "unreadCount": 2, "source": "notifications_page"}),
+    ("FILTER_NOTIFICATIONS", {"filter": "unread"}),
+    ("MARK_NOTIFICATION_READ", {"notificationId": "mention-p1", "type": "mention", "action": "marked_read"}),
+    ("MARK_ALL_NOTIFICATIONS_READ", {"count": 3, "source": "notifications_page"}),
+    ("NOTIFICATIONS_NAVBAR", {"label": "Notifications", "unreadCount": 1, "source": "bottom_nav"}),
 ]
 
 

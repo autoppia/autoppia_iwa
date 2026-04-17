@@ -1,9 +1,11 @@
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
 from .events import (
+    BookTripEvent,
     CancelReservationEvent,
     EnterDestinationEvent,
     EnterLocationEvent,
+    FilterTripsEvent,
     NextPickupEvent,
     ReserveRideEvent,
     SearchDestinationEvent,
@@ -12,18 +14,23 @@ from .events import (
     SelectCarEvent,
     SelectDateEvent,
     SelectTimeEvent,
+    SubmitTripReviewEvent,
     TripDetailsEvent,
+    ViewAvailableTripsEvent,
 )
 from .generation_functions import (
     generate_enter_destination_constraints,
     generate_enter_location_constraints,
+    generate_filter_trips_constraints,
     generate_next_pickup_constraints,
     generate_reserve_ride_constraints,
     generate_search_ride_constraints,
     generate_select_car_constraints,
     generate_select_date_constraints,
     generate_select_time_constraints,
+    generate_submit_trip_review_constraints,
     generate_trip_details_constraints,
+    generate_view_available_trips_constraints,
 )
 
 ENTER_LOCATION_ADDITIONAL_INFO = """
@@ -638,6 +645,70 @@ CANCEL_RESERVATION_USE_CASE = UseCase(
     ],
 )
 
+SUBMIT_TRIP_REVIEW_USE_CASE = UseCase(
+    name="SUBMIT_REVIEW",
+    description="After a trip, the user submits a review with rating, reviewer name, message (comment), and trip details (pickup, dropoff, price, ride type) for that trip (autodrive trip review payload).",
+    event=SubmitTripReviewEvent,
+    event_source_code=SubmitTripReviewEvent.get_source_code_of_class(),
+    constraints_generator=generate_submit_trip_review_constraints,
+    additional_prompt_info="",
+    examples=[
+        {
+            "prompt": "Submit a trip review with rating at least 4 for trip 'trip-1001'.",
+            "prompt_for_task_generation": "Submit a trip review with rating at least 4 for trip '<trip_id>'.",
+        },
+        {
+            "prompt": "Leave a review as 'Alex Morgan' with comment containing 'on time' where pickup contains 'Mission St' and ride type equals 'AutoDriverComfort'.",
+            "prompt_for_task_generation": "Submit a trip review where reviewer name equals 'Alex Morgan', comment contains 'on time', pickup contains 'Mission St', and ride type equals 'AutoDriverComfort'.",
+        },
+    ],
+)
+
+VIEW_AVAILABLE_TRIPS_USE_CASE = UseCase(
+    name="VIEW_AVAILABLE_TRIPS",
+    description="The user opens the available trips list; the app logs how many trips are shown.",
+    event=ViewAvailableTripsEvent,
+    event_source_code=ViewAvailableTripsEvent.get_source_code_of_class(),
+    constraints_generator=generate_view_available_trips_constraints,
+    additional_prompt_info="",
+    examples=[
+        {
+            "prompt": "View available trips when there are more than 3 trips listed.",
+            "prompt_for_task_generation": "View available trips when there are more than <n> trips listed.",
+        },
+    ],
+)
+
+BOOK_TRIP_USE_CASE = UseCase(
+    name="BOOK_TRIP",
+    description="The user books a trip from the available trips page (includes trip id and source).",
+    event=BookTripEvent,
+    event_source_code=BookTripEvent.get_source_code_of_class(),
+    constraints_generator=generate_reserve_ride_constraints,
+    additional_prompt_info="",
+    examples=[
+        {
+            "prompt": "Book an available trip from the trips list with source 'available_trips'.",
+            "prompt_for_task_generation": "Book an available trip from the trips list with source '<source>'.",
+        },
+    ],
+)
+
+FILTER_TRIPS_USE_CASE = UseCase(
+    name="FILTER_TRIPS",
+    description="The user filters the available trips list by location, destination, or price range.",
+    event=FilterTripsEvent,
+    event_source_code=FilterTripsEvent.get_source_code_of_class(),
+    constraints_generator=generate_filter_trips_constraints,
+    additional_prompt_info="",
+    examples=[
+        {
+            "prompt": "Filter available trips by pickup location matching a specific address.",
+            "prompt_for_task_generation": "Filter available trips by pickup location matching '<location>'.",
+        },
+    ],
+)
+
 
 ALL_USE_CASES = [
     ENTER_LOCATION_USE_CASE,
@@ -652,4 +723,8 @@ ALL_USE_CASES = [
     RESERVE_RIDE_USE_CASE,
     TRIP_DETAILS_USE_CASE,
     CANCEL_RESERVATION_USE_CASE,
+    SUBMIT_TRIP_REVIEW_USE_CASE,
+    VIEW_AVAILABLE_TRIPS_USE_CASE,
+    BOOK_TRIP_USE_CASE,
+    FILTER_TRIPS_USE_CASE,
 ]

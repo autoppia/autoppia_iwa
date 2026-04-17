@@ -2,6 +2,8 @@ from autoppia_iwa.src.demo_webs.classes import UseCase
 
 from .events import (
     AddSkillEvent,
+    AutoworkContactFormSubmittedEvent,
+    AutoworkContactPageViewedEvent,
     BookAConsultationEvent,
     BrowseFavoriteExpertEvent,
     CancelHireEvent,
@@ -38,6 +40,8 @@ from .events import (
 )
 from .generation_functions import (
     generate_add_skill_constraint,
+    generate_autowork_contact_form_submitted_constraints,
+    generate_autowork_contact_page_viewed_constraints,
     generate_book_consultant_constraint,
     generate_budget_type_constraint,
     generate_cancel_hire_constraint,
@@ -1200,24 +1204,28 @@ FAVORITE_EXPERT_REMOVED_USE_CASE = UseCase(
 )
 
 
-#
-# NAVBAR_PROFILE_CLICK_USE_USE = UseCase(
-#     name="NAVBAR_EXPERTS_CLICK",
-#     description="The user click a  from navbar option.",
-#     event=NavbarProfileClickEvent,
-#     event_source_code=PostAJobEvent.get_source_code_of_class(),
-#     constraints_generator=False,
-#     examples=[
-#         {
-#             "prompt": "User clicks profile to view user profile.",
-#             "prompt_for_task_generation": "User clicks profile to view user profile.",
-#         },
-#         {
-#             "prompt": "Open the profile section.",
-#             "prompt_for_task_generation": "Open the profile section.",
-#         },
-#     ],
-# )
+CONTACT_PAGE_VIEWED_USE_CASE = UseCase(
+    name="AUTOWORK_CONTACT_PAGE_VIEWED",
+    description="User opened the contact page (optional page label in payload).",
+    event=AutoworkContactPageViewedEvent,
+    event_source_code=AutoworkContactPageViewedEvent.get_source_code_of_class(),
+    constraints_generator=generate_autowork_contact_page_viewed_constraints,
+    examples=[{"prompt": "Open the contact page.", "prompt_for_task_generation": "View the contact page."}],
+)
+
+CONTACT_FORM_SUBMITTED_USE_CASE = UseCase(
+    name="AUTOWORK_CONTACT_FORM_SUBMITTED",
+    description="User submitted the site contact form.",
+    event=AutoworkContactFormSubmittedEvent,
+    event_source_code=AutoworkContactFormSubmittedEvent.get_source_code_of_class(),
+    constraints_generator=generate_autowork_contact_form_submitted_constraints,
+    examples=[
+        {
+            "prompt": "Send a message through the contact form with subject 'Partnership'.",
+            "prompt_for_task_generation": "Submit the contact form with subject 'Partnership'.",
+        },
+    ],
+)
 
 ALL_USE_CASES = [
     BOOK_A_CONSULTATION_USE_CASE,
@@ -1230,6 +1238,8 @@ ALL_USE_CASES = [
     HIRE_CONSULTATION_USE_CASE,
     CANCEL_HIRE_USE_CASE,
     POST_A_JOB_USE_CASE,
+    CONTACT_PAGE_VIEWED_USE_CASE,
+    CONTACT_FORM_SUBMITTED_USE_CASE,
     WRITING_JOB_TITLE_USE_CASE,
     SEARCH_SKILL_USE_CASE,
     ADD_SKILL_USE_CASE,

@@ -67,6 +67,8 @@ AUTOWORK_PAYLOADS = [
     ("CHOOSE_PROJECT_TIMELINE", {}),
     ("SET_RATE_RANGE", {}),
     ("WRITE_JOB_DESCRIPTION", {}),
+    ("AUTOWORK_CONTACT_PAGE_VIEWED", {}),
+    ("AUTOWORK_CONTACT_FORM_SUBMITTED", {"name": "n", "email": "e@e.com", "subject": "s", "message": "message here"}),
 ]
 
 

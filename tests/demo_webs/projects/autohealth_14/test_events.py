@@ -34,6 +34,8 @@ AUTOHEALTH_PAYLOADS = [
     ("CONTACT_DOCTOR", {"data": {}}),
     ("DOCTOR_CONTACTED_SUCCESSFULLY", {"data": {"doctorName": "D", "message": "m", "patientEmail": "e@e.com", "patientName": "P"}}),
     ("FILTER_DOCTOR_REVIEWS", {"data": {}}),
+    ("AUTOHEALTH_CONTACT_FORM_SUBMITTED", {"name": "n", "email": "e@e.com", "subject": "s", "message": "m"}),
+    ("AUTOHEALTH_VIEW_HELP_PAGE", {"page": "help"}),
 ]
 
 

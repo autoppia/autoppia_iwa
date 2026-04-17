@@ -163,7 +163,7 @@ async def test_book_from_wishlist_and_faq(monkeypatch):
     wishlist = await gen.generate_book_from_wishlist_constraints(dataset=HOTELS)
     faq = gen.generate_faq_opened_constraints()
 
-    assert {c["field"] for c in wishlist} == {"hotel_id", "title"}
+    assert {c["field"] for c in wishlist} == {"title"}
     assert faq[0]["field"] == "question"
 
 
@@ -179,3 +179,41 @@ async def test_internal_view_and_reserve_helpers_cover_amenities(monkeypatch):
     assert hotel["id"] == reserve_hotel["id"] == 1
     assert any(c["field"] == "amenities" for c in view_constraints)
     assert any(c["field"] == "guests_set" for c in reserve_constraints)
+
+
+@pytest.mark.asyncio
+async def test_generate_contact_page_viewed_constraints(monkeypatch):
+    monkeypatch.setattr(gen.random, "choice", lambda seq: seq[0])
+    result = await gen.generate_contact_page_viewed_constraints()
+    assert len(result) == 1
+    assert result[0]["field"] == "page"
+    assert result[0]["value"] == "contact"
+
+
+@pytest.mark.asyncio
+async def test_generate_contact_page_viewed_data_extraction_returns_empty():
+    result = await gen.generate_contact_page_viewed_constraints(test_types="data_extraction_only")
+    assert result == []
+
+
+@pytest.mark.asyncio
+async def test_generate_contact_form_submitted_constraints(monkeypatch):
+    monkeypatch.setattr(gen.random, "sample", lambda seq, n: seq[:n])
+    monkeypatch.setattr(gen.random, "choice", lambda seq: seq[0])
+    monkeypatch.setattr(gen.random, "randint", lambda a, b: 2)
+
+    result = await gen.generate_contact_form_submitted_constraints()
+
+    assert len(result) == 2
+    assert all(c["field"] in {"name", "email", "subject", "message"} for c in result)
+
+
+@pytest.mark.asyncio
+async def test_generate_contact_form_submitted_data_extraction(monkeypatch):
+    monkeypatch.setattr(gen.random, "choice", lambda seq: seq[0])
+
+    result = await gen.generate_contact_form_submitted_constraints(test_types="data_extraction_only")
+
+    assert isinstance(result, dict)
+    assert result.get("constraints")
+    assert result.get("question_fields_and_values")

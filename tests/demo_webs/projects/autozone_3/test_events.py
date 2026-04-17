@@ -7,6 +7,9 @@ from autoppia_iwa.src.demo_webs.criterion_helper import ComparisonOperator, Crit
 from autoppia_iwa.src.demo_webs.projects.p03_autozone.events import (
     BACKEND_EVENT_TYPES,
     AddToCartEvent,
+    AutozoneReviewCreatedEvent,
+    AutozoneReviewDeletedEvent,
+    AutozoneReviewUpdatedEvent,
     CarouselScrollEvent,
     CategoryFilterEvent,
     ItemDetailEvent,
@@ -15,6 +18,13 @@ from autoppia_iwa.src.demo_webs.projects.p03_autozone.events import (
     ProductSummary,
     QuantityChangedEvent,
     SearchProductEvent,
+    ShareCompletedEvent,
+)
+from autoppia_iwa.src.demo_webs.projects.p04_autodining.events import (
+    DiningReviewCreatedEvent,
+    DiningReviewDeletedEvent,
+    ReviewCreatedRouterEvent,
+    ReviewDeletedRouterEvent,
 )
 
 from ..event_parse_helpers import assert_parse_cls_kwargs_match_model
@@ -25,6 +35,9 @@ def _be(event_name: str, data: dict | None = None, web_agent_id: str = "test-age
 
 
 AUTOZONE_PAYLOADS = [
+    ("AUTOZONE_LOGIN", {}),
+    ("AUTOZONE_REGISTER", {}),
+    ("AUTOZONE_LOGOUT", {}),
     ("CAROUSEL_SCROLL", {}),
     ("SEARCH_PRODUCT", {"query": "q"}),
     ("CATEGORY_FILTER", {}),
@@ -33,6 +46,46 @@ AUTOZONE_PAYLOADS = [
     ("ADD_TO_CART", {"price": 10.0, "quantity": 1}),
     ("ADD_TO_WISHLIST", {}),
     ("SHARE_PRODUCT", {}),
+    (
+        "SHARE_COMPLETED",
+        {"productId": "p1", "productTitle": "Kettle", "title": "Kettle", "shareUrl": "http://x", "recipientName": "A", "recipientEmail": "a@b.com", "stage": "completed", "price": 10.0},
+    ),
+    (
+        "REVIEW_CREATED",
+        {
+            "title": "Mug",
+            "productId": "p-mug",
+            "reviewId": "rv0",
+            "rating": 5,
+            "price": 9.0,
+            "reviewerName": "Alex",
+            "review": "Great mug.",
+        },
+    ),
+    (
+        "REVIEW_UPDATED",
+        {
+            "title": "Oil",
+            "productId": "p-oil",
+            "reviewId": "r1",
+            "rating": 4,
+            "price": 5.0,
+            "reviewerName": "Sam",
+            "review": "Updated text.",
+        },
+    ),
+    (
+        "REVIEW_DELETED",
+        {
+            "title": "Mug",
+            "productId": "p-mug",
+            "reviewId": "rv9",
+            "rating": 5,
+            "price": 9.0,
+            "reviewerName": "Alex",
+            "review": "Deleted review body.",
+        },
+    ),
     ("VIEW_CART", {}),
     ("VIEW_WISHLIST", {}),
     ("QUANTITY_CHANGED", {}),
@@ -53,6 +106,128 @@ def test_backend_event_types_parse(event_name, data):
 def test_search_product_parse():
     e = SearchProductEvent.parse(_be("SEARCH_PRODUCT", {"query": "tires"}))
     assert e.query == "tires"
+
+
+def test_autozone_review_events_parse():
+    created = AutozoneReviewCreatedEvent.parse(
+        _be(
+            "REVIEW_CREATED",
+            {
+                "title": "Mug",
+                "productId": "m1",
+                "reviewId": "rv1",
+                "rating": 5,
+                "price": 9.0,
+                "reviewerName": "Jordan",
+                "review": "Solid purchase.",
+            },
+        )
+    )
+    assert created.product_id == "m1"
+    assert created.review_id == "rv1"
+    assert created.review_rating == 5
+    assert created.reviewer_name == "Jordan"
+    assert created.review_body == "Solid purchase."
+    updated = AutozoneReviewUpdatedEvent.parse(
+        _be(
+            "REVIEW_UPDATED",
+            {
+                "title": "Mug",
+                "productId": "m1",
+                "reviewId": "rv1",
+                "rating": 3,
+                "price": 9.0,
+                "reviewerName": "Jordan",
+                "review": "Edited comment.",
+            },
+        )
+    )
+    assert updated.review_rating == 3
+    assert updated.reviewer_name == "Jordan"
+    assert updated.review_body == "Edited comment."
+    deleted = AutozoneReviewDeletedEvent.parse(
+        _be(
+            "REVIEW_DELETED",
+            {
+                "title": "Mug",
+                "productId": "m1",
+                "reviewId": "rv1",
+                "rating": 3,
+                "price": 9.0,
+                "reviewerName": "Jordan",
+                "review": "Edited comment.",
+            },
+        )
+    )
+    assert deleted.review_id == "rv1"
+    assert deleted.review_rating == 3
+    assert deleted.reviewer_name == "Jordan"
+    assert deleted.review_body == "Edited comment."
+
+
+def test_share_completed_parse():
+    e = ShareCompletedEvent.parse(
+        _be(
+            "SHARE_COMPLETED",
+            {
+                "productId": "p1",
+                "productTitle": "Mixer",
+                "title": "Mixer",
+                "shareUrl": "https://example.com/p1",
+                "recipientName": "Sam",
+                "recipientEmail": "sam@example.com",
+                "stage": "completed",
+                "price": 20.0,
+            },
+        )
+    )
+    assert e.stage == "completed"
+    assert e.recipient_email == "sam@example.com"
+
+
+def test_review_created_router_autozone_vs_dining():
+    auto = ReviewCreatedRouterEvent.parse(
+        _be(
+            "REVIEW_CREATED",
+            {
+                "title": "X",
+                "productId": "p",
+                "reviewId": "r",
+                "rating": 5,
+                "price": 1.0,
+                "reviewerName": "U",
+                "review": "Hi",
+            },
+        )
+    )
+    assert isinstance(auto, AutozoneReviewCreatedEvent)
+    dining = ReviewCreatedRouterEvent.parse(
+        _be(
+            "REVIEW_CREATED",
+            {"review_id": "r2", "restaurant_id": "rest1", "username": "u", "rating": 4, "comment_length": 10},
+        )
+    )
+    assert isinstance(dining, DiningReviewCreatedEvent)
+
+
+def test_review_deleted_router_autozone_vs_dining():
+    auto = ReviewDeletedRouterEvent.parse(
+        _be(
+            "REVIEW_DELETED",
+            {
+                "title": "X",
+                "productId": "p",
+                "reviewId": "r",
+                "rating": 4,
+                "price": 1.0,
+                "reviewerName": "U",
+                "review": "Bye",
+            },
+        )
+    )
+    assert isinstance(auto, AutozoneReviewDeletedEvent)
+    dining = ReviewDeletedRouterEvent.parse(_be("REVIEW_DELETED", {"review_id": "r2", "restaurant_id": "rest1", "username": "u"}))
+    assert isinstance(dining, DiningReviewDeletedEvent)
 
 
 def test_product_summary_parse_from_data_valid_and_invalid(capsys):

@@ -13,6 +13,7 @@ from .data import (
     FIELD_MAP_CONTACT_DOCTOR_SUCCESSFULLY,
     FIELD_OPERATORS_MAP_APPOINTMENT_BOOKED_SUCCESSFULLY,
     FIELD_OPERATORS_MAP_CONTACT_DOCTOR,
+    FIELD_OPERATORS_MAP_CONTACT_SITE_FORM,
     FIELD_OPERATORS_MAP_FILTER_DOCTOR_REVIEWS,
     FIELD_OPERATORS_MAP_OPEN_APPOINTMENT_FORM,
     FIELD_OPERATORS_MAP_OPEN_CONTACT_DOCTOR_FORM,
@@ -998,3 +999,64 @@ async def generate_filter_doctor_reviews_constraints(
         field_map=FILTER_DOCTOR_REVIEWS_FIELD_MAP,
         num_constraints=random.randint(0, 1),
     )
+
+
+def _contact_form_synthetic_dataset_autowork() -> list[dict[str, str]]:
+    """Sample rows for AUTOWORK_CONTACT_FORM_SUBMITTED (web_10 autowork contact form)."""
+    return [
+        {
+            "name": "Alex Morgan",
+            "email": "alex@example.com",
+            "subject": "Partnership inquiry",
+            "message": "I would like to discuss a long-term collaboration on upcoming projects.",
+        },
+        {
+            "name": "Jordan Lee",
+            "email": "jordan@work.test",
+            "subject": "Hiring question",
+            "message": "Can you confirm your availability for a full-time remote role?",
+        },
+        {
+            "name": "Sam Rivera",
+            "email": "sam@mail.demo",
+            "subject": "Project brief",
+            "message": "Please review the attached scope and let me know your hourly rate.",
+        },
+        {
+            "name": "Riley Chen",
+            "email": "riley@example.org",
+            "subject": "Consultation follow-up",
+            "message": "Thank you for the call yesterday; I have a few more questions.",
+        },
+    ]
+
+
+async def generate_contact_site_form_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    """
+    Constraints for AUTOWORK_CONTACT_FORM_SUBMITTED (name, email, subject, message).
+    """
+    _ = (task_url, dataset)
+    synth = _contact_form_synthetic_dataset_autowork()
+    if test_types == "data_extraction_only":
+        picked = random.choice(synth)
+        visible = ["name", "email", "subject", "message"]
+        verify_field = random.choice(visible)
+        return _build_data_extraction_result(picked, visible, verify_field=verify_field) or []
+
+    fields_pool = ["name", "email", "subject", "message"]
+    num_fields = random.randint(1, min(3, len(fields_pool)))
+    selected = random.sample(fields_pool, num_fields)
+    sample_row = random.choice(synth)
+    constraints: list[dict[str, Any]] = []
+    for field in selected:
+        allowed_ops = FIELD_OPERATORS_MAP_CONTACT_SITE_FORM[field]
+        operator = ComparisonOperator(random.choice(allowed_ops))
+        raw = sample_row[field]
+        value = _generate_constraint_value(operator, raw, field, synth)
+        if value is not None:
+            constraints.append(create_constraint_dict(field, operator, value))
+    return constraints

@@ -5,6 +5,8 @@ from .events import (
     BackToAllHotelsEvent,
     BookFromWishlistEvent,
     ConfirmAndPayEvent,
+    ContactFormSubmittedSharedEvent,
+    ContactPageViewedEvent,
     EditCheckInOutDatesEvent,
     EditNumberOfGuestsEvent,
     FaqOpenedEvent,
@@ -24,6 +26,7 @@ from .generation_functions import (
     generate_apply_filter_constraints,
     generate_book_from_wishlist_constraints,
     generate_confirm_and_pay_constraints,
+    generate_contact_form_submitted_constraints,
     generate_edit_checkin_checkout_constraints,
     generate_edit_guests_constraints,
     generate_faq_opened_constraints,
@@ -927,10 +930,30 @@ FAQ_OPENED_USE_CASE = UseCase(
     examples=[{"prompt": "Open the FAQ about payment options.", "prompt_for_task_generation": "Open the FAQ about payment options."}],
 )
 
+LODGE_CONTACT_PAGE_VIEWED_USE_CASE = UseCase(
+    name="AUTOLODGE_CONTACT_PAGE_VIEWED",
+    description="User opened the lodge contact page.",
+    event=ContactPageViewedEvent,
+    event_source_code=ContactPageViewedEvent.get_source_code_of_class(),
+    constraints_generator=None,
+    examples=[{"prompt": "Open the contact page.", "prompt_for_task_generation": "View contact page where page equals 'contact'"}],
+)
+
+LODGE_CONTACT_FORM_SUBMITTED_USE_CASE = UseCase(
+    name="AUTOLODGE_CONTACT_FORM_SUBMITTED",
+    description="User submitted the lodge contact form.",
+    event=ContactFormSubmittedSharedEvent,
+    event_source_code=ContactFormSubmittedSharedEvent.get_source_code_of_class(),
+    constraints_generator=generate_contact_form_submitted_constraints,
+    examples=[{"prompt": "Submit the contact form with all fields filled.", "prompt_for_task_generation": "Submit contact form with a valid message."}],
+)
+
 ALL_USE_CASES = [
     SEARCH_HOTEL_USE_CASE,
     VIEW_HOTEL_USE_CASE,
     EDIT_NUMBER_OF_GUESTS_USE_CASE,
+    LODGE_CONTACT_PAGE_VIEWED_USE_CASE,
+    LODGE_CONTACT_FORM_SUBMITTED_USE_CASE,
     RESERVE_HOTEL_USE_CASE,
     EDIT_CHECK_IN_OUT_DATES_USE_CASE,
     CONFIRM_AND_PAY_USE_CASE,

@@ -15,8 +15,10 @@ from .data import (
     FIELD_OPERATORS_EDIT_EXPERIENCE_MAP,
     FIELD_OPERATORS_EDIT_PROFILE_MAP,
     FIELD_OPERATORS_FILTER_JOBS_MAP,
+    FIELD_OPERATORS_FILTER_NOTIFICATIONS_MAP,
     FIELD_OPERATORS_FOLLOW_PAGE_MAP,
     FIELD_OPERATORS_LIKE_POST_MAP,
+    FIELD_OPERATORS_MARK_NOTIFICATION_READ_MAP,
     FIELD_OPERATORS_POST_STATUS_MAP,
     FIELD_OPERATORS_SAVE_POST_MAP,
     FIELD_OPERATORS_SEARCH_JOBS_MAP,
@@ -1142,3 +1144,93 @@ async def generate_add_experience_constraints(
         constraint_list.append(constraint)
 
     return constraint_list
+
+
+_FILTER_NOTIFICATION_KEYS_DATASET = [
+    {"filter_key": "all"},
+    {"filter_key": "unread"},
+    {"filter_key": "mentions"},
+    {"filter_key": "comments"},
+    {"filter_key": "jobs"},
+    {"filter_key": "network"},
+]
+
+
+def _mark_notification_read_synthetic_dataset() -> list[dict[str, str]]:
+    """Sample rows aligned with web_9 ``MARK_NOTIFICATION_READ`` (id, type, action)."""
+    return [
+        {
+            "notification_id": "mention-post-1",
+            "notification_type": "mention",
+            "action": "marked_read",
+        },
+        {
+            "notification_id": "comment-post-2",
+            "notification_type": "comment",
+            "action": "marked_unread",
+        },
+        {
+            "notification_id": "connection-alice",
+            "notification_type": "connection",
+            "action": "opened_from_notification",
+        },
+        {
+            "notification_id": "job-backend-1",
+            "notification_type": "job",
+            "action": "marked_read",
+        },
+        {
+            "notification_id": "rec-page-1",
+            "notification_type": "recommendation",
+            "action": "opened_from_notification",
+        },
+    ]
+
+
+async def generate_filter_notifications_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    """
+    Constraints for FILTER_NOTIFICATIONS (``filter``: all, unread, mentions, comments, jobs, network).
+    """
+    _ = (task_url, dataset)
+    if test_types == "data_extraction_only":
+        return []
+
+    field = "filter_key"
+    sample_row = random.choice(_FILTER_NOTIFICATION_KEYS_DATASET)
+    filter_value = sample_row[field]
+    allowed_ops = FIELD_OPERATORS_FILTER_NOTIFICATIONS_MAP[field]
+    operator = ComparisonOperator(random.choice(allowed_ops))
+    value = _generate_constraint_value(operator, filter_value, field, _FILTER_NOTIFICATION_KEYS_DATASET)
+    return [create_constraint_dict(field, operator, value)]
+
+
+async def generate_mark_notification_read_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    """
+    Constraints for MARK_NOTIFICATION_READ (``notificationId``, ``type``, ``action``).
+    """
+    _ = (task_url, dataset)
+    synth = _mark_notification_read_synthetic_dataset()
+    if test_types == "data_extraction_only":
+        picked = random.choice(synth)
+        visible = ["notification_type"]
+        verify_field = random.choice(visible)
+        return _build_data_extraction_result(picked, visible, verify_field=verify_field) or []
+
+    field = "notification_type"
+    sample_row = random.choice(synth)
+    constraints: list[dict[str, Any]] = []
+    allowed_ops = FIELD_OPERATORS_MARK_NOTIFICATION_READ_MAP[field]
+    operator = ComparisonOperator(random.choice(allowed_ops))
+    raw = sample_row[field]
+    value = _generate_constraint_value(operator, raw, field, synth)
+    if value is not None:
+        constraints.append(create_constraint_dict(field, operator, value))
+    return constraints

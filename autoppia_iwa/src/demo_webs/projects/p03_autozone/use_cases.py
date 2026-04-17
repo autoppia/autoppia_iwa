@@ -3,6 +3,12 @@ from autoppia_iwa.src.demo_webs.classes import UseCase
 from .events import (
     AddToCartEvent,
     AddToWishlistEvent,
+    AutozoneLoginEvent,
+    AutozoneLogoutEvent,
+    AutozoneRegisterEvent,
+    AutozoneReviewCreatedEvent,
+    AutozoneReviewDeletedEvent,
+    AutozoneReviewUpdatedEvent,
     CarouselScrollEvent,
     CategoryFilterEvent,
     CheckoutStartedEvent,
@@ -12,21 +18,184 @@ from .events import (
     ProceedToCheckoutEvent,
     QuantityChangedEvent,
     SearchProductEvent,
+    ShareCompletedEvent,
     ShareProductEvent,
     ViewCartEvent,
     ViewWishlistEvent,
 )
 from .generation_functions import (
+    generate_autozone_login_constraints,
     generate_autozone_products_constraints,
+    generate_autozone_register_constraints,
+    generate_autozone_review_constraints,
     generate_carousel_scroll_constraints,
     generate_category_filter_constraints,
     generate_checkout_constraints,
     generate_order_completed_constraints,
     generate_quantity_change_constraints,
     generate_search_query_constraints,
+    generate_share_completed_constraints,
     generate_view_detail_constraints,
 )
 from .replace_functions import replace_products_placeholders
+
+###############################################################################
+# AUTOZONE AUTH (AUTOZONE_LOGIN / AUTOZONE_REGISTER / AUTOZONE_LOGOUT)
+###############################################################################
+
+AUTOZONE_REGISTRATION_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Match the generated constraints: field "username" with operator equals to value <signup_username>, and field "password" with operator equals to value <signup_password>.
+2. Be sure to add instruction to register using username '<signup_username>' and password '<signup_password>' (**strictly** containing both placeholders).
+3. Only phrase it like: "Register with the following username:<signup_username> and password:<signup_password>" etc.
+4. Avoid mentioning anything other than registration with those credential constraints.
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+
+AUTOZONE_LOGIN_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Match the generated constraints: field "username" with operator equals to value <username>, and field "password" with operator equals to value <password>.
+2. Describe signing in to an existing account (not registration). Use the placeholders <username> and <password> exactly as the constraint values.
+3. Do not introduce other credential fields unless they appear explicitly in the constraint list.
+ALL prompts must follow this pattern, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+
+AUTOZONE_LOGOUT_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Match the same login constraints as for AUTOZONE_LOGIN: field "username" equals <username> and field "password" equals <password>, then require logging out / ending the session.
+2. Order matters: authenticate with those credentials first, then perform logout (sign out, end session, log off).
+3. Use placeholders <username> and <password> exactly as the equals-constraint values.
+ALL prompts must follow this pattern, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+
+AUTOZONE_LOGIN_USE_CASE = UseCase(
+    name="AUTOZONE_LOGIN",
+    description="The user fills out the login form and logs in successfully.",
+    event=AutozoneLoginEvent,
+    event_source_code=AutozoneLoginEvent.get_source_code_of_class(),
+    constraints_generator=generate_autozone_login_constraints,
+    additional_prompt_info=AUTOZONE_LOGIN_ADDITIONAL_PROMPT_INFO,
+    examples=[
+        {
+            "prompt": "Sign in using username equals <username> and password equals <password>.",
+            "prompt_for_task_generation": "Sign in using username equals <username> and password equals <password>.",
+        },
+        {
+            "prompt": "Log in to the store: the username constraint is <username> and the password constraint is <password>.",
+            "prompt_for_task_generation": "Log in to the store: the username constraint is <username> and the password constraint is <password>.",
+        },
+        {
+            "prompt": "Open the login form and submit credentials where username is <username> and password is <password>.",
+            "prompt_for_task_generation": "Open the login form and submit credentials where username is <username> and password is <password>.",
+        },
+        {
+            "prompt": "Authenticate with the account whose username field must be <username> and password field must be <password>.",
+            "prompt_for_task_generation": "Authenticate with the account whose username field must be <username> and password field must be <password>.",
+        },
+        {
+            "prompt": "Enter username <username> and password <password> on the sign-in page and complete login.",
+            "prompt_for_task_generation": "Enter username <username> and password <password> on the sign-in page and complete login.",
+        },
+        {
+            "prompt": "Use credentials username=<username> and password=<password> to access my account.",
+            "prompt_for_task_generation": "Use credentials username=<username> and password=<password> to access my account.",
+        },
+        {
+            "prompt": "I need to log in; my username constraint value is <username> and my password constraint value is <password>.",
+            "prompt_for_task_generation": "I need to log in; my username constraint value is <username> and my password constraint value is <password>.",
+        },
+        {
+            "prompt": "Connect me with username <username> and password <password> via the login dialog.",
+            "prompt_for_task_generation": "Connect me with username <username> and password <password> via the login dialog.",
+        },
+    ],
+)
+
+AUTOZONE_REGISTER_USE_CASE = UseCase(
+    name="AUTOZONE_REGISTER",
+    description="The user fills out the registration form and successfully creates a new account.",
+    event=AutozoneRegisterEvent,
+    event_source_code=AutozoneRegisterEvent.get_source_code_of_class(),
+    constraints_generator=generate_autozone_register_constraints,
+    additional_prompt_info=AUTOZONE_REGISTRATION_ADDITIONAL_PROMPT_INFO,
+    examples=[
+        {
+            "prompt": "Register a new user where username equals <signup_username> and password equals <signup_password>.",
+            "prompt_for_task_generation": "Register a new user where username equals <signup_username> and password equals <signup_password>.",
+        },
+        {
+            "prompt": "Register with the following username:<signup_username> and password:<signup_password>",
+            "prompt_for_task_generation": "Register with the following username:<signup_username> and password:<signup_password>",
+        },
+        {
+            "prompt": "Create a new account with username:<signup_username> and password:<signup_password>",
+            "prompt_for_task_generation": "Create a new account with username:<signup_username> and password:<signup_password>",
+        },
+        {
+            "prompt": "Fill the registration form with username:<signup_username> and password:<signup_password>",
+            "prompt_for_task_generation": "Fill the registration form with username:<signup_username> and password:<signup_password>",
+        },
+        {
+            "prompt": "Sign up using credential constraints username=<signup_username> and password=<signup_password>.",
+            "prompt_for_task_generation": "Sign up using credential constraints username=<signup_username> and password=<signup_password>.",
+        },
+        {
+            "prompt": "Open create-account and set username field to <signup_username> and password field to <signup_password>.",
+            "prompt_for_task_generation": "Open create-account and set username field to <signup_username> and password field to <signup_password>.",
+        },
+        {
+            "prompt": "I want to join the site: use signup_username <signup_username> and signup_password <signup_password> on the registration page.",
+            "prompt_for_task_generation": "I want to join the site: use signup_username <signup_username> and signup_password <signup_password> on the registration page.",
+        },
+        {
+            "prompt": "Complete registration with username constraint <signup_username> and password constraint <signup_password>.",
+            "prompt_for_task_generation": "Complete registration with username constraint <signup_username> and password constraint <signup_password>.",
+        },
+    ],
+)
+
+AUTOZONE_LOGOUT_USE_CASE = UseCase(
+    name="AUTOZONE_LOGOUT",
+    description="The user logs out of the platform after logging in.",
+    event=AutozoneLogoutEvent,
+    event_source_code=AutozoneLogoutEvent.get_source_code_of_class(),
+    constraints_generator=generate_autozone_login_constraints,
+    additional_prompt_info=AUTOZONE_LOGOUT_ADDITIONAL_PROMPT_INFO,
+    examples=[
+        {
+            "prompt": "First sign in with username equals <username> and password equals <password>, then log out completely.",
+            "prompt_for_task_generation": "First sign in with username equals <username> and password equals <password>, then log out completely.",
+        },
+        {
+            "prompt": "Login for the following username:<username> and password:<password>, then logout",
+            "prompt_for_task_generation": "Login for the following username:<username> and password:<password>, then logout",
+        },
+        {
+            "prompt": "Login with a specific username:<username> and password:<password>, then sign out from the system",
+            "prompt_for_task_generation": "Login with a specific username:<username> and password:<password>, then sign out from the system",
+        },
+        {
+            "prompt": "Fill the Login Form with a specific username:<username> and password:<password>, once logged in, logout from my account",
+            "prompt_for_task_generation": "Fill the Login Form with a specific username:<username> and password:<password>, once logged in, logout from my account",
+        },
+        {
+            "prompt": "Sign in to the website username:<username> and password:<password>, after that please log me out",
+            "prompt_for_task_generation": "Sign in to the website username:<username> and password:<password>, after that please log me out",
+        },
+        {
+            "prompt": "Authenticate with username:<username> and password:<password>, then end my session",
+            "prompt_for_task_generation": "Authenticate with username:<username> and password:<password>, then end my session",
+        },
+        {
+            "prompt": "Use credentials username <username> and password <password>, then click logout so the session ends.",
+            "prompt_for_task_generation": "Use credentials username <username> and password <password>, then click logout so the session ends.",
+        },
+        {
+            "prompt": "After logging in with username constraint <username> and password constraint <password>, sign out from the header menu.",
+            "prompt_for_task_generation": "After logging in with username constraint <username> and password constraint <password>, sign out from the header menu.",
+        },
+    ],
+)
 
 ###############################################################################
 # PRODUCT_DETAIL_USE_CASE
@@ -390,6 +559,16 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 3. Avoid combining share requests with wishlist, cart, or checkout actions.
 """
 
+SHARE_COMPLETED_EXTRA_PROMPT_INFO = """
+ADDITIONAL CRITICAL RULES FOR SHARE_COMPLETED (recipient form submitted):
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+4. Match all product constraints from the structured list—fields may include title, category, brand, rating, and price, with operators such as equals, not_equals, contains, not_contains, and numeric comparisons (greater_than, less_than, etc.) on rating and price as generated.
+5. Include both recipient constraints: recipient_name and recipient_email, each with operators equals, contains, or not_contains as in the constraint list (apply the same operator and value semantics in natural language).
+6. Describe completing the share dialog (recipient name and email entered, flow submitted), not only copying a link without filling recipients.
+"""
+
+SHARE_COMPLETED_ADDITIONAL_PROMPT_INFO = SHARE_PRODUCT_INFO + "\n" + SHARE_COMPLETED_EXTRA_PROMPT_INFO
+
 SHARE_PRODUCT_DATA_EXTRACTION_PROMPT_INFO = """
 Generate a QUESTION that asks for the value of the verify field, which could be any attribute of the product.
 
@@ -430,6 +609,148 @@ SHARE_PRODUCT_USE_CASE = UseCase(
         {
             "prompt": "Send me the shareable link for that Technology kit I'm viewing.",
             "prompt_for_task_generation": "Send me the shareable link for that <product_category> kit I'm viewing.",
+        },
+    ],
+)
+
+SHARE_COMPLETED_USE_CASE = UseCase(
+    name="SHARE_COMPLETED",
+    description="The user completed the share flow (recipient email/name filled and share submitted).",
+    event=ShareCompletedEvent,
+    event_source_code=ShareCompletedEvent.get_source_code_of_class(),
+    constraints_generator=generate_share_completed_constraints,
+    replace_func=replace_products_placeholders,
+    additional_prompt_info=SHARE_COMPLETED_ADDITIONAL_PROMPT_INFO,
+    examples=[
+        {
+            "prompt": "Complete the share dialog for a product whose title equals Ultra Laptop, with recipient_name Alex and recipient_email alex@example.com.",
+            "prompt_for_task_generation": "Complete the share dialog for a product whose title equals Ultra Laptop, with recipient_name Alex and recipient_email alex@example.com.",
+        },
+        {
+            "prompt": "Finish sharing a Kitchen category product with brand Chef: set recipient_name to Jordan and recipient_email to team@company.org.",
+            "prompt_for_task_generation": "Finish sharing a Kitchen category product with brand Chef: set recipient_name to Jordan and recipient_email to team@company.org.",
+        },
+        {
+            "prompt": "For a product with rating greater than 4.0, submit the share form with recipient_name Morgan and recipient_email buyer@shop.net.",
+            "prompt_for_task_generation": "For a product with rating greater than 4.0, submit the share form with recipient_name Morgan and recipient_email buyer@shop.net.",
+        },
+        {
+            "prompt": "Share a product whose price is less than 200 after matching title contains Kettle; use recipient_name Riley and recipient_email procurement@acme.test.",
+            "prompt_for_task_generation": "Share a product whose price is less than 200 after matching title contains Kettle; use recipient_name Riley and recipient_email procurement@acme.test.",
+        },
+        {
+            "prompt": "Open share on a Technology item, enter recipient_name Sam where the name constraint uses contains, and recipient_email orders@retail.demo with equals.",
+            "prompt_for_task_generation": "Open share on a Technology item, enter recipient_name Sam where the name constraint uses contains, and recipient_email orders@retail.demo with equals.",
+        },
+        {
+            "prompt": "Complete share for a product matching brand not_equals GenericCo, with recipient_name Casey (equals) and recipient_email whose address contains company.org (contains on recipient_email).",
+            "prompt_for_task_generation": "Complete share for a product matching brand not_equals GenericCo, with recipient_name Casey (equals) and recipient_email whose address contains company.org (contains on recipient_email).",
+        },
+        {
+            "prompt": "After filtering by category equals fitness, send the share to recipient_name Taylor and recipient_email buyer@shop.net, satisfying both recipient_name and recipient_email constraints.",
+            "prompt_for_task_generation": "After filtering by category equals fitness, send the share to recipient_name Taylor and recipient_email buyer@shop.net, satisfying both recipient_name and recipient_email constraints.",
+        },
+        {
+            "prompt": "Fill and submit the share modal: product constraints include title equals Oil Filter and price less than 50; recipient_name uses not_contains on a marker string and recipient_email equals team@company.org.",
+            "prompt_for_task_generation": "Fill and submit the share modal: product constraints include title equals Oil Filter and price less than 50; recipient_name uses not_contains on a marker string and recipient_email equals team@company.org.",
+        },
+    ],
+)
+
+REVIEW_PRODUCT_CONSTRAINTS_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+0. Authentication first (same pattern as autobooks use cases that touch user-owned data): begin with an explicit login instruction using placeholders username <username> and password <password>—for example "First, login for the following username:<username> and password:<password>" or "Login with username equals <username> and password equals <password>."—because posting, editing, or deleting a product review requires a signed-in user before navigating to the product and the reviews section.
+1. After the login step, refer to the product using the same attributes as the structured constraints—fields may include title, category, brand, rating, and price, with operators such as equals, not_equals, contains, not_contains, and numeric comparisons on rating and price. When present, ``review_rating`` (stars), ``reviewer_name`` (display name on the review), and ``review_body`` (review text) must be reflected in the instruction: the agent should submit a review that satisfies those constraints together with the product constraints.
+2. Describe posting, editing, or deleting a product review (as appropriate to the event), without adding cart, checkout, or unrelated flows.
+3. Include ALL constraint fields that appear in the generated list; do not invent extra product filters.
+4. Keep the login clause and the review clause in one continuous prompt; do not omit the login preamble.
+ALL prompts must follow this pattern, each phrased slightly differently but containing EXACTLY the same constraint criteria (including login + product constraints together).
+"""
+
+REVIEW_CREATED_USE_CASE = UseCase(
+    name="REVIEW_CREATED",
+    description="The user posted a new product review on the AutoZone product page.",
+    event=AutozoneReviewCreatedEvent,
+    event_source_code=AutozoneReviewCreatedEvent.get_source_code_of_class(),
+    constraints_generator=generate_autozone_review_constraints,
+    replace_func=replace_products_placeholders,
+    additional_prompt_info=REVIEW_PRODUCT_CONSTRAINTS_PROMPT_INFO,
+    examples=[
+        {
+            "prompt": "First, login for the following username:<username> and password:<password> and then post a 5-star review for the Espresso Machine, matching the product title constraint.",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then post a 5-star review for the Espresso Machine, matching the product title constraint.",
+        },
+        {
+            "prompt": "First, login for the following username:<username> and password:<password> and then write a review for a Kitchen category item with brand Chef and rating on the product at least 4.0, giving it 5 stars.",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then write a review for a Kitchen category item with brand Chef and rating on the product at least 4.0, giving it 5 stars.",
+        },
+        {
+            "prompt": "Login with username equals <username> and password equals <password>. Then add a short review for a Technology product whose price is under 150 and title contains Laptop.",
+            "prompt_for_task_generation": "Login with username equals <username> and password equals <password>. Then add a short review for a Technology product whose price is under 150 and title contains Laptop.",
+        },
+        {
+            "prompt": "First, login for the following username:<username> and password:<password> and then leave a 4-star review on a Fitness item where brand equals FitPro and category equals fitness.",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then leave a 4-star review on a Fitness item where brand equals FitPro and category equals fitness.",
+        },
+        {
+            "prompt": "After successful login with '<username>' and '<password>', submit feedback with 5 stars for the product matching title not_equals GenericWidget and price less than 99.",
+            "prompt_for_task_generation": "After successful login with '<username>' and '<password>', submit feedback with 5 stars for the product matching title not_equals GenericWidget and price less than 99.",
+        },
+    ],
+)
+
+REVIEW_UPDATED_USE_CASE = UseCase(
+    name="REVIEW_UPDATED",
+    description="The user edited an existing product review.",
+    event=AutozoneReviewUpdatedEvent,
+    event_source_code=AutozoneReviewUpdatedEvent.get_source_code_of_class(),
+    constraints_generator=generate_autozone_review_constraints,
+    replace_func=replace_products_placeholders,
+    additional_prompt_info=REVIEW_PRODUCT_CONSTRAINTS_PROMPT_INFO,
+    examples=[
+        {
+            "prompt": "First, login for the following username:<username> and password:<password> and then update my review for the Electric Kettle to 4 stars; the product is identified by the title constraint.",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then update my review for the Electric Kettle to 4 stars; the product is identified by the title constraint.",
+        },
+        {
+            "prompt": "Login with username equals <username> and password equals <password>. Then change my review text and rating to 3 stars for the Home product with brand Autoppia and category home.",
+            "prompt_for_task_generation": "Login with username equals <username> and password equals <password>. Then change my review text and rating to 3 stars for the Home product with brand Autoppia and category home.",
+        },
+        {
+            "prompt": "First, login for the following username:<username> and password:<password> and then edit my existing review on the item whose rating is greater than 4.2 and price is less than 200—set the review to 5 stars.",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then edit my existing review on the item whose rating is greater than 4.2 and price is less than 200—set the review to 5 stars.",
+        },
+        {
+            "prompt": "Using your credentials username equals <username> and password equals <password>, sign in and revise my comment for the product matching title contains Mixer and brand contains Kitchen, keeping the same product constraints.",
+            "prompt_for_task_generation": "Using your credentials username equals <username> and password equals <password>, sign in and revise my comment for the product matching title contains Mixer and brand contains Kitchen, keeping the same product constraints.",
+        },
+    ],
+)
+
+REVIEW_DELETED_USE_CASE = UseCase(
+    name="REVIEW_DELETED",
+    description="The user deleted one of their product reviews.",
+    event=AutozoneReviewDeletedEvent,
+    event_source_code=AutozoneReviewDeletedEvent.get_source_code_of_class(),
+    constraints_generator=generate_autozone_review_constraints,
+    replace_func=replace_products_placeholders,
+    additional_prompt_info=REVIEW_PRODUCT_CONSTRAINTS_PROMPT_INFO,
+    examples=[
+        {
+            "prompt": "First, login for the following username:<username> and password:<password> and then delete my review for the Stand Mixer; match the product by title constraint Stand Mixer.",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then delete my review for the Stand Mixer; match the product by title constraint Stand Mixer.",
+        },
+        {
+            "prompt": "Login with username equals <username> and password equals <password>. Then remove my feedback on the Electronics product with category technology and brand from the constraints.",
+            "prompt_for_task_generation": "Login with username equals <username> and password equals <password>. Then remove my feedback on the Electronics product with category technology and brand from the constraints.",
+        },
+        {
+            "prompt": "First, login for the following username:<username> and password:<password> and then take down my review on the listing whose price is less than 50 and title equals Oil Filter.",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then take down my review on the listing whose price is less than 50 and title equals Oil Filter.",
+        },
+        {
+            "prompt": "After successful login with '<username>' and '<password>', erase my star rating for the item where rating is greater than 4.0 and brand not_equals Unknown—delete only that review.",
+            "prompt_for_task_generation": "After successful login with '<username>' and '<password>', erase my star rating for the item where rating is greater than 4.0 and brand not_equals Unknown—delete only that review.",
         },
     ],
 )
@@ -646,7 +967,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Explicitly mention changing quantity (use phrases like "Update quantity", "Change to X", etc.)
 2. Include both product identifier and new quantity
 3. May include previous quantity if specified in constraints
-4. Must be for items already in cart
+4. Must be for items already in carta
 
 For example:
 - CORRECT: "Change quantity of iPhone case in my cart from 1 to 3"
@@ -734,9 +1055,16 @@ CAROUSEL_SCROLL_USE_CASE = UseCase(
 ###############################################################################
 
 ALL_USE_CASES = [
+    AUTOZONE_LOGIN_USE_CASE,
+    AUTOZONE_REGISTER_USE_CASE,
+    AUTOZONE_LOGOUT_USE_CASE,
     PRODUCT_DETAIL_USE_CASE,
     DETAILS_TOGGLE_USE_CASE,
     SHARE_PRODUCT_USE_CASE,
+    SHARE_COMPLETED_USE_CASE,
+    REVIEW_CREATED_USE_CASE,
+    REVIEW_UPDATED_USE_CASE,
+    REVIEW_DELETED_USE_CASE,
     SEARCH_PRODUCT_USE_CASE,
     CATEGORY_FILTER_USE_CASE,
     ADD_TO_CART_USE_CASE,

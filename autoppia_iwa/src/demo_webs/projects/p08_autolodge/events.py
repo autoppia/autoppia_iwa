@@ -806,11 +806,80 @@ class FaqOpenedEvent(Event, BaseEventValidator):
         )
 
 
+class ContactPageViewedEvent(Event, BaseEventValidator):
+    """Contact page view (web_8 autolodge); optional page label."""
+
+    event_name: str = "AUTOLODGE_CONTACT_PAGE_VIEWED"
+
+    class ValidationCriteria(BaseModel):
+        pass
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return True
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "ContactPageViewedEvent":
+        base_event = Event.parse(backend_event)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+        )
+
+
+class ContactFormSubmittedSharedEvent(Event, BaseEventValidator):
+    """General contact form submission (web_8 autolodge)."""
+
+    event_name: str = "AUTOLODGE_CONTACT_FORM_SUBMITTED"
+    name: str | None = None
+    email: str | None = None
+    subject: str | None = None
+    message: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        name: str | CriterionValue | None = None
+        email: str | CriterionValue | None = None
+        subject: str | CriterionValue | None = None
+        message: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.name, criteria.name),
+                self._validate_field(self.email, criteria.email),
+                self._validate_field(self.subject, criteria.subject),
+                self._validate_field(self.message, criteria.message),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "ContactFormSubmittedSharedEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            name=data.get("name"),
+            email=data.get("email"),
+            subject=data.get("subject"),
+            message=data.get("message"),
+        )
+
+
 # =============================================================================
 #                    AVAILABLE EVENTS AND USE CASES
 # =============================================================================
 
 EVENTS = [
+    ContactFormSubmittedSharedEvent,
+    ContactPageViewedEvent,
     SearchHotelEvent,
     ViewHotelEvent,
     SubmitHotelReviewEvent,
@@ -852,4 +921,6 @@ BACKEND_EVENT_TYPES = {
     "POPULAR_HOTELS_VIEWED": PopularHotelsViewedEvent,
     "HELP_VIEWED": HelpViewedEvent,
     "FAQ_OPENED": FaqOpenedEvent,
+    "AUTOLODGE_CONTACT_PAGE_VIEWED": ContactPageViewedEvent,
+    "AUTOLODGE_CONTACT_FORM_SUBMITTED": ContactFormSubmittedSharedEvent,
 }

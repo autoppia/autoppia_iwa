@@ -35,9 +35,9 @@ def main() -> int:
         sys.argv.extend(
             [
                 "-p",
-                "autolist",
+                "autozone",
                 "-u",
-                "AUTOLIST_CANCEL_TASK_CREATION",
+                "AUTOZONE_LOGIN",
                 "-n",
                 "1",
                 "-o",

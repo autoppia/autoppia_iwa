@@ -788,6 +788,184 @@ class UnhidePostEvent(Event, BaseEventValidator):
         )
 
 
+class ViewNotificationsEvent(Event, BaseEventValidator):
+    event_name: str = "VIEW_NOTIFICATIONS"
+
+    class ValidationCriteria(BaseModel):
+        pass
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return True
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "ViewNotificationsEvent":
+        base_event = Event.parse(backend_event)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+        )
+
+
+class FilterNotificationsEvent(Event, BaseEventValidator):
+    event_name: str = "FILTER_NOTIFICATIONS"
+    filter_key: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        filter_key: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return self._validate_field(self.filter_key, criteria.filter_key)
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "FilterNotificationsEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            filter_key=data.get("filter"),
+        )
+
+
+class MarkNotificationReadEvent(Event, BaseEventValidator):
+    event_name: str = "MARK_NOTIFICATION_READ"
+    notification_type: str | None = None
+    action: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        notification_type: str | CriterionValue | None = None
+        action: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.notification_type, criteria.notification_type),
+                self._validate_field(self.action, criteria.action),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "MarkNotificationReadEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            notification_type=data.get("type"),
+            action=data.get("action"),
+        )
+
+
+class MarkAllNotificationsReadEvent(Event, BaseEventValidator):
+    event_name: str = "MARK_ALL_NOTIFICATIONS_READ"
+
+    class ValidationCriteria(BaseModel):
+        pass
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return True
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "MarkAllNotificationsReadEvent":
+        base_event = Event.parse(backend_event)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+        )
+
+
+class DeletePostEvent(Event, BaseEventValidator):
+    event_name: str = "DELETE_POST"
+    post_id: str | None = None
+    author: str | None = None
+    content: str | None = None
+    source: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        post_id: str | CriterionValue | None = None
+        author: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.post_id, criteria.post_id),
+                self._validate_field(self.author, criteria.author),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "DeletePostEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            post_id=data.get("postId"),
+            author=data.get("author"),
+            content=data.get("content"),
+            source=data.get("source"),
+        )
+
+
+class DeleteCommentEvent(Event, BaseEventValidator):
+    event_name: str = "DELETE_COMMENT"
+    post_id: str | None = None
+    comment_id: str | None = None
+    author: str | None = None
+    comment_text: str | None = None
+    source: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        post_id: str | CriterionValue | None = None
+        comment_id: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.post_id, criteria.post_id),
+                self._validate_field(self.comment_id, criteria.comment_id),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "DeleteCommentEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            post_id=data.get("postId"),
+            comment_id=data.get("commentId"),
+            author=data.get("author"),
+            comment_text=data.get("commentText"),
+            source=data.get("source"),
+        )
+
+
 class AddExperienceEvent(Event, BaseEventValidator):
     event_name: str = "ADD_EXPERIENCE"
     company: str | None = None
@@ -861,6 +1039,12 @@ EVENTS = [
     RemovePostEvent,
     ViewHiddenPostsEvent,
     UnhidePostEvent,
+    ViewNotificationsEvent,
+    FilterNotificationsEvent,
+    MarkNotificationReadEvent,
+    MarkAllNotificationsReadEvent,
+    DeletePostEvent,
+    DeleteCommentEvent,
     AddExperienceEvent,
 ]
 
@@ -891,5 +1075,11 @@ BACKEND_EVENT_TYPES = {
     "REMOVE_POST": RemovePostEvent,
     "VIEW_HIDDEN_POSTS": ViewHiddenPostsEvent,
     "UNHIDE_POST": UnhidePostEvent,
+    "VIEW_NOTIFICATIONS": ViewNotificationsEvent,
+    "FILTER_NOTIFICATIONS": FilterNotificationsEvent,
+    "MARK_NOTIFICATION_READ": MarkNotificationReadEvent,
+    "MARK_ALL_NOTIFICATIONS_READ": MarkAllNotificationsReadEvent,
+    "DELETE_POST": DeletePostEvent,
+    "DELETE_COMMENT": DeleteCommentEvent,
     "ADD_EXPERIENCE": AddExperienceEvent,
 }

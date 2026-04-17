@@ -143,3 +143,29 @@ async def test_generate_search_select_and_reserve_ride_constraints(deterministic
     assert {c["field"] for c in search} >= {"location", "destination", "scheduled"}
     assert {c["field"] for c in selected} >= {"location", "destination", "ride_name", "scheduled"}
     assert reserved == selected
+
+
+@pytest.mark.asyncio
+async def test_generate_submit_trip_review_constraints(deterministic_random):
+    out = await gf.generate_submit_trip_review_constraints()
+    assert len(out) >= 2
+    allowed = {
+        "rating",
+        "reviewer_name",
+        "comment",
+        "pickup",
+        "dropoff",
+        "price",
+        "ride_type",
+        "trip_id",
+    }
+    assert {c["field"] for c in out} <= allowed
+
+
+@pytest.mark.asyncio
+async def test_generate_submit_trip_review_constraints_data_extraction(monkeypatch):
+    monkeypatch.setattr(gf.random, "choice", lambda seq: seq[0])
+    out = await gf.generate_submit_trip_review_constraints(test_types="data_extraction_only")
+    assert isinstance(out, dict)
+    assert out.get("constraints")
+    assert out.get("question_fields_and_values")

@@ -699,6 +699,76 @@ class SubmitJobEvent(Event, BaseEventValidator):
         )
 
 
+class AutoworkContactPageViewedEvent(Event, BaseEventValidator):
+    """Contact page view (web_10 autowork)."""
+
+    event_name: str = "AUTOWORK_CONTACT_PAGE_VIEWED"
+    page: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        page: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return self._validate_field(self.page, criteria.page)
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "AutoworkContactPageViewedEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            page=data.get("page"),
+        )
+
+
+class AutoworkContactFormSubmittedEvent(Event, BaseEventValidator):
+    """General contact form submission (web_10 autowork)."""
+
+    event_name: str = "AUTOWORK_CONTACT_FORM_SUBMITTED"
+    name: str | None = None
+    email: str | None = None
+    subject: str | None = None
+    message: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        name: str | CriterionValue | None = None
+        email: str | CriterionValue | None = None
+        subject: str | CriterionValue | None = None
+        message: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.name, criteria.name),
+                self._validate_field(self.email, criteria.email),
+                self._validate_field(self.subject, criteria.subject),
+                self._validate_field(self.message, criteria.message),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "AutoworkContactFormSubmittedEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            name=data.get("name"),
+            email=data.get("email"),
+            subject=data.get("subject"),
+            message=data.get("message"),
+        )
+
+
 class ClosePostAJobWindowEvent(Event, BaseEventValidator):
     """event triggered when someone close post a job window"""
 
@@ -804,6 +874,8 @@ EVENTS = [
     ChooseTimelineEvent,
     SetRateRangeEvent,
     WriteJobDescriptionEvent,
+    AutoworkContactPageViewedEvent,
+    AutoworkContactFormSubmittedEvent,
 ]
 
 BACKEND_EVENT_TYPES = {
@@ -846,4 +918,6 @@ BACKEND_EVENT_TYPES = {
     "CHOOSE_PROJECT_TIMELINE": ChooseTimelineEvent,
     "SET_RATE_RANGE": SetRateRangeEvent,
     "WRITE_JOB_DESCRIPTION": WriteJobDescriptionEvent,
+    "AUTOWORK_CONTACT_PAGE_VIEWED": AutoworkContactPageViewedEvent,
+    "AUTOWORK_CONTACT_FORM_SUBMITTED": AutoworkContactFormSubmittedEvent,
 }

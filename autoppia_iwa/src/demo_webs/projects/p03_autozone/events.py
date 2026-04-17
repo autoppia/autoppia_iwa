@@ -138,6 +138,145 @@ class ShareProductEvent(ItemDetailEvent):
     event_name: str = "SHARE_PRODUCT"
 
 
+class ShareCompletedEvent(ItemDetailEvent):
+    """Share flow completed (same payload as SHARE_PRODUCT with stage completed)."""
+
+    event_name: str = "SHARE_COMPLETED"
+    recipient_name: str | None = None
+    recipient_email: str | None = None
+
+    class ValidationCriteria(ItemDetailEvent.ValidationCriteria):
+        recipient_name: str | CriterionValue | None = None
+        recipient_email: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                ItemDetailEvent._validate_criteria(criteria),
+                self._validate_field(self.recipient_name, criteria.recipient_name),
+                self._validate_field(self.recipient_email, criteria.recipient_email),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "ShareCompletedEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        title = str(data.get("productTitle") or data.get("title") or "")
+        product_summary = ProductSummary.parse_from_data(data)
+        if product_summary:
+            item_name = product_summary.title
+            item_category = product_summary.category
+            item_brand = product_summary.brand
+            item_rating = product_summary.rating
+            item_price = product_summary.price
+        else:
+            item_name = title
+            item_category = data.get("category")
+            item_brand = data.get("brand")
+            item_rating = data.get("rating")
+            item_price = parse_price(data.get("price")) if data.get("price") is not None else None
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            item_name=item_name,
+            item_category=item_category,
+            item_brand=item_brand,
+            item_rating=item_rating,
+            item_price=item_price,
+            recipient_name=data.get("recipientName"),
+            recipient_email=data.get("recipientEmail"),
+        )
+
+
+def _parse_autozone_review_payload_fields(data: dict[str, Any]) -> dict[str, Any]:
+    """
+    Map web_3_autozone review logEvent payload onto event fields.
+
+    Payload includes product context (productId, title, price, …) plus review fields:
+    rating (review star rating), reviewerName, review (body text). reviewId is optional
+    (e.g. omitted on some clients for REVIEW_CREATED).
+    """
+    body = data.get("review")
+    rname = data.get("reviewerName")
+    return {
+        "review_rating": data.get("rating"),
+        "reviewer_name": str(rname) if rname is not None else None,
+        "review_body": str(body) if body is not None else None,
+    }
+
+
+class AutozoneReviewCreatedEvent(ItemDetailEvent):
+    """Product review created (autozone). Registered via p04 multiplex for REVIEW_CREATED."""
+
+    event_name: str = "REVIEW_CREATED"
+    review_rating: float | int | None = None
+    reviewer_name: str | None = None
+    review_body: str | None = None
+
+    class ValidationCriteria(ItemDetailEvent.ValidationCriteria):
+        reviewer_name: str | CriterionValue | None = None
+        review_body: str | CriterionValue | None = None
+        review_rating: float | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                ItemDetailEvent._validate_criteria(criteria),
+                self._validate_field(self.review_rating, criteria.review_rating),
+                self._validate_field(self.reviewer_name, criteria.reviewer_name),
+                self._validate_field(self.review_body, criteria.review_body),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "AutozoneReviewCreatedEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        product_summary = ProductSummary.parse_from_data(data)
+        if product_summary:
+            item_name = product_summary.title
+            item_category = product_summary.category
+            item_brand = product_summary.brand
+            item_price = product_summary.price
+        else:
+            item_name = str(data.get("title", ""))
+            item_category = data.get("category")
+            item_brand = data.get("brand")
+            item_price = parse_price(data.get("price")) if data.get("price") is not None else None
+        extra = _parse_autozone_review_payload_fields(data)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            item_name=item_name,
+            item_category=item_category,
+            item_brand=item_brand,
+            item_rating=None,
+            item_price=item_price,
+            **extra,
+        )
+
+
+class AutozoneReviewUpdatedEvent(AutozoneReviewCreatedEvent):
+    """Product review updated (autozone)."""
+
+    event_name: str = "REVIEW_UPDATED"
+
+
+class AutozoneReviewDeletedEvent(AutozoneReviewCreatedEvent):
+    """Product review deleted (autozone). Registered via p04 multiplex for REVIEW_DELETED."""
+
+    event_name: str = "REVIEW_DELETED"
+
+
 class SearchProductEvent(Event, BaseEventValidator):
     """Event triggered when a user searches for a product."""
 
@@ -610,12 +749,60 @@ class CheckoutStartedEvent(Event, BaseEventValidator):
         )
 
 
+class AutozoneLoginBaseEvent(Event, BaseEventValidator):
+    """User signed in (matches `EVENT_TYPES.LOGIN` → AUTOZONE_LOGIN)."""
+
+    event_name: str = "AUTOZONE_LOGIN_BASE"
+    username: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        username: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all([self._validate_field(self.username, criteria.username)])
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "AutozoneLoginBaseEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            username=str(data["username"]) if data.get("username") is not None else None,
+        )
+
+
+class AutozoneLoginEvent(AutozoneLoginBaseEvent):
+    """User signed in (matches `EVENT_TYPES.LOGIN` → AUTOZONE_LOGIN)."""
+
+    event_name: str = "AUTOZONE_LOGIN"
+
+
+class AutozoneRegisterEvent(AutozoneLoginBaseEvent):
+    """New account registered (AUTOZONE_REGISTER)."""
+
+    event_name: str = "AUTOZONE_REGISTER"
+
+
+class AutozoneLogoutEvent(AutozoneLoginBaseEvent):
+    """User logged out (AUTOZONE_LOGOUT)."""
+
+    event_name: str = "AUTOZONE_LOGOUT"
+
+
 # =============================================================================
 #                    AVAILABLE EVENTS AND USE CASES
 # =============================================================================
 
 
 EVENTS = [
+    AutozoneLoginEvent,
+    AutozoneRegisterEvent,
+    AutozoneLogoutEvent,
     ItemDetailEvent,
     DetailsToggleEvent,
     SearchProductEvent,
@@ -623,6 +810,10 @@ EVENTS = [
     AddToCartEvent,
     AddToWishlistEvent,
     ShareProductEvent,
+    ShareCompletedEvent,
+    AutozoneReviewCreatedEvent,
+    AutozoneReviewUpdatedEvent,
+    AutozoneReviewDeletedEvent,
     ViewCartEvent,
     ViewWishlistEvent,
     QuantityChangedEvent,
@@ -632,6 +823,9 @@ EVENTS = [
     CarouselScrollEvent,
 ]
 BACKEND_EVENT_TYPES = {
+    "AUTOZONE_LOGIN": AutozoneLoginEvent,
+    "AUTOZONE_REGISTER": AutozoneRegisterEvent,
+    "AUTOZONE_LOGOUT": AutozoneLogoutEvent,
     "CAROUSEL_SCROLL": CarouselScrollEvent,
     "SEARCH_PRODUCT": SearchProductEvent,
     "CATEGORY_FILTER": CategoryFilterEvent,
@@ -640,6 +834,10 @@ BACKEND_EVENT_TYPES = {
     "ADD_TO_CART": AddToCartEvent,
     "ADD_TO_WISHLIST": AddToWishlistEvent,
     "SHARE_PRODUCT": ShareProductEvent,
+    "SHARE_COMPLETED": ShareCompletedEvent,
+    "REVIEW_CREATED": AutozoneReviewCreatedEvent,
+    "REVIEW_UPDATED": AutozoneReviewUpdatedEvent,
+    "REVIEW_DELETED": AutozoneReviewDeletedEvent,
     "VIEW_CART": ViewCartEvent,
     "VIEW_WISHLIST": ViewWishlistEvent,
     "QUANTITY_CHANGED": QuantityChangedEvent,

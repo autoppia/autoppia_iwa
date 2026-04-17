@@ -17,6 +17,8 @@ from autoppia_iwa.src.demo_webs.projects.p04_autodining.events import (
     ContactPageViewEvent,
     CountrySelectedEvent,
     DateDropdownOpenedEvent,
+    DiningReviewCreatedEvent,
+    DiningReviewDeletedEvent,
     HelpCategorySelectedEvent,
     HelpFaqToggledEvent,
     MenuCategory,
@@ -58,6 +60,19 @@ AUTODINING_PAYLOADS = [
     ("HELP_CATEGORY_SELECTED", {"category": "reservations"}),
     ("HELP_FAQ_TOGGLED", {"question": "Q"}),
     ("CONTACT_FORM_SUBMIT", {"data": {"message": "m", "name": "N", "email": "e@e.com", "subject": "s"}}),
+    ("TIME_SELECTED", {"time": "19:00"}),
+    ("DATE_SELECTED", {"date": "2025-06-01T12:00:00.000Z"}),
+    ("PEOPLE_SELECTED", {"people": 4}),
+    ("TAG_FILTER_SELECTED", {"tag": "Japanese"}),
+    ("LOGIN", {"username": "alex", "source": "login"}),
+    ("REGISTER", {"username": "newbie", "source": "register"}),
+    ("LOGOUT", {"username": "alex"}),
+    (
+        "REVIEW_CREATED",
+        {"review_id": "r1", "restaurant_id": "rest-1", "username": "alex", "rating": 5, "comment_length": 12},
+    ),
+    ("REVIEW_EDITED", {"review_id": "r1", "restaurant_id": "rest-1", "username": "alex", "rating": 4, "comment_length": 8}),
+    ("REVIEW_DELETED", {"review_id": "r1", "restaurant_id": "rest-1", "username": "alex"}),
 ]
 
 
@@ -274,4 +289,9 @@ def test_backend_event_types_parse(event_name, data):
     event_class = BACKEND_EVENT_TYPES[event_name]
     e = event_class.parse(_be(event_name, data))
     assert e.event_name == event_name
-    assert_parse_cls_kwargs_match_model(event_class)
+    if event_name == "REVIEW_CREATED":
+        assert isinstance(e, DiningReviewCreatedEvent)
+    elif event_name == "REVIEW_DELETED":
+        assert isinstance(e, DiningReviewDeletedEvent)
+    else:
+        assert_parse_cls_kwargs_match_model(event_class)

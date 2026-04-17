@@ -4,6 +4,8 @@ STRICT_COPY_INSTRUCTION = "CRITICAL: Copy values EXACTLY as provided in the cons
 
 from .events import (
     AppointmentBookedSuccessfullyEvent,
+    AutohealthContactFormSubmittedEvent,
+    AutohealthViewHelpPageEvent,
     ContactDoctorEvent,
     DoctorContactedSuccessfullyEvent,
     FilterDoctorReviewsEvent,
@@ -24,6 +26,7 @@ from .events import (
 from .generation_functions import (
     generate_appointment_booked_successfully_constraints,
     generate_contact_doctor_constraints,
+    generate_contact_site_form_constraints,
     generate_doctor_contact_successfully_constraints,
     generate_filter_doctor_reviews_constraints,
     generate_open_appointment_form_constraints,
@@ -777,6 +780,36 @@ DOCTOR_CONTACTED_SUCCESSFULLY_USE_CASE = UseCase(
         },
     ],
 )
+CONTACT_SITE_FORM_USE_CASE = UseCase(
+    name="AUTOHEALTH_CONTACT_FORM_SUBMITTED",
+    description="The user submitted the site contact form (name, email, subject, message).",
+    event=AutohealthContactFormSubmittedEvent,
+    event_source_code=AutohealthContactFormSubmittedEvent.get_source_code_of_class(),
+    constraints_generator=generate_contact_site_form_constraints,
+    additional_prompt_info=f"Use fields name, email, subject, message. {STRICT_COPY_INSTRUCTION}",
+    examples=[
+        {
+            "prompt": "Send a contact message with subject 'Billing question' from jane@example.com",
+            "prompt_for_task_generation": "Submit contact form where subject equals 'Billing question' and email equals 'jane@example.com'",
+        },
+    ],
+)
+
+VIEW_HELP_PAGE_USE_CASE = UseCase(
+    name="AUTOHEALTH_VIEW_HELP_PAGE",
+    description="The user opened the Help / FAQ page.",
+    event=AutohealthViewHelpPageEvent,
+    event_source_code=AutohealthViewHelpPageEvent.get_source_code_of_class(),
+    constraints_generator=None,
+    additional_prompt_info=f"Use field page equals 'help'. {STRICT_COPY_INSTRUCTION}",
+    examples=[
+        {
+            "prompt": "Open the help center page",
+            "prompt_for_task_generation": "View help page where page equals 'help'",
+        },
+    ],
+)
+
 FILTER_DOCTOR_REVIEWS_USE_CASE = UseCase(
     name="FILTER_DOCTOR_REVIEWS",
     description="The user filtered or sorted a doctor's reviews (by star rating and/or sort order: newest, oldest, highest, lowest).",
@@ -804,6 +837,8 @@ FILTER_DOCTOR_REVIEWS_USE_CASE = UseCase(
     ],
 )
 ALL_USE_CASES = [
+    CONTACT_SITE_FORM_USE_CASE,
+    VIEW_HELP_PAGE_USE_CASE,
     OPEN_APPOINTMENT_FORM_USE_CASE,
     APPOINTMENT_BOOKED_SUCCESSFULLY_USE_CASE,
     REQUEST_QUICK_APPOINTMENT_USE_CASE,
