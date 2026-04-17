@@ -10,6 +10,8 @@ from ...criterion_helper import ComparisonOperator
 from ...shared_utils import create_constraint_dict, parse_price
 from .data import (
     FIELD_OPERATORS_MAP_PRODUCTS,
+    FIELD_OPERATORS_MAP_RECIPIENT,
+    FIELD_OPERATORS_MAP_REVIEW_EVENT,
     VISIBLE_FIELDS_CATEGORY_FILTER,
     VISIBLE_FIELDS_PRODUCT_DETAIL,
     VISIBLE_FIELDS_SEARCH_PRODUCT,
@@ -92,6 +94,25 @@ def _build_data_extraction_result(
 
 QUANTITY_FIELDS = ["quantity", "items", "total_items", "previous_quantity", "new_quantity"]
 
+# Synthetic pools for review text constraints (tasks ask the agent to match intent; web logs real user strings)
+_REVIEW_CONSTRAINT_DISPLAY_NAMES = [
+    "Alex",
+    "Jordan",
+    "Sam",
+    "Riley",
+    "Taylor",
+    "Morgan",
+    "Casey",
+]
+_REVIEW_CONSTRAINT_BODY_SNIPPETS = [
+    "Great value for money",
+    "Arrived quickly and works well",
+    "Solid quality overall",
+    "Would recommend to others",
+    "Met my expectations",
+    "Good purchase experience",
+]
+
 
 async def _ensure_products_dataset(
     task_url: str | None = None,
@@ -118,6 +139,11 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
     source_value = product_data_source.get(field)
     if field == "price":
         source_value = parse_price(source_value)
+    elif field == "review_rating" and source_value is not None:
+        with contextlib.suppress(ValueError, TypeError):
+            source_value = float(source_value)
+    elif field in ("reviewer_name", "review_body") and source_value is not None:
+        source_value = str(source_value)
     generated_value = None
 
     value_pool = []
@@ -162,6 +188,22 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
                 if isinstance(brand, str) and brand:
                     all_terms_list.append(brand)
             value_pool = list({term for term in all_terms_list if term and isinstance(term, str)})
+        elif field == "review_rating":
+            value_pool = [1.0, 2.0, 3.0, 4.0, 5.0]
+            rv = product_data_source.get("review_rating")
+            if rv is not None:
+                with contextlib.suppress(ValueError, TypeError):
+                    value_pool.append(float(rv))
+        elif field == "reviewer_name":
+            value_pool = list(_REVIEW_CONSTRAINT_DISPLAY_NAMES)
+            rv = product_data_source.get("reviewer_name")
+            if isinstance(rv, str) and rv.strip() and rv not in value_pool:
+                value_pool = [*value_pool, rv]
+        elif field == "review_body":
+            value_pool = list(_REVIEW_CONSTRAINT_BODY_SNIPPETS)
+            rv = product_data_source.get("review_body")
+            if isinstance(rv, str) and rv.strip() and rv not in value_pool:
+                value_pool = [*value_pool, rv]
 
     except Exception as e:
         logger.exception(f"Error building value pool for field '{field}': {e}")
@@ -304,6 +346,74 @@ async def generate_autozone_products_constraints(
     return constraints_list
 
 
+def _maybe_append_review_field_constraint(
+    base: list[dict[str, Any]],
+    *,
+    field: str,
+    product: dict[str, Any],
+    data_items: list[dict[str, Any]],
+    synth_overlay: dict[str, Any],
+) -> None:
+    """Append one constraint for ``field`` if value generation succeeds."""
+    allowed = FIELD_OPERATORS_MAP_REVIEW_EVENT[field]
+    op = ComparisonOperator(random.choice(allowed))
+    synth = {**product, **synth_overlay}
+    constraint_value = generate_constraint_value(field, op, synth, all_products_data=data_items)
+    if constraint_value is not None:
+        base.append(create_constraint_dict(field, op, constraint_value))
+
+
+async def generate_autozone_review_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    """
+    Shared generator for REVIEW_CREATED, REVIEW_UPDATED, and REVIEW_DELETED.
+
+    Builds the same product-scoped constraints as :func:`generate_autozone_products_constraints`
+    (title, category, brand, rating, price) so tasks identify which product the user reviews.
+    Independently may append ``review_rating`` (1-5 stars), ``reviewer_name``, and/or ``review_body``
+    constraints so prompts can specify target stars, display name, and review text (per event fields).
+    """
+    base = await generate_autozone_products_constraints(task_url, dataset, test_types)
+    if test_types == "data_extraction_only" or not isinstance(base, list):
+        return base
+
+    data_items = await _ensure_products_dataset(task_url, dataset)
+    if not data_items:
+        return base
+
+    product = random.choice(data_items)
+    _REVIEW_FIELD_PROB = 0.35
+
+    if random.random() <= _REVIEW_FIELD_PROB:
+        _maybe_append_review_field_constraint(
+            base,
+            field="review_rating",
+            product=product,
+            data_items=data_items,
+            synth_overlay={"review_rating": float(random.randint(1, 5))},
+        )
+    if random.random() <= _REVIEW_FIELD_PROB:
+        _maybe_append_review_field_constraint(
+            base,
+            field="reviewer_name",
+            product=product,
+            data_items=data_items,
+            synth_overlay={"reviewer_name": random.choice(_REVIEW_CONSTRAINT_DISPLAY_NAMES)},
+        )
+    if random.random() <= _REVIEW_FIELD_PROB:
+        _maybe_append_review_field_constraint(
+            base,
+            field="review_body",
+            product=product,
+            data_items=data_items,
+            synth_overlay={"review_body": random.choice(_REVIEW_CONSTRAINT_BODY_SNIPPETS)},
+        )
+    return base
+
+
 async def generate_view_detail_constraints(
     task_url: str | None = None,
     dataset: dict[str, list[dict[str, Any]]] | list[dict[str, Any]] | None = None,
@@ -338,17 +448,58 @@ async def generate_search_query_constraints(
         result = _build_data_extraction_result(item_with_name, VISIBLE_FIELDS_SEARCH_PRODUCT, question_fields_override=["name"])
         return result if result is not None else []
 
-    constraints_list = []
-    query_operators = [
-        ComparisonOperator.EQUALS,
-        ComparisonOperator.CONTAINS,
+
+def _share_completed_recipient_value(field: str, op: ComparisonOperator, raw: str) -> str:
+    """Build a constraint value for recipient_name / recipient_email for the given operator."""
+    if op in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]:
+        return raw
+    if op == ComparisonOperator.CONTAINS:
+        if field == "recipient_email" and "@" in raw:
+            return raw.split("@", 1)[1]
+        if len(raw) >= 2:
+            return raw[: max(2, len(raw) // 2)]
+        return raw
+    if op == ComparisonOperator.NOT_CONTAINS:
+        return raw + "XYZ" + str(random.randint(100, 999))  # Ensure it won't contain source
+
+    return raw
+
+
+async def generate_share_completed_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
+    """
+    Product constraints (same as catalog tasks) plus exactly one recipient constraint:
+    either ``recipient_name`` or ``recipient_email`` — not both.
+    """
+
+    SAMPLE_RECIPIENT_NAMES = [
+        "Alex",
+        "Jordan",
+        "Sam",
+        "Riley",
+        "Taylor",
+        "Morgan",
+        "Casey",
     ]
-    op = random.choice(query_operators)
-    product = random.choice(data_items)
-    constraint_value = generate_constraint_value("query", op, product, all_products_data=data_items)
-    if constraint_value is not None:
-        constraints_list.append(create_constraint_dict("query", op, constraint_value))
-    return constraints_list if constraints_list else [create_constraint_dict("query", ComparisonOperator.CONTAINS, "products")]
+
+    SAMPLE_RECIPIENT_EMAILS = [
+        "alex@example.com",
+        "team@company.org",
+        "buyer@shop.net",
+        "procurement@acme.test",
+        "orders@retail.demo",
+    ]
+
+    constraints_list = await generate_autozone_products_constraints(task_url, dataset)
+
+    for field in ["recipient_name", "recipient_email"]:
+        op = ComparisonOperator(random.choice(FIELD_OPERATORS_MAP_RECIPIENT[field]))
+        raw = random.choice(SAMPLE_RECIPIENT_NAMES if field == "recipient_name" else SAMPLE_RECIPIENT_EMAILS)
+        value = _share_completed_recipient_value(field, op, raw)
+        constraints_list.append(create_constraint_dict(field, op, value))
+    return constraints_list
 
 
 async def generate_quantity_change_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
@@ -511,3 +662,25 @@ async def generate_category_filter_constraints(
     selected_category = random.choice(categories)
     constraints.append(create_constraint_dict("category", ComparisonOperator.EQUALS, selected_category))
     return constraints
+
+
+async def generate_autozone_login_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
+    _ = (task_url, dataset)
+    return [
+        {"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<username>"},
+        {"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<password>"},
+    ]
+
+
+async def generate_autozone_register_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
+    _ = (task_url, dataset)
+    return [
+        {"field": "username", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<signup_username>"},
+        {"field": "password", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": "<signup_password>"},
+    ]

@@ -833,6 +833,78 @@ class FilterDoctorReviewsEvent(Event, BaseEventValidator):
         )
 
 
+class AutohealthContactFormSubmittedEvent(Event, BaseEventValidator):
+    """General site contact form (web_14 autohealth)."""
+
+    event_name: str = "AUTOHEALTH_CONTACT_FORM_SUBMITTED"
+    name: str | None = None
+    email: str | None = None
+    subject: str | None = None
+    message: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        name: str | CriterionValue | None = None
+        email: str | CriterionValue | None = None
+        subject: str | CriterionValue | None = None
+        message: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.name, criteria.name),
+                self._validate_field(self.email, criteria.email),
+                self._validate_field(self.subject, criteria.subject),
+                self._validate_field(self.message, criteria.message),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "AutohealthContactFormSubmittedEvent":
+        base_event = Event.parse(backend_event)
+        raw = backend_event.data or {}
+        nested = raw.get("data")
+        data = nested if isinstance(nested, dict) else raw
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            name=data.get("name"),
+            email=data.get("email"),
+            subject=data.get("subject"),
+            message=data.get("message"),
+        )
+
+
+class AutohealthViewHelpPageEvent(Event, BaseEventValidator):
+    """Fired when user visits the Help page (web_14 autohealth)."""
+
+    event_name: str = "AUTOHEALTH_VIEW_HELP_PAGE"
+
+    class ValidationCriteria(BaseModel):
+        pass
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return True
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "AutohealthViewHelpPageEvent":
+        base_event = Event.parse(backend_event)
+        raw = backend_event.data or {}
+        nested = raw.get("data")
+        nested if isinstance(nested, dict) else raw
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+        )
+
+
 EVENTS = [
     AppointmentBookedSuccessfullyEvent,
     RequestQuickAppointmentEvent,
@@ -851,6 +923,8 @@ EVENTS = [
     ContactDoctorEvent,
     DoctorContactedSuccessfullyEvent,
     FilterDoctorReviewsEvent,
+    AutohealthContactFormSubmittedEvent,
+    AutohealthViewHelpPageEvent,
 ]
 
 BACKEND_EVENT_TYPES = {
@@ -871,4 +945,6 @@ BACKEND_EVENT_TYPES = {
     "CONTACT_DOCTOR": ContactDoctorEvent,
     "DOCTOR_CONTACTED_SUCCESSFULLY": DoctorContactedSuccessfullyEvent,
     "FILTER_DOCTOR_REVIEWS": FilterDoctorReviewsEvent,
+    "AUTOHEALTH_CONTACT_FORM_SUBMITTED": AutohealthContactFormSubmittedEvent,
+    "AUTOHEALTH_VIEW_HELP_PAGE": AutohealthViewHelpPageEvent,
 }

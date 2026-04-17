@@ -9,7 +9,9 @@ from .events import (
     BookDetailEvent,
     ContactEvent,
     DeleteBookEvent,
+    DeleteCommentBookEvent,
     EditBookEvent,
+    EditCommentBookEvent,
     EditUserEvent,
     FilterBookEvent,
     LoginEvent,
@@ -21,6 +23,7 @@ from .events import (
     RemoveFromReadingListEvent,
     SearchBookEvent,
     ShareBookEvent,
+    ViewAuthorEvent,
     ViewCartBookEvent,
 )
 from .generation_functions import (
@@ -39,6 +42,7 @@ from .generation_functions import (
     generate_logout_constraints,
     generate_registration_constraints,
     generate_search_book_constraints,
+    generate_view_author_constraints,
 )
 from .replace_functions import replace_book_placeholders
 
@@ -256,39 +260,39 @@ BOOK_DETAIL_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Navigate to 'The Housemaid Is Watching' book page",
-            "prompt_for_task_generation": "Navigate to <book> book page",
+            "prompt_for_task_generation": "Navigate to 'The Housemaid Is Watching' book page",
         },
         {
             "prompt": "Go to the book details page for 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
-            "prompt_for_task_generation": "Go to the book details page for <book> by <author>",
+            "prompt_for_task_generation": "Go to the book details page for 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
         },
         {
             "prompt": "Navigate directly to a Science book page from 2022",
-            "prompt_for_task_generation": "Navigate directly to a <genre> book page from <year>",
+            "prompt_for_task_generation": "Navigate directly to a Science book page from 2022",
         },
         {
             "prompt": "Go directly to a book page with rating above 4.5",
-            "prompt_for_task_generation": "Go directly to a book page with rating above <rating>",
+            "prompt_for_task_generation": "Go directly to a book page with rating above 4.5",
         },
         {
             "prompt": "Take me directly to the 'Fourth Wing' book details page",
-            "prompt_for_task_generation": "Take me directly to the <book> book details page",
+            "prompt_for_task_generation": "Take me directly to the 'Fourth Wing' book details page",
         },
         {
             "prompt": "Navigate to a 'Magazine' book page less than 1000 pages long",
-            "prompt_for_task_generation": "Navigate to a <genre> book page less than <page_count> pages long",
+            "prompt_for_task_generation": "Navigate to a 'Magazine' book page less than 1000 pages long",
         },
         {
             "prompt": "Go to a book details page from the 2010s directed by 'Ron Larson'",
-            "prompt_for_task_generation": "Go to a book details page from the <decade> directed by '<author>'",
+            "prompt_for_task_generation": "Go to a book details page from the 2010s directed by 'Ron Larson'",
         },
         {
             "prompt": "Navigate me to a 'Science' book page not written by 'Grant Morrison'",
-            "prompt_for_task_generation": "Navigate me to a <genre> book page not written by <author>",
+            "prompt_for_task_generation": "Navigate me to a 'Science' book page not written by 'Grant Morrison'",
         },
         {
             "prompt": "Go directly to the highest-rated 'Lidia Matticchio Bastianich' book page",
-            "prompt_for_task_generation": "Go directly to the highest-rated <author> book page",
+            "prompt_for_task_generation": "Go directly to the highest-rated 'Lidia Matticchio Bastianich' book page",
         },
     ],
 )
@@ -365,39 +369,39 @@ SHARE_BOOK_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Share 'The Housemaid Is Watching' book",
-            "prompt_for_task_generation": "Share <book> book",
+            "prompt_for_task_generation": "Share 'The Housemaid Is Watching' book",
         },
         {
             "prompt": "Share book details for 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
-            "prompt_for_task_generation": "Share book details for <book> by <author>",
+            "prompt_for_task_generation": "Share book details for 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
         },
         {
             "prompt": "Share Science book from 2022",
-            "prompt_for_task_generation": "Share <genre> book from <year>",
+            "prompt_for_task_generation": "Share Science book from 2022",
         },
         {
             "prompt": "Share book with rating above 4.5",
-            "prompt_for_task_generation": "Share book with rating above <rating>",
+            "prompt_for_task_generation": "Share book with rating above 4.5",
         },
         {
             "prompt": "Share 'Fourth Wing' book details",
-            "prompt_for_task_generation": "Share <book> book details",
+            "prompt_for_task_generation": "Share 'Fourth Wing' book details",
         },
         {
             "prompt": "Share 'Magazine' book less than 1000 pages long",
-            "prompt_for_task_generation": "Share <genre> book less than <page_count> pages long",
+            "prompt_for_task_generation": "Share 'Magazine' book less than 1000 pages long",
         },
         {
             "prompt": "Share book details from the 2010s directed by 'Ron Larson'",
-            "prompt_for_task_generation": "Share book details from the <decade> directed by '<author>'",
+            "prompt_for_task_generation": "Share book details from the 2010s directed by 'Ron Larson'",
         },
         {
             "prompt": "Share 'Science' book not written by 'Grant Morrison'",
-            "prompt_for_task_generation": "Share <genre> book not written by <author>",
+            "prompt_for_task_generation": "Share 'Science' book not written by 'Grant Morrison'",
         },
         {
             "prompt": "Share highest-rated 'Lidia Matticchio Bastianich' book",
-            "prompt_for_task_generation": "Share highest-rated <author> book",
+            "prompt_for_task_generation": "Share highest-rated 'Lidia Matticchio Bastianich' book",
         },
     ],
 )
@@ -474,39 +478,39 @@ OPEN_PREVIEW_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Open preview of 'The Housemaid Is Watching' book",
-            "prompt_for_task_generation": "Open preview of <book> book",
+            "prompt_for_task_generation": "Open preview of 'The Housemaid Is Watching' book",
         },
         {
             "prompt": "Open preview of book for 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
-            "prompt_for_task_generation": "Open preview of book for <book> by <author>",
+            "prompt_for_task_generation": "Open preview of book for 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
         },
         {
             "prompt": "Open preview of Science book from 2022",
-            "prompt_for_task_generation": "Open preview of <genre> book from <year>",
+            "prompt_for_task_generation": "Open preview of Science book from 2022",
         },
         {
             "prompt": "Open preview of book with rating above 4.5",
-            "prompt_for_task_generation": "Open preview of book with rating above <rating>",
+            "prompt_for_task_generation": "Open preview of book with rating above 4.5",
         },
         {
             "prompt": "Open preview of 'Fourth Wing' book",
-            "prompt_for_task_generation": "Open preview of <book> book",
+            "prompt_for_task_generation": "Open preview of 'Fourth Wing' book",
         },
         {
             "prompt": "Open preview of 'Magazine' book less than 1000 pages long",
-            "prompt_for_task_generation": "Open preview of <genre> book less than <page_count> pages long",
+            "prompt_for_task_generation": "Open preview of 'Magazine' book less than 1000 pages long",
         },
         {
             "prompt": "Open preview of book from the 2010s directed by 'Ron Larson'",
-            "prompt_for_task_generation": "Open preview of book from the <decade> directed by '<author>'",
+            "prompt_for_task_generation": "Open preview of book from the 2010s directed by 'Ron Larson'",
         },
         {
             "prompt": "Open preview of 'Science' book not written by 'Grant Morrison'",
-            "prompt_for_task_generation": "Open preview of <genre> book not written by <author>",
+            "prompt_for_task_generation": "Open preview of 'Science' book not written by 'Grant Morrison'",
         },
         {
             "prompt": "Open preview of highest-rated 'Lidia Matticchio Bastianich' book",
-            "prompt_for_task_generation": "Open preview of highest-rated <author> book",
+            "prompt_for_task_generation": "Open preview of highest-rated 'Lidia Matticchio Bastianich' book",
         },
     ],
 )
@@ -583,39 +587,39 @@ ADD_TO_READING_LIST_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "First, login for the following username:<username> and password:<password> and then add to reading list 'The Housemaid Is Watching' book",
-            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list <book> book",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list 'The Housemaid Is Watching' book",
         },
         {
             "prompt": "First, login for the following username:<username> and password:<password> and then add to reading list a book 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
-            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a book <book> by <author>",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a book 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
         },
         {
             "prompt": "First, login for the following username:<username> and password:<password> and then add to reading list a Science book from 2022",
-            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a <genre> book from <year>",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a Science book from 2022",
         },
         {
             "prompt": "First, login for the following username:<username> and password:<password> and then add to reading list a book with rating above 4.5",
-            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a book with rating above <rating>",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a book with rating above 4.5",
         },
         {
             "prompt": "First, login for the following username:<username> and password:<password> and then add to reading list a 'Fourth Wing' book",
-            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a <book> book",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a 'Fourth Wing' book",
         },
         {
             "prompt": "First, login for the following username:<username> and password:<password> and then add to reading list a 'Magazine' book less than 1000 pages long",
-            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a <genre> book less than <page_count> pages long",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a 'Magazine' book less than 1000 pages long",
         },
         {
             "prompt": "First, login for the following username:<username> and password:<password> and then add to reading list a book from the 2010s directed by 'Ron Larson'",
-            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a book from the <decade> directed by '<author>'",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a book from the 2010s directed by 'Ron Larson'",
         },
         {
             "prompt": "First, login for the following username:<username> and password:<password> and then add to reading list a 'Science' book not written by 'Grant Morrison'",
-            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a <genre> book not written by <author>",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a 'Science' book not written by 'Grant Morrison'",
         },
         {
             "prompt": "First, login for the following username:<username> and password:<password> and then add to reading list a highest-rated 'Lidia Matticchio Bastianich' book",
-            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a highest-rated <author> book",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then add to reading list a highest-rated 'Lidia Matticchio Bastianich' book",
         },
     ],
 )
@@ -653,19 +657,19 @@ REMOVE_FROM_READING_LIST_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "First, login for the following username:<username> and password:<password> and then remove from reading list 'The Housemaid Is Watching' book",
-            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then remove from reading list <book> book",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then remove from reading list 'The Housemaid Is Watching' book",
         },
         {
             "prompt": "First, login for the following username:<username> and password:<password> and then remove from reading list a book 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
-            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then remove from reading list a book <book> by <author>",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then remove from reading list a book 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
         },
         {
             "prompt": "First, login for the following username:<username> and password:<password> and then remove from reading list a Science book from 2022",
-            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then remove from reading list a <genre> book from <year>",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then remove from reading list a Science book from 2022",
         },
         {
             "prompt": "First, login for the following username:<username> and password:<password> and then remove from reading list a book with rating above 4.5",
-            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then remove from reading list a book with rating above <rating>",
+            "prompt_for_task_generation": "First, login for the following username:<username> and password:<password> and then remove from reading list a book with rating above 4.5",
         },
     ],
 )
@@ -797,31 +801,31 @@ ADD_BOOK_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "First, authenticate with username '<username>' and password '<password>'. Then, add the book 'A Guide to the Good Life' authored by 'William B. Irvine'",
-            "prompt_for_task_generation": "First, authenticate with username '<username>' and password '<password>'. Then, add the book '<book>' authored by '<author>'",
+            "prompt_for_task_generation": "First, authenticate with username '<username>' and password '<password>'. Then, add the book 'A Guide to the Good Life' authored by 'William B. Irvine'",
         },
         {
             "prompt": "Initiate session using '<username>' as the username and '<password>' as the secret. Then, add the book 'AI Superpowers' released in 2018",
-            "prompt_for_task_generation": "Initiate session using '<username>' as the username and '<password>' as the secret. Then, add the book '<book>' released in <year>",
+            "prompt_for_task_generation": "Initiate session using '<username>' as the username and '<password>' as the secret. Then, add the book 'AI Superpowers' released in 2018",
         },
         {
             "prompt": "After successful login with '<username>' and '<password>', add the book 'Sapiens: A Brief History of Humankind' with genres History and Anthropology",
-            "prompt_for_task_generation": "After successful login with '<username>' and '<password>', add the book '<book>' with genres <genre> and <genre>",
+            "prompt_for_task_generation": "After successful login with '<username>' and '<password>', add the book 'Sapiens: A Brief History of Humankind' with genres History and Anthropology",
         },
         {
             "prompt": "Once logged in as '<username>' with the password '<password>', add the book 'The Midnight Library' with a page_count under 320 pages",
-            "prompt_for_task_generation": "Once logged in as '<username>' with the password '<password>', add the book '<book>' with a page_count under <page_count> pages",
+            "prompt_for_task_generation": "Once logged in as '<username>' with the password '<password>', add the book 'The Midnight Library' with a page_count under 320 pages",
         },
         {
             "prompt": "Having authenticated with '<username>' and '<password>', add the book 'The Art of Learning' with rating not 4.8.",
-            "prompt_for_task_generation": "Having authenticated with '<username>' and '<password>', add the book '<book>' with rating not equal to <rating>",
+            "prompt_for_task_generation": "Having authenticated with '<username>' and '<password>', add the book 'The Art of Learning' with rating not 4.8.",
         },
         {
             "prompt": "Upon logging in with username '<username>' and the secret '<password>', add the book 'The Practicing Mind' from one of these authors: 'Thomas M. Sterner', 'James Clear', or 'Ryan Holiday'",
-            "prompt_for_task_generation": "Upon logging in with username '<username>' and the secret '<password>', add a book '<book>' from one of these authors: '<author>', '<author>', or '<author>'",
+            "prompt_for_task_generation": "Upon logging in with username '<username>' and the secret '<password>', add the book 'The Practicing Mind' from one of these authors: 'Thomas M. Sterner', 'James Clear', or 'Ryan Holiday'",
         },
         {
             "prompt": "With credentials '<username>' and '<password>' successfully entered, add the book 'Deep Work' with running time at least 450 pages authored by 'Cal Newport'",
-            "prompt_for_task_generation": "With credentials '<username>' and '<password>' successfully entered, add the book '<book>' with running time at least <page_count> pages authored by '<author>'",
+            "prompt_for_task_generation": "With credentials '<username>' and '<password>' successfully entered, add the book 'Deep Work' with running time at least 450 pages authored by 'Cal Newport'",
         },
     ],
 )
@@ -1259,70 +1263,138 @@ ADD_COMMENT_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Navigate to a book 'Fourth Win' and add a comment 'beautiful book'.",
-            "prompt_for_task_generation": "Navigate to a book '<book>' and add a comment '<comment>'.",
+            "prompt_for_task_generation": "Navigate to a book 'Fourth Win' and add a comment 'beautiful book'.",
         },
         {
             "prompt": "Write a review for a book, ensuring the commenter is not 'John'.",
-            "prompt_for_task_generation": "Write a review for a book, ensuring the commenter is not '<commenter>'.",
+            "prompt_for_task_generation": "Write a review for a book, ensuring the commenter is not 'John'.",
         },
         {
             "prompt": "Post a comment containing the word 'masterpiece'.",
-            "prompt_for_task_generation": "Post a comment containing the word '<comment>'.",
+            "prompt_for_task_generation": "Post a comment containing the word 'masterpiece'.",
         },
         {
             "prompt": "Add a comment for a book not called The Matrix by someone other than 'John'.",
-            "prompt_for_task_generation": "Add a comment for a book not called '<book>' by someone other than '<commenter>'.",
+            "prompt_for_task_generation": "Add a comment for a book not called The Matrix by someone other than 'John'.",
         },
         {
             "prompt": "Write a detailed review for the book 'Elementary Statistics' with a comment that does NOT contain the word 'boring' and ensuring the commenter is not 'David'.",
-            "prompt_for_task_generation": "Write a detailed review for the book '<book>' with a comment that does NOT contain the word '<content>' and ensuring the commenter is not '<commenter>'.",
+            "prompt_for_task_generation": "Write a detailed review for the book 'Elementary Statistics' with a comment that does NOT contain the word 'boring' and ensuring the commenter is not 'David'.",
         },
     ],
 )
 
-# SHOPPING_CART_ADDITIONAL_PROMPT_INFO = """
-# CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-# 1. Include ALL constraints mentioned above — not just some of them.
-# 2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
-# 3. Be phrased as a request to add/remove/view items in the shopping cart (e.g., "Add to cart...", "Remove from cart...", "View cart...").
-# 4. Explicitly mention the shopping cart in the prompt (e.g., "shopping cart", "cart").
-# 5. If constraints include book_name or quantity, they MUST be referenced directly in the prompt.
-# 6. Begin with a creative instruction to log in using username '<username>' and password '<password>' (**strictly** containing both the username and password placeholders).
-# Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
-# 7. Only add a book into the shopping cart, do not include anything like "remove 'The Housemaid' from the shopping cart "...
-#
-# For example, if the constraints are "book_name equals 'Inception' AND quantity equals 2":
-# - CORRECT: "Add 2 copies of Inception to the shopping cart."
-# - CORRECT: "Update the cart to include 2 Inception books."
-# - INCORRECT: "Put some books in the cart" (missing specific constraints).
-# - INCORRECT: "Add Inception to my list" (doesn't mention cart).
-#
-# ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
-# """
-#
-# SHOPPING_CART_USE_CASE = UseCase(
-#     name="SHOPPING_CART",
-#     description="The user interacts with the shopping cart by adding, removing, or viewing items.",
-#     event=ShoppingCartEvent,
-#     event_source_code=ShoppingCartEvent.get_source_code_of_class(),
-#     constraints_generator=generate_book_constraints,
-#     additional_prompt_info=SHOPPING_CART_ADDITIONAL_PROMPT_INFO,
-#     replace_func=replace_book_placeholders,
-#     examples=[
-#         {
-#             "prompt": "Login with username: <username> and password: <password>. After logging in, add 'Fourth Win' to your shopping cart.",
-#             "prompt_for_task_generation": "Login with username: <username> and password: <password>. After logging in, add '<book>' to your shopping cart.",
-#         },
-#         {
-#             "prompt": "First sign in with username: <username> and password: <password>. Then place a book with page count greater than or equal to 704, with genre 'Education' into your shopping cart.",
-#             "prompt_for_task_generation": "First sign in with username: <username> and password: <password>. Then place a book with page_count greater than or equal to <page_count>, with genre '<genre>' into your shopping cart.",
-#         },
-#         {
-#             "prompt": "Authenticate using username: <username> and password: <password>. After that, add a 'Comics' genre book with less than 400 pages to your shopping cart.",
-#             "prompt_for_task_generation": "Authenticate using username: <username> and password: <password>. After that, add a '<genre>' genre book with less than <page_count> pages to your shopping cart.",
-#         },
-#     ],
-# )
+
+###############################################################################
+# EDIT_COMMENT_BOOK_USE_CASE — additional prompt info
+###############################################################################
+EDIT_COMMENT_BOOK_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above — not just some of them.
+2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
+3. Be phrased as a request to **change an existing** book comment (use phrases like "Edit my comment...", "Update my review...", "Revise what I wrote...", "Fix my comment..."). Do **not** phrase it as adding a brand-new comment only — the action must clearly be an edit of a comment already on the book page.
+4. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal' where applicable (same style as add-comment tasks).
+5. If the constraints include the 'content' field, the prompt MUST refer to the **new** comment text or message (the updated body), using expressions like "so that the comment says...", "so the message contains...", etc.
+6. When 'previous_content' appears in constraints, reference that the text is being replaced or updated from a prior version (without inventing prior text not in the constraints).
+7. Value preservation: Use the exact field values as they are provided in the constraints. Do NOT correct spelling, rephrase, or normalize constraint values.
+8. Quoting: Enclose literal comment text, book titles, and commenter names in **single quotation marks** when they appear as values in the prompt.
+
+For example, if the constraints are "book_name contains 'Fourth Win' AND content not_contains 'boring'":
+- CORRECT: "On the book page for a title that contains 'Fourth Win', edit my comment so the updated message does NOT contain the word 'boring'."
+- INCORRECT: "Add a new comment on Fourth Win" (sounds like ADD_COMMENT only, not an edit)
+- INCORRECT: "Write a review about any book" (missing specific constraints)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+
+
+EDIT_COMMENT_BOOK_USE_CASE = UseCase(
+    name="EDIT_COMMENT_BOOK",
+    description="User edited an existing comment on a book detail page.",
+    event=EditCommentBookEvent,
+    event_source_code=EditCommentBookEvent.get_source_code_of_class(),
+    constraints_generator=generate_add_comment_constraints,
+    additional_prompt_info=EDIT_COMMENT_BOOK_ADDITIONAL_PROMPT_INFO,
+    examples=[
+        {
+            "prompt": "On the book detail page, edit my existing comment so the new message is equal to 'Thanks — loved the pacing'.",
+            "prompt_for_task_generation": "On the book detail page, edit my existing comment so the new message is equal to 'Thanks — loved the pacing'.",
+        },
+        {
+            "prompt": "Navigate to a book whose name contains 'Fourth Win' and update my review so the comment text does NOT contain the word 'boring'.",
+            "prompt_for_task_generation": "Navigate to a book whose name contains 'Fourth Win' and update my review so the comment text does NOT contain the word 'boring'.",
+        },
+        {
+            "prompt": "Revise what I wrote under 'Elementary Statistics': the updated comment must contain the phrase 'helpful exercises'.",
+            "prompt_for_task_generation": "Revise what I wrote under 'Elementary Statistics': the updated comment must contain the phrase 'helpful exercises'.",
+        },
+        {
+            "prompt": "I posted as 'Sarah' — edit that comment only and replace the body with a shorter note; keep the same display name.",
+            "prompt_for_task_generation": "I posted as 'Sarah' — edit that comment only and replace the body with a shorter note; keep the same display name.",
+        },
+        {
+            "prompt": "From the comments list, fix my typo: the new comment content must not contain spoilers but must still mention the ending indirectly.",
+            "prompt_for_task_generation": "From the comments list, fix my typo: the new comment content must not contain spoilers but must still mention the ending indirectly.",
+        },
+        {
+            "prompt": "Update my feedback on this title so the commenter name is not equal to 'John' and the message still praises the book.",
+            "prompt_for_task_generation": "Update my feedback on this title so the commenter name is not equal to 'John' and the message still praises the book.",
+        },
+        {
+            "prompt": "Change my existing note on the book page: book name equals 'Dune' and the revised comment must contain 'desert'.",
+            "prompt_for_task_generation": "Change my existing note on the book page: book name equals 'Dune' and the revised comment must contain 'desert'.",
+        },
+        {
+            "prompt": "In the comments section, open edit on my post and correct only the sentence about the rating; do not add a second comment.",
+            "prompt_for_task_generation": "In the comments section, open edit on my post and correct only the sentence about the rating; do not add a second comment.",
+        },
+    ],
+)
+
+###############################################################################
+# DELETE_COMMENT_BOOK_USE_CASE — additional prompt info
+###############################################################################
+DELETE_COMMENT_BOOK_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above — not just some of them.
+2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
+3. Be phrased as a request to **remove or delete** a comment that already exists on the book page (use phrases like "Delete my comment...", "Remove my review...", "Take down my note...", "Erase my feedback..."). Do **not** frame the task as editing the text in place — the outcome must be removal of the comment (or its visibility), not a save of new wording.
+4. If constraints refer to 'content', they describe the **last text of the comment before deletion** (or text to identify which comment); do not treat it as instructions to compose new review text.
+5. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal' where applicable.
+6. Value preservation: Use the exact field values as they are provided in the constraints.
+7. Quoting: Use **single quotation marks** around literal book titles, commenter names, and comment snippets when they appear as values.
+
+For example, if the constraints are "book_name contains 'Klara' AND commenter_name equals 'Alex'":
+- CORRECT: "On a book whose title contains 'Klara', delete my comment that was posted with commenter name equal to 'Alex'."
+- INCORRECT: "Edit my comment on Klara" (wrong action — that is EDIT_COMMENT_BOOK)
+- INCORRECT: "Add a comment on Klara" (wrong action — that is ADD_COMMENT_BOOK)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+
+
+DELETE_COMMENT_BOOK_USE_CASE = UseCase(
+    name="DELETE_COMMENT_BOOK",
+    description="User deleted their comment on a book.",
+    event=DeleteCommentBookEvent,
+    event_source_code=DeleteCommentBookEvent.get_source_code_of_class(),
+    constraints_generator=generate_add_comment_constraints,
+    additional_prompt_info=DELETE_COMMENT_BOOK_ADDITIONAL_PROMPT_INFO,
+    examples=[
+        {
+            "prompt": "Delete the review I posted on 'Klara and the Sun'; I want it gone from the thread.",
+            "prompt_for_task_generation": "Delete the review I posted on 'Klara and the Sun'; I want it gone from the thread.",
+        },
+        {
+            "prompt": "Erase my feedback whose message still contains 'pacing' so it no longer appears in the list.",
+            "prompt_for_task_generation": "Erase my feedback whose message still contains 'pacing' so it no longer appears in the list.",
+        },
+        {
+            "prompt": "For the book whose name is equal to 'Dune', delete my comment posted as 'Sarah'.",
+            "prompt_for_task_generation": "For the book whose name is equal to 'Dune', delete my comment posted as 'Sarah'.",
+        },
+    ],
+)
 
 
 VIEW_CART_BOOK_ADDITIONAL_PROMPT_INFO = """
@@ -1408,11 +1480,11 @@ ADD_TO_CART_BOOK_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Login with username: <username> and password: <password>. After logging in, add 'Fourth Win' to your shopping cart.",
-            "prompt_for_task_generation": "Login with username: <username> and password: <password>. After logging in, add '<book>' to your shopping cart.",
+            "prompt_for_task_generation": "Login with username: <username> and password: <password>. After logging in, add 'Fourth Win' to your shopping cart.",
         },
         {
             "prompt": "First sign in with username: <username> and password: <password>. Then place a book with page count greater than or equal to 704, with genre 'Education' into your shopping cart.",
-            "prompt_for_task_generation": "First sign in with username: <username> and password: <password>. Then place a book with page_count greater than or equal to <page_count>, with genre '<genre>' into your shopping cart.",
+            "prompt_for_task_generation": "First sign in with username: <username> and password: <password>. Then place a book with page count greater than or equal to 704, with genre 'Education' into your shopping cart.",
         },
     ],
 )
@@ -1528,6 +1600,71 @@ PURCHASE_BOOK_USE_CASE = UseCase(
     ],
 )
 
+###############################################################################
+# VIEW_AUTHOR_USE_CASE — additional prompt info
+###############################################################################
+VIEW_AUTHOR_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above — not just some of them.
+2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
+3. Be phrased as a request to open or view an **author profile / author page** (use phrases like "Open the author's profile...", "Go to the author page for...", "View profile for writer...", "See more about the author..."). Do **not** phrase the task as opening a **book detail** page only — the destination must be the author's profile, not merely a book card (unless constraints tie author to a book explicitly and still require landing on the author view).
+4. Constraints use the field **author_name** (display name of the writer). Refer to "author", "writer", or "byline" consistently with the constraints.
+5. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal' where applicable.
+6. Value preservation: Use the exact author_name values as provided in the constraints. Do NOT invent authors not implied by the constraints.
+7. Quoting: Enclose literal author names in **single quotation marks** when they appear as values.
+
+For example, if the constraints are "author_name contains 'Herbert'":
+- CORRECT: "Open the author profile for a writer whose name contains 'Herbert'."
+- INCORRECT: "Show book details for Dune" (book detail only — missing author-profile intent)
+- INCORRECT: "Search the catalog for Herbert" (search list is not the same as opening the profile unless constraints say so)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+
+
+VIEW_AUTHOR_USE_CASE = UseCase(
+    name="VIEW_AUTHOR",
+    description="User opened an author profile page.",
+    event=ViewAuthorEvent,
+    event_source_code=ViewAuthorEvent.get_source_code_of_class(),
+    constraints_generator=generate_view_author_constraints,
+    additional_prompt_info=VIEW_AUTHOR_ADDITIONAL_PROMPT_INFO,
+    examples=[
+        {
+            "prompt": "Open the author profile page where the author name is equal to 'Frank Herbert'.",
+            "prompt_for_task_generation": "Open the author profile page where the author name is equal to 'Frank Herbert'.",
+        },
+        {
+            "prompt": "From this book, follow the byline and view the writer's dedicated author page.",
+            "prompt_for_task_generation": "From this book, follow the byline and view the writer's dedicated author page.",
+        },
+        {
+            "prompt": "Go to the profile for an author whose name does NOT equal 'Mark Twain'.",
+            "prompt_for_task_generation": "Go to the profile for an author whose name does NOT equal 'Mark Twain'.",
+        },
+        {
+            "prompt": "Show me more about the author — navigate to the profile view, not the book synopsis.",
+            "prompt_for_task_generation": "Show me more about the author — navigate to the profile view, not the book synopsis.",
+        },
+        {
+            "prompt": "I want to see biography and other titles: open the author page for 'Stephen King'.",
+            "prompt_for_task_generation": "I want to see biography and other titles: open the author page for 'Stephen King'.",
+        },
+        {
+            "prompt": "Click through to the author's public profile so I can read the bio section.",
+            "prompt_for_task_generation": "Click through to the author's public profile so I can read the bio section.",
+        },
+        {
+            "prompt": "Look up the writer behind this novel and land on their author profile.",
+            "prompt_for_task_generation": "Look up the writer behind this novel and land on their author profile.",
+        },
+        {
+            "prompt": "View the author profile for a name that contains 'Tolkien'.",
+            "prompt_for_task_generation": "View the author profile for a name that contains 'Tolkien'.",
+        },
+    ],
+)
+
 
 ###############################################################################
 # DYNAMIC PROMPT INFO UPDATER
@@ -1569,6 +1706,9 @@ ALL_USE_CASES = [
     DELETE_BOOK_USE_CASE,
     ADD_BOOK_USE_CASE,
     ADD_COMMENT_USE_CASE,
+    EDIT_COMMENT_BOOK_USE_CASE,
+    DELETE_COMMENT_BOOK_USE_CASE,
+    VIEW_AUTHOR_USE_CASE,
     EDIT_USER_PROFILE_USE_CASE,
     BOOK_DETAIL_USE_CASE,
     EDIT_BOOK_USE_CASE,

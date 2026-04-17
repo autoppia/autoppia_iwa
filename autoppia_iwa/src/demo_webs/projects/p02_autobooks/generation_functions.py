@@ -6,7 +6,15 @@ from typing import Any
 from autoppia_iwa.src.demo_webs.data_provider import get_seed_from_url
 
 from ...criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
-from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER, VISIBLE_FIELDS_BOOK_DETAIL, VISIBLE_FIELDS_FILTER_BOOK, VISIBLE_FIELDS_SEARCH_BOOK
+from .data import (
+    FIELD_OPERATORS_MAP_ADD_COMMENT,
+    FIELD_OPERATORS_MAP_CONTACT,
+    FIELD_OPERATORS_MAP_EDIT_USER,
+    FIELD_OPERATORS_MAP_VIEW_AUTHOR,
+    VISIBLE_FIELDS_BOOK_DETAIL,
+    VISIBLE_FIELDS_FILTER_BOOK,
+    VISIBLE_FIELDS_SEARCH_BOOK,
+)
 from .data_utils import fetch_data
 
 # Constants for constraint placeholders
@@ -699,6 +707,35 @@ async def generate_add_comment_constraints(task_url: str | None = None, dataset:
         constraints.append({"field": field, "operator": ComparisonOperator(operator), "value": value})
 
     return constraints
+
+
+async def generate_view_author_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict]] | None = None,
+) -> list[dict[str, Any]]:
+    """
+    Build constraints for viewing an author profile using author names from the fetched books dataset.
+    """
+    _, books = await _get_books_from_task_or_dataset(task_url, dataset)
+    if not books:
+        return []
+
+    authors: list[str] = []
+    for book in books:
+        raw = book.get("author") or book.get("director")
+        if raw is None:
+            continue
+        s = str(raw).strip()
+        if s:
+            authors.append(s)
+
+    if not authors:
+        return []
+
+    unique_authors = list(dict.fromkeys(authors))
+    author_name = choice(unique_authors)
+    operator = choice(FIELD_OPERATORS_MAP_VIEW_AUTHOR["author_name"])
+    return [{"field": "author_name", "operator": ComparisonOperator(operator), "value": author_name}]
 
 
 async def generate_edit_book_constraints(task_url: str | None = None, dataset: dict[str, list[dict]] | None = None):

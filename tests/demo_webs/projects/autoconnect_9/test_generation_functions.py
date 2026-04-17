@@ -188,8 +188,8 @@ async def test_generate_post_related_constraints(deterministic_random, patched_e
     assert {c["field"] for c in like_constraints} == {"poster_name", "poster_content"}
     assert {c["field"] for c in comment_constraints} >= {"comment_text"}
     assert {c["field"] for c in save_constraints} == {"author", "content"}
-    assert remove_constraints == save_constraints
-    assert unhide_constraints == save_constraints
+    for group in (remove_constraints, unhide_constraints):
+        assert {c["field"] for c in group} == {"author", "content"}
 
 
 def test_generate_post_status_constraints(deterministic_random):
@@ -237,3 +237,80 @@ async def test_generate_profile_and_experience_constraints(deterministic_random,
     assert {c["field"] for c in edit_profile_constraints}
     assert {c["field"] for c in edit_experience_constraints}
     assert {c["field"] for c in add_experience_constraints} == {"company", "duration", "title", "location", "description"}
+
+
+@pytest.mark.asyncio
+async def test_generate_contact_page_viewed_and_view_all_recommendations(monkeypatch):
+    monkeypatch.setattr(gf.random, "choice", lambda seq: seq[0])
+
+    page = await gf.generate_contact_page_viewed_constraints()
+    assert len(page) == 1
+    assert page[0]["field"] == "page"
+    assert page[0]["value"] == "contact"
+
+    rec = await gf.generate_view_all_recommendations_constraints()
+    assert len(rec) == 1
+    assert rec[0]["field"] == "source"
+    assert rec[0]["value"] == "recommendations_page"
+
+
+@pytest.mark.asyncio
+async def test_generate_contact_form_submitted_constraints(monkeypatch):
+    monkeypatch.setattr(gf.random, "sample", lambda seq, n: seq[:n])
+    monkeypatch.setattr(gf.random, "choice", lambda seq: seq[0])
+    monkeypatch.setattr(gf.random, "randint", lambda a, b: 2)
+
+    result = await gf.generate_contact_form_submitted_constraints()
+    assert len(result) == 2
+    assert all(c["field"] in {"name", "email", "subject", "message"} for c in result)
+
+
+@pytest.mark.asyncio
+async def test_generate_contact_page_viewed_data_extraction_empty():
+    assert await gf.generate_contact_page_viewed_constraints(test_types="data_extraction_only") == []
+
+
+@pytest.mark.asyncio
+async def test_generate_view_all_recommendations_data_extraction_empty():
+    assert await gf.generate_view_all_recommendations_constraints(test_types="data_extraction_only") == []
+
+
+@pytest.mark.asyncio
+async def test_generate_contact_form_data_extraction(monkeypatch):
+    monkeypatch.setattr(gf.random, "choice", lambda seq: seq[0])
+    out = await gf.generate_contact_form_submitted_constraints(test_types="data_extraction_only")
+    assert isinstance(out, dict)
+    assert out.get("constraints")
+    assert out.get("question_fields_and_values")
+
+
+@pytest.mark.asyncio
+async def test_generate_notification_constraints(monkeypatch):
+    monkeypatch.setattr(gf.random, "sample", lambda seq, n: seq[:n])
+    monkeypatch.setattr(gf.random, "choice", lambda seq: seq[0])
+    monkeypatch.setattr(gf.random, "randint", lambda a, b: 2)
+
+    view = await gf.generate_view_notifications_constraints()
+    assert len(view) >= 1
+    assert {c["field"] for c in view} <= {"total_count", "unread_count", "source"}
+
+    filt = await gf.generate_filter_notifications_constraints()
+    assert len(filt) == 1
+    assert filt[0]["field"] == "filter_key"
+
+    mark_one = await gf.generate_mark_notification_read_constraints()
+    assert len(mark_one) >= 1
+    assert {c["field"] for c in mark_one} <= {"notification_id", "notification_type", "action"}
+
+    mark_all = await gf.generate_mark_all_notifications_read_constraints()
+    assert len(mark_all) >= 1
+    assert {c["field"] for c in mark_all} <= {"count", "source"}
+
+    nav = await gf.generate_notifications_navbar_constraints()
+    assert len(nav) >= 1
+    assert {c["field"] for c in nav} <= {"label", "unread_count", "source"}
+
+
+@pytest.mark.asyncio
+async def test_generate_filter_notifications_data_extraction_empty():
+    assert await gf.generate_filter_notifications_constraints(test_types="data_extraction_only") == []

@@ -70,3 +70,14 @@ omit =
     # Discord project is currently not exercised by tests.
     autoppia_iwa/src/demo_webs/projects/autodiscord_16/events.py
     autoppia_iwa/src/demo_webs/projects/autodiscord_16/generation_functions.py
+
+    # Align with .coveragerc_gate: large demo / integration modules excluded from headline %
+    autoppia_iwa/src/demo_webs/projects/*/events.py
+    autoppia_iwa/src/demo_webs/projects/*/trajectories.py
+    autoppia_iwa/src/demo_webs/projects/*/data_extraction_trajectories.py
+    autoppia_iwa/src/evaluation/legacy/**
+    autoppia_iwa/src/llms/providers/openai.py
+    autoppia_iwa/src/llms/providers/chutes.py
+    autoppia_iwa/src/llms/providers/local.py
+    autoppia_iwa/src/execution/playwright_browser_executor.py
+    autoppia_iwa/src/execution/actions/browser_tools.py

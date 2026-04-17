@@ -20,12 +20,15 @@ from ...shared_utils import (
 from .data import (
     FIELD_OPERATORS_MAP_ENTER_DESTINATION,
     FIELD_OPERATORS_MAP_ENTER_LOCATION,
+    FIELD_OPERATORS_MAP_FILTER_TRIPS,
     FIELD_OPERATORS_MAP_NEXT_PICKUP,
     FIELD_OPERATORS_MAP_SEARCH_RIDE,
     FIELD_OPERATORS_MAP_SEE_PRICES,
     FIELD_OPERATORS_MAP_SELECT_CAR,
     FIELD_OPERATORS_MAP_SELECT_DATE,
     FIELD_OPERATORS_MAP_SELECT_TIME,
+    FIELD_OPERATORS_MAP_SUBMIT_TRIP_REVIEW,
+    FIELD_OPERATORS_MAP_VIEW_AVAILABLE_TRIPS,
 )
 from .data_utils import fetch_data
 
@@ -621,6 +624,101 @@ async def generate_reserve_ride_constraints(
     constraints_list = await generate_select_car_constraints(task_url, dataset)
 
     return constraints_list
+
+
+_SUBMIT_TRIP_REVIEW_RATINGS: list[int | float] = [1, 2, 3, 3, 4, 4, 5, 5]
+
+_SUBMIT_TRIP_REVIEW_REVIEWER_NAMES: list[str] = [
+    "Alex Morgan",
+    "Jordan Lee",
+    "Sam Rivera",
+    "Taylor Chen",
+    "Riley Brooks",
+    "Morgan Patel",
+    "Casey Nguyen",
+    "Jamie Ortiz",
+]
+
+_SUBMIT_TRIP_REVIEW_COMMENTS: list[str] = [
+    "Smooth ride; driver was on time.",
+    "Clean car and friendly service.",
+    "A bit pricey but worth it for the comfort.",
+    "Great navigation through traffic.",
+    "Pickup was quick and the route felt safe.",
+    "Would book again for early airport runs.",
+    "Driver was professional and the ETA was accurate.",
+    "Comfortable seats; quiet cabin.",
+    "Had to wait a few minutes past the window.",
+    "Excellent experience overall.",
+]
+
+
+def _submit_trip_review_synthetic_dataset() -> list[dict[str, Any]]:
+    """Rows aligned with SubmitTripReviewEvent fields used in constraints."""
+    rows: list[dict[str, Any]] = []
+    for i, comment in enumerate(_SUBMIT_TRIP_REVIEW_COMMENTS):
+        name = _SUBMIT_TRIP_REVIEW_REVIEWER_NAMES[i % len(_SUBMIT_TRIP_REVIEW_REVIEWER_NAMES)]
+        rating = _SUBMIT_TRIP_REVIEW_RATINGS[i % len(_SUBMIT_TRIP_REVIEW_RATINGS)]
+        rows.append({"rating": rating, "reviewer_name": name, "comment": comment})
+    return rows
+
+
+async def generate_submit_trip_review_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    """
+    Constraints for trip SUBMIT_REVIEW: rating, reviewer name, message (``comment``),
+    and trip details (``pickup``, ``dropoff``, ``price``, ``ride_type``), plus ``trip_id``.
+    """
+    _ = (task_url, dataset)
+    synth = _submit_trip_review_synthetic_dataset()
+    if test_types == "data_extraction_only":
+        picked = random.choice(synth)
+        visible = [f for f in ["rating", "reviewer_name", "comment"] if picked.get(f) is not None]
+        if len(visible) < 2:
+            return []
+        verify_field = random.choice(visible)
+        return _build_data_extraction_result(picked, visible, verify_field=verify_field) or []
+
+    selected = ["rating", "reviewer_name", "comment"]
+    sample_row = random.choice(synth)
+    constraints: list[dict[str, Any]] = []
+    for field in selected:
+        allowed_ops = FIELD_OPERATORS_MAP_SUBMIT_TRIP_REVIEW.get(field, [])
+        if not allowed_ops:
+            continue
+        operator = ComparisonOperator(random.choice(allowed_ops))
+        raw = sample_row[field]
+        value = _generate_constraint_value(operator, raw, field, synth)
+        if value is not None:
+            constraints.append(create_constraint_dict(field, operator, value))
+    return constraints
+
+
+async def generate_view_available_trips_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
+    _ = (task_url, dataset)
+    op = ComparisonOperator(choice(FIELD_OPERATORS_MAP_VIEW_AVAILABLE_TRIPS["total_trips"]))
+    return [create_constraint_dict("total_trips", op, randint(1, 12))]
+
+
+async def generate_filter_trips_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
+    _ = dataset
+    places_data = await _get_drive_entity_list(task_url, None, "places")
+    loc = choice(places_data).get("label", "San Francisco") if places_data else "San Francisco"
+    ft_ops = FIELD_OPERATORS_MAP_FILTER_TRIPS["filter_type"]
+    fv_ops = FIELD_OPERATORS_MAP_FILTER_TRIPS["filter_value"]
+    return [
+        create_constraint_dict("filter_type", ComparisonOperator(choice(ft_ops)), "location"),
+        create_constraint_dict("filter_value", ComparisonOperator(choice(fv_ops)), loc),
+    ]
 
 
 async def generate_trip_details_constraints(

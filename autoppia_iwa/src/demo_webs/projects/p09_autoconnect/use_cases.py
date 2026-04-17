@@ -7,14 +7,19 @@ from .events import (
     CancelApplicationEvent,
     CommentOnPostEvent,
     ConnectWithUserEvent,
+    DeleteCommentEvent,
+    DeletePostEvent,
     EditExperienceEvent,
     EditProfileEvent,
     FilterJobsEvent,
+    FilterNotificationsEvent,
     FollowPageEvent,
     HidePostEvent,
     HomeNavbarEvent,
     JobsNavbarEvent,
     LikePostEvent,
+    MarkAllNotificationsReadEvent,
+    MarkNotificationReadEvent,
     PostStatusEvent,
     RemovePostEvent,
     SavePostEvent,
@@ -22,9 +27,11 @@ from .events import (
     SearchUsersEvent,
     UnfollowPageEvent,
     UnhidePostEvent,
+    ViewAllRecommendationsEvent,
     ViewAppliedJobsEvent,
     ViewHiddenPostsEvent,
     ViewJobEvent,
+    ViewNotificationsEvent,
     ViewSavedPostsEvent,
     ViewUserProfileEvent,
 )
@@ -38,8 +45,10 @@ from .generation_functions import (
     generate_edit_experience_constraints,
     generate_edit_profile_constraints,
     generate_filter_jobs_constraints,
+    generate_filter_notifications_constraints,
     generate_follow_page_constraints,
     generate_like_post_constraints,
+    generate_mark_notification_read_constraints,
     generate_post_status_constraints,
     generate_remove_post_constraints,
     generate_save_post_constraints,
@@ -457,6 +466,31 @@ SEARCH_USERS_USE_CASE = UseCase(
     ],
 )
 
+
+VIEW_ALL_RECOMMENDATIONS_INFO = """
+Critical requirements:
+1. The user opens the full recommendations feed (from nav, bottom bar, or the recommendations page).
+2. Include the ``source`` constraint exactly as generated (e.g. recommendations_page, navbar, bottom_nav).
+""".strip()
+
+VIEW_ALL_RECOMMENDATIONS_USE_CASE = UseCase(
+    name="VIEW_ALL_RECOMMENDATIONS",
+    description="The user navigates to view all recommendations.",
+    event=ViewAllRecommendationsEvent,
+    event_source_code=ViewAllRecommendationsEvent.get_source_code_of_class(),
+    constraints_generator=None,
+    additional_prompt_info=VIEW_ALL_RECOMMENDATIONS_INFO,
+    examples=[
+        {
+            "prompt": "Open the recommendations page from the main feed.",
+            "prompt_for_task_generation": "View all recommendations where source equals 'recommendations_page'.",
+        },
+        {
+            "prompt": "Go to Recs from the bottom navigation.",
+            "prompt_for_task_generation": "View all recommendations where source equals 'bottom_nav'.",
+        },
+    ],
+)
 
 FOLLOW_PAGE_INFO = """
 Critical requirements:
@@ -1120,6 +1154,60 @@ UNHIDE_POST_USE_CASE = UseCase(
     ],
 )
 
+VIEW_NOTIFICATIONS_USE_CASE = UseCase(
+    name="VIEW_NOTIFICATIONS",
+    description="User opened the notifications page.",
+    event=ViewNotificationsEvent,
+    event_source_code=ViewNotificationsEvent.get_source_code_of_class(),
+    constraints_generator=None,
+    examples=[{"prompt": "Open my notifications.", "prompt_for_task_generation": "View the notifications page."}],
+)
+
+FILTER_NOTIFICATIONS_USE_CASE = UseCase(
+    name="FILTER_NOTIFICATIONS",
+    description="User changed the notification list filter.",
+    event=FilterNotificationsEvent,
+    event_source_code=FilterNotificationsEvent.get_source_code_of_class(),
+    constraints_generator=generate_filter_notifications_constraints,
+    examples=[{"prompt": "Show only unread notifications.", "prompt_for_task_generation": "Filter notifications by unread."}],
+)
+
+MARK_NOTIFICATION_READ_USE_CASE = UseCase(
+    name="MARK_NOTIFICATION_READ",
+    description="User toggled read state on a single notification.",
+    event=MarkNotificationReadEvent,
+    event_source_code=MarkNotificationReadEvent.get_source_code_of_class(),
+    constraints_generator=generate_mark_notification_read_constraints,
+    examples=[{"prompt": "Mark this notification as read.", "prompt_for_task_generation": "Mark one notification read."}],
+)
+
+MARK_ALL_NOTIFICATIONS_READ_USE_CASE = UseCase(
+    name="MARK_ALL_NOTIFICATIONS_READ",
+    description="User marked all notifications as read.",
+    event=MarkAllNotificationsReadEvent,
+    event_source_code=MarkAllNotificationsReadEvent.get_source_code_of_class(),
+    constraints_generator=None,
+    examples=[{"prompt": "Clear all unread notifications.", "prompt_for_task_generation": "Mark all notifications read."}],
+)
+
+DELETE_POST_USE_CASE = UseCase(
+    name="DELETE_POST",
+    description="User permanently deleted their own post.",
+    event=DeletePostEvent,
+    event_source_code=DeletePostEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[{"prompt": "Delete my latest post.", "prompt_for_task_generation": "Delete a post I authored."}],
+)
+
+DELETE_COMMENT_USE_CASE = UseCase(
+    name="DELETE_COMMENT",
+    description="User deleted their own comment on a post.",
+    event=DeleteCommentEvent,
+    event_source_code=DeleteCommentEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[{"prompt": "Remove my comment on this post.", "prompt_for_task_generation": "Delete my comment."}],
+)
+
 ALL_USE_CASES = [
     VIEW_USER_PROFILE_USE_CASE,
     CONNECT_WITH_USER_USE_CASE,
@@ -1138,6 +1226,7 @@ ALL_USE_CASES = [
     VIEW_HIDDEN_POSTS_USE_CASE,
     UNHIDE_POST_USE_CASE,
     SEARCH_USERS_USE_CASE,
+    VIEW_ALL_RECOMMENDATIONS_USE_CASE,
     FOLLOW_PAGE_USE_CASE,
     UNFOLLOW_PAGE_USE_CASE,
     VIEW_JOB_USE_CASE,
@@ -1147,4 +1236,10 @@ ALL_USE_CASES = [
     SEARCH_JOBS_USE_CASE,
     HOME_NAVBAR_USE_CASE,
     JOBS_NAVBAR_USE_CASE,
+    VIEW_NOTIFICATIONS_USE_CASE,
+    FILTER_NOTIFICATIONS_USE_CASE,
+    MARK_NOTIFICATION_READ_USE_CASE,
+    MARK_ALL_NOTIFICATIONS_READ_USE_CASE,
+    DELETE_POST_USE_CASE,
+    DELETE_COMMENT_USE_CASE,
 ]

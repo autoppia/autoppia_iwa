@@ -477,6 +477,70 @@ class AddCommentEvent(Event, BaseEventValidator):
         )
 
 
+class EditCommentBookEvent(AddCommentEvent):
+    """User edited a comment; same base fields as add, plus previous_content (webs_demo: previous_content)."""
+
+    event_name: str = "EDIT_COMMENT_BOOK"
+    previous_content: str | None = None
+
+    class ValidationCriteria(AddCommentEvent.ValidationCriteria):
+        previous_content: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        if not AddCommentEvent._validate_criteria(criteria):
+            return False
+        if criteria.previous_content is not None:
+            return self._validate_field(self.previous_content, criteria.previous_content)
+        return True
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "EditCommentBookEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        book_data = data.get("book") if isinstance(data.get("book"), dict) else {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            commenter_name=data.get("name", ""),
+            content=data.get("content", ""),
+            book_name=book_data.get("name", ""),
+            previous_content=data.get("previous_content"),
+        )
+
+
+class DeleteCommentBookEvent(AddCommentEvent):
+    """User deleted a comment; content is the last message before delete; comment_id from webs_demo."""
+
+    event_name: str = "DELETE_COMMENT_BOOK"
+
+    class ValidationCriteria(AddCommentEvent.ValidationCriteria):
+        pass
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return AddCommentEvent._validate_criteria(criteria)
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "DeleteCommentBookEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        book_data = data.get("book") if isinstance(data.get("book"), dict) else {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            commenter_name=data.get("name", ""),
+            content=data.get("content", ""),
+            book_name=book_data.get("name", ""),
+        )
+
+
 # =============================================================================
 #                     CONTACT
 # =============================================================================
@@ -617,6 +681,8 @@ class ViewCartBookEvent(Event, BaseEventValidator):
         pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
         return True
 
     @classmethod
@@ -637,6 +703,37 @@ class RemoveFromCartBookEvent(BookDetailEvent):
     event_name: str = "REMOVE_FROM_CART_BOOK"
 
 
+class ViewAuthorEvent(Event, BaseEventValidator):
+    """Author profile view; frontend emits lowercase event_name ``view_author``."""
+
+    event_name: str = "VIEW_AUTHOR"
+    author_name: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        author_name: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.author_name, criteria.author_name),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "ViewAuthorEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            author_name=data.get("author_name"),
+        )
+
+
 # =============================================================================
 #                    AVAILABLE EVENTS AND USE CASES
 # =============================================================================
@@ -652,6 +749,9 @@ EVENTS = [
     EditBookEvent,
     DeleteBookEvent,
     AddCommentEvent,
+    EditCommentBookEvent,
+    DeleteCommentBookEvent,
+    ViewAuthorEvent,
     ContactEvent,
     EditUserEvent,
     FilterBookEvent,
@@ -676,6 +776,9 @@ BACKEND_EVENT_TYPES = {
     "EDIT_BOOK": EditBookEvent,
     "DELETE_BOOK": DeleteBookEvent,
     "ADD_COMMENT_BOOK": AddCommentEvent,
+    "EDIT_COMMENT_BOOK": EditCommentBookEvent,
+    "DELETE_COMMENT_BOOK": DeleteCommentBookEvent,
+    "VIEW_AUTHOR": ViewAuthorEvent,
     "CONTACT_BOOK": ContactEvent,
     "FILTER_BOOK": FilterBookEvent,
     "PURCHASE_BOOK": PurchaseBookEvent,

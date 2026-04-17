@@ -463,6 +463,64 @@ class TransferCompleteEvent(Event, BaseEventValidator):
         )
 
 
+class DocsFeedbackUpEvent(Event, BaseEventValidator):
+    """Thumbs-up feedback on API documentation page (web_15 /api-docs)."""
+
+    event_name: str = "DOCS_FEEDBACK_UP"
+    page: str | None = None
+    value: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        page: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if criteria is None:
+            return True
+        return self._validate_field(self.page, criteria.page)
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "DocsFeedbackUpEvent":
+        base_event = Event.parse(backend_event)
+        d = _data(backend_event)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            page=d.get("page"),
+            value=d.get("value") or "up",
+        )
+
+
+class DocsFeedbackDownEvent(Event, BaseEventValidator):
+    """Thumbs-down feedback on API documentation page (web_15 /api-docs)."""
+
+    event_name: str = "DOCS_FEEDBACK_DOWN"
+    page: str | None = None
+    value: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        page: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if criteria is None:
+            return True
+        return self._validate_field(self.page, criteria.page)
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "DocsFeedbackDownEvent":
+        base_event = Event.parse(backend_event)
+        d = _data(backend_event)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            page=d.get("page"),
+            value=d.get("value") or "down",
+        )
+
+
 class FavoriteSubnetEvent(Event, BaseEventValidator):
     """Fired when user adds a subnet to favorites (from subnet detail page)."""
 
@@ -509,6 +567,8 @@ EVENTS = [
     DisconnectWalletEvent,
     TransferCompleteEvent,
     FavoriteSubnetEvent,
+    DocsFeedbackUpEvent,
+    DocsFeedbackDownEvent,
 ]
 
 BACKEND_EVENT_TYPES = {
@@ -522,4 +582,6 @@ BACKEND_EVENT_TYPES = {
     "DISCONNECT_WALLET": DisconnectWalletEvent,
     "TRANSFER_COMPLETE": TransferCompleteEvent,
     "FAVORITE_SUBNET": FavoriteSubnetEvent,
+    "DOCS_FEEDBACK_UP": DocsFeedbackUpEvent,
+    "DOCS_FEEDBACK_DOWN": DocsFeedbackDownEvent,
 }
