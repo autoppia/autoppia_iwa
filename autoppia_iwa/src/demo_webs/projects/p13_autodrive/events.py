@@ -516,50 +516,33 @@ class CancelReservationEvent(ReserveRideEvent):
 
 class SubmitTripReviewEvent(Event, BaseEventValidator):
     event_name: str = "SUBMIT_REVIEW"
-    trip_id: str | None = None
     rating: float | int | None = None
     reviewer_name: str | None = None
     comment: str | None = None
-    comment_length: int | None = None
-    pickup: str | None = None
-    dropoff: str | None = None
-    price: float | None = None
-    ride_type: str | None = None
 
     class ValidationCriteria(BaseModel):
-        trip_id: str | CriterionValue | None = None
         rating: float | CriterionValue | None = None
+        reviewer_name: str | CriterionValue | None = None
+        comment: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return all(
-            [
-                self._validate_field(self.trip_id, criteria.trip_id),
-                self._validate_field(self.rating, criteria.rating),
-            ]
-        )
+        return all([self._validate_field(self.rating, criteria.rating), self._validate_field(self.reviewer_name, criteria.reviewer_name), self._validate_field(self.comment, criteria.comment)])
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "SubmitTripReviewEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
         rev = data.get("review") if isinstance(data.get("review"), dict) else {}
-        td = data.get("tripData") if isinstance(data.get("tripData"), dict) else {}
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            trip_id=str(tid) if (tid := data.get("tripId")) is not None else None,
             rating=data.get("rating"),
             reviewer_name=data.get("name") or rev.get("name"),
             comment=rev.get("comment") or data.get("comment"),
-            comment_length=data.get("commentLength"),
-            pickup=td.get("pickup"),
-            dropoff=td.get("dropoff"),
-            price=float(td["price"]) if td.get("price") is not None else None,
-            ride_type=td.get("rideType"),
         )
 
 

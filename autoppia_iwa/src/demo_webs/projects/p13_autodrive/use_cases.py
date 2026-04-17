@@ -648,7 +648,7 @@ CANCEL_RESERVATION_USE_CASE = UseCase(
 
 SUBMIT_TRIP_REVIEW_USE_CASE = UseCase(
     name="SUBMIT_REVIEW",
-    description="After a trip, the user submits a review with rating and comment for that trip (autodrive trip review payload).",
+    description="After a trip, the user submits a review with rating, reviewer name, message (comment), and trip details (pickup, dropoff, price, ride type) for that trip (autodrive trip review payload).",
     event=SubmitTripReviewEvent,
     event_source_code=SubmitTripReviewEvent.get_source_code_of_class(),
     constraints_generator=generate_submit_trip_review_constraints,
@@ -657,6 +657,10 @@ SUBMIT_TRIP_REVIEW_USE_CASE = UseCase(
         {
             "prompt": "Submit a trip review with rating at least 4 for trip 'trip-1001'.",
             "prompt_for_task_generation": "Submit a trip review with rating at least 4 for trip '<trip_id>'.",
+        },
+        {
+            "prompt": "Leave a review as 'Alex Morgan' with comment containing 'on time' where pickup contains 'Mission St' and ride type equals 'AutoDriverComfort'.",
+            "prompt_for_task_generation": "Submit a trip review where reviewer name equals 'Alex Morgan', comment contains 'on time', pickup contains 'Mission St', and ride type equals 'AutoDriverComfort'.",
         },
     ],
 )
