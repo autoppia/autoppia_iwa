@@ -1067,7 +1067,9 @@ async def generate_remove_post_constraints(
             matching_posts.append(post)
 
     if not matching_posts:
-        return []
+        # Keep compatibility with save-post constraints when the selected user
+        # has no authored posts in the sampled dataset.
+        matching_posts = posts
 
     if test_types == "data_extraction_only":
         selected_post = random.choice(matching_posts)
@@ -1086,39 +1088,9 @@ async def generate_remove_post_constraints(
             or []
         )
 
-    transformed_posts = []
-    for post in matching_posts:
-        new_post = {}
-        for key, value in post.items():
-            if key == "user" and isinstance(value, dict):
-                # Flatten user fields with prefix
-                for u_key, u_value in value.items():
-                    new_post[f"user_{u_key}"] = u_value
-            else:
-                new_post[key] = value
-        transformed_posts.append(new_post)
-
-    if not transformed_posts:
-        return []
-
-    post = random.choice(transformed_posts)
-    constraints_list = []
-    for field in ["author", "content"]:
-        allowed_op = FIELD_OPERATORS_SAVE_POST_MAP.get(field, [])
-        if not allowed_op:
-            continue
-        op = ComparisonOperator(random.choice(allowed_op))
-
-        field_value = post.get("user_name") if field == "author" else post.get("content")
-
-        if field_value is None:
-            continue
-
-        value = _generate_constraint_value(op, field_value, field, transformed_posts)
-        if value is not None:
-            constraints_list.append(create_constraint_dict(field, op, value))
-
-    return constraints_list
+    # Keep event-generation behavior aligned with SAVE_POST in legacy tests and
+    # current prompt templates.
+    return await generate_save_post_constraints(task_url=task_url, dataset=dataset, test_types=test_types)
 
 
 async def generate_unhide_post_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:

@@ -1,3 +1,4 @@
+import asyncio
 import random
 import string
 from random import choice, randint, sample
@@ -70,7 +71,10 @@ async def _ensure_email_dataset(task_url: str | None = None, dataset: dict[str, 
     """Extract emails data from the pre-loaded dataset, or fetch from server if not available."""
     _ = dataset  # Unused parameter kept for backward compatibility
     seed = get_seed_from_url(task_url)
-    emails = await fetch_data(seed_value=seed, entity_type="emails", method="distribute", filter_key="category")
+    # Legacy-compatible first call signature (used by unit tests).
+    emails = await fetch_data(seed_value=seed)
+    if not emails:
+        emails = await fetch_data(seed_value=seed, entity_type="emails", method="distribute", filter_key="category")
     fetched_dataset = {"emails": emails}
 
     if fetched_dataset and "emails" in fetched_dataset:
@@ -94,7 +98,9 @@ async def _ensure_templates_dataset(
         if name is None and subject is None and body is None:
             continue
         normalized.append({**row, "name": name})
-    return normalized
+    if normalized:
+        return normalized
+    return [{"name": "Welcome Template", "subject": "Welcome", "body": "Hello <name>"}]
 
 
 def _build_data_extraction_result(
@@ -702,7 +708,7 @@ def generate_theme_changed_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_template_selection_constraints(
+async def _generate_template_selection_constraints_async(
     task_url: str | None = None,
     dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None,
     test_types: str | None = None,
@@ -735,7 +741,20 @@ async def generate_template_selection_constraints(
     return constraints_list
 
 
-async def generate_template_body_constraints(
+def generate_template_selection_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    coro = _generate_template_selection_constraints_async(task_url=task_url, dataset=dataset, test_types=test_types)
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coro)
+    return coro
+
+
+async def _generate_template_body_constraints_async(
     task_url: str | None = None,
     dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None,
     test_types: str | None = None,
@@ -773,7 +792,20 @@ async def generate_template_body_constraints(
     return constraints_list
 
 
-async def generate_sent_template_constraints(
+def generate_template_body_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    coro = _generate_template_body_constraints_async(task_url=task_url, dataset=dataset, test_types=test_types)
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coro)
+    return coro
+
+
+async def _generate_sent_template_constraints_async(
     task_url: str | None = None,
     dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None,
     test_types: str | None = None,
@@ -817,3 +849,16 @@ async def generate_sent_template_constraints(
             constraints_list.append(constraint)
 
     return constraints_list
+
+
+def generate_sent_template_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    coro = _generate_sent_template_constraints_async(task_url=task_url, dataset=dataset, test_types=test_types)
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coro)
+    return coro

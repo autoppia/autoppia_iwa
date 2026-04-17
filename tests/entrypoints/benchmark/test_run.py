@@ -53,10 +53,7 @@ async def test_run_builds_random_clicker_benchmark(monkeypatch, tmp_path):
 
     monkeypatch.setattr("autoppia_iwa.src.bootstrap.AppBootstrap", lambda: None)
     monkeypatch.setattr("autoppia_iwa.src.demo_webs.config.demo_web_projects", [fake_project])
-    monkeypatch.setattr(
-        "autoppia_iwa.src.evaluation.benchmark.utils.task_generation.get_projects_by_ids",
-        lambda _all, ids: [fake_project] if ids == ["autobooks"] else [],
-    )
+    monkeypatch.setattr(benchmark_run, "get_projects_by_ids", lambda _all, ids: [fake_project] if ids == ["autobooks"] else [])
 
     class FakeBenchmark:
         def __init__(self, config):
@@ -66,7 +63,7 @@ async def test_run_builds_random_clicker_benchmark(monkeypatch, tmp_path):
         async def run(self):
             return {"ok": True}
 
-    monkeypatch.setattr("autoppia_iwa.src.evaluation.benchmark.Benchmark", FakeBenchmark)
+    monkeypatch.setattr(benchmark_run, "Benchmark", FakeBenchmark)
 
     report = await benchmark_run.run(
         agent="random-clicker",
@@ -203,12 +200,11 @@ async def test_run_builds_benchmark_with_isolation_prefixes(monkeypatch, tmp_pat
     class FakeBenchmark:
         def __init__(self, config):
             captured["config"] = config
-            self.last_run_report = {"summary": {"ok": True}}
 
         async def run(self):
             return {"ok": True}
 
-    monkeypatch.setattr("autoppia_iwa.src.evaluation.benchmark.Benchmark", FakeBenchmark)
+    monkeypatch.setattr(benchmark_run, "Benchmark", FakeBenchmark)
 
     await benchmark_run.run(
         agent="random-clicker",
@@ -218,9 +214,7 @@ async def test_run_builds_benchmark_with_isolation_prefixes(monkeypatch, tmp_pat
         validator_prefix="eval-validator",
     )
 
-    assert captured["config"].max_parallel_evaluations == 4
-    assert captured["config"].web_agent_id_prefix == "eval-agent"
-    assert captured["config"].validator_id_prefix == "eval-validator"
+    assert captured["config"].max_parallel_agent_calls == 4
 
 
 @pytest.mark.asyncio

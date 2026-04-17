@@ -39,6 +39,9 @@ class WebVerificationConfig:
     # Skip task generation, LLM review, and IWAP; only V2 + trajectory replay (no OpenAI init).
     evaluate_trajectories_only: bool = False
 
+    # Event trajectories verification (project-level)
+    event_trajectory_verification_enabled: bool = True
+
     # Data extraction (steps 2.5 + 2.6): trajectories + DE task generation verification
     data_extraction_verification_enabled: bool = True
     data_extraction_seed: int = 1

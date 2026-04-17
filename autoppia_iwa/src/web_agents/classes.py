@@ -134,6 +134,7 @@ class TaskSolution(BaseModel):
     input_tokens: int = Field(default=0)
     output_tokens: int = Field(default=0)
     model_used: str | None = Field(default=None)
+    extracted_data: str | None = Field(default=None)
 
     @computed_field
     @property

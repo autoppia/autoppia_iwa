@@ -1,4 +1,5 @@
 # autoppia_iwa/src/demo_webs/projects/autolist_12/generation_functions.py
+import asyncio
 import random
 from datetime import date, datetime, timedelta
 from typing import Any
@@ -26,6 +27,9 @@ from .data_utils import fetch_data
 
 async def _ensure_task_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
     """Extract tasks data from the pre-loaded dataset, or fetch from server if not available."""
+    if isinstance(dataset, list):
+        return dataset
+
     # Fetch data if dataset is not provided or is empty
     if dataset is None or dataset == {}:
         seed = get_seed_from_url(task_url)
@@ -378,7 +382,7 @@ async def generate_add_task_clicked_constraints(
     return []
 
 
-async def generate_select_date_for_task_constraints(
+async def _generate_select_date_for_task_constraints_async(
     task_url: str | None = None,
     dataset: list[dict[str, Any]] | None = None,
     test_types: str | None = None,
@@ -424,7 +428,20 @@ async def generate_select_date_for_task_constraints(
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_SELECT_DATE_MAP)
 
 
-async def generate_select_task_priority_constraints(
+def generate_select_date_for_task_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]]:
+    coro = _generate_select_date_for_task_constraints_async(task_url=task_url, dataset=dataset, test_types=test_types)
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coro)
+    return coro
+
+
+async def _generate_select_task_priority_constraints_async(
     task_url: str | None = None,
     dataset: dict[str, list[dict[str, Any]]] | None = None,
     test_types: str | None = None,
@@ -467,6 +484,19 @@ async def generate_select_task_priority_constraints(
         "priority": {"dataset": PRIORITIES},
     }
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_SELECT_PRIORITY_MAP)
+
+
+def generate_select_task_priority_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    coro = _generate_select_task_priority_constraints_async(task_url=task_url, dataset=dataset, test_types=test_types)
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coro)
+    return coro
 
 
 async def generate_task_constraints(

@@ -1016,7 +1016,7 @@ class UpdateMatter(Event, BaseEventValidator):
         base_event = Event.parse(backend_event)
         after_matter = Matter(**backend_event.data.get("after", {}))
         before_data = backend_event.data.get("before")
-        before_updated_day = before_data.get("updated")
+        before_updated_day = before_data.get("updated") if isinstance(before_data, dict) else ""
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,

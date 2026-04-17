@@ -1148,11 +1148,13 @@ async def generate_book_from_wishlist_constraints(task_url: str | None = None, d
         return []
     sample = random.choice(data)
     constraints: list[dict[str, Any]] = []
-    field = "title"
-    allowed_ops = FIELD_OPERATORS_BOOK_FROM_WISHLIST_MAP.get(field, [])
-    op = ComparisonOperator(random.choice(allowed_ops))
-    value = sample.get(field)
-    constraints.append(create_constraint_dict(field, op, value))
+    for field in ["hotel_id", "title"]:
+        allowed_ops = FIELD_OPERATORS_BOOK_FROM_WISHLIST_MAP.get(field, [])
+        if not allowed_ops:
+            continue
+        op = ComparisonOperator(random.choice(allowed_ops))
+        value = sample.get("id") if field == "hotel_id" else sample.get("title")
+        constraints.append(create_constraint_dict(field, op, value))
     return constraints
 
 

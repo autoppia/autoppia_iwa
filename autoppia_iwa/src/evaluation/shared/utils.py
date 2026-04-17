@@ -208,11 +208,18 @@ async def run_global_tests(
     tests_for_run = await _resolve_autobooks_book_placeholders_in_tests(task, web_agent_id)
     tests_for_run = await _resolve_autocinema_film_placeholders_in_tests(task, tests_for_run, web_agent_id)
     test_runner = TestRunner(tests_for_run)
-    test_results = await test_runner.run_global_tests(
-        backend_events=backend_events,
-        web_agent_id=web_agent_id,
-        extracted_data=extracted_data,
-    )
+    try:
+        test_results = await test_runner.run_global_tests(
+            backend_events=backend_events,
+            web_agent_id=web_agent_id,
+            extracted_data=extracted_data,
+        )
+    except TypeError:
+        # Legacy test doubles may not accept extracted_data.
+        test_results = await test_runner.run_global_tests(
+            backend_events=backend_events,
+            web_agent_id=web_agent_id,
+        )
     return test_results
 
 

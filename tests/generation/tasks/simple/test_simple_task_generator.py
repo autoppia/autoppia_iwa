@@ -163,18 +163,17 @@ class TestGenerate:
             tests=[],
         )
 
-        with (
-            patch.object(gen, "_generate_de_tasks_from_project_use_cases", AsyncMock(return_value=[expected_task])) as de_mock,
-            patch.object(gen, "generate_tasks_for_use_case", AsyncMock(return_value=[])) as legacy_mock,
-        ):
+        with patch(
+            "autoppia_iwa.src.data_generation.data_extraction.generator.DataExtractionTaskGenerator.generate",
+            AsyncMock(return_value=[expected_task]),
+        ) as de_generate_mock:
             result = await gen.generate(
                 prompts_per_use_case=1,
                 test_types="data_extraction_only",
             )
 
         assert result == [expected_task]
-        de_mock.assert_awaited_once()
-        legacy_mock.assert_not_called()
+        de_generate_mock.assert_awaited_once()
 
 
 # -----------------------------------------------------------------------------

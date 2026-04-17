@@ -18,8 +18,8 @@ from collections import defaultdict
 from typing import Any
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
+from autoppia_iwa.src.data_generation.data_extraction.generator import DataExtractionTaskGenerator
 from autoppia_iwa.src.data_generation.tasks.classes import Task
-from autoppia_iwa.src.data_generation.tasks.simple.simple_task_generator import SimpleTaskGenerator
 from autoppia_iwa.src.demo_webs.classes import WebProject
 
 
@@ -47,10 +47,10 @@ class DataExtractionTaskGenerationVerifier:
         self,
         web_project: WebProject,
         *,
-        task_generator: SimpleTaskGenerator | None = None,
+        task_generator: DataExtractionTaskGenerator | None = None,
     ) -> None:
         self.web_project = web_project
-        self.task_generator = task_generator or SimpleTaskGenerator(web_project=web_project)
+        self.task_generator = task_generator or DataExtractionTaskGenerator(web_project=web_project)
 
     async def verify_for_project(self, *, seed: int = 1, use_cases: list[str] | None = None) -> dict[str, Any]:
         expected_use_cases = self._resolve_expected_use_cases(use_cases=use_cases)

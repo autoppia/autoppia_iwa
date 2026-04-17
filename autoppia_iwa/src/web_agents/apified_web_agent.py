@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import json
 import re
 from typing import Any
 from urllib.parse import urlparse, urlunparse
@@ -109,8 +110,23 @@ class ApifiedWebAgent(IWebAgent):
             try:
                 async with session.post(f"{self.base_url}/step", json=payload) as response:
                     response.raise_for_status()
-                    data = await response.json()
-                    return self._parse_actions_response(data if isinstance(data, dict) else {})
+                    data: dict[str, Any] | None = None
+                    try:
+                        parsed_json = await response.json()
+                        if isinstance(parsed_json, dict):
+                            data = parsed_json
+                    except Exception:
+                        data = None
+
+                    if data is None:
+                        text_payload = await response.text()
+                        try:
+                            parsed_text = json.loads(text_payload)
+                        except Exception:
+                            parsed_text = {}
+                        data = parsed_text if isinstance(parsed_text, dict) else {}
+
+                    return self._parse_actions_response(data)
             except Exception as exc:
                 logger.warning(f"ApifiedWebAgent.step failed: {exc}")
         return []

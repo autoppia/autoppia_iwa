@@ -96,6 +96,10 @@ class Task(BaseModel):
         """
         from autoppia_iwa.src.data_generation.tests.classes import BaseTaskTest
 
+        # Seed must live in URL query only; ignore legacy top-level seed field.
+        data = dict(data)
+        data.pop("seed", None)
+
         # Handle use_case deserialization
         if data.get("use_case"):
             data["use_case"] = UseCase.deserialize(data["use_case"])
@@ -165,7 +169,7 @@ class TaskGenerationConfig(BaseModel):
     use_cases: list[str] | None = None
     dynamic: bool = False
     # Which test types to generate/attach for the tasks coming from this config.
-    # Mirrors BenchmarkConfig.test_types but kept as a plain string to avoid import cycles.
+    # Used by task-generation pipelines and strategies.
     test_types: Literal["event_only", "data_extraction_only"] = "event_only"
     # Optional list of use-case names that can receive DataExtractionTest; if None,
     # all selected/generated use cases are eligible in data-extraction-only runs.
