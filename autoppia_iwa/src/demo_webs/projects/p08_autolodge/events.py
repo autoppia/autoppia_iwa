@@ -803,7 +803,7 @@ class FaqOpenedEvent(Event, BaseEventValidator):
 
 
 class ContactPageViewedEvent(Event, BaseEventValidator):
-    """Shared across demos (web_8, web_10): optional page label."""
+    """Contact page view (web_8 autolodge); optional page label."""
 
     event_name: str = "AUTOLODGE_CONTACT_PAGE_VIEWED"
     page: str | None = None
@@ -830,7 +830,7 @@ class ContactPageViewedEvent(Event, BaseEventValidator):
 
 
 class ContactFormSubmittedSharedEvent(Event, BaseEventValidator):
-    """Shared site contact form (web_8, web_10, web_14)."""
+    """General contact form submission (web_8 autolodge)."""
 
     event_name: str = "AUTOLODGE_CONTACT_FORM_SUBMITTED"
     name: str | None = None

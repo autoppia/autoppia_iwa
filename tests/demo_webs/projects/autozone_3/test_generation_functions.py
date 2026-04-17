@@ -163,3 +163,32 @@ async def test_generate_category_filter_constraints_falls_back_to_all(monkeypatc
     monkeypatch.setattr(gen.random, "choice", lambda seq: seq[0])
     result = await gen.generate_category_filter_constraints(dataset={"products": [{"category": "unknown"}]})
     assert result == [{"field": "category", "operator": ComparisonOperator.EQUALS, "value": "all"}]
+
+
+@pytest.mark.asyncio
+async def test_generate_share_completed_constraints_product_plus_both_recipients(monkeypatch):
+    monkeypatch.setattr(
+        gen,
+        "generate_autozone_products_constraints",
+        AsyncMock(return_value=[{"field": "title", "operator": ComparisonOperator.EQUALS, "value": "Ultra Laptop"}]),
+    )
+    monkeypatch.setattr(gen.random, "choice", lambda seq: seq[0])
+
+    result = await gen.generate_share_completed_constraints(dataset={"products": PRODUCTS})
+
+    assert len(result) == 3
+    assert result[0]["field"] == "title"
+    assert result[1]["field"] == "recipient_name"
+    assert result[2]["field"] == "recipient_email"
+
+
+@pytest.mark.asyncio
+async def test_generate_share_completed_constraints_recipients_only_when_no_product_constraints(monkeypatch):
+    monkeypatch.setattr(gen, "generate_autozone_products_constraints", AsyncMock(return_value=[]))
+    monkeypatch.setattr(gen.random, "choice", lambda seq: seq[0])
+
+    result = await gen.generate_share_completed_constraints(dataset={"products": []})
+
+    assert len(result) == 2
+    assert result[0]["field"] == "recipient_name"
+    assert result[1]["field"] == "recipient_email"

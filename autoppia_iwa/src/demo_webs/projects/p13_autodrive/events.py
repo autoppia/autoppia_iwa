@@ -1,13 +1,38 @@
 from datetime import date, datetime, time as dt_time
 from typing import Any
 
-from dateutil import parser
 from pydantic import BaseModel
 
 from autoppia_iwa.src.demo_webs.base_events import BaseEventValidator, Event
 from autoppia_iwa.src.demo_webs.criterion_helper import CriterionValue
 
 from ...shared_utils import validate_date_field, validate_time_field
+
+
+def _parse_datetime_flexible(value: str) -> datetime | dt_time | None:
+    """Parse date/datetime strings without dateutil (avoids broken optional deps)."""
+    s = value.strip()
+    if not s:
+        return None
+    try:
+        return datetime.fromisoformat(s.replace("Z", "+00:00"))
+    except ValueError:
+        pass
+    for sep in ("T", " "):
+        if sep in s:
+            date_part = s.split(sep)[0]
+            try:
+                return datetime.fromisoformat(date_part)
+            except ValueError:
+                pass
+    if ":" in s:
+        parts = s.split(":")
+        if len(parts) >= 2:
+            try:
+                return dt_time(int(parts[0]), int(parts[1]))
+            except ValueError:
+                pass
+    return None
 
 
 def _coerce_datetime_like_criterion(criterion: Any) -> Any:
@@ -229,7 +254,12 @@ def parse_time(value: str | None) -> dt_time | None:
         if isinstance(value, dt_time):
             return value
         if isinstance(value, str):
-            return parser.parse(value)
+            pt = _parse_datetime_flexible(value)
+            if isinstance(pt, datetime):
+                return pt.time()
+            if isinstance(pt, dt_time):
+                return pt
+            return None
         return None
     except (ValueError, TypeError):
         return None
@@ -483,6 +513,163 @@ class CancelReservationEvent(ReserveRideEvent):
         )
 
 
+class SubmitTripReviewEvent(Event, BaseEventValidator):
+    event_name: str = "SUBMIT_REVIEW"
+    trip_id: str | None = None
+    rating: float | int | None = None
+    reviewer_name: str | None = None
+    comment: str | None = None
+    comment_length: int | None = None
+    pickup: str | None = None
+    dropoff: str | None = None
+    price: float | None = None
+    ride_type: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        trip_id: str | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.trip_id, criteria.trip_id),
+                self._validate_field(self.rating, criteria.rating),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "SubmitTripReviewEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        rev = data.get("review") if isinstance(data.get("review"), dict) else {}
+        td = data.get("tripData") if isinstance(data.get("tripData"), dict) else {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            trip_id=str(tid) if (tid := data.get("tripId")) is not None else None,
+            rating=data.get("rating"),
+            reviewer_name=data.get("name") or rev.get("name"),
+            comment=rev.get("comment") or data.get("comment"),
+            comment_length=data.get("commentLength"),
+            pickup=td.get("pickup"),
+            dropoff=td.get("dropoff"),
+            price=float(td["price"]) if td.get("price") is not None else None,
+            ride_type=td.get("rideType"),
+        )
+
+
+class SubmitReviewRouterEvent(Event):
+    """Dispatches SUBMIT_REVIEW: autodrive trip review vs autolodge hotel review (merged map uses p13 entry)."""
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "Event":
+        data = backend_event.data or {}
+        if data.get("tripId") is not None or isinstance(data.get("tripData"), dict):
+            return SubmitTripReviewEvent.parse(backend_event)
+        from autoppia_iwa.src.demo_webs.projects.p08_autolodge.events import SubmitHotelReviewEvent
+
+        return SubmitHotelReviewEvent.parse(backend_event)
+
+
+class ViewAvailableTripsEvent(Event, BaseEventValidator):
+    event_name: str = "VIEW_AVAILABLE_TRIPS"
+    total_trips: int | None = None
+
+    class ValidationCriteria(BaseModel):
+        total_trips: int | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return self._validate_field(self.total_trips, criteria.total_trips)
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "ViewAvailableTripsEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            total_trips=data.get("totalTrips"),
+        )
+
+
+class BookTripEvent(ReserveRideEvent):
+    event_name: str = "BOOK_TRIP"
+    trip_id: str | None = None
+    source: str | None = None
+
+    class ValidationCriteria(ReserveRideEvent.ValidationCriteria):
+        trip_id: str | CriterionValue | None = None
+        source: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                super()._validate_criteria(criteria),
+                self._validate_field(self.trip_id, criteria.trip_id),
+                self._validate_field(self.source, criteria.source),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "BookTripEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        kw = _reserve_ride_field_values(data, backend_event.timestamp)
+        tid = data.get("tripId")
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            trip_id=str(tid) if tid is not None else None,
+            source=data.get("source"),
+            **kw,
+        )
+
+
+class FilterTripsEvent(Event, BaseEventValidator):
+    event_name: str = "FILTER_TRIPS"
+    filter_type: str | None = None
+    filter_value: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        filter_type: str | CriterionValue | None = None
+        filter_value: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.filter_type, criteria.filter_type),
+                self._validate_field(self.filter_value, criteria.filter_value),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "FilterTripsEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            filter_type=data.get("filterType"),
+            filter_value=data.get("filterValue"),
+        )
+
+
 def parse_datetime(value: str | None) -> datetime | dt_time | None:
     if not value:
         return None
@@ -504,7 +691,7 @@ def parse_datetime(value: str | None) -> datetime | dt_time | None:
                         return datetime.fromisoformat(date_part)
                     except ValueError:
                         pass
-            return parser.isoparse(value)
+            return _parse_datetime_flexible(value)
         return None
     except (ValueError, TypeError):
         return None
@@ -606,6 +793,11 @@ EVENTS = [
     ReserveRideEvent,
     TripDetailsEvent,
     CancelReservationEvent,
+    SubmitTripReviewEvent,
+    SubmitReviewRouterEvent,
+    ViewAvailableTripsEvent,
+    BookTripEvent,
+    FilterTripsEvent,
 ]
 
 BACKEND_EVENT_TYPES = {
@@ -621,4 +813,8 @@ BACKEND_EVENT_TYPES = {
     "RESERVE_RIDE": ReserveRideEvent,
     "TRIP_DETAILS": TripDetailsEvent,
     "CANCEL_RESERVATION": CancelReservationEvent,
+    "SUBMIT_REVIEW": SubmitReviewRouterEvent,
+    "VIEW_AVAILABLE_TRIPS": ViewAvailableTripsEvent,
+    "BOOK_TRIP": BookTripEvent,
+    "FILTER_TRIPS": FilterTripsEvent,
 }

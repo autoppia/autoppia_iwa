@@ -165,9 +165,9 @@ def main() -> int:
         sys.argv.extend(
             [
                 "-p",
-                "autowork",
+                "autodrive",
                 "-u",
-                "EDIT_ABOUT",
+                "CANCEL_RESERVATION",
                 "--no-headless",
             ]
         )

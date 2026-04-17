@@ -11,6 +11,8 @@ from .events import (
     ClosePostAJobWindowEvent,
     ContactExpertMessageSentEvent,
     ContactExpertOpenedEvent,
+    ContactFormSubmittedSharedEvent,
+    ContactPageViewedEvent,
     EditAboutEvent,
     EditProfileEmailEvent,
     EditProfileLocationEvent,
@@ -1200,24 +1202,28 @@ FAVORITE_EXPERT_REMOVED_USE_CASE = UseCase(
 )
 
 
-#
-# NAVBAR_PROFILE_CLICK_USE_USE = UseCase(
-#     name="NAVBAR_EXPERTS_CLICK",
-#     description="The user click a  from navbar option.",
-#     event=NavbarProfileClickEvent,
-#     event_source_code=PostAJobEvent.get_source_code_of_class(),
-#     constraints_generator=False,
-#     examples=[
-#         {
-#             "prompt": "User clicks profile to view user profile.",
-#             "prompt_for_task_generation": "User clicks profile to view user profile.",
-#         },
-#         {
-#             "prompt": "Open the profile section.",
-#             "prompt_for_task_generation": "Open the profile section.",
-#         },
-#     ],
-# )
+CONTACT_PAGE_VIEWED_USE_CASE = UseCase(
+    name="AUTOWORK_CONTACT_PAGE_VIEWED",
+    description="User opened the contact page (optional page label in payload).",
+    event=ContactPageViewedEvent,
+    event_source_code=ContactPageViewedEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[{"prompt": "Open the contact page.", "prompt_for_task_generation": "View the contact page."}],
+)
+
+CONTACT_FORM_SUBMITTED_USE_CASE = UseCase(
+    name="AUTOWORK_CONTACT_FORM_SUBMITTED",
+    description="User submitted the site contact form.",
+    event=ContactFormSubmittedSharedEvent,
+    event_source_code=ContactFormSubmittedSharedEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[
+        {
+            "prompt": "Send a message through the contact form with subject 'Partnership'.",
+            "prompt_for_task_generation": "Submit the contact form with subject 'Partnership'.",
+        },
+    ],
+)
 
 ALL_USE_CASES = [
     BOOK_A_CONSULTATION_USE_CASE,
@@ -1230,6 +1236,8 @@ ALL_USE_CASES = [
     HIRE_CONSULTATION_USE_CASE,
     CANCEL_HIRE_USE_CASE,
     POST_A_JOB_USE_CASE,
+    CONTACT_PAGE_VIEWED_USE_CASE,
+    CONTACT_FORM_SUBMITTED_USE_CASE,
     WRITING_JOB_TITLE_USE_CASE,
     SEARCH_SKILL_USE_CASE,
     ADD_SKILL_USE_CASE,

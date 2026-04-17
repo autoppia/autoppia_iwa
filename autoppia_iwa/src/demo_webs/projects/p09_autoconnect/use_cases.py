@@ -7,14 +7,20 @@ from .events import (
     CancelApplicationEvent,
     CommentOnPostEvent,
     ConnectWithUserEvent,
+    DeleteCommentEvent,
+    DeletePostEvent,
     EditExperienceEvent,
     EditProfileEvent,
     FilterJobsEvent,
+    FilterNotificationsEvent,
     FollowPageEvent,
     HidePostEvent,
     HomeNavbarEvent,
     JobsNavbarEvent,
     LikePostEvent,
+    MarkAllNotificationsReadEvent,
+    MarkNotificationReadEvent,
+    NotificationsNavbarEvent,
     PostStatusEvent,
     RemovePostEvent,
     SavePostEvent,
@@ -25,6 +31,7 @@ from .events import (
     ViewAppliedJobsEvent,
     ViewHiddenPostsEvent,
     ViewJobEvent,
+    ViewNotificationsEvent,
     ViewSavedPostsEvent,
     ViewUserProfileEvent,
 )
@@ -1120,6 +1127,69 @@ UNHIDE_POST_USE_CASE = UseCase(
     ],
 )
 
+VIEW_NOTIFICATIONS_USE_CASE = UseCase(
+    name="VIEW_NOTIFICATIONS",
+    description="User opened the notifications page.",
+    event=ViewNotificationsEvent,
+    event_source_code=ViewNotificationsEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[{"prompt": "Open my notifications.", "prompt_for_task_generation": "View the notifications page."}],
+)
+
+FILTER_NOTIFICATIONS_USE_CASE = UseCase(
+    name="FILTER_NOTIFICATIONS",
+    description="User changed the notification list filter.",
+    event=FilterNotificationsEvent,
+    event_source_code=FilterNotificationsEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[{"prompt": "Show only unread notifications.", "prompt_for_task_generation": "Filter notifications by unread."}],
+)
+
+MARK_NOTIFICATION_READ_USE_CASE = UseCase(
+    name="MARK_NOTIFICATION_READ",
+    description="User toggled read state on a single notification.",
+    event=MarkNotificationReadEvent,
+    event_source_code=MarkNotificationReadEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[{"prompt": "Mark this notification as read.", "prompt_for_task_generation": "Mark one notification read."}],
+)
+
+MARK_ALL_NOTIFICATIONS_READ_USE_CASE = UseCase(
+    name="MARK_ALL_NOTIFICATIONS_READ",
+    description="User marked all notifications as read.",
+    event=MarkAllNotificationsReadEvent,
+    event_source_code=MarkAllNotificationsReadEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[{"prompt": "Clear all unread notifications.", "prompt_for_task_generation": "Mark all notifications read."}],
+)
+
+NOTIFICATIONS_NAVBAR_USE_CASE = UseCase(
+    name="NOTIFICATIONS_NAVBAR",
+    description="User opened notifications from the navbar.",
+    event=NotificationsNavbarEvent,
+    event_source_code=NotificationsNavbarEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[{"prompt": "Go to notifications from the top nav.", "prompt_for_task_generation": "Click notifications in the navbar."}],
+)
+
+DELETE_POST_USE_CASE = UseCase(
+    name="DELETE_POST",
+    description="User permanently deleted their own post.",
+    event=DeletePostEvent,
+    event_source_code=DeletePostEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[{"prompt": "Delete my latest post.", "prompt_for_task_generation": "Delete a post I authored."}],
+)
+
+DELETE_COMMENT_USE_CASE = UseCase(
+    name="DELETE_COMMENT",
+    description="User deleted their own comment on a post.",
+    event=DeleteCommentEvent,
+    event_source_code=DeleteCommentEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[{"prompt": "Remove my comment on this post.", "prompt_for_task_generation": "Delete my comment."}],
+)
+
 ALL_USE_CASES = [
     VIEW_USER_PROFILE_USE_CASE,
     CONNECT_WITH_USER_USE_CASE,
@@ -1147,4 +1217,11 @@ ALL_USE_CASES = [
     SEARCH_JOBS_USE_CASE,
     HOME_NAVBAR_USE_CASE,
     JOBS_NAVBAR_USE_CASE,
+    VIEW_NOTIFICATIONS_USE_CASE,
+    FILTER_NOTIFICATIONS_USE_CASE,
+    MARK_NOTIFICATION_READ_USE_CASE,
+    MARK_ALL_NOTIFICATIONS_READ_USE_CASE,
+    NOTIFICATIONS_NAVBAR_USE_CASE,
+    DELETE_POST_USE_CASE,
+    DELETE_COMMENT_USE_CASE,
 ]

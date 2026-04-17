@@ -5,6 +5,8 @@ from autoppia_iwa.src.demo_webs.classes import UseCase
 from .events import (
     ConnectWalletEvent,
     DisconnectWalletEvent,
+    DocsFeedbackDownEvent,
+    DocsFeedbackUpEvent,
     ExecuteBuyEvent,
     ExecuteSellEvent,
     FavoriteSubnetEvent,
@@ -17,6 +19,8 @@ from .events import (
 from .generation_functions import (
     generate_connect_wallet_constraints,
     generate_disconnect_wallet_constraints,
+    generate_docs_feedback_down_constraints,
+    generate_docs_feedback_up_constraints,
     generate_execute_buy_constraints,
     generate_execute_sell_constraints,
     generate_favorite_subnet_constraints,
@@ -233,6 +237,36 @@ FAVORITE_SUBNET_USE_CASE = UseCase(
     ],
 )
 
+DOCS_FEEDBACK_UP_USE_CASE = UseCase(
+    name="DOCS_FEEDBACK_UP",
+    description="The user clicked thumbs-up on the API documentation feedback section (page api-docs).",
+    event=DocsFeedbackUpEvent,
+    event_source_code=DocsFeedbackUpEvent.get_source_code_of_class(),
+    constraints_generator=generate_docs_feedback_up_constraints,
+    additional_prompt_info=f"Use field page equals 'api-docs'. {STRICT_COPY_INSTRUCTION}",
+    examples=[
+        {
+            "prompt": "Mark the API documentation page as helpful (thumbs up)",
+            "prompt_for_task_generation": "Submit positive docs feedback where page equals 'api-docs'",
+        },
+    ],
+)
+
+DOCS_FEEDBACK_DOWN_USE_CASE = UseCase(
+    name="DOCS_FEEDBACK_DOWN",
+    description="The user clicked thumbs-down on the API documentation feedback section (page api-docs).",
+    event=DocsFeedbackDownEvent,
+    event_source_code=DocsFeedbackDownEvent.get_source_code_of_class(),
+    constraints_generator=generate_docs_feedback_down_constraints,
+    additional_prompt_info=f"Use field page equals 'api-docs'. {STRICT_COPY_INSTRUCTION}",
+    examples=[
+        {
+            "prompt": "Mark the API documentation page as not helpful (thumbs down)",
+            "prompt_for_task_generation": "Submit negative docs feedback where page equals 'api-docs'",
+        },
+    ],
+)
+
 ALL_USE_CASES = [
     VIEW_SUBNET_USE_CASE,
     VIEW_VALIDATOR_USE_CASE,
@@ -244,4 +278,6 @@ ALL_USE_CASES = [
     DISCONNECT_WALLET_USE_CASE,
     TRANSFER_COMPLETE_USE_CASE,
     FAVORITE_SUBNET_USE_CASE,
+    DOCS_FEEDBACK_UP_USE_CASE,
+    DOCS_FEEDBACK_DOWN_USE_CASE,
 ]

@@ -5,6 +5,7 @@ from unittest.mock import patch
 import pytest
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
+from autoppia_iwa.src.demo_webs.projects.p08_autolodge.events import SubmitHotelReviewEvent
 from autoppia_iwa.src.demo_webs.projects.p13_autodrive.events import (
     BACKEND_EVENT_TYPES,
     CancelReservationEvent,
@@ -19,6 +20,8 @@ from autoppia_iwa.src.demo_webs.projects.p13_autodrive.events import (
     SelectCarEvent,
     SelectDateEvent,
     SelectTimeEvent,
+    SubmitReviewRouterEvent,
+    SubmitTripReviewEvent,
     TripDetailsEvent,
     parse_datetime,
     parse_time,
@@ -454,6 +457,32 @@ class TestValidateEvents:
                 "seats": 2,
             },
         ),
+        ("EXPLORE_FEATURES", {"page": "home", "seed": 1}),
+        ("VIEW_AVAILABLE_TRIPS", {"totalTrips": 5}),
+        ("FILTER_TRIPS", {"filterType": "location", "filterValue": "Somewhere"}),
+        (
+            "BOOK_TRIP",
+            {
+                "pickup": "A",
+                "dropoff": "B",
+                "rideName": "Eco",
+                "scheduled": ISO_DATETIME,
+                "price": 10.0,
+                "seats": 2,
+                "tripId": "trip-1",
+                "source": "available_trips",
+            },
+        ),
+        (
+            "SUBMIT_REVIEW",
+            {
+                "tripId": "t1",
+                "rating": 5,
+                "name": "Guest",
+                "review": {"name": "Guest", "comment": "Great"},
+                "tripData": {"pickup": "P", "dropoff": "D", "price": 12.0, "rideType": "XL"},
+            },
+        ),
     ],
 )
 @patch("autoppia_iwa.src.demo_webs.projects.p13_autodrive.events.log_event")
@@ -461,4 +490,31 @@ def test_backend_event_types_parse(mock_log, event_name, data):
     event_class = BACKEND_EVENT_TYPES[event_name]
     e = event_class.parse(_be(event_name, data))
     assert e.event_name == event_name
-    assert_parse_cls_kwargs_match_model(event_class)
+    if event_name == "SUBMIT_REVIEW":
+        assert isinstance(e, SubmitTripReviewEvent)
+    else:
+        assert_parse_cls_kwargs_match_model(event_class)
+
+
+@patch("autoppia_iwa.src.demo_webs.projects.p13_autodrive.events.log_event")
+def test_submit_review_router_delegates_to_hotel(mock_log):
+    """SUBMIT_REVIEW without trip payload routes to autolodge hotel review parser."""
+    e = SubmitReviewRouterEvent.parse(
+        _be(
+            "SUBMIT_REVIEW",
+            {
+                "title": "Stay",
+                "location": "SF",
+                "comment": "Nice",
+                "name": "Alex",
+                "rating": 4.5,
+                "price": 120,
+                "reviews": 40,
+                "guests": 2,
+                "maxGuests": 4,
+                "datesFrom": "2026-06-01T00:00:00",
+                "datesTo": "2026-06-03T00:00:00",
+            },
+        )
+    )
+    assert isinstance(e, SubmitHotelReviewEvent)

@@ -493,6 +493,14 @@ class TestMatchesListCriteriaBranches:
         ("EDIT_BOOK", {"name": "X", "genres": []}),
         ("DELETE_BOOK", {"name": "X", "genres": []}),
         ("ADD_COMMENT_BOOK", {"name": "A", "content": "c", "book": {"name": "B"}}),
+        (
+            "EDIT_COMMENT_BOOK",
+            {"name": "A", "content": "new", "previous_content": "old", "book": {"name": "B"}},
+        ),
+        (
+            "DELETE_COMMENT_BOOK",
+            {"name": "A", "content": "gone", "book": {"name": "B"}, "comment_id": "book-1-comment-1"},
+        ),
         ("CONTACT_BOOK", {"name": "A", "email": "e@e.com", "subject": "s", "message": "m"}),
         ("FILTER_BOOK", {}),
         ("PURCHASE_BOOK", {"name": "X", "genres": []}),

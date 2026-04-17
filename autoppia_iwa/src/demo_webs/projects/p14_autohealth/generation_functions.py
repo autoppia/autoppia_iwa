@@ -13,6 +13,7 @@ from .data import (
     FIELD_MAP_CONTACT_DOCTOR_SUCCESSFULLY,
     FIELD_OPERATORS_MAP_APPOINTMENT_BOOKED_SUCCESSFULLY,
     FIELD_OPERATORS_MAP_CONTACT_DOCTOR,
+    FIELD_OPERATORS_MAP_CONTACT_SITE_FORM,
     FIELD_OPERATORS_MAP_FILTER_DOCTOR_REVIEWS,
     FIELD_OPERATORS_MAP_OPEN_APPOINTMENT_FORM,
     FIELD_OPERATORS_MAP_OPEN_CONTACT_DOCTOR_FORM,
@@ -998,3 +999,25 @@ async def generate_filter_doctor_reviews_constraints(
         field_map=FILTER_DOCTOR_REVIEWS_FIELD_MAP,
         num_constraints=random.randint(0, 1),
     )
+
+
+async def generate_contact_site_form_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Site contact page: constrain on subject or email using static operators map."""
+    _ = task_url, dataset
+    field = random.choice(list(FIELD_OPERATORS_MAP_CONTACT_SITE_FORM.keys()))
+    ops = FIELD_OPERATORS_MAP_CONTACT_SITE_FORM[field]
+    op = ComparisonOperator(random.choice(ops))
+    if field == "email":
+        val = "patient@example.com"
+    elif field == "subject":
+        val = "General inquiry"
+    elif field == "name":
+        val = "Jane Doe"
+    else:
+        val = "I need help with billing."
+    return [create_constraint_dict(field, op, val)]
+
+
+async def generate_view_help_page_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    _ = task_url, dataset
+    return [create_constraint_dict("page", ComparisonOperator.EQUALS, "help")]

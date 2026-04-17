@@ -113,6 +113,21 @@ async def test_generate_search_book_constraints_returns_none_without_books():
 
 
 @pytest.mark.asyncio
+async def test_generate_view_author_constraints_from_dataset():
+    result = await gen.generate_view_author_constraints(dataset={"books": SAMPLE_BOOKS})
+    assert len(result) == 1
+    assert result[0]["field"] == "author_name"
+    assert result[0]["value"] in {"Frank Herbert", "Stephen King"}
+    assert isinstance(result[0]["operator"], ComparisonOperator)
+
+
+@pytest.mark.asyncio
+async def test_generate_view_author_constraints_empty_when_no_authors():
+    assert await gen.generate_view_author_constraints(dataset={"books": []}) == []
+    assert await gen.generate_view_author_constraints(dataset={"books": [{"name": "No Author"}]}) == []
+
+
+@pytest.mark.asyncio
 async def test_generate_book_filter_constraints_builds_genre_and_year(monkeypatch):
     choices = iter(["genre_and_year", "Sci-Fi", ComparisonOperator.LESS_EQUAL, 1986])
     monkeypatch.setattr(gen, "choice", lambda seq: next(choices))
