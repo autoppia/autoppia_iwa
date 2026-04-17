@@ -7,6 +7,8 @@ from autoppia_iwa.config.config import DEMO_WEB_SERVICE_PORT, DEMO_WEBS_ENDPOINT
 
 sys.path.append(str(Path(__file__).resolve().parents[3]))
 
+DEFAULT_WEB_VERSION = "0.0.0"
+
 
 def get_frontend_url(index):
     """Get frontend URL for a web project by its index."""
@@ -113,4 +115,4 @@ def get_web_version(project_id: str, frontend_url: str | None = None) -> str | N
             except (OSError, json.JSONDecodeError, KeyError):
                 continue
 
-    return None
+    return DEFAULT_WEB_VERSION

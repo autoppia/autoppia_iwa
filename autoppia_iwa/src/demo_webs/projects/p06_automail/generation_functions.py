@@ -67,14 +67,29 @@ def _email_body_safe_for_constraint(body: str) -> str:
     return max(parts, key=len)[:80]
 
 
-async def _ensure_email_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    """Extract emails data from the pre-loaded dataset, or fetch from server if not available."""
-    _ = dataset  # Unused parameter kept for backward compatibility
+async def _ensure_email_dataset(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None,
+) -> list[dict[str, Any]]:
+    """Extract emails data from a provided dataset, or fetch from server as fallback."""
+    if isinstance(dataset, list) and dataset:
+        return dataset
+    if isinstance(dataset, dict):
+        emails = dataset.get("emails")
+        if isinstance(emails, list) and emails:
+            return emails
+
     seed = get_seed_from_url(task_url)
-    # Legacy-compatible first call signature (used by unit tests).
-    emails = await fetch_data(seed_value=seed)
-    if not emails:
-        emails = await fetch_data(seed_value=seed, entity_type="emails", method="distribute", filter_key="category")
+    try:
+        # Legacy-compatible first call signature (used by unit tests).
+        emails = await fetch_data(seed_value=seed)
+        if not emails:
+            emails = await fetch_data(seed_value=seed, entity_type="emails", method="distribute", filter_key="category")
+    except asyncio.CancelledError:
+        raise
+    except Exception:
+        emails = []
+
     fetched_dataset = {"emails": emails}
 
     if fetched_dataset and "emails" in fetched_dataset:
