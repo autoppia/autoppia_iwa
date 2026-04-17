@@ -882,28 +882,26 @@ class AutohealthViewHelpPageEvent(Event, BaseEventValidator):
     """Fired when user visits the Help page (web_14 autohealth)."""
 
     event_name: str = "AUTOHEALTH_VIEW_HELP_PAGE"
-    page: str | None = None
 
     class ValidationCriteria(BaseModel):
-        page: str | CriterionValue | None = None
+        pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return self._validate_field(self.page, criteria.page)
+        return True
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "AutohealthViewHelpPageEvent":
         base_event = Event.parse(backend_event)
         raw = backend_event.data or {}
         nested = raw.get("data")
-        data = nested if isinstance(nested, dict) else raw
+        nested if isinstance(nested, dict) else raw
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            page=data.get("page"),
         )
 
 

@@ -40,7 +40,6 @@ from .generation_functions import (
     generate_view_doctor_availability_constraints,
     generate_view_doctor_education_constraints,
     generate_view_doctor_profile_constraints,
-    generate_view_help_page_constraints,
     generate_view_medical_analysis_constraints,
     generate_view_prescription_constraints,
 )
@@ -801,7 +800,7 @@ VIEW_HELP_PAGE_USE_CASE = UseCase(
     description="The user opened the Help / FAQ page.",
     event=AutohealthViewHelpPageEvent,
     event_source_code=AutohealthViewHelpPageEvent.get_source_code_of_class(),
-    constraints_generator=generate_view_help_page_constraints,
+    constraints_generator=None,
     additional_prompt_info=f"Use field page equals 'help'. {STRICT_COPY_INSTRUCTION}",
     examples=[
         {

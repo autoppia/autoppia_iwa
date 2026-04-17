@@ -19,8 +19,6 @@ from .events import (
 from .generation_functions import (
     generate_connect_wallet_constraints,
     generate_disconnect_wallet_constraints,
-    generate_docs_feedback_down_constraints,
-    generate_docs_feedback_up_constraints,
     generate_execute_buy_constraints,
     generate_execute_sell_constraints,
     generate_favorite_subnet_constraints,
@@ -242,7 +240,7 @@ DOCS_FEEDBACK_UP_USE_CASE = UseCase(
     description="The user clicked thumbs-up on the API documentation feedback section (page api-docs).",
     event=DocsFeedbackUpEvent,
     event_source_code=DocsFeedbackUpEvent.get_source_code_of_class(),
-    constraints_generator=generate_docs_feedback_up_constraints,
+    constraints_generator=None,
     additional_prompt_info=f"Use field page equals 'api-docs'. {STRICT_COPY_INSTRUCTION}",
     examples=[
         {
@@ -257,7 +255,7 @@ DOCS_FEEDBACK_DOWN_USE_CASE = UseCase(
     description="The user clicked thumbs-down on the API documentation feedback section (page api-docs).",
     event=DocsFeedbackDownEvent,
     event_source_code=DocsFeedbackDownEvent.get_source_code_of_class(),
-    constraints_generator=generate_docs_feedback_down_constraints,
+    constraints_generator=None,
     additional_prompt_info=f"Use field page equals 'api-docs'. {STRICT_COPY_INSTRUCTION}",
     examples=[
         {

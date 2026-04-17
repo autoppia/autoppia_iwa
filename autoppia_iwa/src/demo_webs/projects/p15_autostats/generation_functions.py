@@ -456,15 +456,3 @@ async def generate_favorite_subnet_constraints(task_url: str | None = None, data
         num_constraints=2,
         integer_fields=INTEGER_FIELDS_FAVORITE_SUBNET,
     )
-
-
-async def generate_docs_feedback_up_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    """Docs thumbs-up targets the API docs page (matches web_15 /api-docs feedback buttons)."""
-    _ = task_url, dataset
-    return [create_constraint_dict("page", ComparisonOperator.EQUALS, "api-docs")]
-
-
-async def generate_docs_feedback_down_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
-    """Docs thumbs-down targets the API docs page."""
-    _ = task_url, dataset
-    return [create_constraint_dict("page", ComparisonOperator.EQUALS, "api-docs")]
