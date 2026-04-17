@@ -27,6 +27,7 @@ from .generation_functions import (
     generate_autozone_login_constraints,
     generate_autozone_products_constraints,
     generate_autozone_register_constraints,
+    generate_autozone_review_constraints,
     generate_carousel_scroll_constraints,
     generate_category_filter_constraints,
     generate_checkout_constraints,
@@ -659,7 +660,7 @@ SHARE_COMPLETED_USE_CASE = UseCase(
 REVIEW_PRODUCT_CONSTRAINTS_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 0. Authentication first (same pattern as autobooks use cases that touch user-owned data): begin with an explicit login instruction using placeholders username <username> and password <password>—for example "First, login for the following username:<username> and password:<password>" or "Login with username equals <username> and password equals <password>."—because posting, editing, or deleting a product review requires a signed-in user before navigating to the product and the reviews section.
-1. After the login step, refer to the product using the same attributes as the structured constraints—fields may include title, category, brand, rating, and price, with operators such as equals, not_equals, contains, not_contains, and numeric comparisons on rating and price.
+1. After the login step, refer to the product using the same attributes as the structured constraints—fields may include title, category, brand, rating, and price, with operators such as equals, not_equals, contains, not_contains, and numeric comparisons on rating and price. When present, ``review_rating`` (stars), ``reviewer_name`` (display name on the review), and ``review_body`` (review text) must be reflected in the instruction: the agent should submit a review that satisfies those constraints together with the product constraints.
 2. Describe posting, editing, or deleting a product review (as appropriate to the event), without adding cart, checkout, or unrelated flows.
 3. Include ALL constraint fields that appear in the generated list; do not invent extra product filters.
 4. Keep the login clause and the review clause in one continuous prompt; do not omit the login preamble.
@@ -671,7 +672,7 @@ REVIEW_CREATED_USE_CASE = UseCase(
     description="The user posted a new product review on the AutoZone product page.",
     event=AutozoneReviewCreatedEvent,
     event_source_code=AutozoneReviewCreatedEvent.get_source_code_of_class(),
-    constraints_generator=generate_autozone_products_constraints,
+    constraints_generator=generate_autozone_review_constraints,
     replace_func=replace_products_placeholders,
     additional_prompt_info=REVIEW_PRODUCT_CONSTRAINTS_PROMPT_INFO,
     examples=[
@@ -703,7 +704,7 @@ REVIEW_UPDATED_USE_CASE = UseCase(
     description="The user edited an existing product review.",
     event=AutozoneReviewUpdatedEvent,
     event_source_code=AutozoneReviewUpdatedEvent.get_source_code_of_class(),
-    constraints_generator=generate_autozone_products_constraints,
+    constraints_generator=generate_autozone_review_constraints,
     replace_func=replace_products_placeholders,
     additional_prompt_info=REVIEW_PRODUCT_CONSTRAINTS_PROMPT_INFO,
     examples=[
@@ -731,7 +732,7 @@ REVIEW_DELETED_USE_CASE = UseCase(
     description="The user deleted one of their product reviews.",
     event=AutozoneReviewDeletedEvent,
     event_source_code=AutozoneReviewDeletedEvent.get_source_code_of_class(),
-    constraints_generator=generate_autozone_products_constraints,
+    constraints_generator=generate_autozone_review_constraints,
     replace_func=replace_products_placeholders,
     additional_prompt_info=REVIEW_PRODUCT_CONSTRAINTS_PROMPT_INFO,
     examples=[

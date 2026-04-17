@@ -13,6 +13,7 @@ from .data import (
     FIELD_OPERATORS_APPLY_FILTERS_MAP,
     FIELD_OPERATORS_BOOK_FROM_WISHLIST_MAP,
     FIELD_OPERATORS_CONFIRM_AND_PAY_MAP,
+    FIELD_OPERATORS_CONTACT_FORM_SUBMITTED_MAP,
     FIELD_OPERATORS_EDIT_CHECKIN_OUT_MAP,
     FIELD_OPERATORS_EDIT_GUESTS_MAP,
     FIELD_OPERATORS_FAQ_OPENED_MAP,
@@ -1153,6 +1154,67 @@ async def generate_book_from_wishlist_constraints(task_url: str | None = None, d
     op = ComparisonOperator(random.choice(allowed_ops))
     value = sample.get(field)
     constraints.append(create_constraint_dict(field, op, value))
+    return constraints
+
+
+def _contact_form_synthetic_dataset() -> list[dict[str, str]]:
+    """Sample rows for contact-form constraints (aligned with web_8_autolodge /events fields)."""
+    return [
+        {
+            "name": "Alex Morgan",
+            "email": "alex@example.com",
+            "subject": "Booking question",
+            "message": "I need help with my reservation dates.",
+        },
+        {
+            "name": "Jordan Lee",
+            "email": "jordan@travel.test",
+            "subject": "Cancellation request",
+            "message": "Can you confirm the cancellation policy?",
+        },
+        {
+            "name": "Sam Rivera",
+            "email": "sam@mail.demo",
+            "subject": "General inquiry",
+            "message": "Thank you for the quick response.",
+        },
+        {
+            "name": "Riley Chen",
+            "email": "riley@example.org",
+            "subject": "Property question",
+            "message": "Is early check-in available?",
+        },
+    ]
+
+
+async def generate_contact_form_submitted_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    """
+    Constraints for AUTOLODGE_CONTACT_FORM_SUBMITTED (name, email, subject, message).
+    """
+    _ = (task_url, dataset)
+    synth = _contact_form_synthetic_dataset()
+    if test_types == "data_extraction_only":
+        picked = random.choice(synth)
+        visible = ["name", "email", "subject", "message"]
+        verify_field = random.choice(visible)
+        return _build_data_extraction_result(picked, visible, verify_field=verify_field) or []
+
+    fields_pool = ["name", "email", "subject", "message"]
+    num_fields = random.randint(1, min(3, len(fields_pool)))
+    selected = random.sample(fields_pool, num_fields)
+    sample_row = random.choice(synth)
+    constraints: list[dict[str, Any]] = []
+    for field in selected:
+        allowed_ops = FIELD_OPERATORS_CONTACT_FORM_SUBMITTED_MAP[field]
+        operator = ComparisonOperator(random.choice(allowed_ops))
+        raw = sample_row[field]
+        value = _generate_constraint_value(operator, raw, field, synth)
+        if value is not None:
+            constraints.append(create_constraint_dict(field, operator, value))
     return constraints
 
 

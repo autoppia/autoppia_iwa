@@ -806,26 +806,23 @@ class ContactPageViewedEvent(Event, BaseEventValidator):
     """Contact page view (web_8 autolodge); optional page label."""
 
     event_name: str = "AUTOLODGE_CONTACT_PAGE_VIEWED"
-    page: str | None = None
 
     class ValidationCriteria(BaseModel):
-        page: str | CriterionValue | None = None
+        pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return self._validate_field(self.page, criteria.page)
+        return True
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "ContactPageViewedEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data or {}
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            page=data.get("page"),
         )
 
 

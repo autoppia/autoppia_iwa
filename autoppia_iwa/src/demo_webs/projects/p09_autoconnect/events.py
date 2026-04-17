@@ -790,38 +790,29 @@ class UnhidePostEvent(Event, BaseEventValidator):
 
 class ViewNotificationsEvent(Event, BaseEventValidator):
     event_name: str = "VIEW_NOTIFICATIONS"
-    total_count: int | None = None
-    unread_count: int | None = None
-    source: str | None = None
 
     class ValidationCriteria(BaseModel):
-        source: str | CriterionValue | None = None
+        pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return self._validate_field(self.source, criteria.source)
+        return True
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "ViewNotificationsEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data or {}
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            total_count=data.get("totalCount"),
-            unread_count=data.get("unreadCount"),
-            source=data.get("source"),
         )
 
 
 class FilterNotificationsEvent(Event, BaseEventValidator):
     event_name: str = "FILTER_NOTIFICATIONS"
     filter_key: str | None = None
-    count: int | None = None
-    source: str | None = None
 
     class ValidationCriteria(BaseModel):
         filter_key: str | CriterionValue | None = None
@@ -841,24 +832,27 @@ class FilterNotificationsEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             filter_key=data.get("filter"),
-            count=data.get("count"),
-            source=data.get("source"),
         )
 
 
 class MarkNotificationReadEvent(Event, BaseEventValidator):
     event_name: str = "MARK_NOTIFICATION_READ"
-    notification_id: str | None = None
     notification_type: str | None = None
     action: str | None = None
 
     class ValidationCriteria(BaseModel):
-        notification_id: str | CriterionValue | None = None
+        notification_type: str | CriterionValue | None = None
+        action: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return self._validate_field(self.notification_id, criteria.notification_id)
+        return all(
+            [
+                self._validate_field(self.notification_type, criteria.notification_type),
+                self._validate_field(self.action, criteria.action),
+            ]
+        )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "MarkNotificationReadEvent":
@@ -869,7 +863,6 @@ class MarkNotificationReadEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            notification_id=data.get("notificationId"),
             notification_type=data.get("type"),
             action=data.get("action"),
         )
@@ -877,55 +870,23 @@ class MarkNotificationReadEvent(Event, BaseEventValidator):
 
 class MarkAllNotificationsReadEvent(Event, BaseEventValidator):
     event_name: str = "MARK_ALL_NOTIFICATIONS_READ"
-    count: int | None = None
-    source: str | None = None
 
     class ValidationCriteria(BaseModel):
-        source: str | CriterionValue | None = None
+        pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return self._validate_field(self.source, criteria.source)
+        return True
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "MarkAllNotificationsReadEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data or {}
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            count=data.get("count"),
-            source=data.get("source"),
-        )
-
-
-class NotificationsNavbarEvent(Event, BaseEventValidator):
-    event_name: str = "NOTIFICATIONS_NAVBAR"
-    label: str | None = None
-    unread_count: int | None = None
-
-    class ValidationCriteria(BaseModel):
-        label: str | CriterionValue | None = None
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        return self._validate_field(self.label, criteria.label)
-
-    @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "NotificationsNavbarEvent":
-        base_event = Event.parse(backend_event)
-        data = backend_event.data or {}
-        return cls(
-            event_name=base_event.event_name,
-            timestamp=base_event.timestamp,
-            web_agent_id=base_event.web_agent_id,
-            user_id=base_event.user_id,
-            label=data.get("label"),
-            unread_count=data.get("unreadCount"),
         )
 
 

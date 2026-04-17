@@ -58,6 +58,25 @@ def test_generate_constraint_value_equals_for_price_parses_source():
     assert result == 199.99
 
 
+def test_generate_constraint_value_review_rating_equals_uses_synthetic_star():
+    src = {**PRODUCTS[0], "review_rating": 4.0}
+    result = gen.generate_constraint_value("review_rating", ComparisonOperator.EQUALS, src, all_products_data=PRODUCTS)
+    assert result == 4.0
+
+
+def test_generate_constraint_value_reviewer_name_equals():
+    src = {**PRODUCTS[0], "reviewer_name": "Alex"}
+    result = gen.generate_constraint_value("reviewer_name", ComparisonOperator.EQUALS, src, all_products_data=PRODUCTS)
+    assert result == "Alex"
+
+
+def test_generate_constraint_value_review_body_contains_substring(monkeypatch):
+    monkeypatch.setattr(gen.random, "randint", lambda a, b: a)
+    src = {**PRODUCTS[0], "review_body": "Great value for money"}
+    result = gen.generate_constraint_value("review_body", ComparisonOperator.CONTAINS, src, all_products_data=PRODUCTS)
+    assert result in "Great value for money"
+
+
 def test_generate_constraint_value_not_equals_returns_other_value(monkeypatch):
     monkeypatch.setattr(gen.random, "choice", lambda seq: seq[0])
     result = gen.generate_constraint_value("brand", ComparisonOperator.NOT_EQUALS, PRODUCTS[0], all_products_data=PRODUCTS)
@@ -104,6 +123,66 @@ async def test_generate_autozone_products_constraints_builds_selected_fields(mon
     result = await gen.generate_autozone_products_constraints(dataset={"products": PRODUCTS})
 
     assert [c["field"] for c in result] == ["title", "price"]
+
+
+@pytest.mark.asyncio
+async def test_generate_autozone_review_constraints_delegates_and_can_add_review_fields(monkeypatch):
+    monkeypatch.setattr(
+        gen,
+        "generate_autozone_products_constraints",
+        AsyncMock(return_value=[{"field": "title", "operator": ComparisonOperator.EQUALS, "value": "Ultra Laptop"}]),
+    )
+    monkeypatch.setattr(gen.random, "choice", lambda seq: seq[0])
+    monkeypatch.setattr(gen.random, "randint", lambda a, b: 4)
+    monkeypatch.setattr(gen.random, "random", lambda: 0.0)
+
+    result = await gen.generate_autozone_review_constraints(dataset={"products": PRODUCTS})
+
+    fields = [c["field"] for c in result]
+    assert "title" in fields
+    assert "review_rating" in fields
+    assert "reviewer_name" in fields
+    assert "review_body" in fields
+    assert any(c["field"] == "review_rating" and c["value"] == 4.0 for c in result)
+    assert any(c["field"] == "reviewer_name" and c["value"] == "Alex" for c in result)
+    assert any(c["field"] == "review_body" and c["value"] == "Great value for money" for c in result)
+
+
+@pytest.mark.asyncio
+async def test_generate_autozone_review_constraints_skips_extra_when_random_high(monkeypatch):
+    monkeypatch.setattr(
+        gen,
+        "generate_autozone_products_constraints",
+        AsyncMock(return_value=[{"field": "title", "operator": ComparisonOperator.EQUALS, "value": "Ultra Laptop"}]),
+    )
+    monkeypatch.setattr(gen.random, "random", lambda: 0.99)
+
+    result = await gen.generate_autozone_review_constraints(dataset={"products": PRODUCTS})
+
+    assert [c["field"] for c in result] == ["title"]
+
+
+@pytest.mark.asyncio
+async def test_maybe_append_review_field_constraint_helper(monkeypatch):
+    base: list = []
+    monkeypatch.setattr(gen.random, "choice", lambda seq: seq[0])
+    gen._maybe_append_review_field_constraint(
+        base,
+        field="reviewer_name",
+        product=PRODUCTS[0],
+        data_items=PRODUCTS,
+        synth_overlay={"reviewer_name": "Sam"},
+    )
+    assert base == [{"field": "reviewer_name", "operator": ComparisonOperator.EQUALS, "value": "Sam"}]
+
+
+@pytest.mark.asyncio
+async def test_generate_autozone_review_constraints_data_extraction_only_no_review_rating(monkeypatch):
+    monkeypatch.setattr(gen, "generate_autozone_products_constraints", AsyncMock(return_value={"constraints": [], "question_fields_and_values": {}}))
+
+    result = await gen.generate_autozone_review_constraints(dataset={"products": PRODUCTS}, test_types="data_extraction_only")
+
+    assert isinstance(result, dict)
 
 
 @pytest.mark.asyncio
