@@ -134,8 +134,9 @@ async def test_generate_expert_selection_constraints(deterministic_random, patch
     assert len(cancel) >= 1
 
 
-def test_generate_posting_and_title_constraints(deterministic_random):
-    posting = gf.generate_job_posting_constraint()
+@pytest.mark.asyncio
+async def test_generate_posting_and_title_constraints(deterministic_random):
+    posting = await gf.generate_job_posting_constraint()
     title = gf.generate_write_job_title_constraint()
     assert {c["field"] for c in posting}
     assert title[0]["field"] == "query"
@@ -197,3 +198,21 @@ def test_generate_to_and_from_constraints(deterministic_random):
     rate_from = next(c for c in constraints if c["field"] == "rate_from")
     rate_to = next(c for c in constraints if c["field"] == "rate_to")
     assert rate_to["value"] > rate_from["value"]
+
+
+@pytest.mark.asyncio
+async def test_generate_autowork_contact_page_viewed_constraints(deterministic_random):
+    out = await gf.generate_autowork_contact_page_viewed_constraints()
+    assert len(out) == 1
+    assert out[0]["field"] == "page"
+
+
+@pytest.mark.asyncio
+async def test_generate_autowork_contact_form_submitted_constraints(deterministic_random):
+    normal = await gf.generate_autowork_contact_form_submitted_constraints()
+    assert len(normal) >= 1
+    assert {c["field"] for c in normal} <= {"name", "email", "subject", "message"}
+
+    de = await gf.generate_autowork_contact_form_submitted_constraints(test_types="data_extraction_only")
+    assert isinstance(de, dict)
+    assert "constraints" in de and "question_fields_and_values" in de

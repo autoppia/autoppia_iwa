@@ -2,6 +2,8 @@ from autoppia_iwa.src.demo_webs.classes import UseCase
 
 from .events import (
     AddSkillEvent,
+    AutoworkContactFormSubmittedEvent,
+    AutoworkContactPageViewedEvent,
     BookAConsultationEvent,
     BrowseFavoriteExpertEvent,
     CancelHireEvent,
@@ -11,8 +13,6 @@ from .events import (
     ClosePostAJobWindowEvent,
     ContactExpertMessageSentEvent,
     ContactExpertOpenedEvent,
-    ContactFormSubmittedSharedEvent,
-    ContactPageViewedEvent,
     EditAboutEvent,
     EditProfileEmailEvent,
     EditProfileLocationEvent,
@@ -40,6 +40,8 @@ from .events import (
 )
 from .generation_functions import (
     generate_add_skill_constraint,
+    generate_autowork_contact_form_submitted_constraints,
+    generate_autowork_contact_page_viewed_constraints,
     generate_book_consultant_constraint,
     generate_budget_type_constraint,
     generate_cancel_hire_constraint,
@@ -1205,18 +1207,18 @@ FAVORITE_EXPERT_REMOVED_USE_CASE = UseCase(
 CONTACT_PAGE_VIEWED_USE_CASE = UseCase(
     name="AUTOWORK_CONTACT_PAGE_VIEWED",
     description="User opened the contact page (optional page label in payload).",
-    event=ContactPageViewedEvent,
-    event_source_code=ContactPageViewedEvent.get_source_code_of_class(),
-    constraints_generator=False,
+    event=AutoworkContactPageViewedEvent,
+    event_source_code=AutoworkContactPageViewedEvent.get_source_code_of_class(),
+    constraints_generator=generate_autowork_contact_page_viewed_constraints,
     examples=[{"prompt": "Open the contact page.", "prompt_for_task_generation": "View the contact page."}],
 )
 
 CONTACT_FORM_SUBMITTED_USE_CASE = UseCase(
     name="AUTOWORK_CONTACT_FORM_SUBMITTED",
     description="User submitted the site contact form.",
-    event=ContactFormSubmittedSharedEvent,
-    event_source_code=ContactFormSubmittedSharedEvent.get_source_code_of_class(),
-    constraints_generator=False,
+    event=AutoworkContactFormSubmittedEvent,
+    event_source_code=AutoworkContactFormSubmittedEvent.get_source_code_of_class(),
+    constraints_generator=generate_autowork_contact_form_submitted_constraints,
     examples=[
         {
             "prompt": "Send a message through the contact form with subject 'Partnership'.",
