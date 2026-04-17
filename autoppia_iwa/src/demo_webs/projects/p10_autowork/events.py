@@ -441,7 +441,13 @@ class SetRateRangeEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "SetRateRangeEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
-        return cls(**_base_event_kwargs(base_event, rate_from=int(data.get("rateFrom")), rate_to=int(data.get("rateTo"))))
+        return cls(
+            **_base_event_kwargs(
+                base_event,
+                rate_from=int(data.get("rateFrom")) if data.get("rateFrom") else None,
+                rate_to=int(data.get("rateTo")) if data.get("rateTo") else None,
+            )
+        )
 
 
 class WriteJobDescriptionEvent(Event, BaseEventValidator):

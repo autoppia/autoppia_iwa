@@ -16,7 +16,9 @@ from loguru import logger
 
 from autoppia_iwa.src.data_generation.tasks.simple.simple_task_generator import SimpleTaskGenerator
 from autoppia_iwa.src.demo_webs.classes import DataExtractionTrajectory, WebProject
-from autoppia_iwa.src.demo_webs.data_extraction_trajectory_registry import get_data_extraction_trajectories
+from autoppia_iwa.src.demo_webs.data_extraction_trajectory_registry import (
+    get_data_extraction_trajectories as _registry_get_data_extraction_trajectories,
+)
 from autoppia_iwa.src.demo_webs.trajectory_registry import remap_url_to_frontend
 from autoppia_iwa.src.evaluation.stateful_evaluator import AsyncStatefulEvaluator
 from autoppia_iwa.src.execution.actions.actions import ExtractAction, NavigateAction
@@ -74,6 +76,23 @@ def _short(value: str, max_chars: int) -> str:
     return f"{cleaned[:max_chars]}..."
 
 
+# Compatibility alias used by entrypoint wrappers/tests.
+get_data_extraction_trajectories = _registry_get_data_extraction_trajectories
+
+
+def _load_project_trajectories(project_id: str):
+    """Resolve DE trajectories with entrypoint-level override support for tests."""
+    try:
+        from autoppia_iwa.entrypoints.web_verification import data_extraction_verifier as compat_module
+
+        getter = getattr(compat_module, "get_data_extraction_trajectories", None)
+        if callable(getter):
+            return getter(project_id)
+    except Exception:
+        pass
+    return _registry_get_data_extraction_trajectories(project_id)
+
+
 class DataExtractionTrajectoryVerifier:
     """Executes and validates data-extraction trajectories for a project/use-case."""
 
@@ -92,7 +111,7 @@ class DataExtractionTrajectoryVerifier:
         self.task_generator: SimpleTaskGenerator | None = None
 
     async def verify_for_project(self, *, seed: int = 1, use_cases: list[str] | None = None) -> dict[str, Any]:
-        trajectories = get_data_extraction_trajectories(self.web_project.id)
+        trajectories = _load_project_trajectories(self.web_project.id)
         if trajectories is None:
             return {
                 "skipped": True,
@@ -127,7 +146,7 @@ class DataExtractionTrajectoryVerifier:
         return await self._verify_selected(trajectories=selected, seed=seed)
 
     async def verify_for_use_case(self, *, use_case_name: str, seed: int = 1) -> dict[str, Any]:
-        trajectories = get_data_extraction_trajectories(self.web_project.id)
+        trajectories = _load_project_trajectories(self.web_project.id)
         if trajectories is None:
             return {
                 "skipped": True,

@@ -1,4 +1,4 @@
-"""Backward-compatible benchmark metrics exports."""
+"""Compatibility wrapper for canonical benchmark metrics utilities."""
 
 from autoppia_iwa.src.evaluation.benchmark.utils.metrics import TimingMetrics, compute_statistics
 

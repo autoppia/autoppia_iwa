@@ -195,11 +195,6 @@ class PlaywrightBrowserExecutor:
     async def _fetch_backend_events_filtered(self, web_agent_id: str, start_time: datetime) -> list[Any]:
         """
         Fetch backend events with retries.
-
-        Keep full scoped event history for the current web_agent/validator and
-        let evaluator-side scoring apply recency pruning for the active step.
-        This avoids dropping valid events that are emitted asynchronously after
-        the action has already completed.
         """
         backend_events: list[Any] = []
         for _ in range(3):
@@ -210,7 +205,15 @@ class PlaywrightBrowserExecutor:
             if backend_events:
                 break
             await asyncio.sleep(0.2)
-        return backend_events or []
+        if not backend_events:
+            return []
+
+        filtered_events: list[Any] = []
+        for event in backend_events:
+            event_ts = _parse_event_timestamp(event)
+            if event_ts is None or event_ts >= start_time:
+                filtered_events.append(event)
+        return filtered_events
 
     async def _get_backend_events_for_action(self, web_agent_id: str, start_time: datetime, is_web_real: bool) -> list[Any]:
         """Fetch backend events for this action or return empty list (centralizes duplicate condition)."""

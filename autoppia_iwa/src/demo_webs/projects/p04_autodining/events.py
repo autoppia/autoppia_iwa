@@ -1143,13 +1143,16 @@ class ScrollViewEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "ScrollViewEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
+        section = data.get("sectionTitle")
+        if section is None:
+            section = data.get("title", "")
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             direction=data.get("direction", "").lower(),
-            section=data.get("title", ""),
+            section=section,
         )
 
 
@@ -1347,6 +1350,9 @@ class ContactCardClickEvent(Event, BaseEventValidator):
 # =============================================================================
 
 EVENTS = [
+    DateDropdownOpenedEvent,
+    TimeDropdownOpenedEvent,
+    PeopleDropdownOpenedEvent,
     DateSelectedEvent,
     TimeSelectedEvent,
     PeopleSelectedEvent,
@@ -1377,6 +1383,9 @@ EVENTS = [
 ]
 
 BACKEND_EVENT_TYPES = {
+    "DATE_DROPDOWN_OPENED": DateDropdownOpenedEvent,
+    "TIME_DROPDOWN_OPENED": TimeDropdownOpenedEvent,
+    "PEOPLE_DROPDOWN_OPENED": PeopleDropdownOpenedEvent,
     "DATE_SELECTED": DateSelectedEvent,
     "TIME_SELECTED": TimeSelectedEvent,
     "PEOPLE_SELECTED": PeopleSelectedEvent,

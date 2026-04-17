@@ -1,3 +1,4 @@
+import asyncio
 import random
 from random import choice, randint, sample, uniform
 from typing import Any
@@ -221,7 +222,7 @@ def _generate_delete_book_constraints_static() -> list[dict[str, Any]]:
     return parse_constraints_str(constraints_str)
 
 
-async def generate_delete_book_constraints(
+async def _generate_delete_book_constraints_async(
     task_url: str | None = None,
     dataset: dict[str, list[dict]] | None = None,
     test_types: str | None = None,
@@ -235,6 +236,24 @@ async def generate_delete_book_constraints(
         result = _build_data_extraction_result(selected_item, VISIBLE_FIELDS_BOOK_DETAIL)
         return result if result is not None else []
     return _generate_delete_book_constraints_static()
+
+
+def generate_delete_book_constraints(
+    task_url: str | None = None,
+    dataset: dict[str, list[dict]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any] | None:
+    """
+    Backward-compatible sync/async wrapper.
+    - Sync callers get a concrete result.
+    - Async callers receive a coroutine to await.
+    """
+    coro = _generate_delete_book_constraints_async(task_url=task_url, dataset=dataset, test_types=test_types)
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coro)
+    return coro
 
 
 async def generate_search_book_constraints(

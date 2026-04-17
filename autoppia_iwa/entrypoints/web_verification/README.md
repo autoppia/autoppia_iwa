@@ -4,6 +4,7 @@ A comprehensive, five-step pipeline that:
 - **Step 0**: Pre-validates project configuration (events, use cases, URLs)
 - **Step 1 (V1)**: Generates web tasks with constraints and reviews them with an LLM
 - **Step 2 (V2)**: Verifies that datasets are different with different seeds (dynamic data validation)
+- **Step 2.4 (Event)**: Replays event trajectories for the whole project and validates tests
 - **Step 2.5 (DE)**: Runs seed-filtered data-extraction trajectories for the whole project and returns a boolean pass/fail
 - **Step 3**: Checks if anyone has solved the use case via the IWAP API (with mock fallback)
 - **Step 4 (V3)**: Replays found solutions across multiple dynamic seeds to prove they generalize
@@ -14,12 +15,33 @@ A comprehensive, five-step pipeline that:
 # Fast path with defaults (dynamic seeds on, writes one JSON result)
 python -m autoppia_iwa.entrypoints.web_verification.run -p autocrm
 
-# Skip LLM review for speed (CLI flags vary; see table below)
-python -m autoppia_iwa.entrypoints.web_verification.run -p autocrm --no-llm-review
+# Use mock IWAP when offline and keep logs verbose
+python -m autoppia_iwa.entrypoints.web_verification.run -p autocrm --iwap-use-mock -v
 
-# Only one use case (same pattern as iwa benchmark: repeat -u for multiple)
-python -m autoppia_iwa.entrypoints.web_verification.run -p autocrm -u LOGIN
+# Skip LLM review and dynamic verification for speed
+python -m autoppia_iwa.entrypoints.web_verification.run -p autocrm --no-llm-review --no-dynamic-verification
 ```
+
+## CLI Summary
+
+- Minimal run:
+  - `python -m autoppia_iwa.entrypoints.web_verification.run -p <project_id>`
+- Skip IWAP check:
+  - `python -m autoppia_iwa.entrypoints.web_verification.run -p <project_id> --no-iwap`
+- Disable DE verification:
+  - `python -m autoppia_iwa.entrypoints.web_verification.run -p <project_id> --no-data-extraction-verification`
+- Disable Event trajectories verification:
+  - `python -m autoppia_iwa.entrypoints.web_verification.run -p <project_id> --no-event-trajectory-verification`
+- Custom seeds and output:
+  - `python -m autoppia_iwa.entrypoints.web_verification.run -p <project_id> -s 1,50,100 -o ./verification_results`
+
+Short aliases available:
+- `-p` = `--project-id`
+- `-n` = `--tasks-per-use-case`
+- `-i` = `--iwap-url`
+- `-s` = `--seeds`
+- `-o` = `--output-dir`
+- `-v` = `--verbose`
 
 **Outputs**: One JSON per project is written to `./verification_results/verification_<project_id>.json` (overwritten on rerun unless you change `--output-dir`).
 
@@ -42,6 +64,7 @@ The Web Verification Pipeline is designed to:
 0. **Pre-Validation**: Automatically validates project setup (events, use cases, URLs) before proceeding
 1. **Task Generation and LLM Review (V1)**: Create multiple tasks per use case with constraints (tests) and validate them using GPT
 2. **Dataset Diversity Verification (V2)**: Verify that `get_all_data()` returns different datasets with different seeds, ensuring dynamic data generation works correctly
+2.4. **Event Trajectories Verification**: Replay deterministic event trajectories for the project and validate all tests
 2.5. **Data Extraction Trajectories Verification (DE)**: Run deterministic DE trajectories for the project and seed (default seed=1), and check expected answers
 3. **IWAP Use Case Doability Check**: Query the IWAP API to check if the use case is doable (has any successful solution). We don't compare specific constraints - we just need to know if the use case has been solved before.
 4. **Dynamic Verification (V3)**: Take the successful solution from Step 3 and test it with different seed values to ensure the solution works across different dynamic content variations
@@ -137,6 +160,19 @@ V2 Verification: PASSED - All 3 datasets are different. Dynamic data generation 
 ```
 
 **Note**: This step is **independent** and does not affect other steps. If V2 fails, the pipeline continues normally.
+
+### Step 2.4: Event Trajectories Verification
+
+**Purpose**: Validate deterministic event trajectories for the whole project.
+
+**Process**:
+- Loads event trajectories from `trajectory_registry`
+- Replays each trajectory actions and evaluates with the standard `ConcurrentEvaluator`
+- Uses trajectory tests (`CheckEventTest`, etc.) as the source of truth
+
+**Output**:
+- Project-level boolean in console: `Event trajectories passed: YES/NO` (or skipped reason)
+- Per-trajectory details with score and tests passed
 
 ### Step 2.5: Data Extraction Trajectories Verification (DE)
 
@@ -260,6 +296,7 @@ V2 Verification: PASSED - All 3 datasets are different. Dynamic data generation 
 | `--evaluate-trajectories` | flag | `False` | Add trajectory replay to the full pipeline (needs `OPENAI_API_KEY` for task generation) |
 | `--trajectories-only` | flag | `False` | Trajectory replay only; skips V2 bulk dataset loads, OpenAI, IWAP, and generated tasks |
 | `--no-dynamic-verification` | flag | `False` | Disable dynamic verification with different seeds |
+| `--no-event-trajectory-verification` | flag | `False` | Disable event trajectories verification |
 | `--no-data-extraction-verification` | flag | `False` | Disable data-extraction trajectories verification |
 | `--data-extraction-seed` | int | `1` | Seed used to select DE trajectories |
 | `--iwap-url` | str | From env/config | Base URL for IWAP service (default: `https://api-leaderboard.autoppia.com`) |

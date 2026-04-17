@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from autoppia_iwa.src.demo_webs.base_events import BaseEventValidator, Event
 from autoppia_iwa.src.demo_webs.criterion_helper import CriterionValue
+from autoppia_iwa.src.shared.logging import log_event  # noqa: F401
 
 from ...shared_utils import validate_date_field, validate_time_field
 

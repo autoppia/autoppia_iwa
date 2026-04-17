@@ -60,11 +60,12 @@ async def run(
     init_env()
     _require_llm_credentials()
 
+    from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
     from autoppia_iwa.src.bootstrap import AppBootstrap
+    from autoppia_iwa.src.data_generation.data_extraction.pipeline import DataExtractionTaskGenerationPipeline
     from autoppia_iwa.src.data_generation.tasks.classes import TaskGenerationConfig
     from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
     from autoppia_iwa.src.demo_webs.config import demo_web_projects
-    from autoppia_iwa.src.evaluation.benchmark.utils.task_generation import get_projects_by_ids
 
     AppBootstrap()
 
@@ -82,7 +83,8 @@ async def run(
             test_types=test_types,
             data_extraction_use_cases=de_uc,
         )
-        tasks = await TaskGenerationPipeline(web_project=project, config=config).generate()
+        pipeline = DataExtractionTaskGenerationPipeline(web_project=project, config=config) if test_types == "data_extraction_only" else TaskGenerationPipeline(web_project=project, config=config)
+        tasks = await pipeline.generate()
         all_tasks[project.id] = {
             "project_id": project.id,
             "project_name": project.name,

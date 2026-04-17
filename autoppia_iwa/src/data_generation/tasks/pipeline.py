@@ -46,7 +46,12 @@ class TaskGenerationPipeline:
         self.llm_service = DIContainer.resolve_llm_service(llm_service)
 
         # Initialize task generator and test pipeline
-        self.task_generator = SimpleTaskGenerator(web_project=web_project, llm_service=self.llm_service)
+        if config.test_types == "data_extraction_only":
+            from autoppia_iwa.src.data_generation.data_extraction.generator import DataExtractionTaskGenerator
+
+            self.task_generator = DataExtractionTaskGenerator(web_project=web_project, llm_service=llm_service)
+        else:
+            self.task_generator = SimpleTaskGenerator(web_project=web_project, llm_service=llm_service)
         self.global_test_pipeline = GlobalTestGenerationPipeline()
 
     async def generate(self) -> list[Task]:

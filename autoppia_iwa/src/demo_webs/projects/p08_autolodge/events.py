@@ -553,7 +553,7 @@ class ConfirmAndPayEvent(Event, BaseEventValidator, HotelInfo):
     def parse(cls, backend_event: BackendEvent) -> "ConfirmAndPayEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
-        hotel_info = HotelInfo.parse(data)
+        hotel_info = HotelInfo.parse({"hotel": data})
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
@@ -567,7 +567,7 @@ class ConfirmAndPayEvent(Event, BaseEventValidator, HotelInfo):
             cvv=data.get("cvv", ""),
             country=data.get("country", ""),
             guests_set=data.get("guests_set"),
-            zipcode=data.get("zip"),
+            zipcode=data.get("zipcode") if data.get("zipcode") is not None else data.get("zip"),
             **hotel_info.model_dump(),
         )
 
@@ -704,9 +704,11 @@ class BookFromWishlistEvent(Event, BaseEventValidator):
     """User proceeds to book from wishlist."""
 
     event_name: str = "BOOK_FROM_WISHLIST"
+    hotel_id: int | str | None = None
     title: str | None = None
 
     class ValidationCriteria(BaseModel):
+        hotel_id: int | str | CriterionValue | None = None
         title: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
@@ -714,6 +716,7 @@ class BookFromWishlistEvent(Event, BaseEventValidator):
             return True
         return all(
             [
+                self._validate_field(self.hotel_id, criteria.hotel_id),
                 self._validate_field(self.title, criteria.title),
             ]
         )
@@ -727,6 +730,7 @@ class BookFromWishlistEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
+            hotel_id=data.get("hotel_id") if data.get("hotel_id") is not None else data.get("hotelId"),
             title=data.get("title"),
         )
 
