@@ -341,6 +341,8 @@ def _real_server_search_filters_trajectory_actions(task_url: str):
 
 
 def _load_p01_success_trajectory(use_case: str) -> dict:
+    if not P01_TRAJECTORIES_FIXTURE.exists():
+        pytest.skip(f"Missing fixture file: {P01_TRAJECTORIES_FIXTURE}")
     payload = json.loads(P01_TRAJECTORIES_FIXTURE.read_text())
     for trajectory in payload["trajectories"]:
         if trajectory.get("use_case") == use_case and trajectory.get("has_success"):

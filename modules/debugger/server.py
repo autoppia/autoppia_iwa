@@ -95,109 +95,69 @@ def _is_under_allowed_root(resolved: Path, roots: tuple[Path, ...]) -> bool:
     return False
 
 
-def _windows_drive_absolute(s: str) -> bool:
-    t = s.strip()
-    return len(t) >= 3 and t[0].isalpha() and t[1] == ":" and t[2] in "/\\"
+def _resolved_if_valid(path: Path) -> Path | None:
+    with contextlib.suppress(OSError, RuntimeError):
+        return path.expanduser().resolve()
+    return None
 
 
-def _join_segments_from_base(base: Path, relative: str) -> Path:
-    """Build a path under base from a relative string without passing the raw string to Path()."""
-    rel = relative.replace("\\", "/").strip("/")
-    if not rel:
-        try:
-            return base.resolve()
-        except (OSError, RuntimeError):
-            raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
-    out = base
-    for part in rel.split("/"):
-        if part in ("", "."):
+def _iter_known_trace_dirs(roots: tuple[Path, ...]) -> list[Path]:
+    items: list[Path] = []
+    seen: set[str] = set()
+
+    def add(path: Path) -> None:
+        resolved = _resolved_if_valid(path)
+        if resolved is None:
+            return
+        key = str(resolved)
+        if key in seen:
+            return
+        if (resolved / "trace_index.json").is_file():
+            seen.add(key)
+            items.append(resolved)
+
+    for root in roots:
+        add(root)
+        if not root.exists():
             continue
-        if part == "..":
-            raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
-        out = out / part
-    try:
-        return out.resolve()
-    except (OSError, RuntimeError):
-        raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
+        for idx_path in root.rglob("trace_index.json"):
+            add(idx_path.parent)
+    return items
 
 
-def _resolve_unc_network_path(backslash_form: str) -> Path:
-    """Resolve \\\\server\\share\\... using segment joins (no Path(entire_user_string))."""
-    s = backslash_form.replace("/", "\\")
-    if not s.startswith("\\\\"):
-        raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
-    segments = [p for p in s.split("\\") if p]
-    if len(segments) < 2:
-        raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
-    for p in segments:
-        if p in (".", ".."):
-            raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
-    server, share = segments[0], segments[1]
-    tail = "/".join(segments[2:])
-    base = Path("\\\\") / server / share
-    try:
-        if not tail:
-            return base.resolve()
-        return _join_segments_from_base(base, tail)
-    except HTTPException:
-        raise
-    except (OSError, RuntimeError):
-        raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
+def _trace_dir_allowlist() -> dict[str, Path]:
+    roots = _allowed_trace_roots()
+    return {str(path): path for path in _iter_known_trace_dirs(roots)}
 
 
-def _resolve_absolute_path_from_string(value: str) -> Path:
-    """Resolve absolute paths (~ expanded first) without Path(user_controlled_string)."""
-    v = os.path.expanduser(value.strip())
-    if not v or "\x00" in v:
-        raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
-
-    vb = v.replace("/", "\\")
-    if vb.startswith("\\\\"):
-        return _resolve_unc_network_path(vb)
-
-    if v.startswith("//") and not v.startswith("///") and len(v) > 3:
-        parts = [p for p in v.replace("\\", "/").split("/") if p]
-        if len(parts) >= 2:
-            return _resolve_unc_network_path("\\\\" + "\\".join(parts))
-
-    drive, tail = os.path.splitdrive(v)
-    if drive:
-        base = Path(drive + "/")
-        tail_norm = tail.replace("\\", "/").strip("/")
-        try:
-            if not tail_norm:
-                return base.resolve()
-            return _join_segments_from_base(base, tail_norm)
-        except HTTPException:
-            raise
-        except (OSError, RuntimeError):
-            raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
-
-    norm = v.replace("\\", "/")
-    if norm.startswith("/"):
-        rest = norm.lstrip("/")
-        try:
-            if not rest:
-                return Path("/").resolve()
-            return _join_segments_from_base(Path("/"), rest)
-        except HTTPException:
-            raise
-        except (OSError, RuntimeError):
-            raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
-
-    raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
+def _resolved_lookup_keys(raw: str) -> list[str]:
+    keys: list[str] = []
+    candidates = [raw, os.path.expanduser(raw)]
+    with contextlib.suppress(OSError, RuntimeError):
+        candidates.append(str((Path.cwd() / raw).resolve()))
+    for candidate in candidates:
+        resolved = _resolved_if_valid(Path(candidate))
+        if resolved is None:
+            continue
+        value = str(resolved)
+        if value not in keys:
+            keys.append(value)
+    return keys
 
 
-def _safe_path_under(base: Path, *parts: str) -> Path:
-    """Join path parts under base; reject absolute paths and traversal."""
-    if any(Path(p).is_absolute() for p in parts):
-        raise HTTPException(status_code=400, detail="path_not_allowed")
-    candidate = Path(base, *parts).resolve()
-    try:
-        candidate.relative_to(base.resolve())
-    except ValueError:
-        raise HTTPException(status_code=400, detail="path_traversal") from None
-    return candidate
+def _episode_file_map(trace_dir: Path) -> dict[str, Path]:
+    """Allow episode file access only for direct *.json children discovered on disk."""
+    out: dict[str, Path] = {}
+    for candidate in trace_dir.glob("*.json"):
+        if candidate.name == "trace_index.json":
+            continue
+        resolved = _resolved_if_valid(candidate)
+        if resolved is None:
+            continue
+        if resolved.parent != trace_dir:
+            continue
+        out[candidate.name] = resolved
+    return out
 
 
 def _resolve_trace_dir(raw: str | None = None) -> Path:
@@ -205,30 +165,15 @@ def _resolve_trace_dir(raw: str | None = None) -> Path:
     if not value or "\x00" in value:
         raise HTTPException(status_code=400, detail="trace_dir_missing")
 
-    roots = _allowed_trace_roots()
-    slash = value.replace("\\", "/")
+    allowed = _trace_dir_allowlist()
+    if not allowed:
+        raise HTTPException(status_code=404, detail="trace_dir_not_found")
 
-    if slash in ("~", "~/"):
-        path = Path.home().resolve()
-    elif slash.startswith("~/"):
-        path = _join_segments_from_base(Path.home(), slash[2:])
-    elif slash.startswith("/") or _windows_drive_absolute(value) or value.replace("/", "\\").startswith("\\\\"):
-        try:
-            path = _resolve_absolute_path_from_string(value)
-        except HTTPException:
-            raise
-        except (OSError, RuntimeError):
-            raise HTTPException(status_code=400, detail="trace_dir_invalid") from None
-    else:
-        path = _join_segments_from_base(Path.cwd(), slash)
-
-    if not _is_under_allowed_root(path, roots):
-        raise HTTPException(status_code=403, detail="trace_dir_forbidden")
-    if not path.exists() or not path.is_dir():
-        raise HTTPException(status_code=404, detail=f"trace_dir_not_found:{path}")
-    if not (path / "trace_index.json").exists():
-        raise HTTPException(status_code=404, detail=f"trace_index_missing:{path}")
-    return path
+    for key in _resolved_lookup_keys(value):
+        path = allowed.get(key)
+        if path is not None:
+            return path
+    raise HTTPException(status_code=404, detail="trace_dir_not_found")
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -296,12 +241,13 @@ def _scan_trace_dirs() -> list[dict[str, Any]]:
 def _load_trace_bundle(trace_dir: Path) -> dict[str, Any]:
     idx = _load_json(trace_dir / "trace_index.json")
     raw_episodes = idx.get("episodes") if isinstance(idx.get("episodes"), list) else []
+    episode_files = _episode_file_map(trace_dir)
     episodes = []
     for item in raw_episodes:
         if not isinstance(item, dict):
             continue
         file_name = str(item.get("file") or "").strip()
-        ep_file = _safe_path_under(trace_dir, file_name) if file_name else trace_dir / "__episode_file_unset__"
+        ep_file = episode_files.get(file_name) if file_name else None
         summary = {
             "episode_task_id": str(item.get("episode_task_id") or ""),
             "task_id": str(item.get("task_id") or ""),
@@ -311,7 +257,7 @@ def _load_trace_bundle(trace_dir: Path) -> dict[str, Any]:
             "steps": int(item.get("steps") or 0),
             "file": str(item.get("file") or ""),
         }
-        if ep_file.exists():
+        if ep_file is not None:
             with contextlib.suppress(Exception):
                 ep = _load_json(ep_file)
                 meta = ep.get("episode") if isinstance(ep.get("episode"), dict) else {}
@@ -358,13 +304,16 @@ def _annotate_step(step: dict[str, Any]) -> dict[str, Any]:
 
 def _load_episode(trace_dir: Path, episode_task_id: str) -> dict[str, Any]:
     bundle = _load_trace_bundle(trace_dir)
+    episode_files = _episode_file_map(trace_dir)
     for item in bundle["episodes"]:
         if str(item.get("episode_task_id") or "") != episode_task_id:
             continue
         file_name = str(item.get("file") or "").strip()
         if not file_name:
             raise HTTPException(status_code=404, detail=f"episode_file_missing:{episode_task_id}")
-        path = _safe_path_under(trace_dir, file_name)
+        path = episode_files.get(file_name)
+        if path is None:
+            raise HTTPException(status_code=404, detail=f"episode_file_not_found:{episode_task_id}")
         payload = _load_json(path)
         steps = payload.get("steps") if isinstance(payload.get("steps"), list) else []
         annotated = [_annotate_step(s) for s in steps if isinstance(s, dict)]
