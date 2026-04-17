@@ -53,6 +53,7 @@ def test_main_sets_trace_dir_and_runs_uvicorn(monkeypatch):
 def test_resolved_lookup_keys_rejects_unsafe_input():
     assert server._resolved_lookup_keys("/tmp/traces") == []
     assert server._resolved_lookup_keys("../traces") == []
+    assert server._resolved_lookup_keys("./benchmark-output\\traces/run_1") == ["benchmark-output/traces/run_1"]
 
 
 def test_resolve_trace_dir_accepts_absolute_default_when_allowlisted(monkeypatch, tmp_path):
@@ -64,3 +65,12 @@ def test_resolve_trace_dir_accepts_absolute_default_when_allowlisted(monkeypatch
     monkeypatch.setattr(server, "_trace_dir_allowlist", lambda: {str(trace_dir): trace_dir})
 
     assert server._resolve_trace_dir() == trace_dir
+
+
+def test_resolve_trace_dir_accepts_safe_relative_alias(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    trace_dir = tmp_path / "benchmark-output" / "traces" / "run_1"
+    trace_dir.mkdir(parents=True)
+    (trace_dir / "trace_index.json").write_text("{}", encoding="utf-8")
+
+    assert server._resolve_trace_dir("./benchmark-output/traces/run_1") == trace_dir

@@ -127,41 +127,39 @@ def _iter_known_trace_dirs(roots: tuple[Path, ...]) -> list[Path]:
 
 def _trace_dir_allowlist() -> dict[str, Path]:
     roots = _allowed_trace_roots()
-    return {str(path): path for path in _iter_known_trace_dirs(roots)}
+    allowlist: dict[str, Path] = {}
+    for path in _iter_known_trace_dirs(roots):
+        allowlist[str(path)] = path
+        for root in roots:
+            with contextlib.suppress(ValueError):
+                rel = path.relative_to(root)
+                key = rel.as_posix().strip()
+                if key:
+                    allowlist.setdefault(key, path)
+    return allowlist
 
 
-def _is_safe_trace_dir_input(raw: str) -> bool:
+def _normalize_safe_trace_dir_input(raw: str) -> str | None:
     value = str(raw or "").strip()
     if not value or "\x00" in value:
-        return False
+        return None
     if os.path.isabs(value):
-        return False
+        return None
 
     normalized = value.replace("\\", "/")
+    parts: list[str] = []
     for part in normalized.split("/"):
         if part in ("", "."):
             continue
         if part == "..":
-            return False
-    return True
+            return None
+        parts.append(part)
+    return "/".join(parts) if parts else None
 
 
 def _resolved_lookup_keys(raw: str) -> list[str]:
-    if not _is_safe_trace_dir_input(raw):
-        return []
-
-    keys: list[str] = []
-    candidates = [raw, os.path.expanduser(raw)]
-    with contextlib.suppress(OSError, RuntimeError):
-        candidates.append(str((Path.cwd() / raw).resolve()))
-    for candidate in candidates:
-        resolved = _resolved_if_valid(Path(candidate))
-        if resolved is None:
-            continue
-        value = str(resolved)
-        if value not in keys:
-            keys.append(value)
-    return keys
+    normalized = _normalize_safe_trace_dir_input(raw)
+    return [normalized] if normalized is not None else []
 
 
 def _episode_file_map(trace_dir: Path) -> dict[str, Path]:
