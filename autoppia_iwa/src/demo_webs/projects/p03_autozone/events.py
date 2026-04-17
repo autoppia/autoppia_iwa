@@ -142,6 +142,8 @@ class ShareCompletedEvent(ItemDetailEvent):
     """Share flow completed (same payload as SHARE_PRODUCT with stage completed)."""
 
     event_name: str = "SHARE_COMPLETED"
+    product_id: str | None = None
+    stage: str | None = None
     recipient_name: str | None = None
     recipient_email: str | None = None
 
@@ -188,6 +190,8 @@ class ShareCompletedEvent(ItemDetailEvent):
             item_brand=item_brand,
             item_rating=item_rating,
             item_price=item_price,
+            product_id=data.get("productId"),
+            stage=data.get("stage"),
             recipient_name=data.get("recipientName"),
             recipient_email=data.get("recipientEmail"),
         )
@@ -214,6 +218,8 @@ class AutozoneReviewCreatedEvent(ItemDetailEvent):
     """Product review created (autozone). Registered via p04 multiplex for REVIEW_CREATED."""
 
     event_name: str = "REVIEW_CREATED"
+    product_id: str | None = None
+    review_id: str | None = None
     review_rating: float | int | None = None
     reviewer_name: str | None = None
     review_body: str | None = None
@@ -261,6 +267,8 @@ class AutozoneReviewCreatedEvent(ItemDetailEvent):
             item_brand=item_brand,
             item_rating=None,
             item_price=item_price,
+            product_id=data.get("productId"),
+            review_id=data.get("reviewId"),
             **extra,
         )
 

@@ -553,6 +553,36 @@ class ReviewDeletedEvent(Event, BaseEventValidator):
         )
 
 
+DiningReviewCreatedEvent = ReviewCreatedEvent
+DiningReviewDeletedEvent = ReviewDeletedEvent
+
+
+class ReviewCreatedRouterEvent:
+    """Backward-compatible router for mixed REVIEW_CREATED payload shapes."""
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> Event:
+        data = backend_event.data or {}
+        if any(key in data for key in ("productId", "reviewId", "reviewerName", "title")):
+            from autoppia_iwa.src.demo_webs.projects.p03_autozone.events import AutozoneReviewCreatedEvent
+
+            return AutozoneReviewCreatedEvent.parse(backend_event)
+        return ReviewCreatedEvent.parse(backend_event)
+
+
+class ReviewDeletedRouterEvent:
+    """Backward-compatible router for mixed REVIEW_DELETED payload shapes."""
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> Event:
+        data = backend_event.data or {}
+        if any(key in data for key in ("productId", "reviewId", "reviewerName", "title")):
+            from autoppia_iwa.src.demo_webs.projects.p03_autozone.events import AutozoneReviewDeletedEvent
+
+            return AutozoneReviewDeletedEvent.parse(backend_event)
+        return ReviewDeletedEvent.parse(backend_event)
+
+
 class SearchRestaurantEvent(Event, BaseEventValidator):
     """Event triggered when a user searches for a restaurant."""
 
@@ -1391,8 +1421,11 @@ BACKEND_EVENT_TYPES = {
     "PEOPLE_SELECTED": PeopleSelectedEvent,
     "TAG_FILTER_SELECTED": TagFilterSelectedEvent,
     "AUTODINING_LOGIN": LoginEvent,
+    "LOGIN": LoginEvent,
     "AUTODINING_REGISTER": RegisterEvent,
+    "REGISTER": RegisterEvent,
     "AUTODINING_LOGOUT": LogoutEvent,
+    "LOGOUT": LogoutEvent,
     "REVIEW_CREATED": ReviewCreatedEvent,
     "REVIEW_EDITED": ReviewEditedEvent,
     "REVIEW_DELETED": ReviewDeletedEvent,

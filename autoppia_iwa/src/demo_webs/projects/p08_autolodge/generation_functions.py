@@ -14,6 +14,7 @@ from .data import (
     FIELD_OPERATORS_BOOK_FROM_WISHLIST_MAP,
     FIELD_OPERATORS_CONFIRM_AND_PAY_MAP,
     FIELD_OPERATORS_CONTACT_FORM_SUBMITTED_MAP,
+    FIELD_OPERATORS_CONTACT_PAGE_VIEWED_MAP,
     FIELD_OPERATORS_EDIT_CHECKIN_OUT_MAP,
     FIELD_OPERATORS_EDIT_GUESTS_MAP,
     FIELD_OPERATORS_FAQ_OPENED_MAP,
@@ -1149,7 +1150,7 @@ async def generate_book_from_wishlist_constraints(task_url: str | None = None, d
         return []
     sample = random.choice(data)
     constraints: list[dict[str, Any]] = []
-    for field in ["hotel_id", "title"]:
+    for field in ["title"]:
         allowed_ops = FIELD_OPERATORS_BOOK_FROM_WISHLIST_MAP.get(field, [])
         if not allowed_ops:
             continue
@@ -1157,6 +1158,22 @@ async def generate_book_from_wishlist_constraints(task_url: str | None = None, d
         value = sample.get("id") if field == "hotel_id" else sample.get("title")
         constraints.append(create_constraint_dict(field, op, value))
     return constraints
+
+
+async def generate_contact_page_viewed_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    _ = (task_url, dataset)
+    if test_types == "data_extraction_only":
+        return []
+
+    field = "page"
+    sample_row = {"page": "contact"}
+    operator = ComparisonOperator(random.choice(FIELD_OPERATORS_CONTACT_PAGE_VIEWED_MAP[field]))
+    value = _generate_constraint_value(operator, sample_row[field], field, [sample_row])
+    return [create_constraint_dict(field, operator, value if value is not None else "contact")]
 
 
 def _contact_form_synthetic_dataset() -> list[dict[str, str]]:

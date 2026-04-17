@@ -246,6 +246,51 @@ class JobsNavbarEvent(HomeNavbarEvent):
     event_name: str = "JOBS_NAVBAR"
 
 
+class ContactPageViewedEvent(HomeNavbarEvent):
+    event_name: str = "AUTOCONNECT_CONTACT_PAGE_VIEWED"
+
+
+class ContactFormSubmittedEvent(Event, BaseEventValidator):
+    event_name: str = "AUTOCONNECT_CONTACT_FORM_SUBMITTED"
+    name: str | None = None
+    email: str | None = None
+    subject: str | None = None
+    message: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        name: str | CriterionValue | None = None
+        email: str | CriterionValue | None = None
+        subject: str | CriterionValue | None = None
+        message: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.name, criteria.name),
+                self._validate_field(self.email, criteria.email),
+                self._validate_field(self.subject, criteria.subject),
+                self._validate_field(self.message, criteria.message),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "ContactFormSubmittedEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            name=data.get("name"),
+            email=data.get("email"),
+            subject=data.get("subject"),
+            message=data.get("message"),
+        )
+
+
 class ApplyForJobEvent(Event, BaseEventValidator):
     event_name: str = "APPLY_FOR_JOB"
     job_title: str
@@ -890,6 +935,43 @@ class MarkAllNotificationsReadEvent(Event, BaseEventValidator):
         )
 
 
+class NotificationsNavbarEvent(Event, BaseEventValidator):
+    event_name: str = "NOTIFICATIONS_NAVBAR"
+    label: str | None = None
+    unread_count: int | None = None
+    source: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        label: str | CriterionValue | None = None
+        unread_count: int | CriterionValue | None = None
+        source: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.label, criteria.label),
+                self._validate_field(self.unread_count, criteria.unread_count),
+                self._validate_field(self.source, criteria.source),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "NotificationsNavbarEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            label=data.get("label"),
+            unread_count=data.get("unreadCount"),
+            source=data.get("source"),
+        )
+
+
 class DeletePostEvent(Event, BaseEventValidator):
     event_name: str = "DELETE_POST"
     post_id: str | None = None
@@ -1017,6 +1099,8 @@ EVENTS = [
     ConnectWithUserEvent,
     HomeNavbarEvent,
     JobsNavbarEvent,
+    ContactPageViewedEvent,
+    ContactFormSubmittedEvent,
     PostStatusEvent,
     LikePostEvent,
     CommentOnPostEvent,
@@ -1043,6 +1127,7 @@ EVENTS = [
     FilterNotificationsEvent,
     MarkNotificationReadEvent,
     MarkAllNotificationsReadEvent,
+    NotificationsNavbarEvent,
     DeletePostEvent,
     DeleteCommentEvent,
     AddExperienceEvent,
@@ -1053,6 +1138,8 @@ BACKEND_EVENT_TYPES = {
     "CONNECT_WITH_USER": ConnectWithUserEvent,
     "HOME_NAVBAR": HomeNavbarEvent,
     "JOBS_NAVBAR": JobsNavbarEvent,
+    "AUTOCONNECT_CONTACT_PAGE_VIEWED": ContactPageViewedEvent,
+    "AUTOCONNECT_CONTACT_FORM_SUBMITTED": ContactFormSubmittedEvent,
     "POST_STATUS": PostStatusEvent,
     "LIKE_POST": LikePostEvent,
     "COMMENT_ON_POST": CommentOnPostEvent,
@@ -1079,6 +1166,7 @@ BACKEND_EVENT_TYPES = {
     "FILTER_NOTIFICATIONS": FilterNotificationsEvent,
     "MARK_NOTIFICATION_READ": MarkNotificationReadEvent,
     "MARK_ALL_NOTIFICATIONS_READ": MarkAllNotificationsReadEvent,
+    "NOTIFICATIONS_NAVBAR": NotificationsNavbarEvent,
     "DELETE_POST": DeletePostEvent,
     "DELETE_COMMENT": DeleteCommentEvent,
     "ADD_EXPERIENCE": AddExperienceEvent,

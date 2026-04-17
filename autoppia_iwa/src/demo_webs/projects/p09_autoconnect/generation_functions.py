@@ -12,18 +12,24 @@ from .data import (
     FIELD_OPERATORS_BACK_TO_ALL_JOBS_MAP,
     FIELD_OPERATORS_COMMENT_ON_POST_MAP,
     FIELD_OPERATORS_CONNECT_WITH_USER_MAP,
+    FIELD_OPERATORS_CONTACT_FORM_SUBMITTED_MAP,
+    FIELD_OPERATORS_CONTACT_PAGE_VIEWED_MAP,
     FIELD_OPERATORS_EDIT_EXPERIENCE_MAP,
     FIELD_OPERATORS_EDIT_PROFILE_MAP,
     FIELD_OPERATORS_FILTER_JOBS_MAP,
     FIELD_OPERATORS_FILTER_NOTIFICATIONS_MAP,
     FIELD_OPERATORS_FOLLOW_PAGE_MAP,
     FIELD_OPERATORS_LIKE_POST_MAP,
+    FIELD_OPERATORS_MARK_ALL_NOTIFICATIONS_READ_MAP,
     FIELD_OPERATORS_MARK_NOTIFICATION_READ_MAP,
+    FIELD_OPERATORS_NOTIFICATIONS_NAVBAR_MAP,
     FIELD_OPERATORS_POST_STATUS_MAP,
     FIELD_OPERATORS_SAVE_POST_MAP,
     FIELD_OPERATORS_SEARCH_JOBS_MAP,
     FIELD_OPERATORS_SEARCH_USERS_MAP,
+    FIELD_OPERATORS_VIEW_ALL_RECOMMENDATIONS_MAP,
     FIELD_OPERATORS_VIEW_JOB_MAP,
+    FIELD_OPERATORS_VIEW_NOTIFICATIONS_MAP,
     FIELD_OPERATORS_VIEW_USER_PROFILE_MAP,
 )
 from .data_utils import fetch_data
@@ -124,7 +130,9 @@ async def _ensure_entity_dataset(
     Extract entity data from the cache dataset, or fetch from server if not available.
 
     """
-    _ = dataset  # Unused parameter kept for backward compatibility
+    existing_dataset = _extract_entity_dataset(dataset, entity_type)
+    if existing_dataset is not None:
+        return {entity_type: existing_dataset}
 
     # Otherwise, fetch the specific entity type dynamically using the provided parameters
     seed = get_seed_from_url(task_url)
@@ -982,6 +990,59 @@ def _get_experience_data_for_user(user: dict) -> list[dict[str, Any]]:
     ]
 
 
+def _contact_form_synthetic_dataset() -> list[dict[str, str]]:
+    return [
+        {
+            "name": "Alex Morgan",
+            "email": "alex@example.com",
+            "subject": "Connection request",
+            "message": "I would like to connect and learn more about your work.",
+        },
+        {
+            "name": "Jordan Lee",
+            "email": "jordan@network.test",
+            "subject": "General inquiry",
+            "message": "Could you share more details about your product?",
+        },
+        {
+            "name": "Sam Rivera",
+            "email": "sam@mail.demo",
+            "subject": "Partnership idea",
+            "message": "I think our teams could collaborate on an interesting initiative.",
+        },
+        {
+            "name": "Riley Chen",
+            "email": "riley@example.org",
+            "subject": "Speaking opportunity",
+            "message": "Would you be available for a short event next month?",
+        },
+    ]
+
+
+def _view_notifications_synthetic_dataset() -> list[dict[str, Any]]:
+    return [
+        {"total_count": 5, "unread_count": 2, "source": "notifications_page"},
+        {"total_count": 8, "unread_count": 1, "source": "bottom_nav"},
+        {"total_count": 3, "unread_count": 0, "source": "profile_menu"},
+    ]
+
+
+def _mark_all_notifications_read_synthetic_dataset() -> list[dict[str, Any]]:
+    return [
+        {"count": 3, "source": "notifications_page"},
+        {"count": 5, "source": "bottom_nav"},
+        {"count": 1, "source": "profile_menu"},
+    ]
+
+
+def _notifications_navbar_synthetic_dataset() -> list[dict[str, Any]]:
+    return [
+        {"label": "Notifications", "unread_count": 1, "source": "bottom_nav"},
+        {"label": "Alerts", "unread_count": 3, "source": "top_nav"},
+        {"label": "Inbox", "unread_count": 0, "source": "sidebar"},
+    ]
+
+
 async def generate_edit_experience_constraints(
     task_url: str | None = None,
     dataset: list[dict[str, Any]] | None = None,
@@ -1146,6 +1207,64 @@ async def generate_add_experience_constraints(
     return constraint_list
 
 
+async def generate_contact_page_viewed_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    _ = (task_url, dataset)
+    if test_types == "data_extraction_only":
+        return []
+
+    field = "page"
+    sample_row = {"page": "contact"}
+    operator = ComparisonOperator(random.choice(FIELD_OPERATORS_CONTACT_PAGE_VIEWED_MAP[field]))
+    value = _generate_constraint_value(operator, sample_row[field], field, [sample_row])
+    return [create_constraint_dict(field, operator, value if value is not None else "contact")]
+
+
+async def generate_contact_form_submitted_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    _ = (task_url, dataset)
+    synth = _contact_form_synthetic_dataset()
+    if test_types == "data_extraction_only":
+        picked = random.choice(synth)
+        visible = ["name", "email", "subject", "message"]
+        verify_field = random.choice(visible)
+        return _build_data_extraction_result(picked, visible, verify_field=verify_field) or []
+
+    fields_pool = ["name", "email", "subject", "message"]
+    num_fields = random.randint(1, min(3, len(fields_pool)))
+    selected = random.sample(fields_pool, num_fields)
+    sample_row = random.choice(synth)
+    constraints: list[dict[str, Any]] = []
+    for field in selected:
+        operator = ComparisonOperator(random.choice(FIELD_OPERATORS_CONTACT_FORM_SUBMITTED_MAP[field]))
+        value = _generate_constraint_value(operator, sample_row[field], field, synth)
+        if value is not None:
+            constraints.append(create_constraint_dict(field, operator, value))
+    return constraints
+
+
+async def generate_view_all_recommendations_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    _ = task_url
+    if test_types == "data_extraction_only":
+        return []
+
+    recommendations = _extract_entity_dataset(dataset, "recommendations") or [{"source": "recommendations_page"}]
+    source_value = random.choice(recommendations).get("source") or "recommendations_page"
+    operator = ComparisonOperator(random.choice(FIELD_OPERATORS_VIEW_ALL_RECOMMENDATIONS_MAP["source"]))
+    value = _generate_constraint_value(operator, source_value, "source", recommendations)
+    return [create_constraint_dict("source", operator, value if value is not None else "recommendations_page")]
+
+
 _FILTER_NOTIFICATION_KEYS_DATASET = [
     {"filter_key": "all"},
     {"filter_key": "unread"},
@@ -1208,6 +1327,32 @@ async def generate_filter_notifications_constraints(
     return [create_constraint_dict(field, operator, value)]
 
 
+async def generate_view_notifications_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    _ = (task_url, dataset)
+    synth = _view_notifications_synthetic_dataset()
+    if test_types == "data_extraction_only":
+        picked = random.choice(synth)
+        visible = ["total_count", "unread_count", "source"]
+        verify_field = random.choice(visible)
+        return _build_data_extraction_result(picked, visible, verify_field=verify_field) or []
+
+    fields_pool = ["total_count", "unread_count", "source"]
+    num_fields = random.randint(1, len(fields_pool))
+    selected = random.sample(fields_pool, num_fields)
+    sample_row = random.choice(synth)
+    constraints: list[dict[str, Any]] = []
+    for field in selected:
+        operator = ComparisonOperator(random.choice(FIELD_OPERATORS_VIEW_NOTIFICATIONS_MAP[field]))
+        value = _generate_constraint_value(operator, sample_row[field], field, synth)
+        if value is not None:
+            constraints.append(create_constraint_dict(field, operator, value))
+    return constraints
+
+
 async def generate_mark_notification_read_constraints(
     task_url: str | None = None,
     dataset: list[dict[str, Any]] | None = None,
@@ -1233,4 +1378,56 @@ async def generate_mark_notification_read_constraints(
     value = _generate_constraint_value(operator, raw, field, synth)
     if value is not None:
         constraints.append(create_constraint_dict(field, operator, value))
+    return constraints
+
+
+async def generate_mark_all_notifications_read_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    _ = (task_url, dataset)
+    synth = _mark_all_notifications_read_synthetic_dataset()
+    if test_types == "data_extraction_only":
+        picked = random.choice(synth)
+        visible = ["count", "source"]
+        verify_field = random.choice(visible)
+        return _build_data_extraction_result(picked, visible, verify_field=verify_field) or []
+
+    fields_pool = ["count", "source"]
+    num_fields = random.randint(1, len(fields_pool))
+    selected = random.sample(fields_pool, num_fields)
+    sample_row = random.choice(synth)
+    constraints: list[dict[str, Any]] = []
+    for field in selected:
+        operator = ComparisonOperator(random.choice(FIELD_OPERATORS_MARK_ALL_NOTIFICATIONS_READ_MAP[field]))
+        value = _generate_constraint_value(operator, sample_row[field], field, synth)
+        if value is not None:
+            constraints.append(create_constraint_dict(field, operator, value))
+    return constraints
+
+
+async def generate_notifications_navbar_constraints(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | None = None,
+    test_types: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
+    _ = (task_url, dataset)
+    synth = _notifications_navbar_synthetic_dataset()
+    if test_types == "data_extraction_only":
+        picked = random.choice(synth)
+        visible = ["label", "unread_count", "source"]
+        verify_field = random.choice(visible)
+        return _build_data_extraction_result(picked, visible, verify_field=verify_field) or []
+
+    fields_pool = ["label", "unread_count", "source"]
+    num_fields = random.randint(1, len(fields_pool))
+    selected = random.sample(fields_pool, num_fields)
+    sample_row = random.choice(synth)
+    constraints: list[dict[str, Any]] = []
+    for field in selected:
+        operator = ComparisonOperator(random.choice(FIELD_OPERATORS_NOTIFICATIONS_NAVBAR_MAP[field]))
+        value = _generate_constraint_value(operator, sample_row[field], field, synth)
+        if value is not None:
+            constraints.append(create_constraint_dict(field, operator, value))
     return constraints

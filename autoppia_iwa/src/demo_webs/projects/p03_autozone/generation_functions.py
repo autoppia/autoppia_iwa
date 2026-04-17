@@ -448,6 +448,13 @@ async def generate_search_query_constraints(
         result = _build_data_extraction_result(item_with_name, VISIBLE_FIELDS_SEARCH_PRODUCT, question_fields_override=["name"])
         return result if result is not None else []
 
+    product = random.choice(data_items)
+    operator = ComparisonOperator.CONTAINS
+    value = generate_constraint_value("query", operator, product, all_products_data=data_items)
+    if value is None:
+        value = "products"
+    return [create_constraint_dict("query", operator, value)]
+
 
 def _share_completed_recipient_value(field: str, op: ComparisonOperator, raw: str) -> str:
     """Build a constraint value for recipient_name / recipient_email for the given operator."""
