@@ -868,8 +868,6 @@ EVENTS = [
     ChooseTimelineEvent,
     SetRateRangeEvent,
     WriteJobDescriptionEvent,
-    ContactPageViewedEvent,
-    ContactFormSubmittedSharedEvent,
     AutoworkContactPageViewedEvent,
     AutoworkContactFormSubmittedEvent,
 ]
