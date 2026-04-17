@@ -48,3 +48,19 @@ def test_main_sets_trace_dir_and_runs_uvicorn(monkeypatch):
     assert captured["app"] is server.app
     assert captured["port"] == 9999
     assert captured["log_level"] == "warning"
+
+
+def test_resolved_lookup_keys_rejects_unsafe_input():
+    assert server._resolved_lookup_keys("/tmp/traces") == []
+    assert server._resolved_lookup_keys("../traces") == []
+
+
+def test_resolve_trace_dir_accepts_absolute_default_when_allowlisted(monkeypatch, tmp_path):
+    trace_dir = tmp_path / "trace"
+    trace_dir.mkdir()
+    (trace_dir / "trace_index.json").write_text("{}", encoding="utf-8")
+
+    monkeypatch.setattr(server, "DEFAULT_TRACE_DIR", str(trace_dir))
+    monkeypatch.setattr(server, "_trace_dir_allowlist", lambda: {str(trace_dir): trace_dir})
+
+    assert server._resolve_trace_dir() == trace_dir

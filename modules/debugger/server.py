@@ -130,7 +130,26 @@ def _trace_dir_allowlist() -> dict[str, Path]:
     return {str(path): path for path in _iter_known_trace_dirs(roots)}
 
 
+def _is_safe_trace_dir_input(raw: str) -> bool:
+    value = str(raw or "").strip()
+    if not value or "\x00" in value:
+        return False
+    if os.path.isabs(value):
+        return False
+
+    normalized = value.replace("\\", "/")
+    for part in normalized.split("/"):
+        if part in ("", "."):
+            continue
+        if part == "..":
+            return False
+    return True
+
+
 def _resolved_lookup_keys(raw: str) -> list[str]:
+    if not _is_safe_trace_dir_input(raw):
+        return []
+
     keys: list[str] = []
     candidates = [raw, os.path.expanduser(raw)]
     with contextlib.suppress(OSError, RuntimeError):
@@ -161,13 +180,18 @@ def _episode_file_map(trace_dir: Path) -> dict[str, Path]:
 
 
 def _resolve_trace_dir(raw: str | None = None) -> Path:
-    value = str(raw or DEFAULT_TRACE_DIR or "").strip()
+    value = str(raw if raw is not None else DEFAULT_TRACE_DIR or "").strip()
     if not value or "\x00" in value:
         raise HTTPException(status_code=400, detail="trace_dir_missing")
 
     allowed = _trace_dir_allowlist()
     if not allowed:
         raise HTTPException(status_code=404, detail="trace_dir_not_found")
+
+    if raw is None:
+        path = allowed.get(value)
+        if path is not None:
+            return path
 
     for key in _resolved_lookup_keys(value):
         path = allowed.get(key)
