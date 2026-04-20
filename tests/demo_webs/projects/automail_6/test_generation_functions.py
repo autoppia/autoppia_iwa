@@ -50,6 +50,17 @@ async def test_ensure_email_dataset_fetches(monkeypatch):
     fetch.assert_awaited_once_with(seed_value=8)
 
 
+@pytest.mark.asyncio
+async def test_ensure_email_dataset_uses_provided_dataset(monkeypatch):
+    fetch = AsyncMock(return_value=[])
+    monkeypatch.setattr(gen, "fetch_data", fetch)
+
+    result = await gen._ensure_email_dataset("http://localhost:8000/?seed=8", EMAILS)
+
+    assert result == EMAILS
+    fetch.assert_not_awaited()
+
+
 def test_dataset_helpers_and_constraint_value(monkeypatch):
     monkeypatch.setattr(gen.random, "choice", lambda seq: seq[0])
     monkeypatch.setattr(gen.random, "randint", lambda a, b: a)

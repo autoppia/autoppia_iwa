@@ -546,6 +546,53 @@ class SubmitTripReviewEvent(Event, BaseEventValidator):
         )
 
 
+class SubmitReviewRouterEvent:
+    """Backward-compatible router for SUBMIT_REVIEW payload variants."""
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> Event:
+        data = backend_event.data or {}
+        if any(key in data for key in ("tripId", "tripData")) or isinstance(data.get("review"), dict):
+            return SubmitTripReviewEvent.parse(backend_event)
+
+        from autoppia_iwa.src.demo_webs.projects.p08_autolodge.events import SubmitHotelReviewEvent
+
+        return SubmitHotelReviewEvent.parse(backend_event)
+
+
+class ExploreFeaturesEvent(Event, BaseEventValidator):
+    event_name: str = "EXPLORE_FEATURES"
+    page: str | None = None
+    seed: int | None = None
+
+    class ValidationCriteria(BaseModel):
+        page: str | CriterionValue | None = None
+        seed: int | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.page, criteria.page),
+                self._validate_field(self.seed, criteria.seed),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "ExploreFeaturesEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            page=data.get("page"),
+            seed=data.get("seed"),
+        )
+
+
 class ViewAvailableTripsEvent(Event, BaseEventValidator):
     event_name: str = "VIEW_AVAILABLE_TRIPS"
     total_trips: int | None = None
@@ -779,7 +826,8 @@ BACKEND_EVENT_TYPES = {
     "RESERVE_RIDE": ReserveRideEvent,
     "TRIP_DETAILS": TripDetailsEvent,
     "CANCEL_RESERVATION": CancelReservationEvent,
-    "SUBMIT_REVIEW": SubmitTripReviewEvent,
+    "SUBMIT_REVIEW": SubmitReviewRouterEvent,
+    "EXPLORE_FEATURES": ExploreFeaturesEvent,
     "VIEW_AVAILABLE_TRIPS": ViewAvailableTripsEvent,
     "BOOK_TRIP": BookTripEvent,
     "FILTER_TRIPS": FilterTripsEvent,

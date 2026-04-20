@@ -63,9 +63,16 @@ omit =
     autoppia_iwa/src/demo_webs/projects/shared_utils.py
     autoppia_iwa/src/demo_webs/projects/data_provider.py
     autoppia_iwa/src/demo_webs/projects/autocinema_1/generation_functions.py
+    autoppia_iwa/src/demo_webs/projects/criterion_helper.py
+    autoppia_iwa/src/demo_webs/projects/operators.py
+
+    # Trajectory fixture layers (reference content, not core runtime logic).
+    autoppia_iwa/src/demo_webs/projects/*/trajectories.py
+    autoppia_iwa/src/demo_webs/projects/p16_autodiscord/events.py
 
     autoppia_iwa/src/evaluation/legacy/**
     autoppia_iwa/src/evaluation/stateful_evaluator/evaluator.py
+    autoppia_iwa/src/evaluation/benchmark/**
     autoppia_iwa/src/evaluation/shared/utils.py
     autoppia_iwa/src/shared/visualizator.py
     autoppia_iwa/src/shared/web_utils.py
