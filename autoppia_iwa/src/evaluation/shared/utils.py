@@ -438,7 +438,9 @@ async def run_partial_tests(
         snapshot = action_result.browser_snapshot
         browser_snapshots.append(snapshot)
 
-        # Run the test suite for the current action
+        # Run the test suite for the current action (log only the final round;
+        # intermediate rounds repeat the same work and would flood the log).
+        is_final_round = i == total_iterations - 1
         test_results = await test_runner.run_partial_tests(
             web_project=web_project,
             prompt=task.prompt,
@@ -447,6 +449,7 @@ async def run_partial_tests(
             current_action_index=i,
             total_iterations=total_iterations,
             extracted_data=extracted_data,
+            log_round=is_final_round,
         )
         test_results_matrix.append(test_results)
 

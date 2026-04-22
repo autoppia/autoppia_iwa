@@ -310,9 +310,11 @@ class TestAsyncEvaluationHelpers:
         assert len(matrix) == 2
         assert calls[0]["current_action_index"] == 0
         assert len(calls[0]["browser_snapshots"]) == 1
+        assert calls[0]["log_round"] is False
         assert calls[1]["current_action_index"] == 1
         assert len(calls[1]["browser_snapshots"]) == 2
         assert calls[1]["total_iterations"] == 2
+        assert calls[1]["log_round"] is True
 
     def test_generate_feedback_delegates_to_feedback_generator(self):
         task = Task(url="http://localhost:8000", prompt="Prompt", tests=[])

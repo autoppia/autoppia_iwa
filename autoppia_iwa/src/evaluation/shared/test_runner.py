@@ -38,6 +38,7 @@ class TestRunner:
         current_action_index: int | None = None,
         total_iterations: int | None = None,
         extracted_data: object | None = None,
+        log_round: bool = True,
     ) -> list[TestResult]:
         """
         Run all tests for a single snapshot (after a single action).
@@ -49,17 +50,19 @@ class TestRunner:
             browser_snapshots: All browser snapshots up to the current one.
             current_action_index: Index of the current action.
             total_iterations: Total number of iterations in the test process.
+            log_round: If True, log per-test lines for this round. Set False for
+                intermediate steps when the caller re-runs the suite each action
+                and only the final round should appear in logs.
 
         Returns:
             List[TestResult]: Results of all tests for the current snapshot.
         """
         snapshot_results = []  # Store results for this snapshot
         for test_idx, test in enumerate(self.tests, 1):
-            from loguru import logger
-
-            logger.info(f"  🧪 Running Test {test_idx}/{len(self.tests)}: {test.type}")
-            logger.info(f"     Description: {test.description}")
-            logger.info(f"     Criteria: {_criteria_for_log(test)}")
+            if log_round:
+                logger.info(f"  🧪 Running Test {test_idx}/{len(self.tests)}: {test.type}")
+                logger.info(f"     Description: {test.description}")
+                logger.info(f"     Criteria: {_criteria_for_log(test)}")
 
             success = await test.execute_test(
                 web_project=web_project,
@@ -71,11 +74,11 @@ class TestRunner:
                 extracted_data=extracted_data,
             )
 
-            # Log test result
-            if success:
-                logger.info(f"  ✅ Test {test_idx} PASSED")
-            else:
-                logger.warning(f"  ❌ Test {test_idx} FAILED")
+            if log_round:
+                if success:
+                    logger.info(f"  ✅ Test {test_idx} PASSED")
+                else:
+                    logger.warning(f"  ❌ Test {test_idx} FAILED")
 
             # Create TestResult instance with extra_data
             test_result = TestResult(
