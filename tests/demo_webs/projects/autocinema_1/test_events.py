@@ -23,6 +23,7 @@ from autoppia_iwa.src.demo_webs.projects.p01_autocinema.events import (
     ShareFilmEvent,
     WatchTrailer,
     parse_genres_from_data,
+    validate_cast_criteria,
     validate_genre_criteria,
 )
 
@@ -140,6 +141,13 @@ class TestValidateAutocinemaEvents:
         assert validate_genre_criteria(["Sci-Fi", "Drama"], CriterionValue(value="Horror", operator="not_contains")) is True
         assert validate_genre_criteria(["Sci-Fi", "Drama"], CriterionValue(value=["Drama", "Comedy"], operator="in_list")) is True
         assert validate_genre_criteria(["Sci-Fi", "Drama"], CriterionValue(value=["Comedy"], operator="not_in_list")) is True
+
+    def test_validate_cast_criteria_accepts_string_list_and_criterion(self):
+        assert validate_cast_criteria("Judy Garland, Frank Morgan", "Judy Garland") is True
+        assert validate_cast_criteria("Judy Garland, Frank Morgan", ["Judy", "Frank"]) is True
+        assert validate_cast_criteria("Judy Garland, Frank Morgan", CriterionValue(value="Frank Morgan", operator="contains")) is True
+        assert validate_cast_criteria("Judy Garland, Frank Morgan", CriterionValue(value=["DiCaprio"], operator="not_in_list")) is True
+        assert validate_cast_criteria("Judy Garland, Frank Morgan", "Bert Lahr") is False
 
     def test_edit_user_validate_criteria(self):
         event = EditUserEvent.parse(

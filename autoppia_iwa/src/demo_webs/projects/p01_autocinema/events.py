@@ -75,6 +75,63 @@ def validate_genre_criteria(
     return False
 
 
+def _split_cast_names(cast_value: str | list[str] | None) -> list[str]:
+    """Normalize cast payload/criteria into a list of actor names."""
+    if cast_value is None:
+        return []
+    if isinstance(cast_value, list):
+        return [str(item).strip() for item in cast_value if str(item).strip()]
+    return [part.strip() for part in str(cast_value).split(",") if part.strip()]
+
+
+def validate_cast_criteria(
+    movie_cast: str | None,
+    criteria_cast: str | list[str] | CriterionValue | None,
+) -> bool:
+    """Validate cast criteria against stored movie cast."""
+    if criteria_cast is None:
+        return True
+    movie_names = _split_cast_names(movie_cast)
+    if not movie_names:
+        return False
+    lowered_movie_names = [name.lower() for name in movie_names]
+    movie_blob = ", ".join(movie_names)
+    if isinstance(criteria_cast, str):
+        target = criteria_cast.strip().lower()
+        return bool(target) and (target in movie_blob.lower() or any(target in name for name in lowered_movie_names))
+    if isinstance(criteria_cast, list):
+        requested = [str(item).strip().lower() for item in criteria_cast if str(item).strip()]
+        if not requested:
+            return False
+        return all(any(req in movie_name for movie_name in lowered_movie_names) for req in requested)
+    operator = criteria_cast.operator
+    value = criteria_cast.value
+    if operator == ComparisonOperator.EQUALS:
+        expected = str(value).strip().lower()
+        return expected in lowered_movie_names or expected == movie_blob.lower()
+    if operator == ComparisonOperator.CONTAINS:
+        expected = str(value).strip().lower()
+        return expected in movie_blob.lower() or any(expected in movie_name for movie_name in lowered_movie_names)
+    if operator == ComparisonOperator.NOT_CONTAINS:
+        expected = str(value).strip().lower()
+        return expected not in movie_blob.lower() and all(expected not in movie_name for movie_name in lowered_movie_names)
+    if operator == ComparisonOperator.IN_LIST:
+        if not isinstance(value, list):
+            return False
+        expected_values = [str(item).strip().lower() for item in value if str(item).strip()]
+        if not expected_values:
+            return False
+        return any(any(expected in movie_name for movie_name in lowered_movie_names) for expected in expected_values)
+    if operator == ComparisonOperator.NOT_IN_LIST:
+        if not isinstance(value, list):
+            return False
+        blocked = [str(item).strip().lower() for item in value if str(item).strip()]
+        if not blocked:
+            return False
+        return all(all(block not in movie_name for block in blocked) for movie_name in lowered_movie_names)
+    return False
+
+
 # =============================================================================
 #                            BASE EVENT CLASSES
 # =============================================================================
@@ -125,7 +182,7 @@ class FilmEvent(Event, BaseEventValidator):
         year: int | CriterionValue | None = None
         rating: float | CriterionValue | None = None
         duration: int | CriterionValue | None = None
-        cast: list[str] | CriterionValue | None = None
+        cast: str | list[str] | CriterionValue | None = None
 
     def _validate_film_criteria(self, criteria: ValidationCriteria | None) -> bool:
         """Validate common film-related criteria"""
@@ -144,7 +201,7 @@ class FilmEvent(Event, BaseEventValidator):
             return False
         if criteria.rating is not None and not self._validate_field(self.movie_rating, criteria.rating):
             return False
-        if criteria.cast is not None and not self._validate_field(self.movie_cast, criteria.cast):
+        if criteria.cast is not None and not validate_cast_criteria(self.movie_cast, criteria.cast):
             return False
         return not (criteria.duration is not None and not self._validate_field(self.movie_duration, criteria.duration))
 
