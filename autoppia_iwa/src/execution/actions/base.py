@@ -119,6 +119,8 @@ class ActionRegistry:
     @staticmethod
     def _normalize_action_key(action_type: str) -> str:
         key = str(action_type).strip()
+        if "." in key:
+            key = key.split(".", 1)[1]
         if key.endswith("Action"):
             key = key[: -len("Action")]
         # Allow function/tool style names like "request_user_input" or "request-user-input".

@@ -61,7 +61,7 @@ async def test_apified_harvester_accepts_trajectory_tool_calls():
             "web_agent_id": "stub-agent",
             "trajectory": [
                 {
-                    "name": "click",
+                    "name": "browser.click",
                     "arguments": {
                         "selector": {
                             "type": "attributeValueSelector",
