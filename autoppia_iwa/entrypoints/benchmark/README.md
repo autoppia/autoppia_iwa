@@ -119,6 +119,36 @@ Default (uses `run.py` config exactly):
 python -m autoppia_iwa.entrypoints.benchmark.run
 ```
 
+End-to-end smoke check, no external agent or LLM needed:
+
+```bash
+python -m autoppia_iwa.entrypoints.benchmark.run --smoke
+```
+
+Expected result: benchmark completes successfully and the random-clicker baseline scores `0.0`.
+
+Run the built-in zero-score baseline without an external agent:
+
+```bash
+python -m autoppia_iwa.entrypoints.benchmark.run \
+  --agent random-clicker \
+  -t event_only \
+  -p autocinema
+```
+
+Run with pre-generated tasks so no LLM task generation is needed:
+
+```bash
+python -m autoppia_iwa.entrypoints.benchmark.run \
+  --agent random-clicker \
+  --tasks-json /path/to/tasks.json \
+  -t event_only \
+  -p autocinema \
+  --runs 1 \
+  --mode concurrent \
+  --headless
+```
+
 Run only EventTasks:
 
 ```bash
@@ -157,6 +187,10 @@ Additional compatible flags:
 - `--project-ids` for comma-separated project ids
 - `-U` / `--use-case` for repeatable single EventTask use case
 - `-D` / `--de-use-case` for repeatable single DE use case
+- `--agent random-clicker` for the built-in deterministic zero-score baseline, or `--agent http://host:port` for an HTTP `/act` agent
+- `--tasks-json /path/to/tasks.json` to run from a saved task file instead of generating tasks
+- `--smoke` for the built-in end-to-end random-clicker smoke benchmark
+- `--runs`, `--parallel`, `--mode`, `--max-steps`, `--headless/--no-headless`, `--dynamic/--no-dynamic`, `--record-gif` for runtime controls
 
 Legacy alias kept for compatibility:
 - `--test {both,event_only,data_extraction_only}`
@@ -315,7 +349,7 @@ cd autoppia_webs_demo
 
 # This script will:
 # ✅ Install Docker & Docker Compose (if needed)
-# ✅ Build and start 13 demo websites
+# ✅ Build and start the demo websites
 # ✅ Start webs_server (shared backend)
 # ⏱️  Takes ~5-10 minutes first time
 
@@ -326,7 +360,7 @@ echo "DEMO_WEBS_ENDPOINT=http://localhost" >> .env
 
 **Result:**
 - ✅ webs_server running on `localhost:8090`
-- ✅ web_1 to web_13 running on `localhost:8000-8012`
+- ✅ demo websites running from `localhost:8000` upward
 - ✅ IWA benchmark ready to run
 
 ---
@@ -352,7 +386,7 @@ echo "DEMO_WEBS_ENDPOINT=https://webs.autoppia.com" >> .env
 
 **Requirements:**
 - ✅ webs_server accessible on `<endpoint>:8090`
-- ✅ Demo webs accessible on `<endpoint>:8000-8012`
+- ✅ Demo webs accessible from `<endpoint>:8000` upward
 
 ---
 

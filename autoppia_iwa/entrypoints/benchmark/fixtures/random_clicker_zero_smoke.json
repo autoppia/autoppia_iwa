@@ -1,0 +1,34 @@
+{
+  "project_id": "autocinema",
+  "project_name": "Autoppia Cinema",
+  "tasks": [
+    {
+      "id": "random-clicker-zero-smoke",
+      "is_web_real": false,
+      "web_project_id": "autocinema",
+      "url": "__AUTOCINEMA_URL__",
+      "prompt": "Smoke test: this task intentionally requires an impossible event so the random-clicker baseline should score zero.",
+      "specifications": {
+        "viewport_width": 1280,
+        "viewport_height": 720,
+        "screen_width": 1280,
+        "screen_height": 720,
+        "device_pixel_ratio": 1.0,
+        "scroll_x": 0,
+        "scroll_y": 0,
+        "browser_x": 0,
+        "browser_y": 0
+      },
+      "tests": [
+        {
+          "type": "CheckEventTest",
+          "event_name": "__RANDOM_CLICKER_SHOULD_NOT_EMIT__",
+          "event_criteria": {},
+          "description": "Impossible event check for zero-score smoke test"
+        }
+      ],
+      "should_record": false,
+      "original_prompt": "Smoke test: impossible event should produce score zero."
+    }
+  ]
+}

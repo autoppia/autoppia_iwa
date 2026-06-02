@@ -15,6 +15,10 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Literal
 
+from autoppia_iwa.config.env import init_env
+
+init_env()
+
 from loguru import logger
 
 from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
@@ -23,6 +27,7 @@ from autoppia_iwa.entrypoints.benchmark.utils.logging import setup_logging
 from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.web_agents import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.examples.random_clicker.agent import RandomClickerWebAgent
 
 TaskTypes = Literal["both", "event_only", "data_extraction_only"]
 
@@ -48,7 +53,17 @@ REMOTE_AGENTS = [
     ApifiedWebAgent(id="browser_use_anthropic", name="Browser Use Anthropic", host="browser-use-anthropic-agent-sota.autoppia.com", port=80, timeout=120),
 ]
 
-AGENTS = REMOTE_AGENTS if AGENT_TARGET == "remote" else [LOCAL_AGENTS[5]]
+AGENTS = (
+    REMOTE_AGENTS
+    if AGENT_TARGET == "remote"
+    else [
+        RandomClickerWebAgent(
+            id="random-clicker",
+            name="Random Clicker Zero Baseline",
+            is_random=False,
+        )
+    ]
+)
 
 # Projects and use cases
 PROJECT_IDS = ["autocinema"]
@@ -65,6 +80,7 @@ RECORD_GIF = False
 DYNAMIC = True
 SAVE_RESULTS_JSON = True
 HEADLESS = True
+SMOKE_TASKS_TEMPLATE = Path(__file__).resolve().parent / "fixtures" / "random_clicker_zero_smoke.json"
 
 
 def _split_csv(values: str | None) -> list[str]:
@@ -100,6 +116,33 @@ def _resolve_task_toggles(task_types: TaskTypes) -> tuple[bool, bool]:
     if task_types == "data_extraction_only":
         return False, True
     return True, True
+
+
+def _build_agent(agent: str):
+    """Build a benchmark agent from a friendly name or an HTTP base URL."""
+    normalized = agent.strip()
+    if normalized in {"random-clicker", "random", "random_clicker"}:
+        return RandomClickerWebAgent(
+            id="random-clicker",
+            name="Random Clicker Zero Baseline",
+            is_random=False,
+        )
+    return ApifiedWebAgent(base_url=normalized, name=f"agent@{normalized}")
+
+
+def _materialize_smoke_tasks_json() -> Path:
+    """Create an env-specific smoke tasks file from the bundled fixture."""
+    template = json.loads(SMOKE_TASKS_TEMPLATE.read_text(encoding="utf-8"))
+    projects_by_id = {project.id: project for project in demo_web_projects}
+    autocinema = projects_by_id["autocinema"]
+
+    for task in template.get("tasks", []):
+        task["url"] = autocinema.frontend_url
+
+    output_path = Path(__file__).resolve().parents[3] / "benchmark-output" / "smoke" / "random_clicker_zero_smoke.json"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(template, indent=2, ensure_ascii=False), encoding="utf-8")
+    return output_path
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -168,6 +211,78 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default=None,
         help="Repeatable DataExtraction use case flag",
     )
+    parser.add_argument(
+        "--agent",
+        type=str,
+        default=None,
+        help="Agent to benchmark: 'random-clicker' or an HTTP base URL. Default: random-clicker",
+    )
+    parser.add_argument(
+        "--agent-target",
+        choices=("local", "remote"),
+        default=None,
+        help="Use configured local/default agents or configured remote agents. Ignored when --agent is set.",
+    )
+    parser.add_argument(
+        "--tasks-json",
+        type=str,
+        default=None,
+        help="Use a pre-generated tasks JSON file instead of generating tasks with an LLM.",
+    )
+    parser.add_argument(
+        "--smoke",
+        action="store_true",
+        help="Run the built-in random-clicker zero-score smoke benchmark. No external agent or LLM needed.",
+    )
+    parser.add_argument(
+        "--runs",
+        type=int,
+        default=None,
+        help=f"Runs per task. Default: {RUNS}",
+    )
+    parser.add_argument(
+        "-n",
+        "--prompts-per-use-case",
+        type=int,
+        default=None,
+        help=f"Generated prompts per use case. Default: {PROMPTS_PER_USE_CASE}",
+    )
+    parser.add_argument(
+        "--parallel",
+        type=int,
+        default=None,
+        help=f"Maximum parallel agent calls. Default: {MAX_PARALLEL_AGENT_CALLS}",
+    )
+    parser.add_argument(
+        "--mode",
+        choices=("concurrent", "stateful"),
+        default=None,
+        help=f"Evaluator mode. Default: {EVALUATOR_MODE}",
+    )
+    parser.add_argument(
+        "--max-steps",
+        type=int,
+        default=None,
+        help="Maximum steps per task in stateful mode.",
+    )
+    parser.add_argument(
+        "--record-gif",
+        action="store_true",
+        default=None,
+        help="Record GIFs for benchmark executions.",
+    )
+    parser.add_argument(
+        "--dynamic",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help=f"Enable seed-based dynamic web variations. Default: {DYNAMIC}",
+    )
+    parser.add_argument(
+        "--headless",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help=f"Run browser evaluation headless. Default: {HEADLESS}",
+    )
 
     return parser.parse_args(argv)
 
@@ -177,49 +292,78 @@ def build_config(args: argparse.Namespace | None = None) -> BenchmarkConfig:
     project_ids = list(PROJECT_IDS)
     use_cases = USE_CASES
     data_extraction_use_cases = DATA_EXTRACTION_USE_CASES
+    agents = AGENTS
+    evaluator_mode = EVALUATOR_MODE
+    prompts_per_use_case = PROMPTS_PER_USE_CASE
+    runs = RUNS
+    max_parallel_agent_calls = MAX_PARALLEL_AGENT_CALLS
+    record_gif = RECORD_GIF
+    dynamic = DYNAMIC
+    headless = HEADLESS
+    max_steps_per_task = 50
+    tasks_json_path = None
 
     if args is not None:
-        selected_task_types = args.task_types or args.task_types_legacy or TASK_TYPES
-        project_ids = _resolve_optional_list(PROJECT_IDS, args.project_ids, args.project_id) or []
+        if args.smoke:
+            selected_task_types = "event_only"
+            project_ids = ["autocinema"]
+            agents = [_build_agent("random-clicker")]
+            evaluator_mode = "concurrent"
+            runs = 1
+            max_parallel_agent_calls = 1
+            record_gif = False
+            dynamic = False
+            headless = True
+            tasks_json_path = str(_materialize_smoke_tasks_json())
+
+        selected_task_types = args.task_types or args.task_types_legacy or selected_task_types
+        project_ids = _resolve_optional_list(project_ids, args.project_ids, args.project_id) or []
         use_cases = _resolve_optional_list(USE_CASES, args.use_cases, args.use_case)
         data_extraction_use_cases = _resolve_optional_list(
             DATA_EXTRACTION_USE_CASES,
             args.data_extraction_use_cases,
             args.de_use_case,
         )
+        if args.agent:
+            agents = [_build_agent(args.agent)]
+        elif args.agent_target == "remote":
+            agents = REMOTE_AGENTS
+        elif args.agent_target == "local":
+            agents = AGENTS
+        evaluator_mode = args.mode or evaluator_mode
+        prompts_per_use_case = args.prompts_per_use_case if args.prompts_per_use_case is not None else prompts_per_use_case
+        runs = args.runs if args.runs is not None else runs
+        max_parallel_agent_calls = args.parallel if args.parallel is not None else max_parallel_agent_calls
+        record_gif = args.record_gif if args.record_gif is not None else record_gif
+        dynamic = args.dynamic if args.dynamic is not None else dynamic
+        headless = args.headless if args.headless is not None else headless
+        max_steps_per_task = args.max_steps if args.max_steps is not None else max_steps_per_task
+        tasks_json_path = args.tasks_json or tasks_json_path
 
     enable_event_tasks, enable_data_extraction_tasks = _resolve_task_toggles(selected_task_types)
 
     return BenchmarkConfig(
         projects=get_projects_by_ids(demo_web_projects, project_ids),
-        agents=AGENTS,
-        evaluator_mode=EVALUATOR_MODE,
-        prompts_per_use_case=PROMPTS_PER_USE_CASE,
+        agents=agents,
+        evaluator_mode=evaluator_mode,
+        prompts_per_use_case=prompts_per_use_case,
         use_cases=use_cases,
         data_extraction_use_cases=data_extraction_use_cases,
         enable_event_tasks=enable_event_tasks,
         enable_data_extraction_tasks=enable_data_extraction_tasks,
-        runs=RUNS,
-        max_parallel_agent_calls=MAX_PARALLEL_AGENT_CALLS,
-        record_gif=RECORD_GIF,
-        dynamic=DYNAMIC,
+        runs=runs,
+        max_parallel_agent_calls=max_parallel_agent_calls,
+        record_gif=record_gif,
+        dynamic=dynamic,
         save_results_json=SAVE_RESULTS_JSON,
-        headless=HEADLESS,
+        headless=headless,
+        max_steps_per_task=max_steps_per_task,
+        tasks_json_path=tasks_json_path,
     )
 
 
 # Backward-compatible default config export for modules that import CFG directly.
 CFG = build_config()
-
-
-def _build_agent(agent: str):
-    """Compatibility helper used by legacy benchmark run API/tests."""
-    from autoppia_iwa.src.web_agents.examples.random_clicker.agent import RandomClickerWebAgent
-
-    normalized = agent.strip()
-    if normalized in {"random-clicker", "random", "random_clicker"}:
-        return RandomClickerWebAgent(id="random-clicker", name="Random Clicker")
-    return ApifiedWebAgent(base_url=normalized, name=f"agent@{normalized}")
 
 
 def _write_staged_tasks(cache_dir: Path, payload: dict) -> None:
@@ -359,7 +503,7 @@ def main(argv: Sequence[str] | None = None):
     args = _parse_args() if argv is None else _parse_args(argv)
 
     # Compatibility path (legacy API/tests monkeypatch this object shape).
-    if hasattr(args, "agent"):
+    if hasattr(args, "project") and hasattr(args, "tasks"):
         raise SystemExit(asyncio.run(_main_async_legacy(args)))
 
     cfg = build_config(args)

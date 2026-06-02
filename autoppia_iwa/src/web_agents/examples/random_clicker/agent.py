@@ -31,3 +31,24 @@ class RandomClickerWebAgent(BaseAgent):
             x = 0
             y = 0
         return [ClickAction(selector=None, x=x, y=y)]
+
+    async def act(
+        self,
+        *,
+        task: Task,
+        snapshot_html: str = "",
+        url: str,
+        step_index: int,
+        history: list[dict[str, Any]] | None = None,
+        screenshot: str | bytes | None = None,
+    ) -> list[BaseAction]:
+        """Compatibility alias for benchmark paths that call /act-style agents."""
+        return await self.step(
+            task=task,
+            html=snapshot_html,
+            screenshot=screenshot,
+            url=url,
+            step_index=step_index,
+            history=history,
+            snapshot_html=snapshot_html,
+        )

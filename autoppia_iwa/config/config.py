@@ -1,6 +1,10 @@
 import os
 from pathlib import Path
 
+from autoppia_iwa.config.env import init_env
+
+init_env()
+
 
 def _env_bool(key: str, default: str = "false") -> bool:
     return os.getenv(key, default).lower() in ("1", "true", "yes", "on")

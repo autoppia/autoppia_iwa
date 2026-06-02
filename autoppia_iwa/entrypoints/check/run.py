@@ -43,6 +43,7 @@ async def run(project_id: str | None = None):
     from autoppia_iwa.config.env import init_env
 
     init_env()
+    from autoppia_iwa.config.config import DEMO_WEB_SERVICE_PORT, DEMO_WEBS_ENDPOINT, DEMO_WEBS_STARTING_PORT
     from autoppia_iwa.src.demo_webs.config import demo_web_projects
 
     if project_id:
@@ -53,7 +54,10 @@ async def run(project_id: str | None = None):
     else:
         projects = demo_web_projects
 
-    print(f"\nChecking {len(projects)} project(s)...\n")
+    print(f"\nEndpoint: {DEMO_WEBS_ENDPOINT}")
+    print(f"Backend port: {DEMO_WEB_SERVICE_PORT}")
+    print(f"Frontend starting port: {DEMO_WEBS_STARTING_PORT}")
+    print(f"Checking {len(projects)} project(s)...\n")
     ok = 0
     for project in projects:
         health = await _check_health(project.backend_url)

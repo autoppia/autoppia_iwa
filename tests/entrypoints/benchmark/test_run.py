@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 
@@ -12,6 +13,110 @@ def test_build_agent_supports_random_clicker():
     agent = benchmark_run._build_agent("random-clicker")
     assert isinstance(agent, RandomClickerWebAgent)
     assert agent.id == "random-clicker"
+
+
+def test_default_agent_is_deterministic_random_clicker():
+    assert len(benchmark_run.AGENTS) == 1
+    agent = benchmark_run.AGENTS[0]
+    assert isinstance(agent, RandomClickerWebAgent)
+    assert agent.id == "random-clicker"
+    assert agent.is_random is False
+    assert hasattr(agent, "act")
+
+
+@pytest.mark.asyncio
+async def test_default_random_clicker_returns_zero_coordinate_click():
+    agent = benchmark_run.AGENTS[0]
+    task = type(
+        "Task",
+        (),
+        {
+            "specifications": type(
+                "Specifications",
+                (),
+                {"screen_width": 1280, "screen_height": 720},
+            )()
+        },
+    )()
+
+    actions = await agent.act(
+        task=task,
+        snapshot_html="",
+        url="http://example.test",
+        step_index=0,
+    )
+
+    assert len(actions) == 1
+    assert actions[0].x == 0
+    assert actions[0].y == 0
+
+
+def test_benchmark_import_loads_env_before_project_urls():
+    env_path = Path(".env")
+    if not env_path.exists():
+        pytest.skip(".env is not present")
+    env_text = env_path.read_text()
+    expected_endpoint = next(
+        line.split("=", 1)[1].strip().strip('"')
+        for line in env_text.splitlines()
+        if line.startswith("DEMO_WEBS_ENDPOINT=")
+    )
+    cfg = benchmark_run.build_config(
+        benchmark_run.parse_args(["-t", "event_only", "-p", "autocinema"])
+    )
+    project = cfg.projects[0]
+
+    assert project.frontend_url.startswith(f"{expected_endpoint}:")
+    assert project.backend_url.startswith(f"{expected_endpoint}:")
+
+
+def test_modern_cli_agent_flag_uses_modern_main_path(monkeypatch, tmp_path):
+    tasks = tmp_path / "tasks.json"
+    tasks.write_text(
+        json.dumps(
+            {
+                "project_id": "autocinema",
+                "tasks": [
+                    {
+                        "id": "t1",
+                        "url": "http://localhost:8000",
+                        "prompt": "p",
+                        "web_project_id": "autocinema",
+                    }
+                ],
+            }
+        )
+    )
+    called = {}
+
+    class FakeBenchmark:
+        def __init__(self, config):
+            called["config"] = config
+
+        async def run(self):
+            called["ran"] = True
+            return {}
+
+    monkeypatch.setattr(benchmark_run, "Benchmark", FakeBenchmark)
+    monkeypatch.setattr(benchmark_run, "setup_logging", lambda *_args, **_kwargs: None)
+
+    with pytest.raises(SystemExit) as exc:
+        benchmark_run.main(
+            [
+                "--agent",
+                "random-clicker",
+                "--tasks-json",
+                str(tasks),
+                "-t",
+                "event_only",
+                "-p",
+                "autocinema",
+            ]
+        )
+
+    assert exc.value.code == 0
+    assert called["ran"] is True
+    assert isinstance(called["config"].agents[0], RandomClickerWebAgent)
 
 
 def test_stage_tasks_supports_single_project_payload(tmp_path):

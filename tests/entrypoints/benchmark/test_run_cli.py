@@ -51,3 +51,20 @@ def test_cli_data_extraction_only_enables_only_de_pipeline_with_legacy_alias():
     assert cfg.data_extraction_use_cases == ["EXTRACT_MOVIES"]
     assert cfg.enable_event_tasks is False
     assert cfg.enable_data_extraction_tasks is True
+
+
+def test_cli_smoke_uses_random_clicker_and_bundled_tasks():
+    args = run.parse_args(["--smoke"])
+
+    cfg = run.build_config(args)
+
+    assert [p.id for p in cfg.projects] == ["autocinema"]
+    assert cfg.enable_event_tasks is True
+    assert cfg.enable_data_extraction_tasks is False
+    assert cfg.evaluator_mode == "concurrent"
+    assert cfg.runs == 1
+    assert cfg.dynamic is False
+    assert cfg.headless is True
+    assert cfg.tasks_json_path is not None
+    assert cfg.tasks_json_path.exists()
+    assert cfg.agents[0].id == "random-clicker"

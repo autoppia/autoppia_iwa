@@ -12,6 +12,7 @@ env/
 venv/
 .idea
 *.json
+!autoppia_iwa/entrypoints/benchmark/fixtures/random_clicker_zero_smoke.json
 data/web_analysis_files/*
 *.gif
 *.egg-info
