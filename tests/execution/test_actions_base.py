@@ -173,6 +173,13 @@ class TestTypeActionAndWaitAction:
         assert isinstance(action, WaitAction)
         assert action.time_seconds == 2.0
 
+    def test_create_wait_action_seconds_alias_maps_to_time_seconds(self):
+        data = {"type": "WaitAction", "seconds": 2.0}
+        action = BaseAction.create_action(data)
+        assert action is not None
+        assert isinstance(action, WaitAction)
+        assert action.time_seconds == 2.0
+
 
 @pytest.mark.asyncio
 async def test_execute_with_page_none_raises():

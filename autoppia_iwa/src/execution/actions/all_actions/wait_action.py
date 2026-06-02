@@ -19,6 +19,10 @@ class WaitAction(BaseAction):
     @model_validator(mode="before")
     @classmethod
     def check_wait_condition(cls, values):
+        if isinstance(values, dict):
+            values = dict(values)
+            if values.get("time_seconds") is None and values.get("seconds") is not None:
+                values["time_seconds"] = values.get("seconds")
         selector = values.get("selector")
         time_seconds = values.get("time_seconds")
         if selector is None and time_seconds is None:
