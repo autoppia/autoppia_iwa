@@ -369,7 +369,7 @@ class Benchmark:
     # Core per-task/per-agent execution
     # ---------------------------------------------------------------------
 
-    async def _solve_task_with_agent(
+    async def _find_trayectory_with_agent(
         self,
         project: WebProject,
         agent: IWebAgent,
@@ -377,7 +377,7 @@ class Benchmark:
         run_index: int,
     ) -> TaskSolution | None:
         """
-        Solve a single Task with a single Agent using act().
+        Find a candidate trajectory for a single Task with a single Agent.
 
         All agents use act() now (both concurrent and stateful).
         In concurrent mode, we call act() once with the initial state.
@@ -393,8 +393,7 @@ class Benchmark:
 
                 start_ts = time.time()
 
-                # Use act() instead of solve_task()
-                # In concurrent mode, we call once with an empty initial snapshot
+                # In concurrent mode, we call once with an empty initial snapshot.
                 # Send task WITH placeholders - agent should return actions with placeholders
                 # Agent may return list[BaseAction] or dict with "actions" and optionally "extracted_data" (for DataExtractionTest)
                 act_result = await agent.act(
@@ -437,10 +436,10 @@ class Benchmark:
                 # Normalize any embedded agent IDs inside actions if needed
                 task_solution.actions = task_solution.replace_web_agent_id()
 
-                solution_time = time.time() - start_ts
-                self._timing_metrics.record_solution_time(agent.id, task.id, solution_time)
+                trajectory_time = time.time() - start_ts
+                self._timing_metrics.record_solution_time(agent.id, task.id, trajectory_time)
 
-                logger.debug(f"{agent.name} solved task {task.id} in {solution_time:.2f}s")
+                logger.debug(f"{agent.name} found trajectory for task {task.id} in {trajectory_time:.2f}s")
                 return task_solution
 
             except Exception as exc:
@@ -640,7 +639,7 @@ class Benchmark:
                     task_solutions = [None] * len(self.config.agents)
                 else:
                     # In concurrent mode, generate solutions first
-                    task_solutions = await asyncio.gather(*[self._solve_task_with_agent(project, agent, task, run_index) for agent in self.config.agents])
+                    task_solutions = await asyncio.gather(*[self._find_trayectory_with_agent(project, agent, task, run_index) for agent in self.config.agents])
 
                 # Structured log: task start per agent
                 for agent in self.config.agents:

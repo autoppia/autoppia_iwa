@@ -265,14 +265,13 @@ class TestParseActionsResponse:
         assert parsed_actions[0].url == agent._rewrite_to_remote("/dashboard")
 
 
-class TestSolveTask:
+class TestFindTrayectory:
     @pytest.mark.asyncio
-    async def test_solve_task_raises_not_implemented(self):
+    async def test_find_trayectory_raises_not_implemented(self):
         agent = ApifiedWebAgent(base_url="http://localhost:5000")
         task = Task(url="https://example.com", prompt="Do something", web_project_id="dummy")
         with pytest.raises(NotImplementedError, match="only supports step"):
-            await agent.solve_task(task)
-
+            await agent.find_trayectory(task)
 
 class TestStep:
     @pytest.mark.asyncio

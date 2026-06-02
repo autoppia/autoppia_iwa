@@ -119,12 +119,12 @@ class BaseAgent(IWebAgent):
 
 
 # ============================================================================
-# TaskSolution (kept for backward compatibility with concurrent evaluator)
+# Trajectory result
 # ============================================================================
 
 
 class TaskSolution(BaseModel):
-    """Solution to a task consisting of a sequence of actions."""
+    """Trajectory for a task, kept under this name for compatibility."""
 
     task_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     actions: list[BaseAction] = Field(default_factory=list)
@@ -141,9 +141,16 @@ class TaskSolution(BaseModel):
     def total_tokens(self) -> int:
         return self.input_tokens + self.output_tokens
 
+    @computed_field
+    @property
+    def trajectory(self) -> list[dict[str, Any]]:
+        """Canonical trajectory as a list of tool calls."""
+        return [action.to_tool_call() for action in self.actions]
+
     def nested_model_dump(self, *args, **kwargs) -> dict[str, Any]:
         base_dump = super().model_dump(*args, **kwargs)
         base_dump["actions"] = [action.model_dump() for action in self.actions]
+        base_dump["trajectory"] = self.trajectory
         return base_dump
 
     def replace_web_agent_id(self) -> list[BaseAction]:
@@ -162,3 +169,18 @@ class TaskSolution(BaseModel):
         for action in self.actions:
             replace_credentials_in_action(action, web_agent_id)
         return self.actions
+
+
+TrajectoryResult = TaskSolution
+Trajectory = TaskSolution
+
+
+class IHarvester(ABC):
+    """Interface for harvesters that produce complete task trajectories."""
+
+    id: str
+    name: str
+
+    @abstractmethod
+    async def find_trayectory(self, task: Task) -> TrajectoryResult:
+        pass

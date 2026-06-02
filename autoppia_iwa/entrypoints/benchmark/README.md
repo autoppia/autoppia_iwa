@@ -685,18 +685,18 @@ Tasks are always generated fresh for each benchmark run. No caching is used.
 
 ---
 
-## 🤖 Agent Integration
+## 🤖 Harvester Integration
 
-### **ApifiedOneShotWebAgent**
+### **ApifiedHarvester**
 
-HTTP-based agent (recommended approach):
+HTTP-based harvester (recommended approach):
 
 ```python
-from autoppia_iwa.src.web_agents.apified_one_shot_agent import ApifiedOneShotWebAgent
+from autoppia_iwa.src.web_agents.apified_harvester import ApifiedHarvester
 
-agent = ApifiedOneShotWebAgent(
+harvester = ApifiedHarvester(
     id="1",
-    name="MyAgent",
+    name="MyHarvester",
     host="127.0.0.1",  # or remote server
     port=7000,
     timeout=120,       # seconds
@@ -704,10 +704,22 @@ agent = ApifiedOneShotWebAgent(
 )
 ```
 
-**Agent must implement:**
+**Harvester must implement:**
 
-- `POST /solve_task` - Receives Task, returns TaskSolution
+- `POST /find_trayectory` - Receives Task, returns `trajectory`, a list of tool calls
 - `GET /health` - Health check (optional but recommended)
+
+Response shape:
+
+```json
+{
+  "web_agent_id": "harvester-1",
+  "trajectory": [
+    {"name": "navigate", "arguments": {"url": "https://example.test"}},
+    {"name": "click", "arguments": {"selector": {"type": "attributeValueSelector", "attribute": "id", "value": "cta"}}}
+  ]
+}
+```
 
 ### **Other Agent Types**
 

@@ -120,5 +120,20 @@ def test_task_solution_nested_model_dump():
     sol = TaskSolution(actions=[action])
     out = sol.nested_model_dump()
     assert "actions" in out
+    assert "trajectory" in out
     assert len(out["actions"]) == 1
     assert out["actions"][0]["text"] == "hi"
+    assert out["trajectory"] == [
+        {
+            "name": "input",
+            "arguments": {
+                "selector": {
+                    "type": "attributeValueSelector",
+                    "attribute": "id",
+                    "value": "y",
+                    "case_sensitive": False,
+                },
+                "text": "hi",
+            },
+        }
+    ]

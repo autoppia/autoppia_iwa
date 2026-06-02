@@ -135,8 +135,8 @@ class ApifiedWebAgent(IWebAgent):
         """Backward-compatible alias for local callers; HTTP contract is /step."""
         return await self.step(**kwargs)
 
-    async def solve_task(self, task: Task):
-        raise NotImplementedError("ApifiedWebAgent only supports step(), not solve_task().")
+    async def find_trayectory(self, task: Task):
+        raise NotImplementedError("ApifiedWebAgent only supports step(), not find_trayectory().")
 
     # ------------------------------------------------------------------ #
     # Helpers

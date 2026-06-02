@@ -174,7 +174,7 @@ class BrowserUseWebAgent(BaseAgent):
                 logger.warning("Task was cancelled.")
                 raise
             except Exception as e:
-                logger.error(f"Failed to solve task {task.id}: {e}")
+                logger.error(f"Failed to run browser-use task {task.id}: {e}")
                 logger.debug(traceback.format_exc())
             finally:
                 self._current_task = None

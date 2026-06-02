@@ -26,7 +26,7 @@ Minimal usage inside IWA flows:
 from autoppia_iwa.src.web_agents.browser_use.agent import BrowserUseWebAgent, BrowserUseConfig
 
 agent = BrowserUseWebAgent(BrowserUseConfig(headless=True))
-solution = await agent.solve_task(task)  # returns TaskSolution with recording=AgentHistoryList
+actions = await agent.step(task=task, html="", url=task.url, step_index=0)
 ```
 
 Config fields:
@@ -60,7 +60,7 @@ def history_to_actions(history) -> list[BaseAction]:
         pass
     return mapped
 
-# In solve_task():
+# In a trajectory-producing agent:
 # actions = history_to_actions(history)
 # return TaskSolution(task_id=task.id, actions=actions, web_agent_id=self.id, recording=history)
 ```

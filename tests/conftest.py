@@ -32,7 +32,7 @@ def stub_agent():
 
             class Handler(BaseHTTPRequestHandler):
                 def do_POST(self):
-                    if self.path not in ("/solve_task", "/solve_task_at_once"):
+                    if self.path != "/find_trayectory":
                         self.send_response(404)
                         self.end_headers()
                         return
