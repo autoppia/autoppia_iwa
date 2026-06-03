@@ -111,6 +111,31 @@ async def test_apified_harvester_raises_when_endpoint_unavailable():
 
 
 @pytest.mark.asyncio
+async def test_apified_harvester_error_includes_http_body():
+    agent = ApifiedHarvester(base_url="http://localhost:9999", id="agent-err", name="ErrAgent", timeout=1)
+    task = Task(url="https://example.com", prompt="Click CTA", web_project_id="dummy")
+
+    response_mock = AsyncMock()
+    response_mock.status = 500
+    response_mock.url = "http://localhost:9999/find_trayectory"
+    response_mock.text = AsyncMock(return_value='{"detail":"provider exploded"}')
+    post_mock = MagicMock()
+    post_mock.__aenter__ = AsyncMock(return_value=response_mock)
+    post_mock.__aexit__ = AsyncMock(return_value=None)
+    session_mock = MagicMock()
+    session_mock.post = MagicMock(return_value=post_mock)
+    session_mock.__aenter__ = AsyncMock(return_value=session_mock)
+    session_mock.__aexit__ = AsyncMock(return_value=None)
+
+    with patch("aiohttp.ClientSession", return_value=session_mock), pytest.raises(RuntimeError) as exc_info:
+        await agent.find_trayectory(task)
+
+    message = str(exc_info.value)
+    assert "HTTP 500" in message
+    assert "provider exploded" in message
+
+
+@pytest.mark.asyncio
 async def test_apified_harvester_rejects_non_list_trajectory():
     agent = ApifiedHarvester(base_url="http://localhost:9999", id="agent-1", name="StubHarvester")
     task = Task(url="https://example.com", prompt="Click CTA", web_project_id="dummy")

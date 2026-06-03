@@ -11,6 +11,13 @@ from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
 from autoppia_iwa.src.web_agents.classes import IHarvester, IWebAgent, TaskSolution
 
 
+def _short_response_body(text: str, *, limit: int = 1000) -> str:
+    compact = " ".join(str(text or "").split())
+    if len(compact) <= limit:
+        return compact
+    return f"{compact[:limit]}..."
+
+
 def _parse_remote_demo_endpoint():
     remote = DEMO_WEBS_ENDPOINT if DEMO_WEBS_ENDPOINT.startswith("http") else f"https://{DEMO_WEBS_ENDPOINT}"
     return urlparse(remote)
@@ -100,10 +107,15 @@ class ApifiedHarvester(IWebAgent, IHarvester):
         for endpoint_path in endpoints:
             try:
                 async with session.post(f"{self.base_url}{endpoint_path}", json=payload) as response:
-                    if response.status == 404 and endpoint_path != endpoints[-1]:
+                    status = int(getattr(response, "status", 200) or 200)
+                    if status == 404 and endpoint_path != endpoints[-1]:
                         last_error = RuntimeError(f"{endpoint_path} returned 404")
                         continue
-                    response.raise_for_status()
+                    if status >= 400:
+                        body = _short_response_body(await response.text())
+                        raise RuntimeError(
+                            f"{endpoint_path} returned HTTP {status} from {response.url}; body={body or '<empty>'}"
+                        )
                     response_json = await response.json()
                     if not isinstance(response_json, dict):
                         raise ValueError("find_trayectory response must be a JSON object")
